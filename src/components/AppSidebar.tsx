@@ -24,6 +24,13 @@ import {
   Settings,
   LogOut,
   Bot,
+  PieChart,
+  Target,
+  Calculator,
+  BarChart3,
+  AlertTriangle,
+  UserPlus,
+  Briefcase,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -31,7 +38,7 @@ interface AppSidebarProps {
   onLogout: () => void;
 }
 
-const menuItems = [
+const aiToolsItems = [
   {
     title: "Dashboard",
     url: "/dashboard",
@@ -48,14 +55,55 @@ const menuItems = [
     icon: TrendingUp,
   },
   {
-    title: "Client Search",
+    title: "Compliance",
+    url: "/compliance",
+    icon: Shield,
+  },
+];
+
+const financialPlanningItems = [
+  {
+    title: "Portfolio Management",
+    url: "/portfolio",
+    icon: PieChart,
+  },
+  {
+    title: "Financial Planning",
+    url: "/planning",
+    icon: Calculator,
+  },
+  {
+    title: "Goal Planning",
+    url: "/goals",
+    icon: Target,
+  },
+  {
+    title: "Investment Analysis",
+    url: "/investments",
+    icon: BarChart3,
+  },
+  {
+    title: "Risk Assessment",
+    url: "/risk",
+    icon: AlertTriangle,
+  },
+];
+
+const practiceManagementItems = [
+  {
+    title: "Client Management",
     url: "/clients",
     icon: Users,
   },
   {
-    title: "Compliance",
-    url: "/compliance",
-    icon: Shield,
+    title: "Client Onboarding",
+    url: "/onboarding",
+    icon: UserPlus,
+  },
+  {
+    title: "Practice Management",
+    url: "/practice",
+    icon: Briefcase,
   },
   {
     title: "Reports",
@@ -110,10 +158,46 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>AI Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {aiToolsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavClassName(item.url)}>
+                      <item.icon className="h-4 w-4" />
+                      {!isCollapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Financial Planning</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {financialPlanningItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavClassName(item.url)}>
+                      <item.icon className="h-4 w-4" />
+                      {!isCollapsed && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Practice Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {practiceManagementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClassName(item.url)}>

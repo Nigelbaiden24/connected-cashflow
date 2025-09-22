@@ -12,6 +12,13 @@ import Chat from "./pages/Chat";
 import MarketData from "./pages/MarketData";
 import Clients from "./pages/Clients";
 import Compliance from "./pages/Compliance";
+import Portfolio from "./pages/Portfolio";
+import FinancialPlanning from "./pages/FinancialPlanning";
+import GoalPlanning from "./pages/GoalPlanning";
+import InvestmentAnalysis from "./pages/InvestmentAnalysis";
+import RiskAssessment from "./pages/RiskAssessment";
+import ClientOnboarding from "./pages/ClientOnboarding";
+import PracticeManagement from "./pages/PracticeManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,8 +64,15 @@ const App = () => {
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/market" element={<MarketData />} />
-                  <Route path="/clients" element={<Clients />} />
                   <Route path="/compliance" element={<Compliance />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
+                  <Route path="/planning" element={<FinancialPlanning />} />
+                  <Route path="/goals" element={<GoalPlanning />} />
+                  <Route path="/investments" element={<InvestmentAnalysis />} />
+                  <Route path="/risk" element={<RiskAssessment />} />
+                  <Route path="/clients" element={<Clients />} />
+                  <Route path="/onboarding" element={<ClientOnboarding />} />
+                  <Route path="/practice" element={<PracticeManagement />} />
                   <Route path="/reports" element={<Dashboard />} />
                   <Route path="/settings" element={<Dashboard />} />
                   <Route path="*" element={<NotFound />} />
