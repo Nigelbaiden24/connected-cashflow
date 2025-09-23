@@ -62,6 +62,20 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        financial: {
+          blue: "hsl(var(--financial-blue))",
+          cyan: "hsl(var(--financial-cyan))",
+          purple: "hsl(var(--financial-purple))",
+          pink: "hsl(var(--financial-pink))",
+          orange: "hsl(var(--financial-orange))",
+          green: "hsl(var(--financial-green))",
+        },
+        cashflow: {
+          "pre-retirement": "hsl(var(--pre-retirement))",
+          retirement: "hsl(var(--retirement))",
+          surplus: "hsl(var(--surplus))",
+          deficit: "hsl(var(--deficit))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

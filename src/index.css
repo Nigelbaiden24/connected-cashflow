@@ -36,16 +36,37 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 220 13% 18%;
 
-    /* Financial theme colors */
+    /* Enhanced Financial theme colors - Voyant inspired */
     --success: 142 76% 36%;
     --success-foreground: 210 40% 98%;
     --warning: 38 92% 50%;
     --warning-foreground: 222.2 47.4% 11.2%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    
+    /* Professional chart colors */
+    --chart-1: 220 85% 57%; /* Rich blue */
+    --chart-2: 195 100% 50%; /* Cyan */
+    --chart-3: 285 85% 65%; /* Purple */
+    --chart-4: 340 82% 52%; /* Pink */
+    --chart-5: 28 87% 67%; /* Orange */
+    
+    /* Voyant-inspired colors */
+    --financial-blue: 220 85% 57%;
+    --financial-cyan: 195 100% 50%;
+    --financial-purple: 285 85% 65%;
+    --financial-pink: 340 82% 52%;
+    --financial-orange: 28 87% 67%;
+    --financial-green: 142 76% 36%;
+    
+    /* Cash flow colors */
+    --pre-retirement: 220 85% 57%;
+    --retirement: 340 82% 52%;
+    --surplus: 142 76% 36%;
+    --deficit: 0 84% 60%;
+    
+    /* Professional gradients */
+    --gradient-financial: linear-gradient(135deg, hsl(var(--financial-blue)), hsl(var(--financial-cyan)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 76% 45%));
+    --gradient-warning: linear-gradient(135deg, hsl(var(--warning)), hsl(38 92% 60%));
 
     --radius: 0.5rem;
 

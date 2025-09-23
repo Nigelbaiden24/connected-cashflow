@@ -8,19 +8,34 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { Calculator, Target, DollarSign, TrendingUp, AlertTriangle, Plus, Save } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts";
+import { Calculator, Target, DollarSign, TrendingUp, AlertTriangle, Plus, Save, Users, Home, Briefcase, Shield } from "lucide-react";
+import { CashFlowChart } from "@/components/CashFlowChart";
+import { AssetAllocationChart } from "@/components/AssetAllocationChart";
 
-// Dummy data for projections
-const projectionData = [
-  { age: 30, conservative: 50000, moderate: 50000, aggressive: 50000 },
-  { age: 35, conservative: 78000, moderate: 89000, aggressive: 103000 },
-  { age: 40, conservative: 112000, moderate: 138000, aggressive: 178000 },
-  { age: 45, conservative: 152000, moderate: 201000, aggressive: 285000 },
-  { age: 50, conservative: 199000, moderate: 281000, aggressive: 425000 },
-  { age: 55, conservative: 255000, moderate: 384000, aggressive: 632000 },
-  { age: 60, conservative: 321000, moderate: 515000, aggressive: 891000 },
-  { age: 65, conservative: 398000, moderate: 672000, aggressive: 1249000 },
+// Enhanced dummy data for cash flow projections (Voyant-style)
+const cashFlowData = [
+  { age: 25, cashFlow: 15000, cumulative: 15000, phase: "pre-retirement", milestone: null },
+  { age: 30, cashFlow: 25000, cumulative: 40000, phase: "pre-retirement", milestone: null },
+  { age: 35, cashFlow: 35000, cumulative: 75000, phase: "pre-retirement", milestone: null },
+  { age: 40, cashFlow: 45000, cumulative: 120000, phase: "pre-retirement", milestone: "Career Peak" },
+  { age: 45, cashFlow: 50000, cumulative: 170000, phase: "pre-retirement", milestone: null },
+  { age: 50, cashFlow: 55000, cumulative: 225000, phase: "pre-retirement", milestone: null },
+  { age: 55, cashFlow: 60000, cumulative: 285000, phase: "pre-retirement", milestone: null },
+  { age: 60, cashFlow: 65000, cumulative: 350000, phase: "pre-retirement", milestone: null },
+  { age: 65, cashFlow: -35000, cumulative: 315000, phase: "retirement", milestone: "Retirement" },
+  { age: 70, cashFlow: -40000, cumulative: 275000, phase: "retirement", milestone: null },
+  { age: 75, cashFlow: -45000, cumulative: 230000, phase: "retirement", milestone: null },
+  { age: 80, cashFlow: -50000, cumulative: 180000, phase: "retirement", milestone: null },
+  { age: 85, cashFlow: -55000, cumulative: 125000, phase: "retirement", milestone: null },
+  { age: 90, cashFlow: -60000, cumulative: 65000, phase: "retirement", milestone: null },
+];
+
+const portfolioData = [
+  { name: "Stocks", value: 320000, allocation: 60, color: "hsl(var(--financial-blue))" },
+  { name: "Bonds", value: 106000, allocation: 20, color: "hsl(var(--financial-green))" },
+  { name: "Real Estate", value: 85000, allocation: 16, color: "hsl(var(--financial-purple))" },
+  { name: "Cash", value: 21000, allocation: 4, color: "hsl(var(--financial-orange))" },
 ];
 
 const scenarios = [
@@ -109,17 +124,145 @@ export default function FinancialPlanning() {
         </TabsList>
 
         <TabsContent value="calculator" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Input Parameters */}
-            <Card className="lg:col-span-1">
+          {/* Enhanced Cash Flow View - Voyant Style */}
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            {/* Main Cash Flow Chart */}
+            <Card className="xl:col-span-3">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5" />
-                  Planning Parameters
-                </CardTitle>
-                <CardDescription>Adjust your planning assumptions</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-financial-blue" />
+                      Detailed Cash Flow
+                    </CardTitle>
+                    <CardDescription>Lifetime financial projection with key milestones</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-financial-blue border-financial-blue">
+                      Base Plan
+                    </Badge>
+                    <Button variant="outline" size="sm">
+                      Year: 2024
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent>
+                <CashFlowChart data={cashFlowData} retirementAge={retirementAge} />
+                
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 p-4 bg-muted/30 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Pre-Retirement</div>
+                    <div className="text-lg font-semibold text-financial-blue">
+                      {yearsToRetirement} years
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Retirement Income</div>
+                    <div className="text-lg font-semibold text-financial-pink">
+                      {formatCurrency(35000)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Peak Savings</div>
+                    <div className="text-lg font-semibold text-financial-green">
+                      {formatCurrency(350000)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Final Balance</div>
+                    <div className="text-lg font-semibold">
+                      {formatCurrency(65000)}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Side Panel - Client & Key Metrics */}
+            <div className="xl:col-span-1 space-y-6">
+              {/* Client Info */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Johnson Family</CardTitle>
+                  <CardDescription>Financial Plan Overview</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-success" />
+                      <span className="text-sm font-medium">Net Worth</span>
+                    </div>
+                    <span className="font-bold text-success">
+                      {formatCurrency(532000)}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">People</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-chart-1"></div>
+                        <div className="w-2 h-2 rounded-full bg-chart-2"></div>
+                        <div className="w-2 h-2 rounded-full bg-chart-3"></div>
+                        <div className="w-2 h-2 rounded-full bg-chart-4"></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Income</span>
+                      </div>
+                      <Badge variant="outline">2</Badge>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Savings & Investments</span>
+                      </div>
+                      <Badge variant="outline">4</Badge>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Home className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">Property</span>
+                      </div>
+                      <Badge variant="outline">1</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Asset Allocation */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Asset Allocation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AssetAllocationChart data={portfolioData} />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Planning Parameters - Collapsible */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Planning Parameters
+              </CardTitle>
+              <CardDescription>Adjust your planning assumptions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="currentAge">Current Age</Label>
                   <Input
@@ -170,18 +313,6 @@ export default function FinancialPlanning() {
                   />
                 </div>
 
-                <div className="space-y-3">
-                  <Label>Expected Annual Return: {expectedReturn[0]}%</Label>
-                  <Slider
-                    value={expectedReturn}
-                    onValueChange={setExpectedReturn}
-                    max={12}
-                    min={3}
-                    step={0.5}
-                    className="w-full"
-                  />
-                </div>
-
                 <div className="space-y-2">
                   <Label>Risk Tolerance</Label>
                   <Select value={riskTolerance} onValueChange={setRiskTolerance}>
@@ -195,117 +326,133 @@ export default function FinancialPlanning() {
                     </SelectContent>
                   </Select>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              
+              <div className="mt-4">
+                <Label>Expected Annual Return: {expectedReturn[0]}%</Label>
+                <Slider
+                  value={expectedReturn}
+                  onValueChange={setExpectedReturn}
+                  max={12}
+                  min={3}
+                  step={0.5}
+                  className="w-full mt-2"
+                />
+              </div>
 
-            {/* Results */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Retirement Projection
-                </CardTitle>
-                <CardDescription>Based on your current plan</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Key Metrics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-background border">
-                    <div className="text-sm text-muted-foreground">Projected Value at {retirementAge}</div>
-                    <div className="text-2xl font-bold">{formatCurrency(projectedValue)}</div>
+              {/* Smart Recommendations */}
+              {shortfall < 0 && (
+                <div className="mt-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <span className="font-semibold text-destructive">Smart Recommendations</span>
                   </div>
-                  <div className="p-4 rounded-lg bg-background border">
-                    <div className="text-sm text-muted-foreground">
-                      {shortfall >= 0 ? "Surplus" : "Shortfall"}
-                    </div>
-                    <div className={`text-2xl font-bold ${shortfall >= 0 ? 'text-success' : 'text-destructive'}`}>
-                      {formatCurrency(Math.abs(shortfall))}
+                  <div className="text-sm space-y-2">
+                    <p className="text-muted-foreground">To meet your retirement goal:</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Button variant="outline" size="sm" className="justify-start h-auto p-3">
+                        <div className="text-left">
+                          <div className="font-medium">Increase Savings</div>
+                          <div className="text-xs text-muted-foreground">
+                            +${Math.ceil(Math.abs(shortfall) / monthsToRetirement)}/mo
+                          </div>
+                        </div>
+                      </Button>
+                      <Button variant="outline" size="sm" className="justify-start h-auto p-3">
+                        <div className="text-left">
+                          <div className="font-medium">Delay Retirement</div>
+                          <div className="text-xs text-muted-foreground">
+                            +{Math.ceil(Math.abs(shortfall) / (monthlyContribution * 12))} years
+                          </div>
+                        </div>
+                      </Button>
+                      <Button variant="outline" size="sm" className="justify-start h-auto p-3">
+                        <div className="text-left">
+                          <div className="font-medium">Optimize Portfolio</div>
+                          <div className="text-xs text-muted-foreground">
+                            Higher returns
+                          </div>
+                        </div>
+                      </Button>
                     </div>
                   </div>
                 </div>
-
-                {/* Progress to Goal */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress to Goal</span>
-                    <span>{((projectedValue / retirementGoal) * 100).toFixed(1)}%</span>
-                  </div>
-                  <Progress value={(projectedValue / retirementGoal) * 100} />
-                </div>
-
-                {/* Projection Chart */}
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={projectionData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="age" />
-                      <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                      <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                      <Line type="monotone" dataKey="conservative" stroke="#ffc658" strokeWidth={2} name="Conservative" />
-                      <Line type="monotone" dataKey="moderate" stroke="#8884d8" strokeWidth={2} name="Moderate" />
-                      <Line type="monotone" dataKey="aggressive" stroke="#82ca9d" strokeWidth={2} name="Aggressive" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Action Items */}
-                {shortfall < 0 && (
-                  <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
-                      <span className="font-semibold text-destructive">Action Required</span>
-                    </div>
-                    <div className="text-sm space-y-1">
-                      <p>To reach your goal, consider:</p>
-                      <ul className="list-disc list-inside ml-4 space-y-1">
-                        <li>Increase monthly contribution by ${Math.ceil(Math.abs(shortfall) / monthsToRetirement)}</li>
-                        <li>Extend retirement age by {Math.ceil(Math.abs(shortfall) / (monthlyContribution * 12))} years</li>
-                        <li>Consider higher-return investments (with appropriate risk)</li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="scenarios" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Scenario Comparison</CardTitle>
-              <CardDescription>Compare different planning scenarios</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Monte Carlo Scenario Analysis</CardTitle>
+                  <CardDescription>Compare different planning scenarios with probability outcomes</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Scenario
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Run Analysis
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {scenarios.map((scenario) => (
-                  <Card key={scenario.name}>
+                {scenarios.map((scenario, index) => (
+                  <Card key={scenario.name} className="hover:shadow-md transition-shadow cursor-pointer">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg">{scenario.name}</CardTitle>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg">{scenario.name}</CardTitle>
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: scenario.color }}></div>
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <div className="text-sm space-y-1">
+                      <div className="text-sm space-y-2">
                         <div className="flex justify-between">
-                          <span>Monthly:</span>
-                          <span>{formatCurrency(scenario.monthlyContribution)}</span>
+                          <span className="text-muted-foreground">Monthly Contribution</span>
+                          <span className="font-medium">{formatCurrency(scenario.monthlyContribution)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Return:</span>
-                          <span>{scenario.returnRate}%</span>
+                          <span className="text-muted-foreground">Expected Return</span>
+                          <span className="font-medium">{scenario.returnRate}%</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Projected:</span>
+                          <span className="text-muted-foreground">Projected Value</span>
                           <span className="font-semibold">{formatCurrency(scenario.projectedValue)}</span>
                         </div>
                         {scenario.shortfall !== 0 && (
                           <div className="flex justify-between">
-                            <span>{scenario.shortfall > 0 ? 'Surplus:' : 'Shortfall:'}</span>
-                            <span className={scenario.shortfall > 0 ? 'text-success' : 'text-destructive'}>
-                              {formatCurrency(Math.abs(scenario.shortfall))}
+                            <span className="text-muted-foreground">
+                              {scenario.shortfall > 0 ? 'Surplus' : 'Shortfall'}
+                            </span>
+                            <span className={`font-medium ${scenario.shortfall > 0 ? 'text-success' : 'text-destructive'}`}>
+                              {scenario.shortfall > 0 ? '+' : ''}{formatCurrency(Math.abs(scenario.shortfall))}
                             </span>
                           </div>
                         )}
                       </div>
+                      
+                      {/* Success Probability */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Success Probability</span>
+                          <span className="font-medium">
+                            {scenario.name === 'Current Path' ? '72%' : 
+                             scenario.name === 'Optimized Plan' ? '89%' : '45%'}
+                          </span>
+                        </div>
+                        <Progress 
+                          value={scenario.name === 'Current Path' ? 72 : 
+                                 scenario.name === 'Optimized Plan' ? 89 : 45} 
+                          className="h-2"
+                        />
+                      </div>
+                      
                       <Badge
                         variant={scenario.shortfall >= 0 ? "default" : "destructive"}
                         className="w-full justify-center"
@@ -317,16 +464,86 @@ export default function FinancialPlanning() {
                 ))}
               </div>
 
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={scenarios}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    <Bar dataKey="projectedValue" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Enhanced Chart with Multiple Scenarios */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Scenario Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={scenarios} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis 
+                            dataKey="name" 
+                            stroke="hsl(var(--muted-foreground))"
+                            fontSize={12}
+                          />
+                          <YAxis 
+                            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} 
+                            stroke="hsl(var(--muted-foreground))"
+                            fontSize={12}
+                          />
+                          <Tooltip 
+                            formatter={(value) => formatCurrency(value as number)}
+                            contentStyle={{
+                              backgroundColor: 'hsl(var(--background))',
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Bar dataKey="projectedValue" radius={[4, 4, 0, 0]}>
+                            {scenarios.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Risk Analysis */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Risk Analysis</CardTitle>
+                    <CardDescription>Probability of achieving retirement goals</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-success/10">
+                        <span className="font-medium">90th Percentile</span>
+                        <span className="font-bold text-success">{formatCurrency(1250000)}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-primary/10">
+                        <span className="font-medium">50th Percentile (Median)</span>
+                        <span className="font-bold">{formatCurrency(850000)}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-lg bg-destructive/10">
+                        <span className="font-medium">10th Percentile</span>
+                        <span className="font-bold text-destructive">{formatCurrency(420000)}</span>
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t">
+                      <div className="text-sm text-muted-foreground mb-2">Key Insights</div>
+                      <ul className="text-sm space-y-1">
+                        <li className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-success"></div>
+                          72% chance of meeting retirement goal
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-warning"></div>
+                          Market volatility main risk factor
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-primary"></div>
+                          Inflation impact: 2.5% annually
+                        </li>
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>
@@ -336,51 +553,97 @@ export default function FinancialPlanning() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Optimization Recommendations</CardTitle>
-                <CardDescription>AI-powered suggestions to improve your plan</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-success" />
+                  AI Optimization Recommendations
+                </CardTitle>
+                <CardDescription>Smart suggestions to improve your financial plan</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg border bg-background">
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-success/5 to-success/10 hover:from-success/10 hover:to-success/15 transition-all cursor-pointer">
                   <div className="flex items-start gap-3">
-                    <TrendingUp className="h-5 w-5 text-success mt-0.5" />
-                    <div>
-                      <div className="font-semibold">Increase 401(k) Contribution</div>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        Maximize employer matching by increasing to $500/month
+                    <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center mt-1">
+                      <TrendingUp className="h-4 w-4 text-success" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold">Maximize 401(k) Employer Match</div>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        You're leaving $2,400 annually in free money on the table. Increase contribution to capture full employer match.
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        Impact: +$47,000 at retirement
-                      </Badge>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/30">
+                          Impact: +$47,000 at retirement
+                        </Badge>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          Apply Change
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-background">
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all cursor-pointer">
                   <div className="flex items-start gap-3">
-                    <DollarSign className="h-5 w-5 text-primary mt-0.5" />
-                    <div>
-                      <div className="font-semibold">Optimize Asset Allocation</div>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        Adjust to 70/30 stocks/bonds based on risk tolerance
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mt-1">
+                      <Shield className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold">Rebalance Asset Allocation</div>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        Current allocation is too conservative for your age. Suggested: 70% stocks, 25% bonds, 5% alternatives.
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        Impact: +$23,000 at retirement
-                      </Badge>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">
+                          Impact: +$23,000 at retirement
+                        </Badge>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          View Details
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-lg border bg-background">
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-warning/5 to-warning/10 hover:from-warning/10 hover:to-warning/15 transition-all cursor-pointer">
                   <div className="flex items-start gap-3">
-                    <Target className="h-5 w-5 text-warning mt-0.5" />
-                    <div>
-                      <div className="font-semibold">Consider Roth IRA</div>
-                      <div className="text-sm text-muted-foreground mb-2">
-                        Tax-free growth for retirement income flexibility
+                    <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center mt-1">
+                      <Target className="h-4 w-4 text-warning" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold">Consider Roth IRA Conversion</div>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        Tax diversification opportunity. Convert $15,000 annually during lower income years.
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        Impact: Tax diversification
-                      </Badge>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs bg-warning/10 text-warning border-warning/30">
+                          Impact: Tax diversification
+                        </Badge>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          Learn More
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-gradient-to-r from-financial-blue/5 to-financial-cyan/10 hover:from-financial-blue/10 hover:to-financial-cyan/15 transition-all cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-financial-blue/20 flex items-center justify-center mt-1">
+                      <DollarSign className="h-4 w-4 text-financial-blue" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold">Optimize Emergency Fund</div>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        Your emergency fund is 8 months of expenses. Consider moving excess to higher-yield investments.
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs bg-financial-blue/10 text-financial-blue border-financial-blue/30">
+                          Impact: +$8,500 opportunity cost
+                        </Badge>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          Optimize Now
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -389,8 +652,11 @@ export default function FinancialPlanning() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Tax Optimization</CardTitle>
-                <CardDescription>Strategies to minimize tax impact</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-primary" />
+                  Tax Optimization Strategy
+                </CardTitle>
+                <CardDescription>Maximize tax efficiency across all accounts</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
@@ -405,27 +671,60 @@ export default function FinancialPlanning() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-background border">
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-success/5 border border-success/20">
                     <div>
-                      <div className="font-medium">Roth IRA</div>
-                      <div className="text-sm text-muted-foreground">Recommended addition</div>
+                      <div className="font-medium text-success">Recommended: Roth IRA</div>
+                      <div className="text-sm text-muted-foreground">Add tax diversification</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">$6,000/year</div>
+                      <div className="font-semibold text-success">$6,000/year</div>
                       <div className="text-xs text-muted-foreground">Tax-free growth</div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-success/10 border border-success/20">
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-primary/5 border border-primary/20">
                     <div>
-                      <div className="font-medium text-success">Total Tax Savings</div>
-                      <div className="text-sm text-muted-foreground">Annual benefit</div>
+                      <div className="font-medium text-primary">HSA Maximization</div>
+                      <div className="text-sm text-muted-foreground">Triple tax advantage</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-success">$4,320</div>
-                      <div className="text-xs text-muted-foreground">24% tax bracket</div>
+                      <div className="font-semibold text-primary">$3,650/year</div>
+                      <div className="text-xs text-muted-foreground">Tax-free contributions & growth</div>
                     </div>
                   </div>
+
+                  <div className="flex justify-between items-center p-3 rounded-lg bg-success/10 border border-success/30">
+                    <div>
+                      <div className="font-medium text-success">Total Annual Tax Savings</div>
+                      <div className="text-sm text-muted-foreground">Estimated benefit (24% bracket)</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-success text-lg">$6,636</div>
+                      <div className="text-xs text-muted-foreground">Per year</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Implementation Timeline */}
+                <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+                  <div className="font-medium mb-3">Implementation Priority</div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-bold">1</div>
+                      <span className="text-sm">Maximize 401(k) employer match (immediate)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-warning text-warning-foreground text-xs flex items-center justify-center font-bold">2</div>
+                      <span className="text-sm">Open and fund Roth IRA (next month)</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">3</div>
+                      <span className="text-sm">Optimize asset allocation (quarterly review)</span>
+                    </div>
+                  </div>
+                  <Button className="w-full mt-4" size="sm">
+                    Create Implementation Plan
+                  </Button>
                 </div>
               </CardContent>
             </Card>
