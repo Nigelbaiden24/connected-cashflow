@@ -14,7 +14,287 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_documents: {
+        Row: {
+          client_id: string
+          created_at: string
+          document_name: string
+          document_type: string
+          expiry_date: string | null
+          file_path: string | null
+          id: string
+          notes: string | null
+          upload_date: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          document_name: string
+          document_type: string
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          upload_date?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          document_name?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          upload_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_goals: {
+        Row: {
+          client_id: string
+          created_at: string
+          current_amount: number | null
+          goal_name: string
+          goal_type: string
+          id: string
+          monthly_contribution: number | null
+          notes: string | null
+          priority: string | null
+          status: string | null
+          target_amount: number | null
+          target_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          current_amount?: number | null
+          goal_name: string
+          goal_type: string
+          id?: string
+          monthly_contribution?: number | null
+          notes?: string | null
+          priority?: string | null
+          status?: string | null
+          target_amount?: number | null
+          target_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          current_amount?: number | null
+          goal_name?: string
+          goal_type?: string
+          id?: string
+          monthly_contribution?: number | null
+          notes?: string | null
+          priority?: string | null
+          status?: string | null
+          target_amount?: number | null
+          target_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_goals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_meetings: {
+        Row: {
+          action_items: string[] | null
+          agenda: string[] | null
+          client_id: string
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          location: string | null
+          meeting_date: string
+          meeting_type: string
+          next_meeting_date: string | null
+          notes: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_items?: string[] | null
+          agenda?: string[] | null
+          client_id: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          meeting_date: string
+          meeting_type: string
+          next_meeting_date?: string | null
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_items?: string[] | null
+          agenda?: string[] | null
+          client_id?: string
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          meeting_type?: string
+          next_meeting_date?: string | null
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_meetings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          annual_income: number | null
+          aum: number | null
+          client_id: string
+          created_at: string
+          date_of_birth: string | null
+          email: string
+          id: string
+          investment_experience: string | null
+          investment_objectives: string[] | null
+          last_contact_date: string | null
+          liquidity_needs: string | null
+          name: string
+          net_worth: number | null
+          notes: string | null
+          occupation: string | null
+          phone: string | null
+          risk_profile: string | null
+          status: string | null
+          time_horizon: number | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          annual_income?: number | null
+          aum?: number | null
+          client_id: string
+          created_at?: string
+          date_of_birth?: string | null
+          email: string
+          id?: string
+          investment_experience?: string | null
+          investment_objectives?: string[] | null
+          last_contact_date?: string | null
+          liquidity_needs?: string | null
+          name: string
+          net_worth?: number | null
+          notes?: string | null
+          occupation?: string | null
+          phone?: string | null
+          risk_profile?: string | null
+          status?: string | null
+          time_horizon?: number | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          annual_income?: number | null
+          aum?: number | null
+          client_id?: string
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string
+          id?: string
+          investment_experience?: string | null
+          investment_objectives?: string[] | null
+          last_contact_date?: string | null
+          liquidity_needs?: string | null
+          name?: string
+          net_worth?: number | null
+          notes?: string | null
+          occupation?: string | null
+          phone?: string | null
+          risk_profile?: string | null
+          status?: string | null
+          time_horizon?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      portfolio_holdings: {
+        Row: {
+          allocation_percentage: number | null
+          asset_name: string
+          asset_type: string
+          client_id: string
+          created_at: string
+          current_value: number | null
+          id: string
+          purchase_date: string | null
+          purchase_price: number | null
+          quantity: number | null
+          symbol: string | null
+          updated_at: string
+        }
+        Insert: {
+          allocation_percentage?: number | null
+          asset_name: string
+          asset_type: string
+          client_id: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          purchase_date?: string | null
+          purchase_price?: number | null
+          quantity?: number | null
+          symbol?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allocation_percentage?: number | null
+          asset_name?: string
+          asset_type?: string
+          client_id?: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          purchase_date?: string | null
+          purchase_price?: number | null
+          quantity?: number | null
+          symbol?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_holdings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

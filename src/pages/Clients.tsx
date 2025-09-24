@@ -1,61 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Users, DollarSign, TrendingUp, Filter, Phone, Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+interface Client {
+  id: string;
+  client_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  aum: number;
+  risk_profile: string;
+  status: string;
+  last_contact_date: string;
+}
 
 const Clients = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState("all");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const clients = [
-    {
-      id: "CL001",
-      name: "Robert Johnson",
-      email: "r.johnson@email.com",
-      phone: "(555) 123-4567",
-      aum: "$2.4M",
-      riskProfile: "Conservative",
-      lastContact: "2 days ago",
-      portfolio: "60% Bonds, 30% Equity, 10% Alt",
-      status: "active",
-    },
-    {
-      id: "CL002",
-      name: "Sarah Williams",
-      email: "s.williams@email.com",
-      phone: "(555) 234-5678",
-      aum: "$1.8M",
-      riskProfile: "Moderate",
-      lastContact: "1 week ago",
-      portfolio: "50% Equity, 35% Bonds, 15% Alt",
-      status: "active",
-    },
-    {
-      id: "CL003",
-      name: "Michael Chen",
-      email: "m.chen@email.com",
-      phone: "(555) 345-6789",
-      aum: "$3.2M",
-      riskProfile: "Aggressive",
-      lastContact: "3 days ago",
-      portfolio: "70% Equity, 20% Alt, 10% Bonds",
-      status: "active",
-    },
-    {
-      id: "CL004",
-      name: "Emma Davis",
-      email: "e.davis@email.com",
-      phone: "(555) 456-7890",
-      aum: "$950K",
-      riskProfile: "Conservative",
-      lastContact: "2 weeks ago",
-      portfolio: "65% Bonds, 25% Equity, 10% Cash",
-      status: "needs_review",
-    },
-  ];
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setClients(data || []);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load clients",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const portfolioAnalytics = [
     {
@@ -81,17 +77,26 @@ const Clients = () => {
   const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         client.id.toLowerCase().includes(searchQuery.toLowerCase());
+                         client.client_id.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesFilter = filterBy === "all" || 
-                         client.riskProfile.toLowerCase() === filterBy ||
+                         client.risk_profile.toLowerCase() === filterBy ||
                          client.status === filterBy;
     
     return matchesSearch && matchesFilter;
   });
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const getRiskProfileColor = (profile: string) => {
-    switch (profile.toLowerCase()) {
+    switch (profile?.toLowerCase()) {
       case "conservative":
         return "bg-chart-2/10 text-chart-2";
       case "moderate":
@@ -159,62 +164,82 @@ const Clients = () => {
         </TabsList>
 
         <TabsContent value="clients">
-          <div className="space-y-4">
-            {filteredClients.map((client) => (
-              <Card key={client.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold">{client.name}</h3>
-                        <Badge className={getRiskProfileColor(client.riskProfile)}>
-                          {client.riskProfile}
-                        </Badge>
-                        <Badge className={getStatusColor(client.status)}>
-                          {client.status.replace("_", " ")}
-                        </Badge>
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-lg">Loading clients...</div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredClients.map((client) => (
+                <Card key={client.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-semibold">{client.name}</h3>
+                          <Badge className={getRiskProfileColor(client.risk_profile)}>
+                            {client.risk_profile}
+                          </Badge>
+                          <Badge className={getStatusColor(client.status)}>
+                            {client.status.replace("_", " ")}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground">Contact</p>
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3 w-3" />
+                              <span>{client.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-3 w-3" />
+                              <span>{client.phone}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground">Portfolio</p>
+                            <p className="font-medium">{formatCurrency(client.aum)} AUM</p>
+                            <p className="text-xs">{client.risk_profile} Risk Profile</p>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <p className="text-muted-foreground">Status</p>
+                            <p>ID: {client.client_id}</p>
+                            <p className="text-xs">
+                              Last contact: {client.last_contact_date ? 
+                                new Date(client.last_contact_date).toLocaleDateString() : 
+                                'No contact recorded'
+                              }
+                            </p>
+                          </div>
+                        </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Contact</p>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-3 w-3" />
-                            <span>{client.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3" />
-                            <span>{client.phone}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Portfolio</p>
-                          <p className="font-medium">{client.aum} AUM</p>
-                          <p className="text-xs">{client.portfolio}</p>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground">Status</p>
-                          <p>ID: {client.id}</p>
-                          <p className="text-xs">Last contact: {client.lastContact}</p>
-                        </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/clients/${client.client_id}`)}
+                        >
+                          View Profile
+                        </Button>
+                        <Button size="sm">
+                          Schedule Call
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        View Profile
-                      </Button>
-                      <Button size="sm">
-                        Schedule Call
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {filteredClients.length === 0 && !loading && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No clients found matching your criteria
+                </div>
+              )}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="analytics">

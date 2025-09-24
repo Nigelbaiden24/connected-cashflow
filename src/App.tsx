@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import MarketData from "./pages/MarketData";
 import Clients from "./pages/Clients";
+import ClientProfile from "./pages/ClientProfile";
 import Compliance from "./pages/Compliance";
 import Portfolio from "./pages/Portfolio";
 import FinancialPlanning from "./pages/FinancialPlanning";
@@ -71,6 +72,7 @@ const App = () => {
                   <Route path="/investments" element={<InvestmentAnalysis />} />
                   <Route path="/risk" element={<RiskAssessment />} />
                   <Route path="/clients" element={<Clients />} />
+                  <Route path="/clients/:id" element={<ClientProfile />} />
                   <Route path="/onboarding" element={<ClientOnboarding />} />
                   <Route path="/practice" element={<PracticeManagement />} />
                   <Route path="/reports" element={<Dashboard />} />
