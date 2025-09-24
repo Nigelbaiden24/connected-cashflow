@@ -71,7 +71,7 @@ export default function FinancialPlanning() {
   const [currentSavings, setCurrentSavings] = useState(75000);
   const [monthlyContribution, setMonthlyContribution] = useState(1500);
   const [retirementGoal, setRetirementGoal] = useState(800000);
-  const [expectedReturn, setExpectedReturn] = useState([7]);
+  const [expectedReturn, setExpectedReturn] = useState(7);
   const [riskTolerance, setRiskTolerance] = useState("moderate");
 
   const yearsToRetirement = retirementAge - currentAge;
@@ -84,7 +84,7 @@ export default function FinancialPlanning() {
     return futureValuePV + futureValuePMT;
   };
 
-  const projectedValue = calculateFutureValue(currentSavings, monthlyContribution, expectedReturn[0], monthsToRetirement);
+  const projectedValue = calculateFutureValue(currentSavings, monthlyContribution, expectedReturn, monthsToRetirement);
   const shortfall = retirementGoal - projectedValue;
 
   const formatCurrency = (amount: number) => {
@@ -329,10 +329,10 @@ export default function FinancialPlanning() {
               </div>
               
               <div className="mt-4">
-                <Label>Expected Annual Return: {expectedReturn[0]}%</Label>
+                <Label>Expected Annual Return: {expectedReturn}%</Label>
                 <Slider
-                  value={expectedReturn}
-                  onValueChange={setExpectedReturn}
+                  value={[expectedReturn]}
+                  onValueChange={(value) => setExpectedReturn(value[0])}
                   max={12}
                   min={3}
                   step={0.5}

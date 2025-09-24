@@ -120,7 +120,7 @@ export function CashFlowChart({ data, retirementAge = 65 }: CashFlowChartProps) 
           >
             {data.map((entry, index) => (
               <Cell 
-                key={`cell-${index}`} 
+                key={`cashflow-cell-${index}`} 
                 fill={entry.cashFlow >= 0 ? "hsl(var(--financial-blue))" : "hsl(var(--financial-pink))"} 
               />
             ))}

@@ -73,7 +73,7 @@ export function AssetAllocationChart({ data }: AssetAllocationProps) {
             stroke="white"
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
+              <Cell key={`allocation-cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
