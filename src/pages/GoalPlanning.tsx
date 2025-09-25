@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
 
 // Dummy data for financial goals
 const goals = [
@@ -84,18 +86,97 @@ const priorities = ["high", "medium", "low"];
 const statuses = ["on-track", "ahead", "behind", "completed"];
 
 export default function GoalPlanning() {
-  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [selectedClient, setSelectedClient] = useState<Tables<'clients'> | null>(null);
+  const [clients, setClients] = useState<Tables<'clients'>[]>([]);
+  const [clientGoals, setClientGoals] = useState<Tables<'client_goals'>[]>([]);
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   const [newGoal, setNewGoal] = useState({
-    title: "",
-    description: "",
-    targetAmount: "",
-    currentAmount: "",
-    targetDate: undefined,
-    priority: "medium",
-    monthlyContribution: "",
-    category: ""
+    goal_name: "",
+    goal_type: "",
+    target_amount: "",
+    current_amount: "",
+    target_date: undefined,
+    priority: "Medium",
+    monthly_contribution: "",
+    notes: ""
   });
+
+  // Fetch clients on component mount
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  // Fetch goals when client is selected
+  useEffect(() => {
+    if (selectedClient) {
+      fetchClientGoals(selectedClient.id);
+    }
+  }, [selectedClient]);
+
+  const fetchClients = async () => {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('name');
+    
+    if (error) {
+      console.error('Error fetching clients:', error);
+    } else {
+      setClients(data || []);
+    }
+  };
+
+  const fetchClientGoals = async (clientId: string) => {
+    const { data, error } = await supabase
+      .from('client_goals')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching goals:', error);
+    } else {
+      setClientGoals(data || []);
+    }
+  };
+
+  const handleAddGoal = async () => {
+    if (!selectedClient) return;
+
+    const goalData = {
+      client_id: selectedClient.id,
+      goal_name: newGoal.goal_name,
+      goal_type: newGoal.goal_type,
+      target_amount: parseFloat(newGoal.target_amount) || null,
+      current_amount: parseFloat(newGoal.current_amount) || 0,
+      target_date: newGoal.target_date?.toISOString().split('T')[0] || null,
+      priority: newGoal.priority,
+      monthly_contribution: parseFloat(newGoal.monthly_contribution) || 0,
+      notes: newGoal.notes || null,
+      status: 'On Track'
+    };
+
+    const { error } = await supabase
+      .from('client_goals')
+      .insert([goalData]);
+
+    if (error) {
+      console.error('Error adding goal:', error);
+    } else {
+      setIsAddingGoal(false);
+      setNewGoal({
+        goal_name: "",
+        goal_type: "",
+        target_amount: "",
+        current_amount: "",
+        target_date: undefined,
+        priority: "Medium",
+        monthly_contribution: "",
+        notes: ""
+      });
+      fetchClientGoals(selectedClient.id);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -134,17 +215,64 @@ export default function GoalPlanning() {
     return Math.ceil((target - current) / monthly);
   };
 
-  const totalGoalAmount = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
-  const totalCurrentAmount = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
-  const totalMonthlyContributions = goals.reduce((sum, goal) => sum + goal.monthlyContribution, 0);
+  const totalGoalAmount = clientGoals.reduce((sum, goal) => sum + (goal.target_amount || 0), 0);
+  const totalCurrentAmount = clientGoals.reduce((sum, goal) => sum + (goal.current_amount || 0), 0);
+  const totalMonthlyContributions = clientGoals.reduce((sum, goal) => sum + (goal.monthly_contribution || 0), 0);
+
+  // If no client is selected, show client selection
+  if (!selectedClient) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="text-center max-w-2xl mx-auto">
+          <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+          <h1 className="text-3xl font-bold mb-2">Goal-Based Planning</h1>
+          <p className="text-muted-foreground mb-6">
+            Select a client to view and manage their financial goals
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-xl font-semibold mb-4">Select a Client</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {clients.map((client) => (
+              <Card key={client.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedClient(client)}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{client.name}</CardTitle>
+                      <CardDescription>{client.email}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="text-sm text-muted-foreground">
+                    AUM: {formatCurrency(client.aum || 0)}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Goal-Based Planning</h1>
-          <p className="text-muted-foreground">Track and manage your financial goals</p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => setSelectedClient(null)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Clients
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Goals for {selectedClient.name}</h1>
+            <p className="text-muted-foreground">Track and manage financial goals</p>
+          </div>
         </div>
         <Dialog open={isAddingGoal} onOpenChange={setIsAddingGoal}>
           <DialogTrigger asChild>
@@ -160,42 +288,50 @@ export default function GoalPlanning() {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Goal Title</Label>
+                <Label htmlFor="goal_name">Goal Name</Label>
                 <Input
-                  id="title"
-                  placeholder="e.g., Dream Vacation"
-                  value={newGoal.title}
-                  onChange={(e) => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
+                  id="goal_name"
+                  placeholder="e.g., Retirement Savings"
+                  value={newGoal.goal_name}
+                  onChange={(e) => setNewGoal(prev => ({ ...prev, goal_name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Brief description of your goal"
-                  value={newGoal.description}
-                  onChange={(e) => setNewGoal(prev => ({ ...prev, description: e.target.value }))}
-                />
+                <Label htmlFor="goal_type">Goal Type</Label>
+                <Select value={newGoal.goal_type} onValueChange={(value) => setNewGoal(prev => ({ ...prev, goal_type: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select goal type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Retirement">Retirement</SelectItem>
+                    <SelectItem value="Education">Education</SelectItem>
+                    <SelectItem value="Major Purchase">Major Purchase</SelectItem>
+                    <SelectItem value="Emergency Fund">Emergency Fund</SelectItem>
+                    <SelectItem value="Travel">Travel</SelectItem>
+                    <SelectItem value="Investment">Investment</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="targetAmount">Target Amount</Label>
+                  <Label htmlFor="target_amount">Target Amount</Label>
                   <Input
-                    id="targetAmount"
+                    id="target_amount"
                     type="number"
                     placeholder="0"
-                    value={newGoal.targetAmount}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, targetAmount: e.target.value }))}
+                    value={newGoal.target_amount}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, target_amount: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currentAmount">Current Amount</Label>
+                  <Label htmlFor="current_amount">Current Amount</Label>
                   <Input
-                    id="currentAmount"
+                    id="current_amount"
                     type="number"
                     placeholder="0"
-                    value={newGoal.currentAmount}
-                    onChange={(e) => setNewGoal(prev => ({ ...prev, currentAmount: e.target.value }))}
+                    value={newGoal.current_amount}
+                    onChange={(e) => setNewGoal(prev => ({ ...prev, current_amount: e.target.value }))}
                   />
                 </div>
               </div>
@@ -205,66 +341,60 @@ export default function GoalPlanning() {
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className={cn("w-full justify-start text-left font-normal", !newGoal.targetDate && "text-muted-foreground")}
+                      className={cn("w-full justify-start text-left font-normal", !newGoal.target_date && "text-muted-foreground")}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {newGoal.targetDate ? format(newGoal.targetDate, "PPP") : <span>Pick a date</span>}
+                      {newGoal.target_date ? format(newGoal.target_date, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={newGoal.targetDate}
-                      onSelect={(date) => setNewGoal(prev => ({ ...prev, targetDate: date }))}
+                      selected={newGoal.target_date}
+                      onSelect={(date) => setNewGoal(prev => ({ ...prev, target_date: date }))}
                       initialFocus
                       className="p-3 pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={newGoal.category} onValueChange={(value) => setNewGoal(prev => ({ ...prev, category: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Priority</Label>
-                  <Select value={newGoal.priority} onValueChange={(value) => setNewGoal(prev => ({ ...prev, priority: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {priorities.map((priority) => (
-                        <SelectItem key={priority} value={priority}>{priority.charAt(0).toUpperCase() + priority.slice(1)}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label>Priority</Label>
+                <Select value={newGoal.priority} onValueChange={(value) => setNewGoal(prev => ({ ...prev, priority: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
+                <Label htmlFor="monthly_contribution">Monthly Contribution</Label>
                 <Input
-                  id="monthlyContribution"
+                  id="monthly_contribution"
                   type="number"
                   placeholder="0"
-                  value={newGoal.monthlyContribution}
-                  onChange={(e) => setNewGoal(prev => ({ ...prev, monthlyContribution: e.target.value }))}
+                  value={newGoal.monthly_contribution}
+                  onChange={(e) => setNewGoal(prev => ({ ...prev, monthly_contribution: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Additional notes about this goal"
+                  value={newGoal.notes}
+                  onChange={(e) => setNewGoal(prev => ({ ...prev, notes: e.target.value }))}
                 />
               </div>
               <div className="flex gap-2">
                 <Button onClick={() => setIsAddingGoal(false)} variant="outline" className="flex-1">
                   Cancel
                 </Button>
-                <Button onClick={() => setIsAddingGoal(false)} className="flex-1">
+                <Button onClick={handleAddGoal} className="flex-1">
                   Create Goal
                 </Button>
               </div>
@@ -282,7 +412,7 @@ export default function GoalPlanning() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalGoalAmount)}</div>
-            <p className="text-xs text-muted-foreground">Across {goals.length} goals</p>
+            <p className="text-xs text-muted-foreground">Across {clientGoals.length} goals</p>
           </CardContent>
         </Card>
 
@@ -317,10 +447,10 @@ export default function GoalPlanning() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {goals.filter(g => g.status === "on-track" || g.status === "ahead").length}
+              {clientGoals.filter(g => g.status === "On Track" || g.status === "Ahead").length}
             </div>
             <p className="text-xs text-muted-foreground">
-              of {goals.length} total goals
+              of {clientGoals.length} total goals
             </p>
           </CardContent>
         </Card>
@@ -330,24 +460,24 @@ export default function GoalPlanning() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Active Goals</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {goals.map((goal) => {
-            const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
-            const monthsToGoal = calculateMonthsToGoal(goal.currentAmount, goal.targetAmount, goal.monthlyContribution);
+          {clientGoals.map((goal) => {
+            const progress = calculateProgress(goal.current_amount || 0, goal.target_amount || 0);
+            const monthsToGoal = calculateMonthsToGoal(goal.current_amount || 0, goal.target_amount || 0, goal.monthly_contribution || 0);
             
             return (
               <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <CardTitle className="text-lg">{goal.title}</CardTitle>
-                      <CardDescription>{goal.description}</CardDescription>
+                      <CardTitle className="text-lg">{goal.goal_name}</CardTitle>
+                      <CardDescription>{goal.goal_type}</CardDescription>
                     </div>
                     <div className="flex gap-2">
-                      <Badge variant="outline" className={getPriorityColor(goal.priority)}>
+                      <Badge variant="outline" className={getPriorityColor(goal.priority?.toLowerCase() || 'medium')}>
                         {goal.priority}
                       </Badge>
-                      <Badge className={getStatusColor(goal.status)}>
-                        {goal.status.replace('-', ' ')}
+                      <Badge className={getStatusColor(goal.status?.toLowerCase().replace(' ', '-') || 'on-track')}>
+                        {goal.status || 'On Track'}
                       </Badge>
                     </div>
                   </div>
@@ -361,8 +491,8 @@ export default function GoalPlanning() {
                     </div>
                     <Progress value={progress} />
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{formatCurrency(goal.currentAmount)}</span>
-                      <span>{formatCurrency(goal.targetAmount)}</span>
+                      <span>{formatCurrency(goal.current_amount || 0)}</span>
+                      <span>{formatCurrency(goal.target_amount || 0)}</span>
                     </div>
                   </div>
 
@@ -372,16 +502,16 @@ export default function GoalPlanning() {
                       <div className="text-muted-foreground">Target Date</div>
                       <div className="font-medium flex items-center gap-1">
                         <CalendarIcon className="h-3 w-3" />
-                        {format(goal.targetDate, "MMM yyyy")}
+                        {goal.target_date ? format(new Date(goal.target_date), "MMM yyyy") : "Not set"}
                       </div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Monthly Savings</div>
-                      <div className="font-medium">{formatCurrency(goal.monthlyContribution)}</div>
+                      <div className="font-medium">{formatCurrency(goal.monthly_contribution || 0)}</div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">Category</div>
-                      <div className="font-medium">{goal.category}</div>
+                      <div className="text-muted-foreground">Priority</div>
+                      <div className="font-medium">{goal.priority || 'Medium'}</div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Months to Goal</div>
@@ -392,27 +522,10 @@ export default function GoalPlanning() {
                     </div>
                   </div>
 
-                  {/* Status Indicator */}
-                  {goal.status === "behind" && (
-                    <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                      <div className="flex items-center gap-2 text-sm">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        <span className="text-destructive font-medium">
-                          Consider increasing monthly contribution to ${Math.ceil((goal.targetAmount - goal.currentAmount) / 
-                          Math.max(1, Math.floor((goal.targetDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 30))))}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {goal.status === "ahead" && (
-                    <div className="p-3 rounded-lg bg-success/10 border border-success/20">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-success" />
-                        <span className="text-success font-medium">
-                          You're ahead of schedule! Consider reducing contribution or accelerating timeline.
-                        </span>
-                      </div>
+                  {/* Notes */}
+                  {goal.notes && (
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <div className="text-sm text-muted-foreground">{goal.notes}</div>
                     </div>
                   )}
                 </CardContent>
@@ -420,6 +533,16 @@ export default function GoalPlanning() {
             );
           })}
         </div>
+        
+        {clientGoals.length === 0 && (
+          <div className="text-center py-12">
+            <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-medium mb-2">No Goals Yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Start by adding a financial goal for {selectedClient.name}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

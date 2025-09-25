@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Users, DollarSign, TrendingUp, Calendar, Briefcase, Target, Filter, Download, Plus, Phone, Mail, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Practice management data
 const practiceMetrics = {
@@ -70,8 +71,36 @@ const performanceMetrics = [
 ];
 
 export default function PracticeManagement() {
+  const navigate = useNavigate();
   const [selectedTimeframe, setSelectedTimeframe] = useState("6months");
   const [selectedSegment, setSelectedSegment] = useState("all");
+
+  const handleExportReport = () => {
+    // Create comprehensive report data
+    const reportData = {
+      id: `report-${Date.now()}`,
+      title: 'Practice Management Report',
+      generatedAt: new Date(),
+      type: 'practice' as const,
+      data: {
+        totalClients: practiceMetrics.totalClients,
+        aum: practiceMetrics.assetsUnderManagement,
+        monthlyRevenue: practiceMetrics.monthlyRevenue,
+        clientRetention: practiceMetrics.clientRetention,
+        growthRate: practiceMetrics.growthRate,
+        clientGrowth,
+        revenueData,
+        clientSegmentation,
+        performanceMetrics
+      }
+    };
+
+    // Store report data in sessionStorage to pass to Reports page
+    sessionStorage.setItem('exportedReport', JSON.stringify(reportData));
+    
+    // Navigate to reports page
+    navigate('/reports');
+  };
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
@@ -128,7 +157,7 @@ export default function PracticeManagement() {
             <Filter className="h-4 w-4 mr-2" />
             Filter
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleExportReport}>
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>

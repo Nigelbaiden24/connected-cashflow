@@ -20,6 +20,7 @@ import InvestmentAnalysis from "./pages/InvestmentAnalysis";
 import RiskAssessment from "./pages/RiskAssessment";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import PracticeManagement from "./pages/PracticeManagement";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,7 +76,7 @@ const App = () => {
                   <Route path="/clients/:id" element={<ClientProfile />} />
                   <Route path="/onboarding" element={<ClientOnboarding />} />
                   <Route path="/practice" element={<PracticeManagement />} />
-                  <Route path="/reports" element={<Dashboard />} />
+                  <Route path="/reports" element={<Reports />} />
                   <Route path="/settings" element={<Dashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
