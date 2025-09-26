@@ -13,6 +13,7 @@ export default function Portfolio() {
   const [clients, setClients] = useState<any[]>([]);
   const [portfolioHoldings, setPortfolioHoldings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState("overview");
 
   useEffect(() => {
     fetchClients();
@@ -126,8 +127,6 @@ export default function Portfolio() {
   if (loading) {
     return <div className="p-6">Loading...</div>;
   }
-
-  const [selectedTab, setSelectedTab] = useState("overview");
 
   return (
     <div className="p-6 space-y-6">
