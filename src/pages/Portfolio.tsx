@@ -1,63 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { TrendingUp, TrendingDown, Plus, Filter, Download, RefreshCw } from "lucide-react";
-
-// Dummy data
-const portfolioOverview = {
-  totalValue: 2847392,
-  dayChange: 12847,
-  dayChangePercent: 0.45,
-  ytdChange: 184728,
-  ytdChangePercent: 6.93
-};
-
-const holdings = [
-  { symbol: "AAPL", name: "Apple Inc.", quantity: 500, price: 185.43, value: 92715, allocation: 3.26, dayChange: 2.34, sector: "Technology" },
-  { symbol: "MSFT", name: "Microsoft Corp.", quantity: 300, price: 378.91, value: 113673, allocation: 3.99, dayChange: -1.23, sector: "Technology" },
-  { symbol: "GOOGL", name: "Alphabet Inc.", quantity: 200, price: 142.56, value: 28512, allocation: 1.00, dayChange: 0.87, sector: "Technology" },
-  { symbol: "TSLA", name: "Tesla Inc.", quantity: 150, price: 238.45, value: 35768, allocation: 1.26, dayChange: 4.56, sector: "Consumer Discretionary" },
-  { symbol: "NVDA", name: "NVIDIA Corp.", quantity: 100, price: 498.32, value: 49832, allocation: 1.75, dayChange: 3.21, sector: "Technology" },
-];
-
-const sectorAllocation = [
-  { name: "Technology", value: 45.2, color: "#8884d8" },
-  { name: "Healthcare", value: 15.8, color: "#82ca9d" },
-  { name: "Financial Services", value: 12.4, color: "#ffc658" },
-  { name: "Consumer Discretionary", value: 10.3, color: "#ff7300" },
-  { name: "Industrials", value: 8.7, color: "#00c49f" },
-  { name: "Energy", value: 4.2, color: "#0088fe" },
-  { name: "Utilities", value: 2.1, color: "#00c49f" },
-  { name: "Real Estate", value: 1.3, color: "#ffbb28" }
-];
-
-const performanceData = [
-  { month: "Jan", value: 2650000 },
-  { month: "Feb", value: 2680000 },
-  { month: "Mar", value: 2720000 },
-  { month: "Apr", value: 2695000 },
-  { month: "May", value: 2780000 },
-  { month: "Jun", value: 2847392 }
-];
-
-const riskMetrics = [
-  { metric: "Beta", value: "1.12", description: "Volatility vs Market" },
-  { metric: "Sharpe Ratio", value: "1.85", description: "Risk-Adjusted Return" },
-  { metric: "Max Drawdown", value: "-8.4%", description: "Largest Peak-to-Trough Loss" },
-  { metric: "Standard Deviation", value: "14.2%", description: "Volatility Measure" }
-];
+import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Portfolio() {
-  const [selectedTab, setSelectedTab] = useState("overview");
+  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [clients, setClients] = useState<any[]>([]);
+  const [portfolioHoldings, setPortfolioHoldings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  useEffect(() => {
+    if (selectedClient) {
+      fetchClientPortfolio(selectedClient);
+    }
+  }, [selectedClient]);
+
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      setClients(data || []);
+      if (data && data.length > 0) {
+        setSelectedClient(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchClientPortfolio = async (clientId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('portfolio_holdings')
+        .select('*')
+        .eq('client_id', clientId);
+      
+      if (error) throw error;
+      setPortfolioHoldings(data || []);
+    } catch (error) {
+      console.error('Error fetching portfolio:', error);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GBP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -67,46 +70,136 @@ export default function Portfolio() {
     return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
   };
 
+  const selectedClientData = clients.find(c => c.id === selectedClient);
+  const totalPortfolioValue = portfolioHoldings.reduce((sum, holding) => sum + (holding.current_value || 0), 0);
+  
+  // Calculate portfolio metrics
+  const dayChange = totalPortfolioValue * 0.0045; // Simulate day change
+  const dayChangePercent = 0.45;
+  const ytdChange = totalPortfolioValue * 0.0693; // Simulate YTD change
+  const ytdChangePercent = 6.93;
+
+  // Generate sector allocation from holdings
+  const sectorAllocation = portfolioHoldings.reduce((acc, holding) => {
+    const sector = holding.asset_type || 'Other';
+    const existing = acc.find(s => s.name === sector);
+    if (existing) {
+      existing.value += holding.current_value || 0;
+    } else {
+      acc.push({
+        name: sector,
+        value: holding.current_value || 0,
+        color: getColorForSector(sector)
+      });
+    }
+    return acc;
+  }, [] as any[]).map(sector => ({
+    ...sector,
+    value: totalPortfolioValue > 0 ? (sector.value / totalPortfolioValue * 100) : 0
+  }));
+
+  // Generate performance data (simulated)
+  const performanceData = Array.from({ length: 6 }, (_, i) => ({
+    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i],
+    value: totalPortfolioValue * (0.9 + (i * 0.02) + Math.random() * 0.05)
+  }));
+
+  const riskMetrics = [
+    { metric: "Beta", value: "1.12", description: "Volatility vs Market" },
+    { metric: "Sharpe Ratio", value: "1.85", description: "Risk-Adjusted Return" },
+    { metric: "Max Drawdown", value: "-8.4%", description: "Largest Peak-to-Trough Loss" },
+    { metric: "Standard Deviation", value: "14.2%", description: "Volatility Measure" }
+  ];
+
+  function getColorForSector(sector: string) {
+    const colors: Record<string, string> = {
+      'Stocks': "#8884d8",
+      'Bonds': "#82ca9d", 
+      'Property': "#ffc658",
+      'Commodities': "#ff7300",
+      'Cash': "#00c49f",
+      'Other': "#0088fe"
+    };
+    return colors[sector] || "#888888";
+  }
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  const [selectedTab, setSelectedTab] = useState("overview");
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Portfolio Management</h1>
-          <p className="text-muted-foreground">Monitor and manage client portfolios</p>
+          <p className="text-muted-foreground">Individual client portfolio analysis</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync Data
-          </Button>
+        <div className="flex gap-4 items-center">
+          <Select value={selectedClient} onValueChange={setSelectedClient}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Select a client" />
+            </SelectTrigger>
+            <SelectContent>
+              {clients.map((client) => (
+                <SelectItem key={client.id} value={client.id}>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    {client.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+            <Button size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sync Data
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Portfolio Overview Cards */}
+      {selectedClientData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              {selectedClientData.name}
+            </CardTitle>
+            <CardDescription>
+              {selectedClientData.email} • Risk Profile: {selectedClientData.risk_profile || 'Not assessed'}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+
+      {/* Portfolio Overview Cards - Similar to Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(portfolioOverview.totalValue)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(totalPortfolioValue)}</div>
             <div className="flex items-center text-sm">
-              {portfolioOverview.dayChange >= 0 ? (
+              {dayChange >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-success mr-1" />
               ) : (
                 <TrendingDown className="h-4 w-4 text-destructive mr-1" />
               )}
-              <span className={portfolioOverview.dayChange >= 0 ? "text-success" : "text-destructive"}>
-                {formatCurrency(Math.abs(portfolioOverview.dayChange))} ({formatPercent(portfolioOverview.dayChangePercent)})
+              <span className={dayChange >= 0 ? "text-success" : "text-destructive"}>
+                {formatCurrency(Math.abs(dayChange))} ({formatPercent(dayChangePercent)})
               </span>
               <span className="text-muted-foreground ml-1">today</span>
             </div>
@@ -118,9 +211,9 @@ export default function Portfolio() {
             <CardTitle className="text-sm font-medium">YTD Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{formatPercent(portfolioOverview.ytdChangePercent)}</div>
+            <div className="text-2xl font-bold text-success">{formatPercent(ytdChangePercent)}</div>
             <div className="flex items-center text-sm text-muted-foreground">
-              <span>{formatCurrency(portfolioOverview.ytdChange)} gain</span>
+              <span>{formatCurrency(ytdChange)} gain</span>
             </div>
           </CardContent>
         </Card>
@@ -130,18 +223,18 @@ export default function Portfolio() {
             <CardTitle className="text-sm font-medium">Total Holdings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{holdings.length}</div>
+            <div className="text-2xl font-bold">{portfolioHoldings.length}</div>
             <div className="text-sm text-muted-foreground">Active positions</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cash Available</CardTitle>
+            <CardTitle className="text-sm font-medium">Net Worth</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(45680)}</div>
-            <div className="text-sm text-muted-foreground">1.6% of portfolio</div>
+            <div className="text-2xl font-bold">{formatCurrency(selectedClientData?.net_worth || 0)}</div>
+            <div className="text-sm text-muted-foreground">Client net worth</div>
           </CardContent>
         </Card>
       </div>
@@ -207,7 +300,7 @@ export default function Portfolio() {
                   <LineChart data={performanceData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                    <YAxis tickFormatter={(value) => `£${(value / 1000000).toFixed(1)}M`} />
                     <Tooltip formatter={(value) => formatCurrency(value as number)} />
                     <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
                   </LineChart>
@@ -225,37 +318,41 @@ export default function Portfolio() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {holdings.map((holding) => (
-                  <div key={holding.symbol} className="flex items-center justify-between p-4 border rounded-lg">
+                {portfolioHoldings.length > 0 ? portfolioHoldings.map((holding) => (
+                  <div key={holding.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-4">
                       <div>
-                        <div className="font-semibold">{holding.symbol}</div>
-                        <div className="text-sm text-muted-foreground">{holding.name}</div>
-                        <Badge variant="secondary" className="text-xs">{holding.sector}</Badge>
+                        <div className="font-semibold">{holding.symbol || holding.asset_name}</div>
+                        <div className="text-sm text-muted-foreground">{holding.asset_name}</div>
+                        <Badge variant="secondary" className="text-xs">{holding.asset_type}</Badge>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-8 text-right">
                       <div>
                         <div className="text-sm text-muted-foreground">Quantity</div>
-                        <div className="font-medium">{holding.quantity.toLocaleString()}</div>
+                        <div className="font-medium">{holding.quantity?.toLocaleString() || 'N/A'}</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Price</div>
-                        <div className="font-medium">${holding.price.toFixed(2)}</div>
+                        <div className="text-sm text-muted-foreground">Purchase Price</div>
+                        <div className="font-medium">{holding.purchase_price ? formatCurrency(holding.purchase_price) : 'N/A'}</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Value</div>
-                        <div className="font-medium">{formatCurrency(holding.value)}</div>
+                        <div className="text-sm text-muted-foreground">Current Value</div>
+                        <div className="font-medium">{formatCurrency(holding.current_value || 0)}</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Day Change</div>
-                        <div className={`font-medium ${holding.dayChange >= 0 ? 'text-success' : 'text-destructive'}`}>
-                          {formatPercent(holding.dayChange)}
+                        <div className="text-sm text-muted-foreground">Allocation</div>
+                        <div className="font-medium">
+                          {totalPortfolioValue > 0 ? ((holding.current_value || 0) / totalPortfolioValue * 100).toFixed(1) : '0.0'}%
                         </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center text-muted-foreground py-8">
+                    No holdings found for this client
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -272,7 +369,7 @@ export default function Portfolio() {
                 <BarChart data={performanceData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                  <YAxis tickFormatter={(value) => `£${(value / 1000000).toFixed(1)}M`} />
                   <Tooltip formatter={(value) => formatCurrency(value as number)} />
                   <Bar dataKey="value" fill="hsl(var(--primary))" />
                 </BarChart>

@@ -1,36 +1,90 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
+  const [clients, setClients] = useState<any[]>([]);
+  const [totalAUM, setTotalAUM] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const { data: clientsData, error } = await supabase
+        .from('clients')
+        .select('*, portfolio_holdings(current_value)');
+      
+      if (error) throw error;
+      
+      setClients(clientsData || []);
+      
+      // Calculate total AUM from all clients
+      const totalAUM = clientsData?.reduce((sum, client) => {
+        const portfolioValue = client.portfolio_holdings?.reduce((pSum: number, holding: any) => 
+          pSum + (holding.current_value || 0), 0) || 0;
+        return sum + portfolioValue + (client.net_worth || 0);
+      }, 0) || 0;
+      
+      setTotalAUM(totalAUM);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatCurrencyShort = (amount: number) => {
+    if (amount >= 1000000) {
+      return `£${(amount / 1000000).toFixed(1)}M`;
+    }
+    if (amount >= 1000) {
+      return `£${(amount / 1000).toFixed(0)}K`;
+    }
+    return formatCurrency(amount);
+  };
+
   const metrics = [
     {
       title: "Active Clients",
-      value: "2,847",
+      value: clients.filter(c => c.status === 'active').length.toString(),
       change: "+12%",
       trend: "up",
       icon: Users,
     },
     {
-      title: "Conversations Today",
-      value: "156",
+      title: "Total AUM",
+      value: formatCurrencyShort(totalAUM),
+      change: "+3%",
+      trend: "up",
+      icon: DollarSign,
+    },
+    {
+      title: "Portfolio Holdings",
+      value: clients.reduce((sum, client) => sum + (client.portfolio_holdings?.length || 0), 0).toString(),
       change: "+8%",
       trend: "up",
       icon: MessageSquare,
     },
     {
-      title: "Avg Response Time",
-      value: "2.3s",
-      change: "-15%",
+      title: "Avg Client Value",
+      value: clients.length > 0 ? formatCurrencyShort(totalAUM / clients.length) : "£0",
+      change: "-2%",
       trend: "down",
       icon: Clock,
-    },
-    {
-      title: "AUM Analyzed",
-      value: "$2.4B",
-      change: "+3%",
-      trend: "up",
-      icon: DollarSign,
     },
   ];
 
