@@ -15,6 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { UserPlus, Calendar as CalendarIcon, FileText, Shield, Target, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // Onboarding steps
 const onboardingSteps = [
@@ -70,6 +72,61 @@ export default function ClientOnboarding() {
   const [riskAnswers, setRiskAnswers] = useState<Record<string, string>>({});
   const [investmentGoals, setInvestmentGoals] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [isCompleting, setIsCompleting] = useState(false);
+
+  const handleCompleteOnboarding = async () => {
+    setIsCompleting(true);
+    try {
+      // Generate a unique client ID
+      const clientId = `CLI-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      
+      // Insert client data into Supabase
+      const { data, error } = await supabase
+        .from('clients')
+        .insert([
+          {
+            client_id: clientId,
+            name: `${clientData.personalInfo.firstName} ${clientData.personalInfo.lastName}`,
+            email: clientData.personalInfo.email,
+            phone: clientData.personalInfo.phone,
+            address: clientData.personalInfo.address,
+            occupation: clientData.personalInfo.occupation,
+            date_of_birth: clientData.personalInfo.dateOfBirth.toISOString().split('T')[0],
+            annual_income: clientData.personalInfo.annualIncome,
+            net_worth: clientData.personalInfo.netWorth,
+            aum: clientData.financialProfile.currentInvestments,
+            risk_profile: clientData.financialProfile.investmentExperience,
+            status: 'active',
+            investment_experience: clientData.financialProfile.investmentExperience,
+            investment_objectives: clientData.goals.map(g => g.goal),
+            liquidity_needs: clientData.financialProfile.liquidSavings.toString(),
+            time_horizon: clientData.goals.length > 0 ? clientData.goals[0].timeframe : null,
+            notes: `Onboarded on ${new Date().toLocaleDateString('en-GB')}`
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: `Client ${clientData.personalInfo.firstName} ${clientData.personalInfo.lastName} has been successfully onboarded.`,
+      });
+
+      // Reset form or redirect as needed
+      console.log('Client onboarded successfully:', data);
+      
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete onboarding. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCompleting(false);
+    }
+  };
 
   const getStepStatus = (stepId: number) => {
     const step = onboardingSteps.find(s => s.id === stepId);
@@ -121,9 +178,9 @@ export default function ClientOnboarding() {
             <FileText className="h-4 w-4 mr-2" />
             Generate Summary
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={handleCompleteOnboarding} disabled={isCompleting}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Complete Onboarding
+            {isCompleting ? 'Completing...' : 'Complete Onboarding'}
           </Button>
         </div>
       </div>

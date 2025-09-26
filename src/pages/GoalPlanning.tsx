@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft } from "lucide-react";
+import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
@@ -90,6 +90,7 @@ export default function GoalPlanning() {
   const [clients, setClients] = useState<Tables<'clients'>[]>([]);
   const [clientGoals, setClientGoals] = useState<Tables<'client_goals'>[]>([]);
   const [isAddingGoal, setIsAddingGoal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<Tables<'client_goals'> | null>(null);
   const [newGoal, setNewGoal] = useState({
     goal_name: "",
     goal_type: "",
@@ -164,24 +165,70 @@ export default function GoalPlanning() {
       console.error('Error adding goal:', error);
     } else {
       setIsAddingGoal(false);
-      setNewGoal({
-        goal_name: "",
-        goal_type: "",
-        target_amount: "",
-        current_amount: "",
-        target_date: undefined,
-        priority: "Medium",
-        monthly_contribution: "",
-        notes: ""
-      });
+      resetGoalForm();
       fetchClientGoals(selectedClient.id);
     }
   };
 
+  const handleEditGoal = async () => {
+    if (!selectedClient || !editingGoal) return;
+
+    const goalData = {
+      goal_name: newGoal.goal_name,
+      goal_type: newGoal.goal_type,
+      target_amount: parseFloat(newGoal.target_amount) || null,
+      current_amount: parseFloat(newGoal.current_amount) || 0,
+      target_date: newGoal.target_date?.toISOString().split('T')[0] || null,
+      priority: newGoal.priority,
+      monthly_contribution: parseFloat(newGoal.monthly_contribution) || 0,
+      notes: newGoal.notes || null
+    };
+
+    const { error } = await supabase
+      .from('client_goals')
+      .update(goalData)
+      .eq('id', editingGoal.id);
+
+    if (error) {
+      console.error('Error updating goal:', error);
+    } else {
+      setEditingGoal(null);
+      resetGoalForm();
+      fetchClientGoals(selectedClient.id);
+    }
+  };
+
+  const resetGoalForm = () => {
+    setNewGoal({
+      goal_name: "",
+      goal_type: "",
+      target_amount: "",
+      current_amount: "",
+      target_date: undefined,
+      priority: "Medium",
+      monthly_contribution: "",
+      notes: ""
+    });
+  };
+
+  const startEditGoal = (goal: Tables<'client_goals'>) => {
+    setEditingGoal(goal);
+    setNewGoal({
+      goal_name: goal.goal_name || "",
+      goal_type: goal.goal_type || "",
+      target_amount: goal.target_amount?.toString() || "",
+      current_amount: goal.current_amount?.toString() || "",
+      target_date: goal.target_date ? new Date(goal.target_date) : undefined,
+      priority: goal.priority || "Medium",
+      monthly_contribution: goal.monthly_contribution?.toString() || "",
+      notes: goal.notes || ""
+    });
+  };
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GBP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -274,7 +321,13 @@ export default function GoalPlanning() {
             <p className="text-muted-foreground">Track and manage financial goals</p>
           </div>
         </div>
-        <Dialog open={isAddingGoal} onOpenChange={setIsAddingGoal}>
+        <Dialog open={isAddingGoal || !!editingGoal} onOpenChange={(open) => {
+          if (!open) {
+            setIsAddingGoal(false);
+            setEditingGoal(null);
+            resetGoalForm();
+          }
+        }}>
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="h-4 w-4 mr-2" />
@@ -283,8 +336,10 @@ export default function GoalPlanning() {
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New Goal</DialogTitle>
-              <DialogDescription>Set up a new financial goal to track your progress</DialogDescription>
+              <DialogTitle>{editingGoal ? 'Edit Goal' : 'Create New Goal'}</DialogTitle>
+              <DialogDescription>
+                {editingGoal ? 'Update this financial goal' : 'Set up a new financial goal to track your progress'}
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -391,11 +446,15 @@ export default function GoalPlanning() {
                 />
               </div>
               <div className="flex gap-2">
-                <Button onClick={() => setIsAddingGoal(false)} variant="outline" className="flex-1">
+                <Button onClick={() => {
+                  setIsAddingGoal(false);
+                  setEditingGoal(null);
+                  resetGoalForm();
+                }} variant="outline" className="flex-1">
                   Cancel
                 </Button>
-                <Button onClick={handleAddGoal} className="flex-1">
-                  Create Goal
+                <Button onClick={editingGoal ? handleEditGoal : handleAddGoal} className="flex-1">
+                  {editingGoal ? 'Update Goal' : 'Create Goal'}
                 </Button>
               </div>
             </div>
@@ -528,6 +587,17 @@ export default function GoalPlanning() {
                       <div className="text-sm text-muted-foreground">{goal.notes}</div>
                     </div>
                   )}
+
+                  {/* Edit Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => startEditGoal(goal)}
+                    className="w-full"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Goal
+                  </Button>
                 </CardContent>
               </Card>
             );

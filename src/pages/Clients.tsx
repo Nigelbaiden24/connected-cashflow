@@ -87,9 +87,9 @@ const Clients = () => {
   });
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GBP',  
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -160,6 +160,7 @@ const Clients = () => {
       <Tabs defaultValue="clients" className="space-y-6">
         <TabsList>
           <TabsTrigger value="clients">Client List</TabsTrigger>
+          <TabsTrigger value="profiles">Client Profiles</TabsTrigger>
           <TabsTrigger value="analytics">Portfolio Analytics</TabsTrigger>
         </TabsList>
 
@@ -240,6 +241,107 @@ const Clients = () => {
               )}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="profiles">
+          <div className="space-y-4">
+            {filteredClients.map((client) => (
+              <Card key={client.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl">{client.name}</CardTitle>
+                      <CardDescription>Client ID: {client.client_id}</CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge className={getRiskProfileColor(client.risk_profile)}>
+                        {client.risk_profile}
+                      </Badge>
+                      <Badge className={getStatusColor(client.status)}>
+                        {client.status.replace("_", " ")}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Personal Information */}
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-sm text-muted-foreground">PERSONAL INFORMATION</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span>{client.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span>{client.phone}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">AUM: </span>
+                          <span className="font-medium">{formatCurrency(client.aum)}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Risk Profile: </span>
+                          <span className="font-medium">{client.risk_profile}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Financial Summary */}
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-sm text-muted-foreground">FINANCIAL SUMMARY</h3>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Assets Under Management</span>
+                          <div className="text-lg font-bold">{formatCurrency(client.aum)}</div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Last Contact</span>
+                          <div className="font-medium">
+                            {client.last_contact_date ? 
+                              new Date(client.last_contact_date).toLocaleDateString('en-GB') : 
+                              'No contact recorded'
+                            }
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Status</span>
+                          <div className="font-medium">{client.status.replace("_", " ")}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Items */}
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-sm text-muted-foreground">ACTIONS</h3>
+                      <div className="space-y-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => navigate(`/clients/${client.client_id}`)}
+                        >
+                          View Full Profile
+                        </Button>
+                        <Button size="sm" className="w-full">
+                          Schedule Meeting
+                        </Button>
+                        <Button variant="ghost" size="sm" className="w-full">
+                          Send Message
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {filteredClients.length === 0 && !loading && (
+              <div className="text-center py-8 text-muted-foreground">
+                No client profiles found matching your criteria
+              </div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics">
