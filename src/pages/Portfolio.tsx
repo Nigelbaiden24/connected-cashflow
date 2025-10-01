@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export default function Portfolio() {
   const [selectedClient, setSelectedClient] = useState<string>("");
@@ -58,6 +59,14 @@ export default function Portfolio() {
     }
   };
 
+  const handleDownloadPDF = () => {
+    toast({
+      title: "Preparing Download",
+      description: "Opening print dialog for PDF export...",
+    });
+    window.print();
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -71,16 +80,26 @@ export default function Portfolio() {
     return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
   };
 
+  const getColorForSector = (sector: string) => {
+    const colors: Record<string, string> = {
+      'Stocks': "#8884d8",
+      'Bonds': "#82ca9d", 
+      'Property': "#ffc658",
+      'Commodities': "#ff7300",
+      'Cash': "#00c49f",
+      'Other': "#0088fe"
+    };
+    return colors[sector] || "#888888";
+  };
+
   const selectedClientData = clients.find(c => c.id === selectedClient);
   const totalPortfolioValue = portfolioHoldings.reduce((sum, holding) => sum + (holding.current_value || 0), 0);
   
-  // Calculate portfolio metrics
-  const dayChange = totalPortfolioValue * 0.0045; // Simulate day change
+  const dayChange = totalPortfolioValue * 0.0045;
   const dayChangePercent = 0.45;
-  const ytdChange = totalPortfolioValue * 0.0693; // Simulate YTD change
+  const ytdChange = totalPortfolioValue * 0.0693;
   const ytdChangePercent = 6.93;
 
-  // Generate sector allocation from holdings
   const sectorAllocation = portfolioHoldings.reduce((acc, holding) => {
     const sector = holding.asset_type || 'Other';
     const existing = acc.find(s => s.name === sector);
@@ -99,7 +118,6 @@ export default function Portfolio() {
     value: totalPortfolioValue > 0 ? (sector.value / totalPortfolioValue * 100) : 0
   }));
 
-  // Generate performance data (simulated)
   const performanceData = Array.from({ length: 6 }, (_, i) => ({
     month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i],
     value: totalPortfolioValue * (0.9 + (i * 0.02) + Math.random() * 0.05)
@@ -112,26 +130,13 @@ export default function Portfolio() {
     { metric: "Standard Deviation", value: "14.2%", description: "Volatility Measure" }
   ];
 
-  function getColorForSector(sector: string) {
-    const colors: Record<string, string> = {
-      'Stocks': "#8884d8",
-      'Bonds': "#82ca9d", 
-      'Property': "#ffc658",
-      'Commodities': "#ff7300",
-      'Cash': "#00c49f",
-      'Other': "#0088fe"
-    };
-    return colors[sector] || "#888888";
-  }
-
   if (loading) {
     return <div className="p-6">Loading...</div>;
   }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center print:hidden">
         <div>
           <h1 className="text-3xl font-bold">Portfolio Management</h1>
           <p className="text-muted-foreground">Individual client portfolio analysis</p>
@@ -157,9 +162,13 @@ export default function Portfolio() {
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleDownloadPDF}
+            >
               <Download className="h-4 w-4 mr-2" />
-              Export
+              Download PDF
             </Button>
             <Button size="sm">
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -177,13 +186,12 @@ export default function Portfolio() {
               {selectedClientData.name}
             </CardTitle>
             <CardDescription>
-              {selectedClientData.email} • Risk Profile: {selectedClientData.risk_profile || 'Not assessed'}
+              {selectedClientData.email} • Risk Profile: {selectedClientData.risk_profile || "Not assessed"}
             </CardDescription>
           </CardHeader>
         </Card>
       )}
 
-      {/* Portfolio Overview Cards - Similar to Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -238,9 +246,8 @@ export default function Portfolio() {
         </Card>
       </div>
 
-      {/* Main Content */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList>
+        <TabsList className="print:hidden">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="holdings">Holdings</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
@@ -249,7 +256,6 @@ export default function Portfolio() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Sector Allocation */}
             <Card>
               <CardHeader>
                 <CardTitle>Sector Allocation</CardTitle>
@@ -281,14 +287,13 @@ export default function Portfolio() {
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: sector.color }}
                       />
-                      <span className="text-sm">{sector.name}: {sector.value}%</span>
+                      <span className="text-sm">{sector.name}: {sector.value.toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Performance Chart */}
             <Card>
               <CardHeader>
                 <CardTitle>Portfolio Performance</CardTitle>
