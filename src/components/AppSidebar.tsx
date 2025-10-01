@@ -31,6 +31,7 @@ import {
   AlertTriangle,
   UserPlus,
   Briefcase,
+  Activity,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -86,6 +87,11 @@ const financialPlanningItems = [
     title: "Risk Assessment",
     url: "/risk",
     icon: AlertTriangle,
+  },
+  {
+    title: "Scenario Analysis",
+    url: "/scenario",
+    icon: Activity,
   },
 ];
 

@@ -57,14 +57,15 @@ const clientData = {
   ]
 };
 
-// Required documents
+// Required documents (UK)
 const requiredDocuments = [
-  { name: "Government-issued ID", type: "identification", required: true, status: "uploaded" },
-  { name: "Social Security Card", type: "identification", required: true, status: "pending" },
-  { name: "Recent Pay Stub", type: "income", required: true, status: "uploaded" },
-  { name: "Tax Return (Last 2 Years)", type: "income", required: true, status: "uploaded" },
-  { name: "Bank Statements", type: "financial", required: true, status: "pending" },
-  { name: "Investment Account Statements", type: "financial", required: false, status: "uploaded" }
+  { name: "Government-issued Photo ID (Passport/Driving Licence)", type: "identification", required: true, status: "uploaded" },
+  { name: "National Insurance Number", type: "identification", required: true, status: "pending" },
+  { name: "Recent Payslip", type: "income", required: true, status: "uploaded" },
+  { name: "Self Assessment Tax Return (Last 2 Years)", type: "income", required: true, status: "uploaded" },
+  { name: "Bank Statements (Last 3 Months)", type: "financial", required: true, status: "pending" },
+  { name: "Investment Account Statements", type: "financial", required: false, status: "uploaded" },
+  { name: "Proof of Address (Utility Bill/Council Tax)", type: "identification", required: true, status: "pending" }
 ];
 
 export default function ClientOnboarding() {

@@ -18,6 +18,7 @@ import FinancialPlanning from "./pages/FinancialPlanning";
 import GoalPlanning from "./pages/GoalPlanning";
 import InvestmentAnalysis from "./pages/InvestmentAnalysis";
 import RiskAssessment from "./pages/RiskAssessment";
+import ScenarioAnalysis from "./pages/ScenarioAnalysis";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import PracticeManagement from "./pages/PracticeManagement";
 import Reports from "./pages/Reports";
@@ -72,6 +73,7 @@ const App = () => {
                   <Route path="/goals" element={<GoalPlanning />} />
                   <Route path="/investments" element={<InvestmentAnalysis />} />
                   <Route path="/risk" element={<RiskAssessment />} />
+                  <Route path="/scenario" element={<ScenarioAnalysis />} />
                   <Route path="/clients" element={<Clients />} />
                   <Route path="/clients/:id" element={<ClientProfile />} />
                   <Route path="/onboarding" element={<ClientOnboarding />} />
