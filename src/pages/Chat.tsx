@@ -24,13 +24,14 @@ const Chat = () => {
     {
       id: "1",
       type: "assistant",
-      content: "Hello! I'm your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?",
+      content: "Hello! I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?",
       timestamp: new Date(),
       category: "general",
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [botName, setBotName] = useState("Theodore");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -160,13 +161,13 @@ const Chat = () => {
     }
 
     const conversationContent = messages
-      .map(m => `${m.type === 'user' ? 'User' : 'FlowPulse AI'}: ${m.content}`)
+      .map(m => `${m.type === 'user' ? 'User' : botName}: ${m.content}`)
       .join('\n\n');
 
     generateFinancialReport({
-      title: 'AI Assistant Conversation Report',
+      title: `${botName} - AI Assistant Conversation Report`,
       content: conversationContent,
-      generatedBy: 'FlowPulse AI Assistant',
+      generatedBy: `${botName} - FlowPulse AI Assistant`,
       date: new Date(),
     });
 
@@ -212,15 +213,23 @@ const Chat = () => {
       <div className="border-b p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold">FlowPulse AI Assistant</h1>
+            <h1 className="text-xl font-semibold">{botName} - FlowPulse AI Assistant</h1>
             <p className="text-sm text-muted-foreground">
               Your intelligent financial advisor with voice, document analysis & reporting
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={handleGenerateReport}>
-            <Download className="h-4 w-4 mr-2" />
-            Generate PDF Report
-          </Button>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Bot name"
+              value={botName}
+              onChange={(e) => setBotName(e.target.value)}
+              className="w-32"
+            />
+            <Button variant="outline" size="sm" onClick={handleGenerateReport}>
+              <Download className="h-4 w-4 mr-2" />
+              Generate PDF Report
+            </Button>
+          </div>
         </div>
       </div>
 

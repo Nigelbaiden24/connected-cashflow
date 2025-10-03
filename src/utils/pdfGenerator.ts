@@ -14,43 +14,69 @@ export const generateFinancialReport = (data: ReportData): void => {
   const margin = 20;
   const contentWidth = pageWidth - (margin * 2);
   
-  // Header with FlowPulse.io branding
-  doc.setFillColor(59, 130, 246); // Primary blue
-  doc.rect(0, 0, pageWidth, 40, 'F');
+  // ============ FRONT PAGE ============
+  // Gradient background
+  doc.setFillColor(135, 206, 250); // Shiny baby blue
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  
+  // Company name - centered and large
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(42);
+  doc.setFont('helvetica', 'bold');
+  const companyName = 'FlowPulse.io';
+  const companyWidth = doc.getTextWidth(companyName);
+  doc.text(companyName, (pageWidth - companyWidth) / 2, 100);
+  
+  // Tagline
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  const tagline = 'Financial Advisory Platform';
+  const taglineWidth = doc.getTextWidth(tagline);
+  doc.text(tagline, (pageWidth - taglineWidth) / 2, 115);
+  
+  // Report title box
+  doc.setFillColor(0, 0, 0, 0.1);
+  doc.roundedRect((pageWidth - 140) / 2, 140, 140, 40, 5, 5, 'F');
   
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.text('FlowPulse.io', margin, 25);
-  
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Financial Advisory Platform', margin, 33);
-  
-  // Report title
-  doc.setTextColor(0, 0, 0);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text(data.title, margin, 60);
+  const titleLines = doc.splitTextToSize(data.title, 130);
+  let titleY = 155;
+  titleLines.forEach((line: string) => {
+    const lineWidth = doc.getTextWidth(line);
+    doc.text(line, (pageWidth - lineWidth) / 2, titleY);
+    titleY += 8;
+  });
   
-  // Metadata
-  doc.setFontSize(10);
+  // Date at bottom
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
   const dateStr = (data.date || new Date()).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
-  doc.text(`Generated: ${dateStr}`, margin, 70);
+  const dateWidth = doc.getTextWidth(dateStr);
+  doc.text(dateStr, (pageWidth - dateWidth) / 2, pageHeight - 30);
   
   if (data.generatedBy) {
-    doc.text(`By: ${data.generatedBy}`, margin, 76);
+    const byText = `Prepared by: ${data.generatedBy}`;
+    const byWidth = doc.getTextWidth(byText);
+    doc.text(byText, (pageWidth - byWidth) / 2, pageHeight - 20);
   }
   
-  // Divider line
-  doc.setDrawColor(200, 200, 200);
-  doc.line(margin, 82, pageWidth - margin, 82);
+  // ============ CONTENT PAGES ============
+  doc.addPage();
+  
+  // Header on content pages
+  doc.setFillColor(135, 206, 250);
+  doc.rect(0, 0, pageWidth, 25, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FlowPulse.io', margin, 16);
   
   // Content
   doc.setTextColor(0, 0, 0);
@@ -58,23 +84,29 @@ export const generateFinancialReport = (data: ReportData): void => {
   doc.setFont('helvetica', 'normal');
   
   const lines = doc.splitTextToSize(data.content, contentWidth);
-  let yPosition = 95;
+  let yPosition = 40;
   const lineHeight = 7;
   
-  lines.forEach((line: string, index: number) => {
+  lines.forEach((line: string) => {
     // Check if we need a new page
     if (yPosition > pageHeight - margin - 20) {
       doc.addPage();
-      yPosition = margin;
       
-      // Add header on new page
-      doc.setFontSize(10);
+      // Add header on new pages
+      doc.setFillColor(135, 206, 250);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FlowPulse.io', margin, 16);
       doc.setTextColor(100, 100, 100);
-      doc.text('FlowPulse.io', margin, yPosition);
-      doc.text(`Page ${doc.internal.pages.length - 1}`, pageWidth - margin - 20, yPosition);
-      yPosition += 15;
+      doc.setFontSize(10);
+      doc.text(`Page ${doc.internal.pages.length - 1}`, pageWidth - margin - 20, 16);
+      
+      yPosition = 40;
       doc.setFontSize(11);
       doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
     }
     
     doc.text(line, margin, yPosition);

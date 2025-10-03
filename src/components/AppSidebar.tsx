@@ -46,8 +46,8 @@ const aiToolsItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "AI Chat",
-    url: "/chat",
+    title: "Theodore",
+    url: "/theodore",
     icon: MessageSquare,
   },
   {
