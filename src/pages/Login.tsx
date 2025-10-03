@@ -59,10 +59,10 @@ const Login = ({ onLogin }: LoginProps) => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">
-            Financial Advisor AI
+            FlowPulse.io
           </CardTitle>
           <CardDescription>
-            Secure access to your intelligent financial assistant
+            Intelligent Financial Advisory Platform
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

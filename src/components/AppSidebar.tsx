@@ -155,8 +155,8 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">FinanceAI</span>
-              <span className="text-xs text-sidebar-foreground/70">Assistant</span>
+              <span className="text-sm font-semibold">FlowPulse.io</span>
+              <span className="text-xs text-sidebar-foreground/70">Wealth Platform</span>
             </div>
           )}
         </div>
@@ -229,7 +229,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-medium truncate">{userEmail}</span>
-                <span className="text-xs text-sidebar-foreground/70">Financial Advisor</span>
+                <span className="text-xs text-sidebar-foreground/70">FlowPulse Advisor</span>
               </div>
             )}
           </div>

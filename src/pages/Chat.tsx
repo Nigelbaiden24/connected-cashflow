@@ -4,8 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { DocumentUpload } from "@/components/DocumentUpload";
+import { generateFinancialReport } from "@/utils/pdfGenerator";
 
 interface Message {
   id: string;
@@ -65,35 +69,6 @@ const Chat = () => {
     },
   ];
 
-  const simulateAIResponse = (userMessage: string): Message => {
-    let response = "";
-    let category: "market" | "client" | "compliance" | "general" = "general";
-
-    if (userMessage.toLowerCase().includes("market") || userMessage.toLowerCase().includes("stock") || userMessage.toLowerCase().includes("price")) {
-      category = "market";
-      response = "📈 **Market Update**: S&P 500 is up 0.8% today at 4,247 points. Key movers include AAPL (+1.2%), MSFT (+0.9%), and GOOGL (+1.1%). Treasury yields are steady at 4.2%. Current market sentiment is cautiously optimistic with strong earnings reports from tech sector.";
-    } else if (userMessage.toLowerCase().includes("compliance") || userMessage.toLowerCase().includes("regulation")) {
-      category = "compliance";
-      response = "🛡️ **Compliance Reminder**: For high-risk investments, ensure: 1) Suitability assessment completed, 2) Risk disclosure signed, 3) Portfolio concentration limits maintained (<10% single position), 4) Documentation of investment rationale. Always verify client's risk tolerance aligns with recommendation.";
-    } else if (userMessage.toLowerCase().includes("client") || userMessage.toLowerCase().includes("profile")) {
-      category = "client";
-      response = "👥 **Client Insights**: Found 47 clients with conservative risk profiles. Average age: 62, median AUM: $850K. Common allocations: 60% bonds, 30% equity, 10% alternatives. Recent trend shows interest in ESG funds. Would you like me to generate a detailed report or schedule follow-ups?";
-    } else if (userMessage.toLowerCase().includes("report") || userMessage.toLowerCase().includes("analysis")) {
-      category = "general";
-      response = "📊 **Report Generated**: Weekly Market Analysis ready. Key highlights: Fed policy unchanged, earnings season 85% complete with avg 8% growth, sector rotation toward value stocks. Energy +3.2%, Tech +1.8%, Healthcare +1.1%. Download PDF available in Reports section.";
-    } else {
-      response = "I understand you're asking about financial advisory matters. I can help with market data, client analysis, compliance guidance, and report generation. Could you be more specific about what information you need?";
-    }
-
-    return {
-      id: Date.now().toString(),
-      type: "assistant",
-      content: response,
-      timestamp: new Date(),
-      category,
-    };
-  };
-
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -105,20 +80,100 @@ const Chat = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput("");
     setIsLoading(true);
 
-    // Simulate API delay
-    setTimeout(() => {
-      const aiResponse = simulateAIResponse(input);
+    try {
+      const { data, error } = await supabase.functions.invoke('financial-chat', {
+        body: { messages: [...messages, userMessage].map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content })) },
+      });
+
+      if (error) throw error;
+
+      const aiResponse: Message = {
+        id: Date.now().toString(),
+        type: "assistant",
+        content: data.choices?.[0]?.message?.content || "I apologize, but I couldn't generate a response. Please try again.",
+        timestamp: new Date(),
+        category: categorizeMessage(data.choices?.[0]?.message?.content || ""),
+      };
+
       setMessages(prev => [...prev, aiResponse]);
-      setIsLoading(false);
       
       toast({
-        title: "Response Generated",
-        description: "AI assistant has provided analysis and insights.",
+        title: "Response received",
+        description: "AI analysis complete",
       });
-    }, 1500);
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+      
+      // Remove user message on error
+      setMessages(prev => prev.filter(m => m.id !== userMessage.id));
+      setInput(currentInput);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const categorizeMessage = (content: string): "market" | "client" | "compliance" | "general" => {
+    const lower = content.toLowerCase();
+    if (lower.includes("market") || lower.includes("stock") || lower.includes("ftse") || lower.includes("price")) return "market";
+    if (lower.includes("compliance") || lower.includes("regulation") || lower.includes("fca")) return "compliance";
+    if (lower.includes("client") || lower.includes("portfolio")) return "client";
+    return "general";
+  };
+
+  const handleDocumentText = async (text: string, type: 'ocr' | 'text') => {
+    const prompt = type === 'ocr' 
+      ? `I've extracted text from a handwritten/scanned document. Please analyze this content and provide insights or create a structured report:\n\n${text}`
+      : `I've uploaded typed notes. Please analyze and create a professional summary or brainstorm ideas based on this content:\n\n${text}`;
+    
+    setInput(prompt);
+    toast({
+      title: "Document processed",
+      description: `Text extracted via ${type === 'ocr' ? 'OCR' : 'file upload'}. Review and send.`,
+    });
+  };
+
+  const handleVoiceTranscription = (text: string) => {
+    setInput(text);
+    toast({
+      title: "Voice transcribed",
+      description: "Your speech has been converted to text",
+    });
+  };
+
+  const handleGenerateReport = async () => {
+    if (messages.length <= 1) {
+      toast({
+        title: "No content",
+        description: "Have a conversation first, then generate a report",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const conversationContent = messages
+      .map(m => `${m.type === 'user' ? 'User' : 'FlowPulse AI'}: ${m.content}`)
+      .join('\n\n');
+
+    generateFinancialReport({
+      title: 'AI Assistant Conversation Report',
+      content: conversationContent,
+      generatedBy: 'FlowPulse AI Assistant',
+      date: new Date(),
+    });
+
+    toast({
+      title: "Report generated",
+      description: "PDF report downloaded successfully",
+    });
   };
 
   const handleQuickAction = (query: string) => {
@@ -155,10 +210,18 @@ const Chat = () => {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b p-4">
-        <h1 className="text-xl font-semibold">AI Financial Assistant</h1>
-        <p className="text-sm text-muted-foreground">
-          Get instant insights on markets, clients, and compliance
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold">FlowPulse AI Assistant</h1>
+            <p className="text-sm text-muted-foreground">
+              Your intelligent financial advisor with voice, document analysis & reporting
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleGenerateReport}>
+            <Download className="h-4 w-4 mr-2" />
+            Generate PDF Report
+          </Button>
+        </div>
       </div>
 
       {/* Quick Actions */}
@@ -245,11 +308,13 @@ const Chat = () => {
 
       {/* Input */}
       <div className="border-t p-4">
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-2">
+          <VoiceRecorder onTranscription={handleVoiceTranscription} />
+          <DocumentUpload onTextExtracted={handleDocumentText} />
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about markets, clients, compliance, or generate reports..."
+            placeholder="Ask about markets, clients, compliance, upload documents, or use voice..."
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
             className="flex-1"
           />
@@ -257,8 +322,8 @@ const Chat = () => {
             <Send className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Try: "Market update", "Check compliance for options trading", or "Find clients with tech exposure"
+        <p className="text-xs text-muted-foreground">
+          💬 Voice recording | 📄 Document upload (OCR) | 📊 Generate PDF reports | Financial analysis powered by FlowPulse.io
         </p>
       </div>
     </div>
