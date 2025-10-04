@@ -242,6 +242,65 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          category: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_holdings: {
         Row: {
           allocation_percentage: number | null

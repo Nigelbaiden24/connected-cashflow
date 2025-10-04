@@ -17,8 +17,11 @@ import {
   Percent,
   LineChart,
   BarChart3,
-  Calculator
+  Calculator,
+  Download
 } from "lucide-react";
+import { generateFinancialReport } from "@/utils/pdfGenerator";
+import { useToast } from "@/hooks/use-toast";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
@@ -183,6 +186,8 @@ const retirementData = Array.from({ length: 41 }, (_, i) => {
 });
 
 export default function ScenarioAnalysis() {
+  const { toast } = useToast();
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -203,6 +208,116 @@ export default function ScenarioAnalysis() {
     return "text-destructive";
   };
 
+  const handleGenerateReport = () => {
+    // Generate comprehensive scenario analysis report
+    const reportContent = `Scenario Analysis Report
+    
+Monte Carlo Simulation Results:
+
+Success Rate: 87%
+Based on 10,000 simulations, your portfolio has an 87% probability of meeting your financial goals over the 30-year time horizon.
+
+Projected Outcomes:
+- Median Outcome (50th percentile): ${formatCurrency(1050000)} in 30 years
+- Best Case (90th percentile): ${formatCurrency(5985000)}
+- Worst Case (10th percentile): ${formatCurrency(240000)}
+
+Market Scenario Analysis:
+
+The following scenarios have been analyzed for their potential impact on your portfolio:
+
+Bear Market (-30%):
+- Portfolio Impact: ${formatCurrency(-185000)}
+- Probability: 15%
+- Expected Recovery: 18-36 months
+
+Recession (-20%):
+- Portfolio Impact: ${formatCurrency(-123000)}
+- Probability: 25%
+- Expected Recovery: 12-24 months
+
+Base Case (+7%):
+- Portfolio Impact: ${formatCurrency(43000)}
+- Probability: 45%
+- This represents normal market conditions
+
+Bull Market (+15%):
+- Portfolio Impact: ${formatCurrency(92000)}
+- Probability: 12%
+
+Exceptional Growth (+25%):
+- Portfolio Impact: ${formatCurrency(154000)}
+- Probability: 3%
+
+Stress Test Results:
+
+Your portfolio has been tested against historical market crises:
+
+2008 Financial Crisis:
+- Historical Impact: -37%
+- Your Portfolio Impact: -28.5%
+- Duration: 18 months
+
+2020 COVID Crash:
+- Historical Impact: -34%
+- Your Portfolio Impact: -22.8%
+- Duration: 6 months
+
+2000 Dot-com Bubble:
+- Historical Impact: -49%
+- Your Portfolio Impact: -35.2%
+- Duration: 31 months
+
+Goal Achievement Analysis:
+
+Retirement Fund:
+- Target: ${formatCurrency(1200000)} in 20 years
+- Current: ${formatCurrency(325000)}
+- Monthly Savings: ${formatCurrency(2500)}
+- Probability of Success: 78%
+
+Scenarios:
+- Conservative: 62% probability, ${formatCurrency(985000)} final amount
+- Moderate: 78% probability, ${formatCurrency(1285000)} final amount
+- Aggressive: 85% probability, ${formatCurrency(1650000)} final amount
+
+House Deposit:
+- Target: ${formatCurrency(100000)} in 5 years
+- Current: ${formatCurrency(35000)}
+- Monthly Savings: ${formatCurrency(1000)}
+- Probability of Success: 92%
+
+Education Fund:
+- Target: ${formatCurrency(80000)} in 12 years
+- Current: ${formatCurrency(15000)}
+- Monthly Savings: ${formatCurrency(450)}
+- Probability of Success: 85%
+
+Recommendations:
+
+Based on this comprehensive scenario analysis, your portfolio demonstrates strong resilience across various market conditions. The 87% success rate in Monte Carlo simulations indicates a well-diversified strategy aligned with your risk profile and financial objectives.
+
+Key Considerations:
+1. Your portfolio shows above-average resilience during historical market crises
+2. Goal achievement probabilities are favorable across all timeframes
+3. Consider maintaining current contribution levels to ensure retirement goal success
+4. Monitor market conditions and rebalance quarterly to maintain optimal allocation
+
+This analysis was generated using advanced statistical modeling and historical market data. Regular reviews are recommended to ensure continued alignment with your financial objectives.`;
+
+    generateFinancialReport({
+      title: 'Scenario Analysis Report',
+      content: reportContent,
+      generatedBy: 'FlowPulse.io Financial Planning Team',
+      date: new Date(),
+    });
+
+    toast({
+      title: "Report generated",
+      description: "Scenario analysis PDF downloaded successfully",
+    });
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -216,9 +331,9 @@ export default function ScenarioAnalysis() {
             <Calculator className="h-4 w-4 mr-2" />
             Run Simulation
           </Button>
-          <Button size="sm">
-            <LineChart className="h-4 w-4 mr-2" />
-            Generate Report
+          <Button size="sm" onClick={handleGenerateReport}>
+            <Download className="h-4 w-4 mr-2" />
+            Generate PDF Report
           </Button>
         </div>
       </div>

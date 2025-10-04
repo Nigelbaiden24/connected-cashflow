@@ -4,12 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface Message {
   id: string;
@@ -32,6 +40,8 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [botName, setBotName] = useState("Theodore");
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -42,6 +52,110 @@ const Chat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  const loadConversations = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('id, title, updated_at')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Error loading conversations:', error);
+    } else if (data) {
+      setConversations(data);
+    }
+  };
+
+  const loadConversation = async (conversationId: string) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error loading messages:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load conversation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (data) {
+      const loadedMessages: Message[] = data.map(msg => ({
+        id: msg.id,
+        type: msg.type as "user" | "assistant",
+        content: msg.content,
+        timestamp: new Date(msg.created_at),
+        category: msg.category as "market" | "client" | "compliance" | "general" | undefined,
+      }));
+      setMessages(loadedMessages);
+      setCurrentConversationId(conversationId);
+    }
+  };
+
+  const startNewConversation = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save conversations",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('conversations')
+      .insert({ user_id: user.id, title: 'New Conversation' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating conversation:', error);
+    } else if (data) {
+      setCurrentConversationId(data.id);
+      setMessages([{
+        id: "1",
+        type: "assistant",
+        content: "Hello! I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?",
+        timestamp: new Date(),
+        category: "general",
+      }]);
+      loadConversations();
+    }
+  };
+
+  const saveMessage = async (message: Message) => {
+    if (!currentConversationId) {
+      await startNewConversation();
+      return;
+    }
+
+    const { error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: currentConversationId,
+        type: message.type,
+        content: message.content,
+        category: message.category,
+      });
+
+    if (error) {
+      console.error('Error saving message:', error);
+    }
+  };
 
   const quickActions = [
     {
@@ -85,6 +199,9 @@ const Chat = () => {
     setInput("");
     setIsLoading(true);
 
+    // Save user message
+    await saveMessage(userMessage);
+
     try {
       const { data, error } = await supabase.functions.invoke('financial-chat', {
         body: { messages: [...messages, userMessage].map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content })) },
@@ -101,6 +218,19 @@ const Chat = () => {
       };
 
       setMessages(prev => [...prev, aiResponse]);
+      
+      // Save AI response
+      await saveMessage(aiResponse);
+      
+      // Update conversation title if it's the first exchange
+      if (messages.length === 1 && currentConversationId) {
+        const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
+        await supabase
+          .from('conversations')
+          .update({ title })
+          .eq('id', currentConversationId);
+        loadConversations();
+      }
       
       toast({
         title: "Response received",
@@ -219,6 +349,48 @@ const Chat = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <History className="h-4 w-4 mr-2" />
+                  History
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Conversation History</SheetTitle>
+                  <SheetDescription>
+                    View and load your previous conversations
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="mt-6 space-y-2">
+                  <Button
+                    onClick={startNewConversation}
+                    className="w-full justify-start"
+                    variant="outline"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Conversation
+                  </Button>
+                  <Separator className="my-4" />
+                  {conversations.map((conv) => (
+                    <Button
+                      key={conv.id}
+                      onClick={() => loadConversation(conv.id)}
+                      variant={currentConversationId === conv.id ? "secondary" : "ghost"}
+                      className="w-full justify-start text-left"
+                    >
+                      <div className="flex-1 truncate">
+                        <div className="font-medium truncate">{conv.title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(conv.updated_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
             <Input
               placeholder="Bot name"
               value={botName}
@@ -252,7 +424,7 @@ const Chat = () => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -315,8 +487,8 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t p-4">
+      {/* Input - Fixed at bottom */}
+      <div className="fixed bottom-0 left-0 right-0 border-t p-4 bg-background z-10 md:left-64">
         <div className="flex gap-2 mb-2">
           <VoiceRecorder onTranscription={handleVoiceTranscription} />
           <DocumentUpload onTextExtracted={handleDocumentText} />
