@@ -32,6 +32,7 @@ import {
   UserPlus,
   Briefcase,
   Activity,
+  Sparkles,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -49,6 +50,11 @@ const aiToolsItems = [
     title: "Theodore",
     url: "/theodore",
     icon: MessageSquare,
+  },
+  {
+    title: "AI Generator",
+    url: "/ai-generator",
+    icon: Sparkles,
   },
   {
     title: "Market Data",

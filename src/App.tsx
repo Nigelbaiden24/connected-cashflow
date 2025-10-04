@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
+import AIGenerator from "./pages/AIGenerator";
 import MarketData from "./pages/MarketData";
 import Clients from "./pages/Clients";
 import ClientProfile from "./pages/ClientProfile";
@@ -66,6 +67,7 @@ const App = () => {
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/theodore" element={<Chat />} />
+                  <Route path="/ai-generator" element={<AIGenerator />} />
                   <Route path="/market" element={<MarketData />} />
                   <Route path="/compliance" element={<Compliance />} />
                   <Route path="/portfolio" element={<Portfolio />} />

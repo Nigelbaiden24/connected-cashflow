@@ -39,9 +39,12 @@ const Chat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [botName, setBotName] = useState("Theodore");
+  const [botName, setBotName] = useState(() => {
+    return localStorage.getItem('botName') || 'Theodore';
+  });
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
+  const [user, setUser] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -54,11 +57,25 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    loadConversations();
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        loadConversations();
+        // Auto-create conversation for logged-in users
+        if (!currentConversationId) {
+          await startNewConversation();
+        }
+      }
+    };
+    checkUser();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem('botName', botName);
+  }, [botName]);
+
   const loadConversations = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data, error } = await supabase
@@ -106,14 +123,13 @@ const Chat = () => {
   };
 
   const startNewConversation = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast({
         title: "Authentication required",
         description: "Please log in to save conversations",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
     const { data, error } = await supabase
@@ -124,29 +140,38 @@ const Chat = () => {
 
     if (error) {
       console.error('Error creating conversation:', error);
+      return null;
     } else if (data) {
       setCurrentConversationId(data.id);
       setMessages([{
         id: "1",
         type: "assistant",
-        content: "Hello! I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?",
+        content: `Hello! I'm ${botName}, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?`,
         timestamp: new Date(),
         category: "general",
       }]);
       loadConversations();
+      return data.id;
     }
+    return null;
   };
 
-  const saveMessage = async (message: Message) => {
-    if (!currentConversationId) {
-      await startNewConversation();
+  const saveMessage = async (message: Message, conversationId?: string) => {
+    const convId = conversationId || currentConversationId;
+    
+    if (!convId) {
+      console.error('No conversation ID available');
       return;
+    }
+
+    if (!user) {
+      return; // Skip saving if not logged in
     }
 
     const { error } = await supabase
       .from('messages')
       .insert({
-        conversation_id: currentConversationId,
+        conversation_id: convId,
         type: message.type,
         content: message.content,
         category: message.category,
@@ -199,8 +224,16 @@ const Chat = () => {
     setInput("");
     setIsLoading(true);
 
+    // Ensure conversation exists
+    let convId = currentConversationId;
+    if (!convId && user) {
+      convId = await startNewConversation();
+    }
+
     // Save user message
-    await saveMessage(userMessage);
+    if (convId) {
+      await saveMessage(userMessage, convId);
+    }
 
     try {
       const { data, error } = await supabase.functions.invoke('financial-chat', {
@@ -220,16 +253,18 @@ const Chat = () => {
       setMessages(prev => [...prev, aiResponse]);
       
       // Save AI response
-      await saveMessage(aiResponse);
-      
-      // Update conversation title if it's the first exchange
-      if (messages.length === 1 && currentConversationId) {
-        const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
-        await supabase
-          .from('conversations')
-          .update({ title })
-          .eq('id', currentConversationId);
-        loadConversations();
+      if (convId) {
+        await saveMessage(aiResponse, convId);
+        
+        // Update conversation title if it's the first exchange
+        if (messages.length === 1) {
+          const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
+          await supabase
+            .from('conversations')
+            .update({ title })
+            .eq('id', convId);
+          loadConversations();
+        }
       }
       
       toast({

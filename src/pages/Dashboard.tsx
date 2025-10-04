@@ -8,6 +8,9 @@ const Dashboard = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [totalAUM, setTotalAUM] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [botName, setBotName] = useState(() => {
+    return localStorage.getItem('botName') || 'Theodore';
+  });
 
   useEffect(() => {
     fetchDashboardData();
@@ -118,7 +121,10 @@ const Dashboard = () => {
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">AI Assistant: {botName}</p>
+        </div>
         <Badge variant="secondary" className="text-sm">
           Live Data
         </Badge>
