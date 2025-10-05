@@ -55,11 +55,11 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <BrowserRouter>
+        <TooltipProvider>
           <SidebarProvider>
+            <Toaster />
+            <Sonner />
             <div className="flex min-h-screen w-full">
               <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
               <main className="flex-1">
@@ -87,8 +87,8 @@ const App = () => {
               </main>
             </div>
           </SidebarProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+        </TooltipProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };
