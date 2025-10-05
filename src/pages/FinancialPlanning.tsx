@@ -80,7 +80,7 @@ const taxAllowances = {
   pensionAnnualAllowance: 40000
 };
 
-export default function FinancialPlanning() {
+const FinancialPlanning = () => {
   const [currentAge, setCurrentAge] = useState(35);
   const [retirementAge, setRetirementAge] = useState(67); // UK State Pension Age
   const [currentPension, setCurrentPension] = useState(85000);
@@ -90,7 +90,7 @@ export default function FinancialPlanning() {
   const [riskTolerance, setRiskTolerance] = useState("moderate");
   const [annualSalary, setAnnualSalary] = useState(55000);
 
-  const yearsToRetirement = retirementAge - currentAge;
+  const yearsToRetirement = Math.max(1, retirementAge - currentAge);
   const monthsToRetirement = yearsToRetirement * 12;
 
   const calculateFutureValue = (pv: number, pmt: number, rate: number, periods: number) => {
@@ -815,4 +815,6 @@ export default function FinancialPlanning() {
       </Tabs>
     </div>
   );
-}
+};
+
+export default FinancialPlanning;
