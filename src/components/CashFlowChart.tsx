@@ -105,12 +105,15 @@ export function CashFlowChart({ data, retirementAge = 65 }: CashFlowChartProps) 
           />
           <Tooltip content={<CustomTooltip />} />
           
-          <ReferenceLine 
-            x={retirementAge} 
-            stroke="hsl(var(--financial-orange))" 
-            strokeDasharray="5 5" 
-            strokeWidth={2}
-          />
+          {retirementAge && (
+            <ReferenceLine 
+              x={retirementAge} 
+              stroke="hsl(var(--financial-orange))" 
+              strokeDasharray="5 5" 
+              strokeWidth={2}
+              label={{ value: 'Retirement', position: 'top', fill: 'hsl(var(--financial-orange))' }}
+            />
+          )}
           
           <Bar
             yAxisId="cashflow"
@@ -132,7 +135,7 @@ export function CashFlowChart({ data, retirementAge = 65 }: CashFlowChartProps) 
             dataKey="cumulative"
             stroke="hsl(var(--financial-green))"
             strokeWidth={3}
-            dot={<MilestoneMarker />}
+            dot={false}
             name="Net Worth"
           />
         </ComposedChart>
