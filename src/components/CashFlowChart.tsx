@@ -13,6 +13,15 @@ interface CashFlowChartProps {
 }
 
 export function CashFlowChart({ data, retirementAge = 65 }: CashFlowChartProps) {
+  // Safeguard against empty or undefined data
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-80 w-full flex items-center justify-center text-muted-foreground">
+        No cash flow data available
+      </div>
+    );
+  }
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',

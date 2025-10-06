@@ -10,6 +10,15 @@ interface AssetAllocationProps {
 }
 
 export function AssetAllocationChart({ data }: AssetAllocationProps) {
+  // Safeguard against empty or undefined data
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-80 w-full flex items-center justify-center text-muted-foreground">
+        No asset allocation data available
+      </div>
+    );
+  }
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',

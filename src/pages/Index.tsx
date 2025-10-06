@@ -1,9 +1,7 @@
+import FinancialPlanning from "./FinancialPlanning";
+
 const Index = () => {
-  return (
-    <div>
-      {/* Your code here */}
-    </div>
-  );
+  return <FinancialPlanning />;
 };
 
 export default Index;
