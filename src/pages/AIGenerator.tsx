@@ -76,12 +76,14 @@ const AIGenerator = () => {
       const fullPrompt = `${systemPrompt}\n\nClient: ${clientName}\nDocument Type: ${documentType}\n\nUser Request: ${prompt}\n\nAdditional Context: ${additionalDetails}`;
 
       const { data: functionData, error: functionError } = await supabase.functions.invoke('financial-chat', {
-        body: { message: fullPrompt }
+        body: { 
+          messages: [{ role: "user", content: fullPrompt }]
+        }
       });
 
       if (functionError) throw functionError;
 
-      const aiContent = functionData.response || functionData.text || "";
+      const aiContent = functionData?.choices?.[0]?.message?.content || functionData?.response || functionData?.text || "";
       
       let modifiedHtml = templateHtml.replace(/\[CLIENT_NAME\]/g, clientName);
       modifiedHtml = modifiedHtml.replace(/\[DATE\]/g, new Date().toLocaleDateString('en-GB'));
@@ -125,13 +127,13 @@ const AIGenerator = () => {
 
       const { data, error } = await supabase.functions.invoke('financial-chat', {
         body: {
-          message: fullPrompt
+          messages: [{ role: "user", content: fullPrompt }]
         },
       });
 
       if (error) throw error;
 
-      const content = data?.response || data?.text || "Failed to generate content";
+      const content = data?.choices?.[0]?.message?.content || data?.response || data?.text || "Failed to generate content";
       setGeneratedContent(content);
 
       toast({
@@ -343,8 +345,13 @@ const AIGenerator = () => {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-4">
-                          <div className="w-20 h-20 bg-muted rounded flex items-center justify-center flex-shrink-0">
-                            <Layout className="h-8 w-8 text-muted-foreground" />
+                          <div className="w-32 h-24 bg-muted rounded overflow-hidden flex-shrink-0 border">
+                            <iframe 
+                              src={template.htmlPath} 
+                              className="w-full h-full pointer-events-none"
+                              style={{ transform: 'scale(0.25)', transformOrigin: 'top left', width: '400%', height: '400%' }}
+                              title={template.name}
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold">{template.name}</h3>
@@ -428,20 +435,19 @@ const AIGenerator = () => {
               </CardHeader>
               <CardContent>
                 {selectedTemplate ? (
-                  <div className="aspect-[8.5/11] bg-muted rounded flex items-center justify-center">
-                    <div className="text-center">
-                      <Layout className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        {templates.find(t => t.id === selectedTemplate)?.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Ready to generate
-                      </p>
-                    </div>
+                  <div className="aspect-[8.5/11] bg-white rounded border overflow-hidden">
+                    <iframe 
+                      src={templates.find(t => t.id === selectedTemplate)?.htmlPath}
+                      className="w-full h-full"
+                      title="Template Preview"
+                    />
                   </div>
                 ) : (
                   <div className="aspect-[8.5/11] bg-muted rounded flex items-center justify-center">
-                    <p className="text-muted-foreground">Select a template</p>
+                    <div className="text-center">
+                      <Layout className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-muted-foreground">Select a template to preview</p>
+                    </div>
                   </div>
                 )}
               </CardContent>
