@@ -9,7 +9,8 @@ import {
   Type, Image as ImageIcon, Square, Circle, 
   Download, Save, Undo, Redo, Trash2, 
   AlignLeft, AlignCenter, AlignRight, Bold, 
-  Italic, Underline, Upload, ZoomIn, ZoomOut 
+  Italic, Underline, Upload, ZoomIn, ZoomOut,
+  Copy, ArrowUp, ArrowDown, RotateCw, Layers
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
@@ -306,6 +307,57 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
     }
   };
 
+  const duplicateElement = () => {
+    if (!selectedElement) return;
+    const element = elements.find(el => el.id === selectedElement);
+    if (!element) return;
+
+    const newElement: EditorElement = {
+      ...element,
+      id: `${element.type}-${Date.now()}`,
+      x: element.x + 20,
+      y: element.y + 20,
+      zIndex: elements.length
+    };
+
+    const newElements = [...elements, newElement];
+    setElements(newElements);
+    saveToHistory(newElements);
+    setSelectedElement(newElement.id);
+    toast({
+      title: "Duplicated",
+      description: "Element has been duplicated"
+    });
+  };
+
+  const bringForward = () => {
+    if (!selectedElement) return;
+    const newElements = [...elements];
+    const index = newElements.findIndex(el => el.id === selectedElement);
+    if (index < newElements.length - 1) {
+      const temp = newElements[index].zIndex;
+      newElements[index].zIndex = newElements[index + 1].zIndex;
+      newElements[index + 1].zIndex = temp;
+      newElements.sort((a, b) => a.zIndex - b.zIndex);
+      setElements(newElements);
+      saveToHistory(newElements);
+    }
+  };
+
+  const sendBackward = () => {
+    if (!selectedElement) return;
+    const newElements = [...elements];
+    const index = newElements.findIndex(el => el.id === selectedElement);
+    if (index > 0) {
+      const temp = newElements[index].zIndex;
+      newElements[index].zIndex = newElements[index - 1].zIndex;
+      newElements[index - 1].zIndex = temp;
+      newElements.sort((a, b) => a.zIndex - b.zIndex);
+      setElements(newElements);
+      saveToHistory(newElements);
+    }
+  };
+
   const selectedElementData = selectedElement ? elements.find(el => el.id === selectedElement) : null;
 
   return (
@@ -416,7 +468,7 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
                     </Button>
                   </div>
 
-                  <div>
+                   <div>
                     <Label>Text Color</Label>
                     <Input
                       type="color"
@@ -436,15 +488,84 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
                 />
               </div>
 
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full"
-                onClick={() => deleteElement(selectedElement)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+              <div>
+                <Label>Position</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">X</Label>
+                    <Input
+                      type="number"
+                      value={selectedElementData.x}
+                      onChange={(e) => updateElement(selectedElement, { x: parseInt(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Y</Label>
+                    <Input
+                      type="number"
+                      value={selectedElementData.y}
+                      onChange={(e) => updateElement(selectedElement, { y: parseInt(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>Size</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">Width</Label>
+                    <Input
+                      type="number"
+                      value={selectedElementData.width}
+                      onChange={(e) => updateElement(selectedElement, { width: parseInt(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Height</Label>
+                    <Input
+                      type="number"
+                      value={selectedElementData.height}
+                      onChange={(e) => updateElement(selectedElement, { height: parseInt(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label>Rotation</Label>
+                <div className="flex items-center gap-2">
+                  <Slider
+                    value={[selectedElementData.rotation || 0]}
+                    onValueChange={([val]) => updateElement(selectedElement, { rotation: val })}
+                    min={0}
+                    max={360}
+                    step={5}
+                  />
+                  <span className="text-xs w-10">{selectedElementData.rotation || 0}°</span>
+                </div>
+              </div>
+
+              <div className="pt-2 space-y-2 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={duplicateElement}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicate
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => deleteElement(selectedElement)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -453,7 +574,7 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
       {/* Canvas */}
       <div className="flex-1 flex flex-col">
         {/* Top toolbar */}
-        <div className="border-b p-2 flex items-center justify-between">
+        <div className="border-b p-3 flex items-center justify-between flex-wrap gap-2">
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0}>
               <Undo className="h-4 w-4" />
@@ -462,6 +583,20 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
               <Redo className="h-4 w-4" />
             </Button>
           </div>
+
+          {selectedElement && (
+            <div className="flex gap-2 border-l pl-2">
+              <Button variant="outline" size="sm" onClick={duplicateElement} title="Duplicate">
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={bringForward} title="Bring Forward">
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={sendBackward} title="Send Backward">
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.25, zoom - 0.25))}>
@@ -473,12 +608,12 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
             </Button>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 ml-auto">
             <Button variant="outline" size="sm" onClick={exportAsHTML}>
               <Download className="h-4 w-4 mr-2" />
               HTML
             </Button>
-            <Button variant="outline" size="sm" onClick={exportAsPDF}>
+            <Button size="sm" onClick={exportAsPDF}>
               <Download className="h-4 w-4 mr-2" />
               PDF
             </Button>
@@ -519,7 +654,9 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
                   backgroundColor: element.backgroundColor,
                   borderRadius: element.borderRadius ? `${element.borderRadius}%` : undefined,
                   zIndex: element.zIndex,
-                  padding: element.type === "text" ? '8px' : undefined
+                  padding: element.type === "text" ? '8px' : undefined,
+                  transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
+                  transformOrigin: 'center'
                 }}
                 onMouseDown={(e) => handleMouseDown(e, element.id)}
                 onDoubleClick={() => handleDoubleClick(element.id)}

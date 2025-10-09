@@ -75,11 +75,6 @@ const financialPlanningItems = [
     icon: PieChart,
   },
   {
-    title: "Financial Planning",
-    url: "/planning",
-    icon: Calculator,
-  },
-  {
     title: "Goal Planning",
     url: "/goals",
     icon: Target,

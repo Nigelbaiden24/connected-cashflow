@@ -15,7 +15,6 @@ import Clients from "./pages/Clients";
 import ClientProfile from "./pages/ClientProfile";
 import Compliance from "./pages/Compliance";
 import Portfolio from "./pages/Portfolio";
-import FinancialPlanning from "./pages/FinancialPlanning";
 import GoalPlanning from "./pages/GoalPlanning";
 import InvestmentAnalysis from "./pages/InvestmentAnalysis";
 import RiskAssessment from "./pages/RiskAssessment";
@@ -71,7 +70,6 @@ const App = () => {
                   <Route path="/market" element={<MarketData />} />
                   <Route path="/compliance" element={<Compliance />} />
                   <Route path="/portfolio" element={<Portfolio />} />
-                  <Route path="/planning" element={<FinancialPlanning />} />
                   <Route path="/goals" element={<GoalPlanning />} />
                   <Route path="/investments" element={<InvestmentAnalysis />} />
                   <Route path="/risk" element={<RiskAssessment />} />

@@ -72,7 +72,17 @@ const AIGenerator = () => {
     try {
       const templateHtml = await loadTemplate(selectedTemplate);
       
-      const systemPrompt = getSystemPrompt(documentType);
+      const systemPrompt = `You are a content generator. Generate ONLY the text content (no HTML tags) that should replace placeholder text in a professional document. 
+      Generate content for the following sections in order, separated by '---SECTION---':
+      1. Main title/heading
+      2. Executive summary or introduction (2-3 paragraphs)
+      3. First main section content (2-3 paragraphs)
+      4. Second main section content (2-3 paragraphs)
+      5. Key metrics or data points (as bullet points)
+      6. Conclusion or next steps (1-2 paragraphs)
+      
+      Keep the tone professional and the content relevant to: ${documentType}`;
+      
       const fullPrompt = `${systemPrompt}\n\nClient: ${clientName}\nDocument Type: ${documentType}\n\nUser Request: ${prompt}\n\nAdditional Context: ${additionalDetails}`;
 
       const { data: functionData, error: functionError } = await supabase.functions.invoke('financial-chat', {
@@ -85,8 +95,60 @@ const AIGenerator = () => {
 
       const aiContent = functionData?.choices?.[0]?.message?.content || functionData?.response || functionData?.text || "";
       
-      let modifiedHtml = templateHtml.replace(/\[CLIENT_NAME\]/g, clientName);
-      modifiedHtml = modifiedHtml.replace(/\[DATE\]/g, new Date().toLocaleDateString('en-GB'));
+      // Parse AI content into sections
+      const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
+      
+      // Parse template HTML and intelligently replace content
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(templateHtml, 'text/html');
+      
+      // Replace client name and date placeholders
+      const replaceInNode = (node: Node) => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+          node.textContent = node.textContent
+            .replace(/\[CLIENT_NAME\]/g, clientName || 'Client')
+            .replace(/\[DATE\]/g, new Date().toLocaleDateString('en-GB'));
+        }
+        node.childNodes.forEach(replaceInNode);
+      };
+      replaceInNode(doc.body);
+      
+      // Find and replace content in headings and paragraphs
+      let sectionIndex = 0;
+      
+      // Replace main heading
+      const h1 = doc.querySelector('h1');
+      if (h1 && sections[sectionIndex]) {
+        h1.textContent = sections[sectionIndex++];
+      }
+      
+      // Replace paragraphs with AI content while preserving structure
+      const paragraphs = Array.from(doc.querySelectorAll('p'));
+      const contentSections = sections.slice(sectionIndex);
+      
+      contentSections.forEach((content, idx) => {
+        if (paragraphs[idx]) {
+          // Check if content has bullet points
+          if (content.includes('•') || content.includes('-')) {
+            // Convert to list if parent allows
+            const parent = paragraphs[idx].parentElement;
+            if (parent) {
+              const ul = doc.createElement('ul');
+              ul.className = paragraphs[idx].className;
+              content.split('\n').filter(line => line.trim()).forEach(line => {
+                const li = doc.createElement('li');
+                li.textContent = line.replace(/^[•\-]\s*/, '');
+                ul.appendChild(li);
+              });
+              parent.replaceChild(ul, paragraphs[idx]);
+            }
+          } else {
+            paragraphs[idx].textContent = content;
+          }
+        }
+      });
+      
+      const modifiedHtml = doc.documentElement.outerHTML;
       
       setEditorContent(modifiedHtml);
       setGeneratedContent(aiContent);
@@ -94,7 +156,7 @@ const AIGenerator = () => {
 
       toast({
         title: "Template ready!",
-        description: "Your document has been generated. You can now edit it.",
+        description: "Your document has been generated with AI content. You can now edit it.",
       });
     } catch (error: any) {
       console.error('Generation error:', error);

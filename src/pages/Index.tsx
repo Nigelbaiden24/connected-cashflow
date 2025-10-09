@@ -1,7 +1,7 @@
-import FinancialPlanning from "./FinancialPlanning";
+import { Navigate } from "react-router-dom";
 
 const Index = () => {
-  return <FinancialPlanning />;
+  return <Navigate to="/dashboard" replace />;
 };
 
 export default Index;
