@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FileText, Download, Layout } from "lucide-react";
+import { Loader2, FileText, Download, Layout, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { templates, loadTemplate } from "@/lib/templateManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { useNavigate } from "react-router-dom";
 
 const documentTypes = [
   { value: "financial-plan", label: "Financial Plan" },
@@ -29,6 +30,7 @@ const documentTypes = [
 ];
 
 const AIGenerator = () => {
+  const navigate = useNavigate();
   const [documentType, setDocumentType] = useState("financial-plan");
   const [prompt, setPrompt] = useState("");
   const [clientName, setClientName] = useState("");
@@ -267,9 +269,22 @@ const AIGenerator = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">AI Document Generator</h1>
-        <p className="text-muted-foreground">Generate professional financial documents with AI assistance</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => navigate("/")}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Recruitment
+            </Button>
+          </div>
+          <h1 className="text-3xl font-bold">FlowPulse AI Tool</h1>
+          <p className="text-muted-foreground">Generate professional financial documents with AI assistance</p>
+        </div>
       </div>
 
       <Tabs defaultValue="standard" className="space-y-6">

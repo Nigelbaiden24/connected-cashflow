@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,16 +11,20 @@ import {
   ArrowRight,
   CheckCircle2,
   Target,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { RecruitmentHeader } from "@/components/recruitment/RecruitmentHeader";
 import { RecruitmentHero } from "@/components/recruitment/RecruitmentHero";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Recruitment() {
   const navigate = useNavigate();
   const [currentSection, setCurrentSection] = useState("home");
   const [searchQuery, setSearchQuery] = useState("");
+  const [heroImage, setHeroImage] = useState<string>("");
+  const [imageLoading, setImageLoading] = useState(true);
 
   const handleNavigate = (section: string) => {
     if (section === "flowpulse") {
@@ -29,6 +33,26 @@ export default function Recruitment() {
       setCurrentSection(section);
     }
   };
+
+  useEffect(() => {
+    const generateHeroImage = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-recruitment-image");
+        
+        if (error) throw error;
+        
+        if (data?.imageUrl) {
+          setHeroImage(data.imageUrl);
+        }
+      } catch (error) {
+        console.error("Error generating hero image:", error);
+      } finally {
+        setImageLoading(false);
+      }
+    };
+
+    generateHeroImage();
+  }, []);
 
   const techJobs = [
     { id: 1, title: "Senior Full Stack Developer", company: "TechCorp", location: "London", salary: "£80k-£100k", type: "Permanent" },
@@ -184,7 +208,7 @@ export default function Recruitment() {
   return (
     <div className="min-h-screen bg-background">
       <RecruitmentHeader onNavigate={handleNavigate} currentSection={currentSection} />
-      <RecruitmentHero onSearch={setSearchQuery} />
+      <RecruitmentHero onSearch={setSearchQuery} heroImage={heroImage} imageLoading={imageLoading} />
 
       <div className="container mx-auto px-4 py-16 space-y-16">
         {/* Sectors */}
@@ -200,13 +224,13 @@ export default function Recruitment() {
             {sectors.map((sector, idx) => (
               <Card 
                 key={idx} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="hover:shadow-xl transition-all hover:scale-105 cursor-pointer bg-gradient-to-br from-card to-card/50 border-2 hover:border-primary"
                 onClick={() => handleNavigate(idx === 0 ? "tech" : idx === 1 ? "finance" : "general")}
               >
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <sector.icon className="h-6 w-6 text-primary" />
+                    <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg">
+                      <sector.icon className="h-6 w-6 text-white" />
                     </div>
                     <CardTitle className="text-xl">{sector.title}</CardTitle>
                   </div>
@@ -214,8 +238,10 @@ export default function Recruitment() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-muted-foreground">{sector.count}</span>
-                    <Button variant="ghost" size="sm">
+                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+                      {sector.count}
+                    </Badge>
+                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary">
                       View Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -281,27 +307,31 @@ export default function Recruitment() {
 
         {/* AI Tool CTA */}
         <section>
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <Card className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 border-0 shadow-2xl">
             <CardContent className="p-8 md:p-12">
               <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 space-y-4 text-white">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-primary" />
+                    <Sparkles className="h-6 w-6" />
                     <h2 className="text-3xl font-bold">FlowPulse AI Tool</h2>
                   </div>
-                  <p className="text-lg text-muted-foreground">
+                  <p className="text-lg text-white/90">
                     Powered by advanced AI to match you with the perfect role. Get personalized job recommendations, 
                     CV analysis, and career insights instantly.
                   </p>
-                  <Button size="lg" onClick={() => navigate("/ai-generator")}>
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate("/ai-generator")}
+                    className="bg-white text-purple-600 hover:bg-white/90 shadow-xl"
+                  >
                     Try FlowPulse AI
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
                 <div className="flex items-center justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl"></div>
-                    <Target className="relative h-24 w-24 text-primary" />
+                    <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl animate-pulse"></div>
+                    <Target className="relative h-32 w-32 text-white" />
                   </div>
                 </div>
               </div>
