@@ -25,6 +25,7 @@ import Reports from "./pages/Reports";
 import Security from "./pages/Security";
 import CRMContactDetail from "./pages/CRMContactDetail";
 import Payroll from "./pages/Payroll";
+import FinancePayroll from "./pages/FinancePayroll";
 import Recruitment from "./pages/Recruitment";
 import CandidateRegistration from "./pages/CandidateRegistration";
 import EmployerVacancy from "./pages/EmployerVacancy";
@@ -272,6 +273,18 @@ const App = () => {
               )
             } />
             
+            <Route path="/finance-payroll" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <FinancePayroll />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
             
             <Route path="/crm/:id" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
