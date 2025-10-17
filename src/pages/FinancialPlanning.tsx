@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, FileText, Edit, Trash2, Eye, TrendingUp, Calendar, Target } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, FileText, Edit, Trash2, Eye, TrendingUp, Calendar, Target, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ interface FinancialPlan {
 }
 
 export default function FinancialPlanning() {
+  const navigate = useNavigate();
   const [plans, setPlans] = useState<FinancialPlan[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -219,9 +221,20 @@ export default function FinancialPlanning() {
   return (
     <div className="p-6 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Financial Planning</h1>
-          <p className="text-muted-foreground">Create and manage comprehensive financial plans for clients</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Financial Planning</h1>
+            <p className="text-muted-foreground">Create and manage comprehensive financial plans for clients</p>
+          </div>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>

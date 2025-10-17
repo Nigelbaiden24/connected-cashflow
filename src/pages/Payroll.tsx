@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, FileText, Settings as SettingsIcon, Calendar, Shield } from "lucide-react";
+import { DollarSign, Users, FileText, Settings as SettingsIcon, Calendar, Shield, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -84,6 +84,15 @@ export default function Payroll() {
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/business-dashboard")}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">HR & Payroll Management</h1>
               </div>

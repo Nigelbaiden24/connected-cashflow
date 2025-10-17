@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FileText, Download, Layout } from "lucide-react";
+import { Loader2, FileText, Download, Layout, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
@@ -267,6 +267,15 @@ const AIGenerator = () => {
             <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-16 items-center gap-4 px-6">
                 <SidebarTrigger />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/business-dashboard")}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Button>
                 <div className="flex-1">
                   <h1 className="text-2xl font-bold">Document Editor</h1>
                   <p className="text-sm text-muted-foreground">Edit your generated document</p>
@@ -301,6 +310,15 @@ const AIGenerator = () => {
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/business-dashboard")}
+                className="gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">AI Document Generator</h1>
               </div>

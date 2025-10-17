@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, TrendingUp, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, TrendingUp, DollarSign, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
+import { useNavigate } from "react-router-dom";
 
 const CRM = () => {
+  const navigate = useNavigate();
   const [totalContacts, setTotalContacts] = useState(0);
   const [activeContacts, setActiveContacts] = useState(0);
 
@@ -31,9 +34,20 @@ const CRM = () => {
 
   return (
     <div className="flex-1 p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">CRM</h1>
-        <p className="text-muted-foreground">Customer Relationship Management</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">CRM</h1>
+          <p className="text-muted-foreground">Customer Relationship Management</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

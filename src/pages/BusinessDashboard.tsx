@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Settings,
   PieChart,
+  Home,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,7 +72,10 @@ export default function BusinessDashboard() {
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
               <div className="flex-1">
-                <h1 className="text-2xl font-bold">Business Dashboard</h1>
+                <div className="flex items-center gap-2">
+                  <Home className="h-5 w-5 text-muted-foreground" />
+                  <h1 className="text-2xl font-bold">Business Dashboard</h1>
+                </div>
               </div>
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />

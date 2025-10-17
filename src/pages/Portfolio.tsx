@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 export default function Portfolio() {
+  const navigate = useNavigate();
   const [selectedClient, setSelectedClient] = useState<string>("");
   const [clients, setClients] = useState<any[]>([]);
   const [portfolioHoldings, setPortfolioHoldings] = useState<any[]>([]);
@@ -137,9 +139,20 @@ export default function Portfolio() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center print:hidden">
-        <div>
-          <h1 className="text-3xl font-bold">Portfolio Management</h1>
-          <p className="text-muted-foreground">Individual client portfolio analysis</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Portfolio Management</h1>
+            <p className="text-muted-foreground">Individual client portfolio analysis</p>
+          </div>
         </div>
         <div className="flex gap-4 items-center">
           <Select value={selectedClient} onValueChange={setSelectedClient}>
