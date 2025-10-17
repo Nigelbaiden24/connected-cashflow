@@ -22,6 +22,7 @@ import ScenarioAnalysis from "./pages/ScenarioAnalysis";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import PracticeManagement from "./pages/PracticeManagement";
 import Reports from "./pages/Reports";
+import Security from "./pages/Security";
 import CRMContactDetail from "./pages/CRMContactDetail";
 import NotFound from "./pages/NotFound";
 
@@ -80,6 +81,7 @@ const App = () => {
                   <Route path="/onboarding" element={<ClientOnboarding />} />
                   <Route path="/practice" element={<PracticeManagement />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/security" element={<Security />} />
                   <Route path="/crm/:id" element={<CRMContactDetail />} />
                   <Route path="/settings" element={<Dashboard />} />
                   <Route path="*" element={<NotFound />} />

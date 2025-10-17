@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          severity: string | null
+          timestamp: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          severity?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          severity?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       client_documents: {
         Row: {
           client_id: string
@@ -352,6 +391,51 @@ export type Database = {
           },
         ]
       }
+      cyber_risk_assessments: {
+        Row: {
+          assessment_name: string
+          assigned_to: string | null
+          category: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          impact_score: number | null
+          likelihood_score: number | null
+          mitigation_status: string | null
+          risk_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          assessment_name: string
+          assigned_to?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          impact_score?: number | null
+          likelihood_score?: number | null
+          mitigation_status?: string | null
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assessment_name?: string
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          impact_score?: number | null
+          likelihood_score?: number | null
+          mitigation_status?: string | null
+          risk_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           category: string | null
@@ -386,6 +470,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mfa_settings: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string
+          id: string
+          mfa_enabled: boolean | null
+          mfa_method: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          mfa_enabled?: boolean | null
+          mfa_method?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          mfa_enabled?: boolean | null
+          mfa_method?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       portfolio_holdings: {
         Row: {
@@ -440,6 +554,108 @@ export type Database = {
           },
         ]
       }
+      secure_vault: {
+        Row: {
+          access_count: number | null
+          category: string | null
+          created_at: string
+          encrypted_data: string
+          id: string
+          last_accessed: string | null
+          metadata: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_count?: number | null
+          category?: string | null
+          created_at?: string
+          encrypted_data: string
+          id?: string
+          last_accessed?: string | null
+          metadata?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_count?: number | null
+          category?: string | null
+          created_at?: string
+          encrypted_data?: string
+          id?: string
+          last_accessed?: string | null
+          metadata?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      security_policies: {
+        Row: {
+          compliance_frameworks: string[] | null
+          created_at: string
+          description: string | null
+          id: string
+          last_reviewed: string | null
+          policy_name: string
+          policy_type: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          compliance_frameworks?: string[] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_reviewed?: string | null
+          policy_name: string
+          policy_type: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          compliance_frameworks?: string[] | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_reviewed?: string | null
+          policy_name?: string
+          policy_type?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          permissions: Json | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permissions?: Json | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permissions?: Json | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -448,7 +664,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "manager" | "analyst" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -575,6 +791,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "manager", "analyst", "viewer"],
+    },
   },
 } as const

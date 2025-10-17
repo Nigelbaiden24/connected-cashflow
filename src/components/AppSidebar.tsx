@@ -62,6 +62,11 @@ const aiToolsItems = [
     icon: TrendingUp,
   },
   {
+    title: "Security",
+    url: "/security",
+    icon: Shield,
+  },
+  {
     title: "Compliance",
     url: "/compliance",
     icon: Shield,
