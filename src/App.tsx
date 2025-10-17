@@ -44,55 +44,270 @@ const App = () => {
     setUserEmail("");
   };
 
-  if (!isAuthenticated) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Login onLogin={handleLogin} />
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <TooltipProvider>
-          <SidebarProvider>
-            <Toaster />
-            <Sonner />
-            <div className="flex min-h-screen w-full">
-              <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Recruitment />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/theodore" element={<Chat />} />
-                  <Route path="/ai-generator" element={<AIGenerator />} />
-                  <Route path="/market" element={<MarketData />} />
-                  <Route path="/compliance" element={<Compliance />} />
-                  <Route path="/portfolio" element={<Portfolio />} />
-                  <Route path="/goals" element={<GoalPlanning />} />
-                  <Route path="/investments" element={<InvestmentAnalysis />} />
-                  <Route path="/risk" element={<RiskAssessment />} />
-                  <Route path="/scenario" element={<ScenarioAnalysis />} />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/clients/:id" element={<ClientProfile />} />
-                  <Route path="/onboarding" element={<ClientOnboarding />} />
-                  <Route path="/practice" element={<PracticeManagement />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/security" element={<Security />} />
-                  <Route path="/crm/:id" element={<CRMContactDetail />} />
-                  <Route path="/payroll" element={<Payroll />} />
-                  <Route path="/recruitment" element={<Recruitment />} />
-                  <Route path="/settings" element={<Dashboard />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-            </div>
-          </SidebarProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Recruitment />} />
+            <Route path="/recruitment" element={<Recruitment />} />
+            <Route path="/login" element={
+              isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
+            } />
+            
+            {/* Protected routes with sidebar */}
+            <Route path="/dashboard" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Dashboard />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/theodore" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Chat />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/ai-generator" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <AIGenerator />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/market" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <MarketData />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/compliance" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Compliance />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/portfolio" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Portfolio />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/goals" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <GoalPlanning />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/investments" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <InvestmentAnalysis />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/risk" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <RiskAssessment />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/scenario" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <ScenarioAnalysis />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/clients" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Clients />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/clients/:id" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <ClientProfile />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/onboarding" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <ClientOnboarding />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/practice" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <PracticeManagement />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/reports" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Reports />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/security" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Security />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/crm/:id" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <CRMContactDetail />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/payroll" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Payroll />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/settings" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <Dashboard />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </TooltipProvider>
       </BrowserRouter>
     </QueryClientProvider>

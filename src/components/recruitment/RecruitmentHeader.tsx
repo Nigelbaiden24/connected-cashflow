@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Sparkles, 
   Menu, 
   X, 
   Code, 
   TrendingUp, 
   Building2,
   User,
-  Phone,
-  Mail
+  Phone
 } from "lucide-react";
 
 interface RecruitmentHeaderProps {
@@ -25,7 +24,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
     { id: "tech", label: "Technology", icon: Code },
     { id: "finance", label: "Finance", icon: TrendingUp },
     { id: "general", label: "All Sectors", icon: Building2 },
-    { id: "flowpulse", label: "FlowPulse AI", icon: Sparkles },
+    { id: "login", label: "Client Login", icon: User },
   ];
 
   return (

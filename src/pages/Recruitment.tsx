@@ -10,8 +10,8 @@ import {
   Building2,
   ArrowRight,
   CheckCircle2,
-  Target,
-  Sparkles,
+  FileText,
+  Calendar,
   Loader2
 } from "lucide-react";
 import { RecruitmentHeader } from "@/components/recruitment/RecruitmentHeader";
@@ -27,8 +27,8 @@ export default function Recruitment() {
   const [imageLoading, setImageLoading] = useState(true);
 
   const handleNavigate = (section: string) => {
-    if (section === "flowpulse") {
-      navigate("/ai-generator");
+    if (section === "login") {
+      navigate("/login");
     } else {
       setCurrentSection(section);
     }
@@ -303,40 +303,6 @@ export default function Recruitment() {
               ))}
             </div>
           </div>
-        </section>
-
-        {/* AI Tool CTA */}
-        <section>
-          <Card className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 border-0 shadow-2xl">
-            <CardContent className="p-8 md:p-12">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="flex-1 space-y-4 text-white">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-6 w-6" />
-                    <h2 className="text-3xl font-bold">FlowPulse AI Tool</h2>
-                  </div>
-                  <p className="text-lg text-white/90">
-                    Powered by advanced AI to match you with the perfect role. Get personalized job recommendations, 
-                    CV analysis, and career insights instantly.
-                  </p>
-                  <Button 
-                    size="lg" 
-                    onClick={() => navigate("/ai-generator")}
-                    className="bg-white text-purple-600 hover:bg-white/90 shadow-xl"
-                  >
-                    Try FlowPulse AI
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-white/30 rounded-full blur-3xl animate-pulse"></div>
-                    <Target className="relative h-32 w-32 text-white" />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </section>
       </div>
     </div>
