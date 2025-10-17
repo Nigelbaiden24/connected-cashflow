@@ -172,9 +172,9 @@ const CRMContactDetail = () => {
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate("/crm")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          Back to CRM
         </Button>
       </div>
 
