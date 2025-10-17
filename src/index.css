@@ -17,16 +17,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 142 76% 36%; /* Professional green */
+    --primary: 221 83% 53%; /* Professional blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 71% 45%; /* Lighter green */
+    --secondary: 217 91% 60%; /* Lighter blue */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 142 76% 36%;
+    --accent: 221 83% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,7 +34,7 @@ All colors MUST be HSL.
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+    --ring: 221 83% 53%;
 
     /* Enhanced Financial theme colors */
     --success: 142 76% 36%;
@@ -42,10 +42,10 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 222.2 47.4% 11.2%;
     
-    /* Professional chart colors with green */
-    --chart-1: 142 76% 36%; /* Professional green */
-    --chart-2: 142 71% 45%; /* Lighter green */
-    --chart-3: 0 0% 0%; /* Black */
+    /* Professional chart colors with blue */
+    --chart-1: 221 83% 53%; /* Professional blue */
+    --chart-2: 217 91% 60%; /* Lighter blue */
+    --chart-3: 199 89% 48%; /* Financial blue */
     --chart-4: 220 13% 18%; /* Dark gray */
     --chart-5: 28 87% 67%; /* Orange accent */
     
@@ -63,21 +63,21 @@ All colors MUST be HSL.
     --surplus: 142 76% 36%;
     --deficit: 0 84% 60%;
     
-    /* Professional gradients with green */
-    --gradient-business: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 71% 45%));
+    /* Professional gradients with blue */
+    --gradient-business: linear-gradient(135deg, hsl(221 83% 53%), hsl(217 91% 60%));
     --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 76% 45%));
     --gradient-warning: linear-gradient(135deg, hsl(var(--warning)), hsl(38 92% 60%));
 
     --radius: 0.5rem;
 
-    --sidebar-background: 142 76% 36%; /* Professional green sidebar */
+    --sidebar-background: 221 83% 53%; /* Professional blue sidebar */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 142 71% 45%; /* Lighter green */
+    --sidebar-primary: 217 91% 60%; /* Lighter blue */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 142 71% 50%;
+    --sidebar-accent: 217 91% 65%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 142 76% 30%;
-    --sidebar-ring: 142 76% 36%;
+    --sidebar-border: 221 83% 45%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
@@ -90,16 +90,16 @@ All colors MUST be HSL.
     --popover: 220 13% 10%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 142 76% 36%; /* Professional green */
+    --primary: 221 83% 53%; /* Professional blue */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 142 71% 45%; /* Lighter green */
+    --secondary: 217 91% 60%; /* Lighter blue */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 220 13% 15%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 142 76% 36%;
+    --accent: 221 83% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
@@ -107,27 +107,27 @@ All colors MUST be HSL.
 
     --border: 220 13% 20%;
     --input: 220 13% 20%;
-    --ring: 142 76% 36%;
+    --ring: 221 83% 53%;
 
     /* Financial theme colors - dark mode */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
-    --chart-1: 142 76% 36%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 0 0% 20%;
+    --chart-1: 221 83% 53%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 199 89% 48%;
     --chart-4: 220 13% 30%;
     --chart-5: 28 87% 67%;
     
-    --sidebar-background: 142 76% 20%; /* Dark green */
+    --sidebar-background: 221 83% 35%; /* Dark blue */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 142 76% 28%;
+    --sidebar-accent: 221 83% 45%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 142 76% 15%;
-    --sidebar-ring: 142 76% 36%;
+    --sidebar-border: 221 83% 25%;
+    --sidebar-ring: 221 83% 53%;
   }
 }
 
