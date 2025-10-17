@@ -129,6 +129,51 @@ All colors MUST be HSL.
     --sidebar-border: 221 83% 25%;
     --sidebar-ring: 221 83% 53%;
   }
+
+  /* Business Platform Green Theme */
+  .business-theme {
+    --primary: 142 76% 36%; /* Professional green */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 70% 45%; /* Lighter green */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 142 65% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --ring: 142 76% 36%;
+
+    --sidebar-background: 142 76% 36%; /* Professional green sidebar */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 142 70% 45%; /* Lighter green */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 65% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 142 76% 28%;
+    --sidebar-ring: 142 76% 36%;
+  }
+
+  .dark .business-theme {
+    --primary: 142 76% 36%; /* Professional green */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 70% 45%; /* Lighter green */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 142 65% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --ring: 142 76% 36%;
+
+    --sidebar-background: 142 76% 25%; /* Dark green */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 142 70% 40%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 142 76% 18%;
+    --sidebar-ring: 142 76% 36%;
+  }
 }
 
 @layer base {

@@ -63,7 +63,7 @@ export default function BusinessDashboard() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
         <div className="flex-1">

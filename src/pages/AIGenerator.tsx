@@ -260,7 +260,7 @@ const AIGenerator = () => {
   if (showEditor) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
+        <div className="flex min-h-screen w-full business-theme">
           <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
           
           <div className="flex-1 flex flex-col">
@@ -294,7 +294,7 @@ const AIGenerator = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
         <div className="flex-1">
