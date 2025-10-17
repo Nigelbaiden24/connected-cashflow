@@ -29,6 +29,8 @@ import Recruitment from "./pages/Recruitment";
 import CandidateRegistration from "./pages/CandidateRegistration";
 import EmployerVacancy from "./pages/EmployerVacancy";
 import FinancialPlanning from "./pages/FinancialPlanning";
+import FinancialPlanDetail from "./pages/FinancialPlanDetail";
+import CreateFinancialPlan from "./pages/CreateFinancialPlan";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -305,6 +307,45 @@ const App = () => {
                     <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
                     <main className="flex-1">
                       <Payroll />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/financial-planning" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <FinancialPlanning />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/financial-planning/new" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <CreateFinancialPlan />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/financial-planning/:id" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <FinancialPlanDetail />
                     </main>
                   </div>
                 </SidebarProvider>
