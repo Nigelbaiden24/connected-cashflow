@@ -106,16 +106,6 @@ const operationsItems = [
     icon: Calculator,
   },
   {
-    title: "Recruitment",
-    url: "/recruitment",
-    icon: Users,
-  },
-  {
-    title: "Reports",
-    url: "/reports",
-    icon: FileText,
-  },
-  {
     title: "Security",
     url: "/security",
     icon: Shield,
