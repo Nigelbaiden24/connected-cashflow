@@ -106,6 +106,111 @@ export type Database = {
           },
         ]
       }
+      candidates: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          cover_letter: string | null
+          created_at: string
+          current_employer: string | null
+          current_job_title: string | null
+          cv_file_path: string | null
+          date_of_birth: string
+          desired_salary_max: number | null
+          desired_salary_min: number | null
+          email: string
+          employment_history: Json | null
+          first_name: string
+          id: string
+          last_name: string
+          linkedin_url: string | null
+          nationality: string
+          ni_number: string | null
+          notice_period: string | null
+          passport_number: string | null
+          phone: string
+          postcode: string
+          qualifications: Json | null
+          reference_contacts: Json | null
+          right_to_work_uk: boolean | null
+          skills: string[] | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+          visa_status: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          cover_letter?: string | null
+          created_at?: string
+          current_employer?: string | null
+          current_job_title?: string | null
+          cv_file_path?: string | null
+          date_of_birth: string
+          desired_salary_max?: number | null
+          desired_salary_min?: number | null
+          email: string
+          employment_history?: Json | null
+          first_name: string
+          id?: string
+          last_name: string
+          linkedin_url?: string | null
+          nationality: string
+          ni_number?: string | null
+          notice_period?: string | null
+          passport_number?: string | null
+          phone: string
+          postcode: string
+          qualifications?: Json | null
+          reference_contacts?: Json | null
+          right_to_work_uk?: boolean | null
+          skills?: string[] | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visa_status?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          cover_letter?: string | null
+          created_at?: string
+          current_employer?: string | null
+          current_job_title?: string | null
+          cv_file_path?: string | null
+          date_of_birth?: string
+          desired_salary_max?: number | null
+          desired_salary_min?: number | null
+          email?: string
+          employment_history?: Json | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          linkedin_url?: string | null
+          nationality?: string
+          ni_number?: string | null
+          notice_period?: string | null
+          passport_number?: string | null
+          phone?: string
+          postcode?: string
+          qualifications?: Json | null
+          reference_contacts?: Json | null
+          right_to_work_uk?: boolean | null
+          skills?: string[] | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visa_status?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       client_documents: {
         Row: {
           client_id: string
@@ -1118,6 +1223,93 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      vacancies: {
+        Row: {
+          application_deadline: string | null
+          benefits: string[] | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          id: string
+          job_description: string
+          job_location: string
+          job_sector: string
+          job_title: string
+          job_type: string
+          key_responsibilities: string[] | null
+          number_of_positions: number | null
+          preferred_qualifications: string[] | null
+          remote_work: boolean | null
+          required_qualifications: string[] | null
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          start_date: string | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+          visa_sponsorship: boolean | null
+        }
+        Insert: {
+          application_deadline?: string | null
+          benefits?: string[] | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at?: string
+          id?: string
+          job_description: string
+          job_location: string
+          job_sector: string
+          job_title: string
+          job_type: string
+          key_responsibilities?: string[] | null
+          number_of_positions?: number | null
+          preferred_qualifications?: string[] | null
+          remote_work?: boolean | null
+          required_qualifications?: string[] | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visa_sponsorship?: boolean | null
+        }
+        Update: {
+          application_deadline?: string | null
+          benefits?: string[] | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          id?: string
+          job_description?: string
+          job_location?: string
+          job_sector?: string
+          job_title?: string
+          job_type?: string
+          key_responsibilities?: string[] | null
+          number_of_positions?: number | null
+          preferred_qualifications?: string[] | null
+          remote_work?: boolean | null
+          required_qualifications?: string[] | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+          visa_sponsorship?: boolean | null
         }
         Relationships: []
       }

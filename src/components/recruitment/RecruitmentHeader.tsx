@@ -24,7 +24,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
     { id: "tech", label: "Technology", icon: Code },
     { id: "finance", label: "Finance", icon: TrendingUp },
     { id: "general", label: "All Sectors", icon: Building2 },
-    { id: "login", label: "Client Login", icon: User },
+    { id: "login", label: "FlowPulse.io", icon: User },
   ];
 
   return (
@@ -60,11 +60,15 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => onNavigate("candidate-register")}>
               <User className="h-4 w-4 mr-2" />
               For Candidates
             </Button>
-            <Button size="sm">
+            <Button variant="ghost" size="sm" onClick={() => onNavigate("employer-register")}>
+              <Building2 className="h-4 w-4 mr-2" />
+              For Employers
+            </Button>
+            <Button size="sm" onClick={() => onNavigate("contact")}>
               <Phone className="h-4 w-4 mr-2" />
               Contact Us
             </Button>
@@ -99,11 +103,24 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 </button>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t">
-                <Button variant="ghost" size="sm" className="justify-start">
+                <Button variant="ghost" size="sm" className="justify-start" onClick={() => {
+                  onNavigate("candidate-register");
+                  setMobileMenuOpen(false);
+                }}>
                   <User className="h-4 w-4 mr-2" />
                   For Candidates
                 </Button>
-                <Button size="sm" className="justify-start">
+                <Button variant="ghost" size="sm" className="justify-start" onClick={() => {
+                  onNavigate("employer-register");
+                  setMobileMenuOpen(false);
+                }}>
+                  <Building2 className="h-4 w-4 mr-2" />
+                  For Employers
+                </Button>
+                <Button size="sm" className="justify-start" onClick={() => {
+                  onNavigate("contact");
+                  setMobileMenuOpen(false);
+                }}>
                   <Phone className="h-4 w-4 mr-2" />
                   Contact Us
                 </Button>

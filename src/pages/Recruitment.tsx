@@ -29,6 +29,12 @@ export default function Recruitment() {
   const handleNavigate = (section: string) => {
     if (section === "login") {
       navigate("/login");
+    } else if (section === "candidate-register") {
+      navigate("/candidate-registration");
+    } else if (section === "employer-register") {
+      navigate("/employer-vacancy");
+    } else if (section === "contact") {
+      setCurrentSection("contact");
     } else {
       setCurrentSection(section);
     }
