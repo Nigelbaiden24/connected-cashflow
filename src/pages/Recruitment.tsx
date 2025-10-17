@@ -29,6 +29,8 @@ export default function Recruitment() {
   const handleNavigate = (section: string) => {
     if (section === "login") {
       navigate("/login");
+    } else if (section === "business-dashboard") {
+      navigate("/business-dashboard");
     } else if (section === "candidate-register") {
       navigate("/candidate-registration");
     } else if (section === "employer-register") {

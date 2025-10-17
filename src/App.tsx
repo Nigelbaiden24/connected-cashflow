@@ -31,6 +31,7 @@ import EmployerVacancy from "./pages/EmployerVacancy";
 import FinancialPlanning from "./pages/FinancialPlanning";
 import FinancialPlanDetail from "./pages/FinancialPlanDetail";
 import CreateFinancialPlan from "./pages/CreateFinancialPlan";
+import BusinessDashboard from "./pages/BusinessDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -364,6 +365,8 @@ const App = () => {
                 </SidebarProvider>
               )
             } />
+            
+            <Route path="/business-dashboard" element={<BusinessDashboard />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
