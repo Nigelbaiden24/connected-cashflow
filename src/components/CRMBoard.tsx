@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -23,6 +26,10 @@ export const CRMBoard = () => {
   const [contacts, setContacts] = useState<any[]>([]);
   const [tables, setTables] = useState<CRMTable[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
+  const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -50,6 +57,16 @@ export const CRMBoard = () => {
       console.error("Error fetching contacts:", error);
     }
   };
+
+  const filteredContacts = contacts.filter((contact) => {
+    const matchesStatus = filterStatus === "all" || contact.status === filterStatus;
+    const matchesSearch =
+      searchQuery === "" ||
+      contact.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      contact.company?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
   const [newTableName, setNewTableName] = useState("");
   const [editingTable, setEditingTable] = useState<string | null>(null);
@@ -83,6 +100,109 @@ export const CRMBoard = () => {
     } catch (error) {
       console.error("Error adding contact:", error);
       toast.error("Failed to add contact");
+    }
+  };
+
+  const addEmptyRow = async () => {
+    try {
+      const { error } = await supabase.from("crm_contacts").insert([
+        {
+          name: "New Contact",
+          status: "active",
+          priority: "medium",
+        },
+      ]);
+
+      if (error) throw error;
+      toast.success("Row added");
+      fetchContacts();
+    } catch (error) {
+      console.error("Error adding row:", error);
+      toast.error("Failed to add row");
+    }
+  };
+
+  const updateContactField = async (id: string, field: string, value: string) => {
+    try {
+      const { error } = await supabase
+        .from("crm_contacts")
+        .update({ [field]: value })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      setContacts(
+        contacts.map((c) => (c.id === id ? { ...c, [field]: value } : c))
+      );
+    } catch (error) {
+      console.error("Error updating contact:", error);
+      toast.error("Failed to update");
+    }
+  };
+
+  const deleteContact = async (id: string) => {
+    try {
+      const { error } = await supabase.from("crm_contacts").delete().eq("id", id);
+
+      if (error) throw error;
+      toast.success("Contact deleted");
+      fetchContacts();
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      toast.error("Failed to delete contact");
+    }
+  };
+
+  const deleteSelected = async () => {
+    if (selectedContacts.length === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from("crm_contacts")
+        .delete()
+        .in("id", selectedContacts);
+
+      if (error) throw error;
+      toast.success(`Deleted ${selectedContacts.length} contacts`);
+      setSelectedContacts([]);
+      fetchContacts();
+    } catch (error) {
+      console.error("Error deleting contacts:", error);
+      toast.error("Failed to delete contacts");
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedContacts.length === filteredContacts.length) {
+      setSelectedContacts([]);
+    } else {
+      setSelectedContacts(filteredContacts.map((c) => c.id));
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-yellow-500";
+      case "low":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500/10 text-green-700 border-green-200";
+      case "inactive":
+        return "bg-gray-500/10 text-gray-700 border-gray-200";
+      case "prospect":
+        return "bg-blue-500/10 text-blue-700 border-blue-200";
+      default:
+        return "bg-gray-500/10 text-gray-700 border-gray-200";
     }
   };
 
@@ -210,10 +330,38 @@ export const CRMBoard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">CRM Board</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search contacts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-32">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="prospect">Prospect</SelectItem>
+            </SelectContent>
+          </Select>
+          {selectedContacts.length > 0 && (
+            <Button variant="destructive" size="sm" onClick={deleteSelected}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete ({selectedContacts.length})
+            </Button>
+          )}
           <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
             <DialogTrigger asChild>
               <Button>
@@ -224,18 +372,14 @@ export const CRMBoard = () => {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Contact</DialogTitle>
-                <DialogDescription>
-                  Create a new contact in your CRM
-                </DialogDescription>
+                <DialogDescription>Create a new contact in your CRM</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
                   <Label>Name *</Label>
                   <Input
                     value={newContact.name}
-                    onChange={(e) =>
-                      setNewContact({ ...newContact, name: e.target.value })
-                    }
+                    onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
                   />
                 </div>
                 <div>
@@ -243,36 +387,28 @@ export const CRMBoard = () => {
                   <Input
                     type="email"
                     value={newContact.email}
-                    onChange={(e) =>
-                      setNewContact({ ...newContact, email: e.target.value })
-                    }
+                    onChange={(e) => setNewContact({ ...newContact, email: e.target.value })}
                   />
                 </div>
                 <div>
                   <Label>Phone</Label>
                   <Input
                     value={newContact.phone}
-                    onChange={(e) =>
-                      setNewContact({ ...newContact, phone: e.target.value })
-                    }
+                    onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
                   />
                 </div>
                 <div>
                   <Label>Company</Label>
                   <Input
                     value={newContact.company}
-                    onChange={(e) =>
-                      setNewContact({ ...newContact, company: e.target.value })
-                    }
+                    onChange={(e) => setNewContact({ ...newContact, company: e.target.value })}
                   />
                 </div>
                 <div>
                   <Label>Position</Label>
                   <Input
                     value={newContact.position}
-                    onChange={(e) =>
-                      setNewContact({ ...newContact, position: e.target.value })
-                    }
+                    onChange={(e) => setNewContact({ ...newContact, position: e.target.value })}
                   />
                 </div>
               </div>
@@ -291,9 +427,7 @@ export const CRMBoard = () => {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create New Table</DialogTitle>
-                <DialogDescription>
-                  Add a new custom table to organize your data
-                </DialogDescription>
+                <DialogDescription>Add a custom table</DialogDescription>
               </DialogHeader>
               <Input
                 placeholder="Table name"
@@ -309,54 +443,247 @@ export const CRMBoard = () => {
         </div>
       </div>
 
-      {/* Contacts Table */}
-      {contacts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Contacts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {contacts.map((contact) => (
-                    <TableRow
-                      key={contact.id}
-                      className="cursor-pointer hover:bg-muted/50"
+      {/* Modern Grid-Style Contacts Table */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-muted/30 border-b">
+                  <th className="p-0 w-12">
+                    <div className="flex items-center justify-center h-12">
+                      <Checkbox
+                        checked={
+                          filteredContacts.length > 0 &&
+                          selectedContacts.length === filteredContacts.length
+                        }
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </div>
+                  </th>
+                  <th className="text-left p-4 font-semibold text-sm">Name</th>
+                  <th className="text-left p-4 font-semibold text-sm">Email</th>
+                  <th className="text-left p-4 font-semibold text-sm">Phone</th>
+                  <th className="text-left p-4 font-semibold text-sm">Company</th>
+                  <th className="text-left p-4 font-semibold text-sm">Position</th>
+                  <th className="text-left p-4 font-semibold text-sm w-32">Status</th>
+                  <th className="text-left p-4 font-semibold text-sm w-32">Priority</th>
+                  <th className="w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredContacts.map((contact, index) => (
+                  <tr
+                    key={contact.id}
+                    className="border-b hover:bg-muted/20 transition-colors group"
+                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.05)" }}
+                  >
+                    <td className="p-0">
+                      <div className="flex items-center justify-center h-14">
+                        <Checkbox
+                          checked={selectedContacts.includes(contact.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedContacts([...selectedContacts, contact.id]);
+                            } else {
+                              setSelectedContacts(selectedContacts.filter((id) => id !== contact.id));
+                            }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    </td>
+                    <td
+                      className="p-4 cursor-pointer"
                       onClick={() => navigate(`/crm/${contact.id}`)}
                     >
-                      <TableCell className="font-medium">{contact.name}</TableCell>
-                      <TableCell>{contact.email || "N/A"}</TableCell>
-                      <TableCell>{contact.phone || "N/A"}</TableCell>
-                      <TableCell>{contact.company || "N/A"}</TableCell>
-                      <TableCell>
-                        <span className="capitalize">{contact.status}</span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="capitalize">{contact.priority}</span>
-                      </TableCell>
-                      <TableCell>
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(contact.priority)}`} />
+                        {editingCell?.id === contact.id && editingCell?.field === "name" ? (
+                          <Input
+                            autoFocus
+                            value={contact.name}
+                            onChange={(e) => updateContactField(contact.id, "name", e.target.value)}
+                            onBlur={() => setEditingCell(null)}
+                            onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                            className="h-8"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span
+                            className="font-medium hover:text-primary"
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCell({ id: contact.id, field: "name" });
+                            }}
+                          >
+                            {contact.name}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {editingCell?.id === contact.id && editingCell?.field === "email" ? (
+                        <Input
+                          autoFocus
+                          value={contact.email || ""}
+                          onChange={(e) => updateContactField(contact.id, "email", e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCell({ id: contact.id, field: "email" });
+                          }}
+                          className="cursor-text"
+                        >
+                          {contact.email || "—"}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {editingCell?.id === contact.id && editingCell?.field === "phone" ? (
+                        <Input
+                          autoFocus
+                          value={contact.phone || ""}
+                          onChange={(e) => updateContactField(contact.id, "phone", e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCell({ id: contact.id, field: "phone" });
+                          }}
+                          className="cursor-text"
+                        >
+                          {contact.phone || "—"}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {editingCell?.id === contact.id && editingCell?.field === "company" ? (
+                        <Input
+                          autoFocus
+                          value={contact.company || ""}
+                          onChange={(e) => updateContactField(contact.id, "company", e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCell({ id: contact.id, field: "company" });
+                          }}
+                          className="cursor-text"
+                        >
+                          {contact.company || "—"}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      {editingCell?.id === contact.id && editingCell?.field === "position" ? (
+                        <Input
+                          autoFocus
+                          value={contact.position || ""}
+                          onChange={(e) => updateContactField(contact.id, "position", e.target.value)}
+                          onBlur={() => setEditingCell(null)}
+                          onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span
+                          onDoubleClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCell({ id: contact.id, field: "position" });
+                          }}
+                          className="cursor-text"
+                        >
+                          {contact.position || "—"}
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                      <Select
+                        value={contact.status}
+                        onValueChange={(value) => updateContactField(contact.id, "status", value)}
+                      >
+                        <SelectTrigger className="h-8 border-0 bg-transparent">
+                          <Badge variant="outline" className={getStatusColor(contact.status)}>
+                            {contact.status}
+                          </Badge>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="prospect">Prospect</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                      <Select
+                        value={contact.priority}
+                        onValueChange={(value) => updateContactField(contact.id, "priority", value)}
+                      >
+                        <SelectTrigger className="h-8 border-0 bg-transparent">
+                          <Badge variant="outline" className="capitalize">
+                            {contact.priority}
+                          </Badge>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="p-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/crm/${contact.id}`)}>
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => deleteContact(contact.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-t p-4">
+            <Button variant="ghost" onClick={addEmptyRow} className="w-full justify-start text-muted-foreground hover:text-foreground">
+              <Plus className="h-4 w-4 mr-2" />
+              Add new row
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Custom Tables */}
 
