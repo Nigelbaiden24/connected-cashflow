@@ -102,18 +102,6 @@ const App = () => {
               )
             } />
             
-            <Route path="/ai-generator" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <AIGenerator />
-                    </main>
-                  </div>
-                </SidebarProvider>
-              )
-            } />
             
             <Route path="/market" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (

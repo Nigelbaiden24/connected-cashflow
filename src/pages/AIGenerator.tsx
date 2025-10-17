@@ -12,6 +12,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { templates, loadTemplate } from "@/lib/templateManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
+import { BusinessSidebar } from "@/components/BusinessSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useNavigate } from "react-router-dom";
 
 const documentTypes = [
   { value: "financial-plan", label: "Financial Plan" },
@@ -29,6 +32,7 @@ const documentTypes = [
 ];
 
 const AIGenerator = () => {
+  const navigate = useNavigate();
   const [documentType, setDocumentType] = useState("financial-plan");
   const [prompt, setPrompt] = useState("");
   const [clientName, setClientName] = useState("");
@@ -38,7 +42,21 @@ const AIGenerator = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState("");
+  const [userEmail] = useState("business@flowpulse.io");
   const { toast } = useToast();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      navigate("/login");
+    }
+  };
 
   const getSystemPrompt = (type: string) => {
     const prompts: Record<string, string> = {
@@ -241,35 +259,57 @@ const AIGenerator = () => {
 
   if (showEditor) {
     return (
-      <div className="h-screen flex flex-col">
-        <div className="p-4 border-b flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Document Editor</h1>
-            <p className="text-sm text-muted-foreground">Edit your generated document</p>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
+          
+          <div className="flex-1 flex flex-col">
+            <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="flex h-16 items-center gap-4 px-6">
+                <SidebarTrigger />
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold">Document Editor</h1>
+                  <p className="text-sm text-muted-foreground">Edit your generated document</p>
+                </div>
+                <Button onClick={() => setShowEditor(false)} variant="outline">
+                  Back to Generator
+                </Button>
+              </div>
+            </header>
+            <DocumentEditor 
+              initialContent={editorContent}
+              onSave={(content) => {
+                setGeneratedContent(content);
+                toast({
+                  title: "Saved",
+                  description: "Document saved successfully"
+                });
+              }}
+            />
           </div>
-          <Button onClick={() => setShowEditor(false)} variant="outline">
-            Back to Generator
-          </Button>
         </div>
-        <DocumentEditor 
-          initialContent={editorContent}
-          onSave={(content) => {
-            setGeneratedContent(content);
-            toast({
-              title: "Saved",
-              description: "Document saved successfully"
-            });
-          }}
-        />
-      </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">FlowPulse AI Tool</h1>
-        <p className="text-muted-foreground">Generate professional financial documents with AI assistance</p>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
+        
+        <div className="flex-1">
+          <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex h-16 items-center gap-4 px-6">
+              <SidebarTrigger />
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold">AI Document Generator</h1>
+              </div>
+            </div>
+          </header>
+
+          <main className="p-6 space-y-6">
+            <div>
+              <p className="text-muted-foreground">Generate professional financial documents with AI assistance</p>
       </div>
 
       <Tabs defaultValue="standard" className="space-y-6">
@@ -514,10 +554,13 @@ const AIGenerator = () => {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
