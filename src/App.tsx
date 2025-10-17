@@ -32,6 +32,15 @@ import FinancialPlanning from "./pages/FinancialPlanning";
 import FinancialPlanDetail from "./pages/FinancialPlanDetail";
 import CreateFinancialPlan from "./pages/CreateFinancialPlan";
 import BusinessDashboard from "./pages/BusinessDashboard";
+import Projects from "./pages/Projects";
+import Tasks from "./pages/Tasks";
+import Calendar from "./pages/Calendar";
+import BusinessPlanning from "./pages/BusinessPlanning";
+import Analytics from "./pages/Analytics";
+import Revenue from "./pages/Revenue";
+import Team from "./pages/Team";
+import Settings from "./pages/Settings";
+import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -366,7 +375,17 @@ const App = () => {
               )
             } />
             
-            <Route path="/business-dashboard" element={<BusinessDashboard />} />
+          <Route path="/business-dashboard" element={<BusinessDashboard />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/business-planning" element={<BusinessPlanning />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/revenue" element={<Revenue />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/crm" element={<CRM />} />
+          <Route path="/crm/:id" element={<CRMContactDetail />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -55,7 +55,7 @@ const businessToolsItems = [
     icon: ClipboardList,
   },
   {
-    title: "Team Chat",
+    title: "AI Chatbot",
     url: "/chat",
     icon: MessageSquare,
   },
@@ -63,6 +63,11 @@ const businessToolsItems = [
     title: "Calendar",
     url: "/calendar",
     icon: Calendar,
+  },
+  {
+    title: "AI Generator",
+    url: "/ai-generator",
+    icon: Briefcase,
   },
 ];
 
@@ -83,8 +88,8 @@ const businessManagementItems = [
     icon: TrendingUp,
   },
   {
-    title: "Client Management",
-    url: "/clients",
+    title: "CRM",
+    url: "/crm",
     icon: Users,
   },
   {
