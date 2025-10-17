@@ -254,7 +254,7 @@ export const EmployeeManagement = () => {
                 </Select>
               </div>
               <div>
-                <Label>Pay Rate ($/hour or $/year) *</Label>
+                <Label>Pay Rate (£/hour or £/year) *</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -349,8 +349,7 @@ export const EmployeeManagement = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <DollarSign className="h-3 w-3" />
-                          {employee.pay_rate.toLocaleString()}
+                          £{employee.pay_rate.toLocaleString()}
                         </div>
                       </TableCell>
                       <TableCell>

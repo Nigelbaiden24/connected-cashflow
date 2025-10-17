@@ -111,7 +111,7 @@ export default function Payroll() {
               <CardTitle className="text-sm font-medium text-muted-foreground">This Period</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.grossPay.toLocaleString()}</div>
+              <div className="text-2xl font-bold">£{stats.grossPay.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground mt-1">Gross payroll</p>
             </CardContent>
           </Card>
@@ -120,7 +120,7 @@ export default function Payroll() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Net Pay</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.netPay.toLocaleString()}</div>
+              <div className="text-2xl font-bold">£{stats.netPay.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground mt-1">After deductions</p>
             </CardContent>
           </Card>
@@ -129,7 +129,7 @@ export default function Payroll() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Tax Withholding</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.taxWithholding.toLocaleString()}</div>
+              <div className="text-2xl font-bold">£{stats.taxWithholding.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground mt-1">Total taxes</p>
             </CardContent>
               </Card>

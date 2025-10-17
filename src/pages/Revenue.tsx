@@ -38,7 +38,7 @@ const Revenue = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$223,000</div>
+            <div className="text-2xl font-bold">£223,000</div>
             <p className="text-xs text-success flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3" />
               10.2% vs last month
@@ -52,7 +52,7 @@ const Revenue = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$48,000</div>
+            <div className="text-2xl font-bold">£48,000</div>
             <p className="text-xs text-success flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3" />
               8.3% growth
@@ -66,7 +66,7 @@ const Revenue = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$14,375</div>
+            <div className="text-2xl font-bold">£14,375</div>
             <p className="text-xs text-muted-foreground">Based on last 30 days</p>
           </CardContent>
         </Card>
@@ -77,7 +77,7 @@ const Revenue = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$22,000</div>
+            <div className="text-2xl font-bold">£22,000</div>
             <p className="text-xs text-muted-foreground">3 invoices pending</p>
           </CardContent>
         </Card>
@@ -101,7 +101,7 @@ const Revenue = () => {
                       {Math.abs(stream.growth)}%
                     </div>
                   </div>
-                  <div className="text-3xl font-bold">${stream.amount.toLocaleString()}</div>
+                  <div className="text-3xl font-bold">£{stream.amount.toLocaleString()}</div>
                   <p className="text-sm text-muted-foreground mt-2">This month</p>
                 </CardContent>
               </Card>
@@ -125,7 +125,7 @@ const Revenue = () => {
                       </p>
                     </div>
                     <div className="text-right space-y-1">
-                      <div className="font-semibold">${transaction.amount.toLocaleString()}</div>
+                      <div className="font-semibold">£{transaction.amount.toLocaleString()}</div>
                       <div className={`text-xs ${transaction.status === 'completed' ? 'text-success' : 'text-warning'}`}>
                         {transaction.status}
                       </div>

@@ -272,14 +272,12 @@ export const PayrollRuns = () => {
                     <TableCell>{new Date(run.payment_date).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        {run.total_gross?.toLocaleString() || "0"}
+                        £{run.total_gross?.toLocaleString() || "0"}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <DollarSign className="h-3 w-3" />
-                        {run.total_net?.toLocaleString() || "0"}
+                        £{run.total_net?.toLocaleString() || "0"}
                       </div>
                     </TableCell>
                     <TableCell>
