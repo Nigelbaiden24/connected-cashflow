@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ColumnManager } from "./crm/ColumnManager";
 
 interface CRMTable {
   id: string;
@@ -24,8 +25,10 @@ interface CRMTable {
 export const CRMBoard = () => {
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<any[]>([]);
+  const [customColumns, setCustomColumns] = useState<any[]>([]);
   const [tables, setTables] = useState<CRMTable[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
+  const [showColumnManager, setShowColumnManager] = useState(false);
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -42,7 +45,22 @@ export const CRMBoard = () => {
 
   useEffect(() => {
     fetchContacts();
+    fetchCustomColumns();
   }, []);
+
+  const fetchCustomColumns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_custom_columns")
+        .select("*")
+        .order("column_order", { ascending: true });
+
+      if (error) throw error;
+      setCustomColumns(data || []);
+    } catch (error) {
+      console.error("Error fetching custom columns:", error);
+    }
+  };
 
   const fetchContacts = async () => {
     try {
@@ -417,6 +435,10 @@ export const CRMBoard = () => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <Button variant="outline" onClick={() => setShowColumnManager(true)}>
+            <Columns className="h-4 w-4 mr-2" />
+            Add Column
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -442,6 +464,13 @@ export const CRMBoard = () => {
           </Dialog>
         </div>
       </div>
+
+      <ColumnManager
+        open={showColumnManager}
+        onOpenChange={setShowColumnManager}
+        onColumnAdded={fetchCustomColumns}
+        existingColumns={customColumns}
+      />
 
       {/* Modern Grid-Style Contacts Table */}
       <Card className="border-0 shadow-sm">

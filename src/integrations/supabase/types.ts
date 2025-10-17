@@ -53,6 +53,59 @@ export type Database = {
         }
         Relationships: []
       }
+      benefits: {
+        Row: {
+          benefit_type: string
+          coverage_end_date: string | null
+          coverage_start_date: string | null
+          created_at: string
+          employee_contribution: number | null
+          employee_id: string
+          employer_contribution: number | null
+          id: string
+          plan_name: string | null
+          provider: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          benefit_type: string
+          coverage_end_date?: string | null
+          coverage_start_date?: string | null
+          created_at?: string
+          employee_contribution?: number | null
+          employee_id: string
+          employer_contribution?: number | null
+          id?: string
+          plan_name?: string | null
+          provider?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          benefit_type?: string
+          coverage_end_date?: string | null
+          coverage_start_date?: string | null
+          created_at?: string
+          employee_contribution?: number | null
+          employee_id?: string
+          employer_contribution?: number | null
+          id?: string
+          plan_name?: string | null
+          provider?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "benefits_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_documents: {
         Row: {
           client_id: string
@@ -281,6 +334,53 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_documents: {
+        Row: {
+          created_at: string
+          document_name: string
+          document_type: string
+          employee_id: string | null
+          expiry_date: string | null
+          file_path: string | null
+          id: string
+          notes: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_name: string
+          document_type: string
+          employee_id?: string | null
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_name?: string
+          document_type?: string
+          employee_id?: string | null
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -304,6 +404,48 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      crm_contact_data: {
+        Row: {
+          column_id: string
+          contact_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          column_id: string
+          contact_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          column_id?: string
+          contact_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_contact_data_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "crm_custom_columns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contact_data_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_contacts: {
         Row: {
@@ -346,6 +488,39 @@ export type Database = {
           priority?: string | null
           status?: string | null
           tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_custom_columns: {
+        Row: {
+          column_name: string
+          column_options: Json | null
+          column_order: number | null
+          column_type: string
+          created_at: string
+          id: string
+          is_required: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          column_name: string
+          column_options?: Json | null
+          column_order?: number | null
+          column_type: string
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          column_name?: string
+          column_options?: Json | null
+          column_order?: number | null
+          column_type?: string
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
           updated_at?: string
         }
         Relationships: []
@@ -436,6 +611,93 @@ export type Database = {
         }
         Relationships: []
       }
+      employees: {
+        Row: {
+          account_number_encrypted: string | null
+          address: string | null
+          bank_name: string | null
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          department: string | null
+          email: string
+          employee_id: string
+          employment_type: string | null
+          first_name: string
+          hire_date: string
+          id: string
+          last_name: string
+          pay_frequency: string | null
+          pay_rate: number
+          phone: string | null
+          position: string | null
+          routing_number_encrypted: string | null
+          ssn_encrypted: string | null
+          state: string | null
+          status: string | null
+          termination_date: string | null
+          updated_at: string
+          user_id: string | null
+          zip: string | null
+        }
+        Insert: {
+          account_number_encrypted?: string | null
+          address?: string | null
+          bank_name?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          department?: string | null
+          email: string
+          employee_id: string
+          employment_type?: string | null
+          first_name: string
+          hire_date: string
+          id?: string
+          last_name: string
+          pay_frequency?: string | null
+          pay_rate: number
+          phone?: string | null
+          position?: string | null
+          routing_number_encrypted?: string | null
+          ssn_encrypted?: string | null
+          state?: string | null
+          status?: string | null
+          termination_date?: string | null
+          updated_at?: string
+          user_id?: string | null
+          zip?: string | null
+        }
+        Update: {
+          account_number_encrypted?: string | null
+          address?: string | null
+          bank_name?: string | null
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          department?: string | null
+          email?: string
+          employee_id?: string
+          employment_type?: string | null
+          first_name?: string
+          hire_date?: string
+          id?: string
+          last_name?: string
+          pay_frequency?: string | null
+          pay_rate?: number
+          phone?: string | null
+          position?: string | null
+          routing_number_encrypted?: string | null
+          ssn_encrypted?: string | null
+          state?: string | null
+          status?: string | null
+          termination_date?: string | null
+          updated_at?: string
+          user_id?: string | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           category: string | null
@@ -498,6 +760,117 @@ export type Database = {
           mfa_method?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      payroll_items: {
+        Row: {
+          created_at: string
+          employee_id: string
+          federal_tax: number | null
+          gross_pay: number
+          health_insurance: number | null
+          hours_worked: number | null
+          id: string
+          medicare: number | null
+          net_pay: number
+          other_deductions: number | null
+          payroll_run_id: string
+          retirement_401k: number | null
+          social_security: number | null
+          state_tax: number | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          federal_tax?: number | null
+          gross_pay: number
+          health_insurance?: number | null
+          hours_worked?: number | null
+          id?: string
+          medicare?: number | null
+          net_pay: number
+          other_deductions?: number | null
+          payroll_run_id: string
+          retirement_401k?: number | null
+          social_security?: number | null
+          state_tax?: number | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          federal_tax?: number | null
+          gross_pay?: number
+          health_insurance?: number | null
+          hours_worked?: number | null
+          id?: string
+          medicare?: number | null
+          net_pay?: number
+          other_deductions?: number | null
+          payroll_run_id?: string
+          retirement_401k?: number | null
+          social_security?: number | null
+          state_tax?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_items_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_items_payroll_run_id_fkey"
+            columns: ["payroll_run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_runs: {
+        Row: {
+          created_at: string
+          id: string
+          pay_period_end: string
+          pay_period_start: string
+          payment_date: string
+          processed_at: string | null
+          processed_by: string | null
+          run_date: string
+          status: string | null
+          total_gross: number | null
+          total_net: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pay_period_end: string
+          pay_period_start: string
+          payment_date: string
+          processed_at?: string | null
+          processed_by?: string | null
+          run_date: string
+          status?: string | null
+          total_gross?: number | null
+          total_net?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pay_period_end?: string
+          pay_period_start?: string
+          payment_date?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          run_date?: string
+          status?: string | null
+          total_gross?: number | null
+          total_net?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -628,6 +1001,98 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tax_settings: {
+        Row: {
+          created_at: string
+          federal_rate: number | null
+          id: string
+          medicare_rate: number | null
+          social_security_rate: number | null
+          state: string | null
+          state_rate: number | null
+          unemployment_rate: number | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          federal_rate?: number | null
+          id?: string
+          medicare_rate?: number | null
+          social_security_rate?: number | null
+          state?: string | null
+          state_rate?: number | null
+          unemployment_rate?: number | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          federal_rate?: number | null
+          id?: string
+          medicare_rate?: number | null
+          social_security_rate?: number | null
+          state?: string | null
+          state_rate?: number | null
+          unemployment_rate?: number | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      time_off_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          days_requested: number
+          employee_id: string
+          end_date: string
+          id: string
+          notes: string | null
+          request_type: string
+          start_date: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          days_requested: number
+          employee_id: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          request_type: string
+          start_date: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          days_requested?: number
+          employee_id?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          request_type?: string
+          start_date?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_off_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

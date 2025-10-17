@@ -118,6 +118,11 @@ const practiceManagementItems = [
     icon: Briefcase,
   },
   {
+    title: "Payroll",
+    url: "/payroll",
+    icon: Calculator,
+  },
+  {
     title: "Reports",
     url: "/reports",
     icon: FileText,
