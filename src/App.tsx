@@ -67,7 +67,7 @@ const App = () => {
               <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
               <main className="flex-1">
                 <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/" element={<Recruitment />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/theodore" element={<Chat />} />
                   <Route path="/ai-generator" element={<AIGenerator />} />
