@@ -25,7 +25,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
     { id: "finance", label: "Finance", icon: TrendingUp },
     { id: "general", label: "All Sectors", icon: Building2 },
     { id: "login", label: "Flowpulse Finance", icon: TrendingUp },
-    { id: "business-dashboard", label: "Flowpulse", icon: Building2 },
+    { id: "business-dashboard", label: "Flowpulse Business", icon: Building2 },
   ];
 
   return (
