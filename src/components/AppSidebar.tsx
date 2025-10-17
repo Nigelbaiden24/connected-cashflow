@@ -118,19 +118,9 @@ const practiceManagementItems = [
     icon: UserPlus,
   },
   {
-    title: "Recruitment",
-    url: "/recruitment",
-    icon: Users,
-  },
-  {
     title: "Practice Management",
     url: "/practice",
     icon: Briefcase,
-  },
-  {
-    title: "Payroll",
-    url: "/payroll",
-    icon: Calculator,
   },
   {
     title: "Reports",
