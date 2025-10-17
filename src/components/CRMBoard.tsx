@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface CRMTable {
@@ -16,23 +19,72 @@ interface CRMTable {
 }
 
 export const CRMBoard = () => {
-  const [tables, setTables] = useState<CRMTable[]>([
-    {
-      id: "1",
-      name: "Leads",
-      columns: ["Name", "Email", "Status", "Priority"],
-      rows: [
-        { id: "1", Name: "John Doe", Email: "john@example.com", Status: "New", Priority: "High" },
-        { id: "2", Name: "Jane Smith", Email: "jane@example.com", Status: "Contacted", Priority: "Medium" },
-      ],
-    },
-  ]);
+  const navigate = useNavigate();
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [tables, setTables] = useState<CRMTable[]>([]);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [newContact, setNewContact] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    company: "",
+    position: "",
+    status: "active",
+    priority: "medium",
+  });
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const fetchContacts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_contacts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setContacts(data || []);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    }
+  };
 
   const [newTableName, setNewTableName] = useState("");
   const [editingTable, setEditingTable] = useState<string | null>(null);
   const [editTableName, setEditTableName] = useState("");
   const [newColumnName, setNewColumnName] = useState("");
   const [addingColumnTo, setAddingColumnTo] = useState<string | null>(null);
+
+  const addContact = async () => {
+    if (!newContact.name.trim()) {
+      toast.error("Please enter a name");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("crm_contacts").insert([newContact]);
+
+      if (error) throw error;
+
+      toast.success("Contact added successfully");
+      setNewContact({
+        name: "",
+        email: "",
+        phone: "",
+        company: "",
+        position: "",
+        status: "active",
+        priority: "medium",
+      });
+      setShowAddContact(false);
+      fetchContacts();
+    } catch (error) {
+      console.error("Error adding contact:", error);
+      toast.error("Failed to add contact");
+    }
+  };
 
   const addTable = () => {
     if (!newTableName.trim()) {
@@ -161,32 +213,152 @@ export const CRMBoard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">CRM Board</h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Table
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Table</DialogTitle>
-              <DialogDescription>
-                Add a new table to organize your data
-              </DialogDescription>
-            </DialogHeader>
-            <Input
-              placeholder="Table name"
-              value={newTableName}
-              onChange={(e) => setNewTableName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addTable()}
-            />
-            <DialogFooter>
-              <Button onClick={addTable}>Create Table</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Contact
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Contact</DialogTitle>
+                <DialogDescription>
+                  Create a new contact in your CRM
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Name *</Label>
+                  <Input
+                    value={newContact.name}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={newContact.email}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, email: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Phone</Label>
+                  <Input
+                    value={newContact.phone}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, phone: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Company</Label>
+                  <Input
+                    value={newContact.company}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, company: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Position</Label>
+                  <Input
+                    value={newContact.position}
+                    onChange={(e) =>
+                      setNewContact({ ...newContact, position: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={addContact}>Add Contact</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                New Table
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Table</DialogTitle>
+                <DialogDescription>
+                  Add a new custom table to organize your data
+                </DialogDescription>
+              </DialogHeader>
+              <Input
+                placeholder="Table name"
+                value={newTableName}
+                onChange={(e) => setNewTableName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addTable()}
+              />
+              <DialogFooter>
+                <Button onClick={addTable}>Create Table</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      {/* Contacts Table */}
+      {contacts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Contacts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {contacts.map((contact) => (
+                    <TableRow
+                      key={contact.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/crm/${contact.id}`)}
+                    >
+                      <TableCell className="font-medium">{contact.name}</TableCell>
+                      <TableCell>{contact.email || "N/A"}</TableCell>
+                      <TableCell>{contact.phone || "N/A"}</TableCell>
+                      <TableCell>{contact.company || "N/A"}</TableCell>
+                      <TableCell>
+                        <span className="capitalize">{contact.status}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="capitalize">{contact.priority}</span>
+                      </TableCell>
+                      <TableCell>
+                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Custom Tables */}
 
       <div className="grid gap-6">
         {tables.map((table) => (

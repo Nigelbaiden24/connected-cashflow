@@ -266,6 +266,92 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_contacts: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          position: string | null
+          priority: string | null
+          status: string | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          priority?: string | null
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          priority?: string | null
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      crm_interactions: {
+        Row: {
+          contact_id: string
+          created_at: string
+          description: string | null
+          id: string
+          interaction_date: string
+          interaction_type: string
+          outcome: string | null
+          subject: string | null
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          interaction_date?: string
+          interaction_type: string
+          outcome?: string | null
+          subject?: string | null
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          interaction_date?: string
+          interaction_type?: string
+          outcome?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_interactions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           category: string | null
