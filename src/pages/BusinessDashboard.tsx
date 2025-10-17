@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AppSidebar } from "@/components/AppSidebar";
+import { BusinessSidebar } from "@/components/BusinessSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,7 @@ export default function BusinessDashboard() {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+        <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
         <div className="flex-1">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -82,9 +82,9 @@ export default function BusinessDashboard() {
 
           <main className="flex-1 space-y-6 p-6">
             {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-6 text-white">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-6 text-white">
               <h2 className="text-3xl font-bold mb-2">Welcome to Flowpulse Business</h2>
-              <p className="text-blue-100">Your all-in-one business management platform</p>
+              <p className="text-green-100">Your all-in-one business management platform</p>
             </div>
 
             {/* Key Metrics */}
