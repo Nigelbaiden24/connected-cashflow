@@ -376,6 +376,7 @@ const App = () => {
           <Route path="/crm" element={<CRM />} />
           <Route path="/crm/:id" element={<CRMContactDetail />} />
           <Route path="/payroll" element={<Payroll />} />
+          <Route path="/security" element={<Security />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
