@@ -75,6 +75,11 @@ const aiToolsItems = [
 
 const financialPlanningItems = [
   {
+    title: "Financial Planning",
+    url: "/financial-planning",
+    icon: Calculator,
+  },
+  {
     title: "Portfolio Management",
     url: "/portfolio",
     icon: PieChart,

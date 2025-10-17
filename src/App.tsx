@@ -28,6 +28,7 @@ import Payroll from "./pages/Payroll";
 import Recruitment from "./pages/Recruitment";
 import CandidateRegistration from "./pages/CandidateRegistration";
 import EmployerVacancy from "./pages/EmployerVacancy";
+import FinancialPlanning from "./pages/FinancialPlanning";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -135,6 +136,19 @@ const App = () => {
                     <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
                     <main className="flex-1">
                       <Portfolio />
+                    </main>
+                  </div>
+                </SidebarProvider>
+              )
+            } />
+            
+            <Route path="/financial-planning" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <SidebarProvider>
+                  <div className="flex min-h-screen w-full">
+                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
+                    <main className="flex-1">
+                      <FinancialPlanning />
                     </main>
                   </div>
                 </SidebarProvider>

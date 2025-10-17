@@ -803,6 +803,204 @@ export type Database = {
         }
         Relationships: []
       }
+      expense_categories: {
+        Row: {
+          annual_amount: number
+          category_name: string
+          created_at: string
+          frequency: string | null
+          id: string
+          inflation_adjusted: boolean | null
+          is_essential: boolean | null
+          notes: string | null
+          plan_id: string
+          updated_at: string
+        }
+        Insert: {
+          annual_amount: number
+          category_name: string
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          inflation_adjusted?: boolean | null
+          is_essential?: boolean | null
+          notes?: string | null
+          plan_id: string
+          updated_at?: string
+        }
+        Update: {
+          annual_amount?: number
+          category_name?: string
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          inflation_adjusted?: boolean | null
+          is_essential?: boolean | null
+          notes?: string | null
+          plan_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_categories_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_plan_sections: {
+        Row: {
+          created_at: string
+          id: string
+          plan_id: string
+          section_data: Json
+          section_name: string
+          section_order: number | null
+          section_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_id: string
+          section_data?: Json
+          section_name: string
+          section_order?: number | null
+          section_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_id?: string
+          section_data?: Json
+          section_name?: string
+          section_order?: number | null
+          section_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_plan_sections_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_plans: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          current_net_worth: number | null
+          end_date: string | null
+          id: string
+          notes: string | null
+          plan_name: string
+          plan_type: string
+          primary_objectives: string[] | null
+          risk_tolerance: string | null
+          start_date: string
+          status: string | null
+          target_net_worth: number | null
+          time_horizon: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          current_net_worth?: number | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          plan_name: string
+          plan_type: string
+          primary_objectives?: string[] | null
+          risk_tolerance?: string | null
+          start_date: string
+          status?: string | null
+          target_net_worth?: number | null
+          time_horizon?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          current_net_worth?: number | null
+          end_date?: string | null
+          id?: string
+          notes?: string | null
+          plan_name?: string
+          plan_type?: string
+          primary_objectives?: string[] | null
+          risk_tolerance?: string | null
+          start_date?: string
+          status?: string | null
+          target_net_worth?: number | null
+          time_horizon?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      income_sources: {
+        Row: {
+          annual_amount: number
+          created_at: string
+          end_date: string | null
+          growth_rate: number | null
+          id: string
+          notes: string | null
+          plan_id: string
+          source_name: string
+          source_type: string
+          start_date: string | null
+          tax_treatment: string | null
+          updated_at: string
+        }
+        Insert: {
+          annual_amount: number
+          created_at?: string
+          end_date?: string | null
+          growth_rate?: number | null
+          id?: string
+          notes?: string | null
+          plan_id: string
+          source_name: string
+          source_type: string
+          start_date?: string | null
+          tax_treatment?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annual_amount?: number
+          created_at?: string
+          end_date?: string | null
+          growth_rate?: number | null
+          id?: string
+          notes?: string | null
+          plan_id?: string
+          source_name?: string
+          source_type?: string
+          start_date?: string | null
+          tax_treatment?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_sources_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           category: string | null
@@ -978,6 +1176,106 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      plan_milestones: {
+        Row: {
+          achievement_date: string | null
+          created_at: string
+          id: string
+          milestone_name: string
+          notes: string | null
+          plan_id: string
+          status: string | null
+          target_amount: number | null
+          target_date: string
+          updated_at: string
+        }
+        Insert: {
+          achievement_date?: string | null
+          created_at?: string
+          id?: string
+          milestone_name: string
+          notes?: string | null
+          plan_id: string
+          status?: string | null
+          target_amount?: number | null
+          target_date: string
+          updated_at?: string
+        }
+        Update: {
+          achievement_date?: string | null
+          created_at?: string
+          id?: string
+          milestone_name?: string
+          notes?: string | null
+          plan_id?: string
+          status?: string | null
+          target_amount?: number | null
+          target_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_milestones_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_recommendations: {
+        Row: {
+          created_at: string
+          description: string
+          estimated_cost: number | null
+          expected_benefit: string | null
+          id: string
+          implementation_timeline: string | null
+          plan_id: string
+          priority: string
+          recommendation_type: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          estimated_cost?: number | null
+          expected_benefit?: string | null
+          id?: string
+          implementation_timeline?: string | null
+          plan_id: string
+          priority: string
+          recommendation_type: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          estimated_cost?: number | null
+          expected_benefit?: string | null
+          id?: string
+          implementation_timeline?: string | null
+          plan_id?: string
+          priority?: string
+          recommendation_type?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_recommendations_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       portfolio_holdings: {
         Row: {
