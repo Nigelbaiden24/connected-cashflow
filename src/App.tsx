@@ -310,18 +310,7 @@ const App = () => {
               )
             } />
             
-            <Route path="/payroll" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Payroll />
-                    </main>
-                  </div>
-                </SidebarProvider>
-              )
-            } />
+            <Route path="/chat" element={<Chat />} />
             
             <Route path="/financial-planning" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
@@ -386,6 +375,7 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/crm" element={<CRM />} />
           <Route path="/crm/:id" element={<CRMContactDetail />} />
+          <Route path="/payroll" element={<Payroll />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
