@@ -37,7 +37,7 @@ export default function Payroll() {
               <CardTitle className="text-sm font-medium text-muted-foreground">This Period</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">£0.00</div>
               <p className="text-xs text-muted-foreground mt-1">Gross payroll</p>
             </CardContent>
           </Card>
@@ -46,7 +46,7 @@ export default function Payroll() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Net Pay</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">£0.00</div>
               <p className="text-xs text-muted-foreground mt-1">After deductions</p>
             </CardContent>
           </Card>
@@ -55,7 +55,7 @@ export default function Payroll() {
               <CardTitle className="text-sm font-medium text-muted-foreground">Tax Withholding</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">£0.00</div>
               <p className="text-xs text-muted-foreground mt-1">Total taxes</p>
             </CardContent>
           </Card>

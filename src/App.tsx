@@ -25,6 +25,7 @@ import Reports from "./pages/Reports";
 import Security from "./pages/Security";
 import CRMContactDetail from "./pages/CRMContactDetail";
 import Payroll from "./pages/Payroll";
+import Recruitment from "./pages/Recruitment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,7 @@ const App = () => {
                   <Route path="/security" element={<Security />} />
                   <Route path="/crm/:id" element={<CRMContactDetail />} />
                   <Route path="/payroll" element={<Payroll />} />
+                  <Route path="/recruitment" element={<Recruitment />} />
                   <Route path="/settings" element={<Dashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
