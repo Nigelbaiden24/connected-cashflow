@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Users, FileText, Settings, Calendar, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DollarSign, Users, FileText, Settings as SettingsIcon, Calendar, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { BusinessSidebar } from "@/components/BusinessSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { EmployeeManagement } from "@/components/payroll/EmployeeManagement";
 import { PayrollRuns } from "@/components/payroll/PayrollRuns";
 import { BenefitsManagement } from "@/components/payroll/BenefitsManagement";
@@ -11,6 +16,9 @@ import { ComplianceAutomation } from "@/components/payroll/ComplianceAutomation"
 import { TaxSettings } from "@/components/payroll/TaxSettings";
 
 export default function Payroll() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [userEmail] = useState("business@flowpulse.io");
   const [stats, setStats] = useState({
     totalEmployees: 0,
     grossPay: 0,
@@ -21,6 +29,19 @@ export default function Payroll() {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      navigate("/login");
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -55,19 +76,27 @@ export default function Payroll() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">HR & Payroll Management</h1>
-            <p className="text-muted-foreground mt-1">
-              Enterprise-grade payroll processing, tax calculations, and compliance automation
-            </p>
-          </div>
-        </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
+        
+        <div className="flex-1">
+          <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex h-16 items-center gap-4 px-6">
+              <SidebarTrigger />
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold">HR & Payroll Management</h1>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate("/settings")}>
+                <SettingsIcon className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </div>
+          </header>
 
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <main className="flex-1 space-y-6 p-6">
+            {/* Overview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Employees</CardTitle>
@@ -103,11 +132,11 @@ export default function Payroll() {
               <div className="text-2xl font-bold">${stats.taxWithholding.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground mt-1">Total taxes</p>
             </CardContent>
-          </Card>
-        </div>
+              </Card>
+            </div>
 
-        {/* Main Tabs */}
-        <Tabs defaultValue="employees" className="space-y-4">
+            {/* Main Tabs */}
+            <Tabs defaultValue="employees" className="space-y-4">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="employees" className="gap-2">
               <Users className="h-4 w-4" />
@@ -129,37 +158,39 @@ export default function Payroll() {
               <FileText className="h-4 w-4" />
               Compliance
             </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2">
-              <Settings className="h-4 w-4" />
-              Tax Settings
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger value="settings" className="gap-2">
+                <SettingsIcon className="h-4 w-4" />
+                Tax Settings
+              </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="employees" className="space-y-4">
-            <EmployeeManagement />
-          </TabsContent>
+              <TabsContent value="employees" className="space-y-4">
+                <EmployeeManagement />
+              </TabsContent>
 
-          <TabsContent value="payroll" className="space-y-4">
-            <PayrollRuns />
-          </TabsContent>
+              <TabsContent value="payroll" className="space-y-4">
+                <PayrollRuns />
+              </TabsContent>
 
-          <TabsContent value="benefits" className="space-y-4">
-            <BenefitsManagement />
-          </TabsContent>
+              <TabsContent value="benefits" className="space-y-4">
+                <BenefitsManagement />
+              </TabsContent>
 
-          <TabsContent value="timeoff" className="space-y-4">
-            <TimeOffManagement />
-          </TabsContent>
+              <TabsContent value="timeoff" className="space-y-4">
+                <TimeOffManagement />
+              </TabsContent>
 
-          <TabsContent value="compliance" className="space-y-4">
-            <ComplianceAutomation />
-          </TabsContent>
+              <TabsContent value="compliance" className="space-y-4">
+                <ComplianceAutomation />
+              </TabsContent>
 
-          <TabsContent value="settings" className="space-y-4">
-            <TaxSettings />
-          </TabsContent>
-        </Tabs>
+              <TabsContent value="settings" className="space-y-4">
+                <TaxSettings />
+              </TabsContent>
+            </Tabs>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
