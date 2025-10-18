@@ -3,26 +3,30 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
 
 const Calendar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([
-    { id: 1, title: "Team Meeting", time: "09:00 AM", date: "2024-02-20", type: "meeting" },
-    { id: 2, title: "Client Presentation", time: "02:00 PM", date: "2024-02-20", type: "presentation" },
-    { id: 3, title: "Project Deadline", time: "11:30 AM", date: "2024-02-22", type: "deadline" },
-    { id: 4, title: "Strategy Review", time: "03:00 PM", date: "2024-02-23", type: "meeting" },
+    { id: 1, title: "Team Meeting", time: "09:00", date: "2024-02-20", type: "meeting" },
+    { id: 2, title: "Client Presentation", time: "14:00", date: "2024-02-20", type: "presentation" },
+    { id: 3, title: "Project Deadline", time: "11:30", date: "2024-02-22", type: "deadline" },
+    { id: 4, title: "Strategy Review", time: "15:00", date: "2024-02-23", type: "meeting" },
   ]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<typeof events[0] | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     date: "",
@@ -42,7 +46,7 @@ const Calendar = () => {
     }
 
     const newEvent = {
-      id: Math.max(...events.map(e => e.id)) + 1,
+      id: events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1,
       title: formData.title,
       date: formData.date,
       time: formData.time,
@@ -62,6 +66,89 @@ const Calendar = () => {
       description: "",
     });
   };
+
+  const handleUpdateEvent = () => {
+    if (!selectedEvent || !formData.title || !formData.date || !formData.time) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEvents(events.map(e => 
+      e.id === selectedEvent.id 
+        ? { ...e, title: formData.title, date: formData.date, time: formData.time, type: formData.type }
+        : e
+    ));
+    toast({
+      title: "Success",
+      description: "Event updated successfully",
+    });
+    setEditDialogOpen(false);
+    setSelectedEvent(null);
+    setFormData({
+      title: "",
+      date: "",
+      time: "",
+      type: "meeting",
+      description: "",
+    });
+  };
+
+  const handleDeleteEvent = (id: number) => {
+    setEvents(events.filter(e => e.id !== id));
+    toast({
+      title: "Success",
+      description: "Event deleted successfully",
+    });
+    setEditDialogOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const handleEditEvent = (event: typeof events[0]) => {
+    setSelectedEvent(event);
+    setFormData({
+      title: event.title,
+      date: event.date,
+      time: event.time,
+      type: event.type,
+      description: "",
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    const dateStr = format(date, 'yyyy-MM-dd');
+    setFormData({
+      title: "",
+      date: dateStr,
+      time: "",
+      type: "meeting",
+      description: "",
+    });
+    setDialogOpen(true);
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentDate(subMonths(currentDate, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(addMonths(currentDate, 1));
+  };
+
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const startDayOfWeek = getDay(monthStart);
+  
+  const calendarDays: (Date | null)[] = [
+    ...Array(startDayOfWeek).fill(null),
+    ...daysInMonth
+  ];
 
   const getEventColor = (type: string) => {
     switch (type) {
@@ -172,13 +259,13 @@ const Calendar = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
-                {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                {format(currentDate, 'MMMM yyyy')}
               </CardTitle>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" onClick={handleNextMonth}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -193,17 +280,26 @@ const Calendar = () => {
               ))}
             </div>
             <div className="grid grid-cols-7 gap-2">
-              {Array.from({ length: 35 }, (_, i) => {
-                const day = i - 2;
-                const hasEvent = events.some(e => new Date(e.date).getDate() === day);
+              {calendarDays.map((day, i) => {
+                if (!day) {
+                  return <div key={`empty-${i}`} className="aspect-square p-2" />;
+                }
+                
+                const hasEvent = events.some(e => isSameDay(new Date(e.date), day));
+                const isToday = isSameDay(day, new Date());
+                const isCurrentMonth = isSameMonth(day, currentDate);
+                
                 return (
                   <button
                     key={i}
-                    className={`aspect-square p-2 rounded-lg hover:bg-accent transition-colors ${
-                      day === currentDate.getDate() ? 'bg-primary text-primary-foreground' : ''
-                    } ${day < 1 ? 'text-muted-foreground' : ''} ${hasEvent && day > 0 ? 'ring-2 ring-primary' : ''}`}
+                    onClick={() => handleDateClick(day)}
+                    className={`aspect-square p-2 rounded-lg hover:bg-accent transition-colors text-sm ${
+                      isToday ? 'bg-primary text-primary-foreground font-bold' : ''
+                    } ${!isCurrentMonth ? 'text-muted-foreground opacity-50' : ''} ${
+                      hasEvent && !isToday ? 'ring-2 ring-primary' : ''
+                    }`}
                   >
-                    {day > 0 ? day : ''}
+                    {format(day, 'd')}
                   </button>
                 );
               })}
@@ -219,22 +315,101 @@ const Calendar = () => {
             {events.map((event) => (
               <div key={event.id} className="space-y-2 pb-4 border-b last:border-0">
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <h4 className="font-medium">{event.title}</h4>
                     <p className="text-sm text-muted-foreground">{event.time}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(event.date).toLocaleDateString()}
+                      {format(new Date(event.date), 'PPP')}
                     </p>
                   </div>
-                  <Badge className={getEventColor(event.type)}>
-                    {event.type}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getEventColor(event.type)}>
+                      {event.type}
+                    </Badge>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditEvent(event)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title">Event Title *</Label>
+              <Input
+                id="edit-title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Enter event title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter event description"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-type">Event Type</Label>
+              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="meeting">Meeting</SelectItem>
+                  <SelectItem value="presentation">Presentation</SelectItem>
+                  <SelectItem value="deadline">Deadline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-date">Date *</Label>
+                <Input
+                  id="edit-date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-time">Time *</Label>
+                <Input
+                  id="edit-time"
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-between gap-2">
+            <Button 
+              variant="destructive" 
+              onClick={() => selectedEvent && handleDeleteEvent(selectedEvent.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleUpdateEvent}>Update Event</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

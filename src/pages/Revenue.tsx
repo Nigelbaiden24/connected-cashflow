@@ -1,9 +1,107 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight, ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const Revenue = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const [recentTransactions, setRecentTransactions] = useState([
+    { id: 1, client: "Acme Corp", amount: 15000, date: "2024-02-18", status: "completed" },
+    { id: 2, client: "TechStart Inc", amount: 8500, date: "2024-02-17", status: "completed" },
+    { id: 3, client: "Global Solutions", amount: 22000, date: "2024-02-16", status: "pending" },
+    { id: 4, client: "Innovation Labs", amount: 12000, date: "2024-02-15", status: "completed" },
+  ]);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<typeof recentTransactions[0] | null>(null);
+  const [formData, setFormData] = useState({
+    client: "",
+    amount: "",
+    date: "",
+    status: "completed",
+  });
+
+  const handleSaveTransaction = () => {
+    if (!formData.client || !formData.amount || !formData.date) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newTransaction = {
+      id: recentTransactions.length > 0 ? Math.max(...recentTransactions.map(t => t.id)) + 1 : 1,
+      client: formData.client,
+      amount: parseFloat(formData.amount),
+      date: formData.date,
+      status: formData.status,
+    };
+    setRecentTransactions([...recentTransactions, newTransaction]);
+    toast({
+      title: "Success",
+      description: "Transaction created successfully",
+    });
+    setDialogOpen(false);
+    setFormData({ client: "", amount: "", date: "", status: "completed" });
+  };
+
+  const handleUpdateTransaction = () => {
+    if (!selectedTransaction || !formData.client || !formData.amount || !formData.date) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRecentTransactions(recentTransactions.map(t => 
+      t.id === selectedTransaction.id 
+        ? { ...t, client: formData.client, amount: parseFloat(formData.amount), date: formData.date, status: formData.status }
+        : t
+    ));
+    toast({
+      title: "Success",
+      description: "Transaction updated successfully",
+    });
+    setEditDialogOpen(false);
+    setSelectedTransaction(null);
+    setFormData({ client: "", amount: "", date: "", status: "completed" });
+  };
+
+  const handleDeleteTransaction = (id: number) => {
+    setRecentTransactions(recentTransactions.filter(t => t.id !== id));
+    toast({
+      title: "Success",
+      description: "Transaction deleted successfully",
+    });
+    setEditDialogOpen(false);
+    setSelectedTransaction(null);
+  };
+
+  const handleEditTransaction = (transaction: typeof recentTransactions[0]) => {
+    setSelectedTransaction(transaction);
+    setFormData({
+      client: transaction.client,
+      amount: transaction.amount.toString(),
+      date: transaction.date,
+      status: transaction.status,
+    });
+    setEditDialogOpen(true);
+  };
+
   const revenueStreams = [
     { name: "Product Sales", amount: 125000, growth: 12.5, trend: "up" },
     { name: "Subscriptions", amount: 48000, growth: 8.3, trend: "up" },
@@ -11,21 +109,25 @@ const Revenue = () => {
     { name: "Licensing", amount: 18000, growth: 15.7, trend: "up" },
   ];
 
-  const recentTransactions = [
-    { id: 1, client: "Acme Corp", amount: 15000, date: "2024-02-18", status: "completed" },
-    { id: 2, client: "TechStart Inc", amount: 8500, date: "2024-02-17", status: "completed" },
-    { id: 3, client: "Global Solutions", amount: 22000, date: "2024-02-16", status: "pending" },
-    { id: 4, client: "Innovation Labs", amount: 12000, date: "2024-02-15", status: "completed" },
-  ];
-
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Revenue Tracking</h1>
-          <p className="text-muted-foreground">Monitor income streams and financial performance</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Revenue Tracking</h1>
+            <p className="text-muted-foreground">Monitor income streams and financial performance</p>
+          </div>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setDialogOpen(true)}>
           <DollarSign className="h-4 w-4" />
           Add Transaction
         </Button>
@@ -118,7 +220,7 @@ const Revenue = () => {
               <div className="space-y-4">
                 {recentTransactions.map((transaction) => (
                   <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-1">
+                    <div className="space-y-1 flex-1">
                       <h4 className="font-medium">{transaction.client}</h4>
                       <p className="text-sm text-muted-foreground">
                         {new Date(transaction.date).toLocaleDateString()}
@@ -130,6 +232,9 @@ const Revenue = () => {
                         {transaction.status}
                       </div>
                     </div>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditTransaction(transaction)} className="ml-2">
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -137,6 +242,123 @@ const Revenue = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Transaction</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="client">Client Name *</Label>
+              <Input
+                id="client"
+                value={formData.client}
+                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                placeholder="Enter client name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount *</Label>
+              <Input
+                id="amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date">Date *</Label>
+              <Input
+                id="date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveTransaction}>Add Transaction</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Transaction</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-client">Client Name *</Label>
+              <Input
+                id="edit-client"
+                value={formData.client}
+                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                placeholder="Enter client name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-amount">Amount *</Label>
+              <Input
+                id="edit-amount"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-date">Date *</Label>
+              <Input
+                id="edit-date"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-between gap-2">
+            <Button 
+              variant="destructive" 
+              onClick={() => selectedTransaction && handleDeleteTransaction(selectedTransaction.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleUpdateTransaction}>Update Transaction</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
