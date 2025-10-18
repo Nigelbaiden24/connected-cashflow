@@ -5,10 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Plus, FolderKanban, Clock, Users, AlertCircle, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 const Projects = () => {
   const navigate = useNavigate();
-  const [projects] = useState([
+  const { toast } = useToast();
+  const [projects, setProjects] = useState([
     {
       id: 1,
       name: "Website Redesign",
@@ -46,6 +53,77 @@ const Projects = () => {
       priority: "low",
     },
   ]);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<typeof projects[0] | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    status: "planning",
+    priority: "medium",
+    team: 1,
+    deadline: "",
+    description: "",
+  });
+
+  const handleOpenDialog = (project?: typeof projects[0]) => {
+    if (project) {
+      setEditingProject(project);
+      setFormData({
+        name: project.name,
+        status: project.status,
+        priority: project.priority,
+        team: project.team,
+        deadline: project.deadline,
+        description: "",
+      });
+    } else {
+      setEditingProject(null);
+      setFormData({
+        name: "",
+        status: "planning",
+        priority: "medium",
+        team: 1,
+        deadline: "",
+        description: "",
+      });
+    }
+    setDialogOpen(true);
+  };
+
+  const handleSaveProject = () => {
+    if (!formData.name || !formData.deadline) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editingProject) {
+      setProjects(projects.map(p => 
+        p.id === editingProject.id 
+          ? { ...p, ...formData, progress: p.progress }
+          : p
+      ));
+      toast({
+        title: "Success",
+        description: "Project updated successfully",
+      });
+    } else {
+      const newProject = {
+        id: Math.max(...projects.map(p => p.id)) + 1,
+        ...formData,
+        progress: 0,
+      };
+      setProjects([...projects, newProject]);
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      });
+    }
+    setDialogOpen(false);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -91,10 +169,94 @@ const Projects = () => {
             <p className="text-muted-foreground">Manage and track your business projects</p>
           </div>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Project
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2" onClick={() => handleOpenDialog()}>
+              <Plus className="h-4 w-4" />
+              New Project
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{editingProject ? "Edit Project" : "Create New Project"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Project Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Enter project name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter project description"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="planning">Planning</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="team">Team Size</Label>
+                  <Input
+                    id="team"
+                    type="number"
+                    min="1"
+                    value={formData.team}
+                    onChange={(e) => setFormData({ ...formData, team: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="deadline">Deadline *</Label>
+                  <Input
+                    id="deadline"
+                    type="date"
+                    value={formData.deadline}
+                    onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveProject}>
+                {editingProject ? "Save Changes" : "Create Project"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -160,7 +322,9 @@ const Projects = () => {
                     </span>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">View Details</Button>
+                <Button variant="outline" size="sm" onClick={() => handleOpenDialog(project)}>
+                  Edit Project
+                </Button>
               </div>
 
               <div className="space-y-3">

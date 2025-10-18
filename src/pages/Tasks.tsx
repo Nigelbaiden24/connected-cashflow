@@ -5,9 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, CheckCircle2, Circle, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 const Tasks = () => {
-  const [tasks] = useState([
+  const { toast } = useToast();
+  const [tasks, setTasks] = useState([
     {
       id: 1,
       title: "Review quarterly reports",
@@ -46,6 +53,83 @@ const Tasks = () => {
     },
   ]);
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<typeof tasks[0] | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    project: "",
+    priority: "medium",
+    dueDate: "",
+    description: "",
+  });
+
+  const handleOpenDialog = (task?: typeof tasks[0]) => {
+    if (task) {
+      setEditingTask(task);
+      setFormData({
+        title: task.title,
+        project: task.project,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        description: "",
+      });
+    } else {
+      setEditingTask(null);
+      setFormData({
+        title: "",
+        project: "",
+        priority: "medium",
+        dueDate: "",
+        description: "",
+      });
+    }
+    setDialogOpen(true);
+  };
+
+  const handleSaveTask = () => {
+    if (!formData.title || !formData.project || !formData.dueDate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (editingTask) {
+      setTasks(tasks.map(t => 
+        t.id === editingTask.id 
+          ? { ...t, ...formData, status: t.status, completed: t.completed }
+          : t
+      ));
+      toast({
+        title: "Success",
+        description: "Task updated successfully",
+      });
+    } else {
+      const newTask = {
+        id: Math.max(...tasks.map(t => t.id)) + 1,
+        ...formData,
+        status: "pending",
+        completed: false,
+      };
+      setTasks([...tasks, newTask]);
+      toast({
+        title: "Success",
+        description: "Task created successfully",
+      });
+    }
+    setDialogOpen(false);
+  };
+
+  const handleToggleTask = (taskId: number) => {
+    setTasks(tasks.map(t => 
+      t.id === taskId 
+        ? { ...t, completed: !t.completed, status: !t.completed ? "completed" : "pending" }
+        : t
+    ));
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
@@ -69,10 +153,78 @@ const Tasks = () => {
           <h1 className="text-3xl font-bold">Tasks</h1>
           <p className="text-muted-foreground">Manage your daily tasks and to-dos</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Task
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2" onClick={() => handleOpenDialog()}>
+              <Plus className="h-4 w-4" />
+              New Task
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{editingTask ? "Edit Task" : "Create New Task"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Task Title *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Enter task title"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter task description"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="project">Project *</Label>
+                  <Input
+                    id="project"
+                    value={formData.project}
+                    onChange={(e) => setFormData({ ...formData, project: e.target.value })}
+                    placeholder="Enter project name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date *</Label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveTask}>
+                {editingTask ? "Save Changes" : "Create Task"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -122,7 +274,7 @@ const Tasks = () => {
             <Card key={task.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <Checkbox checked={task.completed} />
+                  <Checkbox checked={task.completed} onCheckedChange={() => handleToggleTask(task.id)} />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <h4 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
@@ -140,7 +292,9 @@ const Tasks = () => {
                       </span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">Edit</Button>
+                  <Button variant="outline" size="sm" onClick={() => handleOpenDialog(task)}>
+                    Edit
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -152,7 +306,7 @@ const Tasks = () => {
             <Card key={task.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <Checkbox checked={task.completed} />
+                  <Checkbox checked={task.completed} onCheckedChange={() => handleToggleTask(task.id)} />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">{task.title}</h4>
@@ -168,7 +322,9 @@ const Tasks = () => {
                       </span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">Edit</Button>
+                  <Button variant="outline" size="sm" onClick={() => handleOpenDialog(task)}>
+                    Edit
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -180,7 +336,7 @@ const Tasks = () => {
             <Card key={task.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <Checkbox checked={task.completed} />
+                  <Checkbox checked={task.completed} onCheckedChange={() => handleToggleTask(task.id)} />
                   <div className="flex-1 space-y-1">
                     <h4 className="font-medium line-through text-muted-foreground">
                       {task.title}
