@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,10 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Shield, AlertTriangle, CheckCircle, FileText, Scale, Clock } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, FileText, Scale, Clock, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Compliance = () => {
+  const navigate = useNavigate();
   const [complianceCheck, setComplianceCheck] = useState("");
   const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
@@ -141,11 +143,22 @@ const Compliance = () => {
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Compliance Center</h1>
-          <p className="text-muted-foreground">
-            Monitor regulatory compliance and risk management
-          </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Compliance Center</h1>
+            <p className="text-muted-foreground">
+              Monitor regulatory compliance and risk management
+            </p>
+          </div>
         </div>
         <Badge variant="secondary" className="text-sm">
           <Shield className="h-3 w-3 mr-1" />

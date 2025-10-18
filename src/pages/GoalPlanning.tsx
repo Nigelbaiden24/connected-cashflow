@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +87,7 @@ const priorities = ["high", "medium", "low"];
 const statuses = ["on-track", "ahead", "behind", "completed"];
 
 export default function GoalPlanning() {
+  const navigate = useNavigate();
   const [selectedClient, setSelectedClient] = useState<Tables<'clients'> | null>(null);
   const [clients, setClients] = useState<Tables<'clients'>[]>([]);
   const [clientGoals, setClientGoals] = useState<Tables<'client_goals'>[]>([]);
@@ -270,6 +272,19 @@ export default function GoalPlanning() {
   if (!selectedClient) {
     return (
       <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          </div>
+        </div>
         <div className="text-center max-w-2xl mx-auto">
           <Target className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
           <h1 className="text-3xl font-bold mb-2">Goal-Based Planning</h1>

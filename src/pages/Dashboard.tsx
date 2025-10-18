@@ -1,12 +1,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState<any[]>([]);
   const [totalAUM, setTotalAUM] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -123,9 +126,20 @@ const Dashboard = () => {
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">AI Assistant: {botName}</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">AI Assistant: {botName}</p>
+          </div>
         </div>
         <Badge variant="secondary" className="text-sm">
           Live Data

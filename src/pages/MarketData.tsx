@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Search, RefreshCw, DollarSign, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Search, RefreshCw, DollarSign, BarChart3, ArrowLeft } from "lucide-react";
 
 const MarketData = () => {
+  const navigate = useNavigate();
   const [searchTicker, setSearchTicker] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -117,11 +119,22 @@ const MarketData = () => {
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Market Data</h1>
-          <p className="text-muted-foreground">
-            Real-time financial market information and analysis
-          </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Market Data</h1>
+            <p className="text-muted-foreground">
+              Real-time financial market information and analysis
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">

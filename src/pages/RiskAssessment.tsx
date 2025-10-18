@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { AlertTriangle, Shield, TrendingUp, Target, CheckCircle2, Info, Calculator, Download } from "lucide-react";
+import { AlertTriangle, Shield, TrendingUp, Target, CheckCircle2, Info, Calculator, Download, ArrowLeft } from "lucide-react";
 
 // Risk assessment questionnaire
 const riskQuestions = [
@@ -149,6 +150,7 @@ const stressTestScenarios = [
 ];
 
 export default function RiskAssessment() {
+  const navigate = useNavigate();
   const [riskAnswers, setRiskAnswers] = useState<Record<number, string>>({});
   const [riskTolerance, setRiskTolerance] = useState([50]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -193,9 +195,20 @@ export default function RiskAssessment() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Risk Assessment</h1>
-          <p className="text-muted-foreground">Evaluate and manage investment risk exposure</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Risk Assessment</h1>
+            <p className="text-muted-foreground">Evaluate and manage investment risk exposure</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">

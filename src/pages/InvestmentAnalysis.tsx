@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter } from "recharts";
-import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft } from "lucide-react";
 
 // Dummy investment data
 const investments = [
@@ -106,6 +107,7 @@ const sectorAnalysis = [
 ];
 
 export default function InvestmentAnalysis() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInvestment, setSelectedInvestment] = useState(investments[0]);
   const [sortBy, setSortBy] = useState("performance");
@@ -150,9 +152,20 @@ export default function InvestmentAnalysis() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Investment Analysis</h1>
-          <p className="text-muted-foreground">Comprehensive investment research and analysis tools</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Investment Analysis</h1>
+            <p className="text-muted-foreground">Comprehensive investment research and analysis tools</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">

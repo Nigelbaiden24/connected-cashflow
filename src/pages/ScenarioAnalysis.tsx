@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { useNavigate } from "react-router-dom";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -18,7 +19,8 @@ import {
   LineChart,
   BarChart3,
   Calculator,
-  Download
+  Download,
+  ArrowLeft
 } from "lucide-react";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
@@ -322,9 +324,20 @@ This analysis was generated using advanced statistical modeling and historical m
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Scenario Analysis</h1>
-          <p className="text-muted-foreground">Advanced portfolio projections and stress testing</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.history.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Scenario Analysis</h1>
+            <p className="text-muted-foreground">Advanced portfolio projections and stress testing</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">

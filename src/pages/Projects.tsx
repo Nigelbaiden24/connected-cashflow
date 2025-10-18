@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Plus, FolderKanban, Clock, Users, AlertCircle } from "lucide-react";
+import { Plus, FolderKanban, Clock, Users, AlertCircle, ArrowLeft } from "lucide-react";
 
 const Projects = () => {
+  const navigate = useNavigate();
   const [projects] = useState([
     {
       id: 1,
@@ -74,9 +76,20 @@ const Projects = () => {
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Projects</h1>
-          <p className="text-muted-foreground">Manage and track your business projects</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Projects</h1>
+            <p className="text-muted-foreground">Manage and track your business projects</p>
+          </div>
         </div>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />
