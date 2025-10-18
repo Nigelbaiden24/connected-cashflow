@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUpload } from "@/components/DocumentUpload";
+import { MeetingIntegration } from "@/components/MeetingIntegration";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import {
   Sheet,
@@ -45,6 +46,7 @@ const Chat = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
   const [user, setUser] = useState<any>(null);
+  const [showMeetingIntegration, setShowMeetingIntegration] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -346,6 +348,20 @@ const Chat = () => {
     setInput(query);
   };
 
+  const handleMeetingJoined = (platform: string, meetingUrl: string) => {
+    const meetingMessage: Message = {
+      id: Date.now().toString(),
+      type: "assistant",
+      content: `Successfully joined ${platform} meeting. Live transcription is now active. All dialogue will be captured and can be analyzed.`,
+      timestamp: new Date(),
+      category: "general",
+    };
+    setMessages(prev => [...prev, meetingMessage]);
+    if (currentConversationId) {
+      saveMessage(meetingMessage);
+    }
+  };
+
   const getCategoryIcon = (category?: string) => {
     switch (category) {
       case "market":
@@ -436,9 +452,24 @@ const Chat = () => {
               <Download className="h-4 w-4 mr-2" />
               Generate PDF Report
             </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowMeetingIntegration(!showMeetingIntegration)}
+            >
+              <Video className="h-4 w-4 mr-2" />
+              {showMeetingIntegration ? "Hide Meetings" : "Join Meeting"}
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Meeting Integration Panel */}
+      {showMeetingIntegration && (
+        <div className="border-b p-4">
+          <MeetingIntegration onMeetingJoined={handleMeetingJoined} />
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="border-b p-4">
