@@ -171,7 +171,14 @@ export default function Portfolio() {
             </SelectContent>
           </Select>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => toast({
+                title: "Filter Options",
+                description: "Opening portfolio filter options...",
+              })}
+            >
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
@@ -183,7 +190,22 @@ export default function Portfolio() {
               <Download className="h-4 w-4 mr-2" />
               Download PDF
             </Button>
-            <Button size="sm">
+            <Button 
+              size="sm"
+              onClick={() => {
+                toast({
+                  title: "Syncing Data",
+                  description: "Updating portfolio data from market sources...",
+                });
+                setTimeout(() => {
+                  fetchClientPortfolio(selectedClient);
+                  toast({
+                    title: "Sync Complete",
+                    description: "Portfolio data updated successfully.",
+                  });
+                }, 1500);
+              }}
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Sync Data
             </Button>

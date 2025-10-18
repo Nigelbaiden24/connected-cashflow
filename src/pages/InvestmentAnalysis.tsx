@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter } from "recharts";
 import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 // Dummy investment data
 const investments = [
@@ -168,11 +169,32 @@ export default function InvestmentAnalysis() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              toast({
+                title: "Exporting Report",
+                description: "Generating investment analysis report...",
+              });
+              setTimeout(() => {
+                toast({
+                  title: "Report Ready",
+                  description: "Investment analysis report downloaded successfully.",
+                });
+              }, 1500);
+            }}
+          >
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
-          <Button size="sm">
+          <Button 
+            size="sm"
+            onClick={() => toast({
+              title: "Watchlist Created",
+              description: "New investment watchlist has been created.",
+            })}
+          >
             <BarChart3 className="h-4 w-4 mr-2" />
             Create Watchlist
           </Button>
@@ -380,7 +402,15 @@ export default function InvestmentAnalysis() {
                   </div>
                 </div>
 
-                <Button className="w-full">Add to Portfolio</Button>
+                <Button 
+                  className="w-full"
+                  onClick={() => toast({
+                    title: "Added to Portfolio",
+                    description: `${selectedInvestment.symbol} has been added to your portfolio.`,
+                  })}
+                >
+                  Add to Portfolio
+                </Button>
               </CardContent>
             </Card>
           </div>

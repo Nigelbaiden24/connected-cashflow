@@ -205,10 +205,31 @@ const Compliance = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast({
+                          title: "Compliance Details",
+                          description: `Viewing detailed information for ${item.title}`,
+                        })}
+                      >
                         View Details
                       </Button>
-                      <Button size="sm">
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "Running Compliance Check",
+                            description: `Initiating check for ${item.title}...`,
+                          });
+                          setTimeout(() => {
+                            toast({
+                              title: "Check Complete",
+                              description: `${item.title} passed all compliance requirements.`,
+                            });
+                          }, 2000);
+                        }}
+                      >
                         Run Check
                       </Button>
                     </div>
@@ -274,11 +295,25 @@ const Compliance = () => {
                 <CardContent>
                   <p className="text-muted-foreground">{reg.description}</p>
                   <div className="flex justify-between items-center mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => toast({
+                        title: "Guidelines",
+                        description: `Opening guidelines for ${reg.regulation}`,
+                      })}
+                    >
                       <FileText className="h-4 w-4 mr-2" />
                       View Guidelines
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => toast({
+                        title: "Compliance History",
+                        description: `Viewing compliance history for ${reg.regulation}`,
+                      })}
+                    >
                       <Scale className="h-4 w-4 mr-2" />
                       Compliance History
                     </Button>

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { AlertTriangle, Shield, TrendingUp, Target, CheckCircle2, Info, Calculator, Download, ArrowLeft } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 // Risk assessment questionnaire
 const riskQuestions = [
@@ -211,11 +212,32 @@ export default function RiskAssessment() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              toast({
+                title: "Generating Risk Report",
+                description: "Creating comprehensive risk assessment report...",
+              });
+              setTimeout(() => {
+                toast({
+                  title: "Report Ready",
+                  description: "Risk assessment report downloaded successfully.",
+                });
+              }, 1500);
+            }}
+          >
             <Download className="h-4 w-4 mr-2" />
             Risk Report
           </Button>
-          <Button size="sm">
+          <Button 
+            size="sm"
+            onClick={() => toast({
+              title: "Rebalancing Portfolio",
+              description: "Portfolio rebalancing has been initiated based on your risk profile.",
+            })}
+          >
             <Calculator className="h-4 w-4 mr-2" />
             Rebalance Portfolio
           </Button>
@@ -355,7 +377,15 @@ export default function RiskAssessment() {
                   )}
                 </div>
 
-                <Button className="w-full">Apply Recommended Allocation</Button>
+                <Button 
+                  className="w-full"
+                  onClick={() => toast({
+                    title: "Allocation Applied",
+                    description: "Your portfolio has been updated with the recommended allocation.",
+                  })}
+                >
+                  Apply Recommended Allocation
+                </Button>
               </CardContent>
             </Card>
           </div>

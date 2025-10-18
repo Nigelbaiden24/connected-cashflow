@@ -81,6 +81,15 @@ export default function ClientOnboarding() {
       // Generate a unique client ID
       const clientId = `CLI-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
+      // Map investment experience to proper risk profile values
+      const riskProfileMap: Record<string, string> = {
+        'beginner': 'Conservative',
+        'intermediate': 'Moderate',
+        'experienced': 'Aggressive'
+      };
+      
+      const riskProfile = riskProfileMap[clientData.financialProfile.investmentExperience] || 'Moderate';
+      
       // Insert client data into Supabase
       const { data, error } = await supabase
         .from('clients')
@@ -96,7 +105,7 @@ export default function ClientOnboarding() {
             annual_income: clientData.personalInfo.annualIncome,
             net_worth: clientData.personalInfo.netWorth,
             aum: clientData.financialProfile.currentInvestments,
-            risk_profile: clientData.financialProfile.investmentExperience,
+            risk_profile: riskProfile,
             status: 'active',
             investment_experience: clientData.financialProfile.investmentExperience,
             investment_objectives: clientData.goals.map(g => g.goal),
@@ -175,7 +184,14 @@ export default function ClientOnboarding() {
           <p className="text-muted-foreground">Streamlined client intake and setup process</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => toast({
+              title: "Generating Summary",
+              description: "Creating client onboarding summary document...",
+            })}
+          >
             <FileText className="h-4 w-4 mr-2" />
             Generate Summary
           </Button>

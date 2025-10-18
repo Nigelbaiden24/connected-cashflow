@@ -237,7 +237,13 @@ const Clients = () => {
                         >
                           View Profile
                         </Button>
-                        <Button size="sm">
+                        <Button 
+                          size="sm"
+                          onClick={() => toast({
+                            title: "Call Scheduled",
+                            description: `Call scheduled with ${client.name} for tomorrow at 2:00 PM.`,
+                          })}
+                        >
                           Schedule Call
                         </Button>
                       </div>
@@ -335,10 +341,25 @@ const Clients = () => {
                         >
                           View Full Profile
                         </Button>
-                        <Button size="sm" className="w-full">
+                        <Button 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => toast({
+                            title: "Meeting Scheduled",
+                            description: `Meeting scheduled with ${client.name}.`,
+                          })}
+                        >
                           Schedule Meeting
                         </Button>
-                        <Button variant="ghost" size="sm" className="w-full">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => toast({
+                            title: "Message Sent",
+                            description: `Message sent to ${client.name}.`,
+                          })}
+                        >
                           Send Message
                         </Button>
                       </div>

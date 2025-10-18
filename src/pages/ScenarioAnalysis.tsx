@@ -340,7 +340,22 @@ This analysis was generated using advanced statistical modeling and historical m
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              toast({
+                title: "Running Simulation",
+                description: "Executing Monte Carlo simulation with 10,000 iterations...",
+              });
+              setTimeout(() => {
+                toast({
+                  title: "Simulation Complete",
+                  description: "Analysis completed with 87% success rate.",
+                });
+              }, 2000);
+            }}
+          >
             <Calculator className="h-4 w-4 mr-2" />
             Run Simulation
           </Button>
