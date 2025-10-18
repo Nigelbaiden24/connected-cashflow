@@ -3,10 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, UserCheck, Clock, Mail, Phone } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Users, UserCheck, Clock, Mail, Phone, ArrowLeft, MessageSquare, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Team = () => {
-  const [teamMembers] = useState([
+  const navigate = useNavigate();
+  const [teamMembers, setTeamMembers] = useState([
     {
       id: 1,
       name: "Sarah Johnson",
@@ -72,6 +79,42 @@ const Team = () => {
       .toUpperCase();
   };
 
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newMember, setNewMember] = useState({
+    name: "",
+    role: "",
+    department: "",
+    email: "",
+    phone: "",
+  });
+
+  const handleAddMember = () => {
+    if (!newMember.name || !newMember.role || !newMember.department || !newMember.email) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    const member = {
+      id: teamMembers.length + 1,
+      ...newMember,
+      status: "active" as const,
+      joinDate: new Date().toISOString().split('T')[0],
+    };
+
+    setTeamMembers([...teamMembers, member]);
+    setIsAddDialogOpen(false);
+    setNewMember({ name: "", role: "", department: "", email: "", phone: "" });
+    toast.success(`${newMember.name} has been added to the team`);
+  };
+
+  const handleViewProfile = (member: typeof teamMembers[0]) => {
+    toast.info(`Viewing profile for ${member.name}`);
+  };
+
+  const handleMessage = (member: typeof teamMembers[0]) => {
+    toast.info(`Opening chat with ${member.name}`);
+  };
+
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -79,10 +122,92 @@ const Team = () => {
           <h1 className="text-3xl font-bold">Team Management</h1>
           <p className="text-muted-foreground">Manage your team members and departments</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Team Member
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Team Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Team Member</DialogTitle>
+                <DialogDescription>
+                  Add a new member to your team. Fill in their details below.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    value={newMember.name}
+                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role *</Label>
+                  <Input
+                    id="role"
+                    placeholder="Software Engineer"
+                    value={newMember.role}
+                    onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department *</Label>
+                  <Select value={newMember.department} onValueChange={(value) => setNewMember({ ...newMember, department: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Product">Product</SelectItem>
+                      <SelectItem value="Engineering">Engineering</SelectItem>
+                      <SelectItem value="Marketing">Marketing</SelectItem>
+                      <SelectItem value="Design">Design</SelectItem>
+                      <SelectItem value="Sales">Sales</SelectItem>
+                      <SelectItem value="Operations">Operations</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john@company.com"
+                    value={newMember.email}
+                    onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="+1 234 567 8900"
+                    value={newMember.phone}
+                    onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddMember}>Add Member</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -158,8 +283,24 @@ const Team = () => {
                       Joined {new Date(member.joinDate).toLocaleDateString()}
                     </span>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">View Profile</Button>
-                      <Button variant="outline" size="sm">Message</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleViewProfile(member)}
+                        className="gap-1"
+                      >
+                        <Eye className="h-3 w-3" />
+                        View Profile
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleMessage(member)}
+                        className="gap-1"
+                      >
+                        <MessageSquare className="h-3 w-3" />
+                        Message
+                      </Button>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Key, Activity, FileText, Lock, AlertTriangle, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, Key, Activity, FileText, Lock, AlertTriangle, Users, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { SecurityDashboard } from "@/components/security/SecurityDashboard";
 import { SecureVault } from "@/components/security/SecureVault";
 import { AuditLogs } from "@/components/security/AuditLogs";
@@ -10,16 +12,28 @@ import { RiskAssessments } from "@/components/security/RiskAssessments";
 import { MFASettings } from "@/components/security/MFASettings";
 
 const Security = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
     <div className="flex-1 p-6 space-y-6">
-      <div className="flex items-center gap-3">
-        <Shield className="h-8 w-8 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">Cybersecurity Center</h1>
-          <p className="text-muted-foreground">Enterprise-grade security controls and monitoring</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Shield className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">Cybersecurity Center</h1>
+            <p className="text-muted-foreground">Enterprise-grade security controls and monitoring</p>
+          </div>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

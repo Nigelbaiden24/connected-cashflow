@@ -1,11 +1,71 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft } from "lucide-react";
+import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 const Analytics = () => {
   const navigate = useNavigate();
+
+  const handleDownloadPDF = () => {
+    const pdf = new jsPDF();
+    
+    // Add title
+    pdf.setFontSize(20);
+    pdf.text("Business Analytics Report", 20, 20);
+    
+    // Add date
+    pdf.setFontSize(12);
+    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 30);
+    
+    // Add metrics
+    pdf.setFontSize(14);
+    pdf.text("Key Metrics", 20, 45);
+    pdf.setFontSize(10);
+    pdf.text("Total Revenue: $328K (+12.5%)", 20, 55);
+    pdf.text("Active Customers: 1,013 (+8.2%)", 20, 62);
+    pdf.text("Conversion Rate: 3.24% (-2.1%)", 20, 69);
+    pdf.text("Avg. Transaction: $324 (+5.7%)", 20, 76);
+    
+    // Add revenue data section
+    pdf.setFontSize(14);
+    pdf.text("Revenue vs Expenses (Last 6 Months)", 20, 95);
+    pdf.setFontSize(10);
+    let yPos = 105;
+    revenueData.forEach((item) => {
+      pdf.text(`${item.month}: Revenue $${item.revenue.toLocaleString()}, Expenses $${item.expenses.toLocaleString()}`, 25, yPos);
+      yPos += 7;
+    });
+    
+    // Add customer growth section
+    pdf.setFontSize(14);
+    pdf.text("Customer Growth", 20, yPos + 10);
+    pdf.setFontSize(10);
+    yPos += 20;
+    customerData.forEach((item) => {
+      pdf.text(`${item.month}: ${item.customers} customers`, 25, yPos);
+      yPos += 7;
+    });
+    
+    // Add footer
+    pdf.setFontSize(8);
+    pdf.text("FlowPulse Business - Confidential", 20, 280);
+    
+    pdf.save(`analytics-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success("Analytics report downloaded successfully");
+  };
+
+  const handleRefresh = () => {
+    toast.info("Refreshing analytics data...");
+    // In a real app, this would fetch fresh data
+  };
+
+  const handleExport = () => {
+    toast.info("Exporting data to CSV...");
+    // In a real app, this would export to CSV
+  };
   
   const revenueData = [
     { month: "Jan", revenue: 45000, expenses: 32000 },
@@ -32,15 +92,44 @@ const Analytics = () => {
           <h1 className="text-3xl font-bold">Analytics</h1>
           <p className="text-muted-foreground">Business performance insights and metrics</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/")}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            className="gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            Export CSV
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleDownloadPDF}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Download PDF
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
