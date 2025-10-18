@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { templates, loadTemplate } from "@/lib/templateManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
-import { BusinessSidebar } from "@/components/BusinessSidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
 
@@ -31,7 +31,7 @@ const documentTypes = [
   { value: "pitch-deck", label: "Pitch Deck" },
 ];
 
-const AIGenerator = () => {
+const FinanceAIGenerator = () => {
   const navigate = useNavigate();
   const [documentType, setDocumentType] = useState("financial-plan");
   const [prompt, setPrompt] = useState("");
@@ -42,7 +42,7 @@ const AIGenerator = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState("");
-  const [userEmail] = useState("business@flowpulse.io");
+  const [userEmail] = useState("finance@flowpulse.io");
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -113,14 +113,11 @@ const AIGenerator = () => {
 
       const aiContent = functionData?.choices?.[0]?.message?.content || functionData?.response || functionData?.text || "";
       
-      // Parse AI content into sections
       const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
       
-      // Parse template HTML and intelligently replace content
       const parser = new DOMParser();
       const doc = parser.parseFromString(templateHtml, 'text/html');
       
-      // Replace client name and date placeholders
       const replaceInNode = (node: Node) => {
         if (node.nodeType === Node.TEXT_NODE && node.textContent) {
           node.textContent = node.textContent
@@ -131,24 +128,19 @@ const AIGenerator = () => {
       };
       replaceInNode(doc.body);
       
-      // Find and replace content in headings and paragraphs
       let sectionIndex = 0;
       
-      // Replace main heading
       const h1 = doc.querySelector('h1');
       if (h1 && sections[sectionIndex]) {
         h1.textContent = sections[sectionIndex++];
       }
       
-      // Replace paragraphs with AI content while preserving structure
       const paragraphs = Array.from(doc.querySelectorAll('p'));
       const contentSections = sections.slice(sectionIndex);
       
       contentSections.forEach((content, idx) => {
         if (paragraphs[idx]) {
-          // Check if content has bullet points
           if (content.includes('•') || content.includes('-')) {
-            // Convert to list if parent allows
             const parent = paragraphs[idx].parentElement;
             if (parent) {
               const ul = doc.createElement('ul');
@@ -260,8 +252,8 @@ const AIGenerator = () => {
   if (showEditor) {
     return (
       <SidebarProvider>
-        <div className="flex min-h-screen w-full business-theme">
-          <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
+        <div className="flex min-h-screen w-full">
+          <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
           
           <div className="flex-1 flex flex-col">
             <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -270,7 +262,7 @@ const AIGenerator = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate("/business-dashboard")}
+                  onClick={() => navigate("/dashboard")}
                   className="gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -303,8 +295,8 @@ const AIGenerator = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full business-theme">
-        <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
+      <div className="flex min-h-screen w-full">
+        <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
         
         <div className="flex-1">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -313,7 +305,7 @@ const AIGenerator = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/business-dashboard")}
+                onClick={() => navigate("/dashboard")}
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -432,13 +424,8 @@ const AIGenerator = () => {
                     </Button>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">
-                      {isGenerating
-                        ? "Generating your document..."
-                        : "Your generated document will appear here"}
-                    </p>
+                  <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground">
+                    Generated content will appear here
                   </div>
                 )}
               </CardContent>
@@ -448,138 +435,117 @@ const AIGenerator = () => {
 
         <TabsContent value="template" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select Template</CardTitle>
-                  <CardDescription>Choose a professional template</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Template</CardTitle>
+                <CardDescription>Choose a pre-designed template</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   {templates.map((template) => (
-                    <Card
+                    <button
                       key={template.id}
-                      className={`cursor-pointer transition-all ${
-                        selectedTemplate === template.id ? 'ring-2 ring-primary' : 'hover:shadow-md'
-                      }`}
                       onClick={() => setSelectedTemplate(template.id)}
+                      className={`p-4 border-2 rounded-lg text-left transition-all ${
+                        selectedTemplate === template.id
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="w-32 h-24 bg-muted rounded overflow-hidden flex-shrink-0 border">
-                            <iframe 
-                              src={template.htmlPath} 
-                              className="w-full h-full pointer-events-none"
-                              style={{ transform: 'scale(0.25)', transformOrigin: 'top left', width: '400%', height: '400%' }}
-                              title={template.name}
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold">{template.name}</h3>
-                            <p className="text-sm text-muted-foreground mt-1">{template.description}</p>
-                            <p className="text-xs text-primary mt-2">{template.category}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      <div className="aspect-video bg-muted rounded mb-2 overflow-hidden">
+                        <img 
+                          src={template.thumbnailUrl} 
+                          alt={template.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <h4 className="font-semibold text-sm">{template.name}</h4>
+                      <p className="text-xs text-muted-foreground">{template.category}</p>
+                    </button>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Document Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="template-client">Client Name</Label>
-                    <Input
-                      id="template-client"
-                      placeholder="Enter client name"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="templateClientName">Client Name</Label>
+                  <Input
+                    id="templateClientName"
+                    placeholder="Enter client name"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="template-type">Document Type</Label>
-                    <Select value={documentType} onValueChange={setDocumentType}>
-                      <SelectTrigger id="template-type">
-                        <SelectValue placeholder="Select document type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {documentTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="templatePrompt">Content Instructions</Label>
+                  <Textarea
+                    id="templatePrompt"
+                    placeholder="Describe what content to generate..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    rows={4}
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="template-prompt">Content Instructions</Label>
-                    <Textarea
-                      id="template-prompt"
-                      placeholder="Describe what you want..."
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      rows={6}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="templateDetails">Additional Context</Label>
+                  <Textarea
+                    id="templateDetails"
+                    placeholder="Any specific details..."
+                    value={additionalDetails}
+                    onChange={(e) => setAdditionalDetails(e.target.value)}
+                    rows={3}
+                  />
+                </div>
 
-                  <Button
-                    onClick={handleGenerateWithTemplate}
-                    disabled={isGenerating || !selectedTemplate}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Generate & Edit
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+                <Button
+                  onClick={handleGenerateWithTemplate}
+                  disabled={isGenerating || !selectedTemplate}
+                  className="w-full"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Layout className="h-4 w-4 mr-2" />
+                      Generate from Template
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Preview</CardTitle>
-                <CardDescription>Template preview</CardDescription>
+                <CardTitle>Template Preview</CardTitle>
+                <CardDescription>Preview of selected template</CardDescription>
               </CardHeader>
               <CardContent>
                 {selectedTemplate ? (
-                  <div className="aspect-[8.5/11] bg-white rounded border overflow-hidden">
-                    <iframe 
-                      src={templates.find(t => t.id === selectedTemplate)?.htmlPath}
-                      className="w-full h-full"
-                      title="Template Preview"
+                  <div className="border rounded-lg overflow-hidden">
+                    <img 
+                      src={templates.find(t => t.id === selectedTemplate)?.thumbnailUrl} 
+                      alt="Template preview"
+                      className="w-full"
                     />
                   </div>
                 ) : (
-                  <div className="aspect-[8.5/11] bg-muted rounded flex items-center justify-center">
-                    <div className="text-center">
-                      <Layout className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-muted-foreground">Select a template to preview</p>
-                    </div>
+                  <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground">
+                    Select a template to see preview
                   </div>
                 )}
               </CardContent>
             </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </main>
+          </div>
+        </TabsContent>
+      </Tabs>
+          </main>
         </div>
       </div>
     </SidebarProvider>
   );
 };
 
-export default AIGenerator;
+export default FinanceAIGenerator;

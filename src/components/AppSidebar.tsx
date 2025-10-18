@@ -53,7 +53,7 @@ const aiToolsItems = [
   },
   {
     title: "AI Generator",
-    url: "/ai-generator",
+    url: "/finance-ai-generator",
     icon: Sparkles,
   },
   {

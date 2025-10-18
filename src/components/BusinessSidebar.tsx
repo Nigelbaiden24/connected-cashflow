@@ -66,7 +66,7 @@ const businessToolsItems = [
   },
   {
     title: "AI Generator",
-    url: "/ai-generator",
+    url: "/business-ai-generator",
     icon: Briefcase,
   },
 ];

@@ -9,7 +9,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
-import AIGenerator from "./pages/AIGenerator";
+import FinanceAIGenerator from "./pages/FinanceAIGenerator";
+import BusinessAIGenerator from "./pages/BusinessAIGenerator";
 import MarketData from "./pages/MarketData";
 import Clients from "./pages/Clients";
 import ClientProfile from "./pages/ClientProfile";
@@ -366,7 +367,19 @@ const App = () => {
           <Route path="/crm/:id" element={<CRMContactDetail />} />
           <Route path="/payroll" element={<Payroll />} />
           <Route path="/security" element={<Security />} />
-          <Route path="/ai-generator" element={<AIGenerator />} />
+          <Route path="/business-ai-generator" element={<BusinessAIGenerator />} />
+          
+          <Route path="/finance-ai-generator" element={
+            !isAuthenticated ? <Navigate to="/login" replace /> : (
+              <SidebarProvider>
+                <div className="flex min-h-screen w-full">
+                  <main className="flex-1">
+                    <FinanceAIGenerator />
+                  </main>
+                </div>
+              </SidebarProvider>
+            )
+          } />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
