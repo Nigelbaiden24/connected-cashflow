@@ -18,9 +18,12 @@ import { RecruitmentHeader } from "@/components/recruitment/RecruitmentHeader";
 import { RecruitmentHero } from "@/components/recruitment/RecruitmentHero";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import AboutUs from "./AboutUs";
 
 export default function Recruitment() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentSection, setCurrentSection] = useState("home");
   const [searchQuery, setSearchQuery] = useState("");
   const [heroImage, setHeroImage] = useState<string>("");
@@ -39,6 +42,41 @@ export default function Recruitment() {
       setCurrentSection("contact");
     } else {
       setCurrentSection(section);
+    }
+  };
+
+  const handleApplyNow = (jobTitle: string) => {
+    toast({
+      title: "Application Started",
+      description: `Redirecting you to apply for ${jobTitle}...`,
+    });
+    setTimeout(() => {
+      navigate("/candidate-registration");
+    }, 1500);
+  };
+
+  const handleBrowseJobs = (sector: string) => {
+    toast({
+      title: "Loading Jobs",
+      description: `Fetching all ${sector} positions...`,
+    });
+    setCurrentSection(sector === "Operations" || sector === "HR" || sector === "Marketing" ? "general" : sector.toLowerCase());
+  };
+
+  const handleViewAllJobs = () => {
+    toast({
+      title: "Loading All Jobs",
+      description: "Showing all available positions...",
+    });
+  };
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      toast({
+        title: "Searching Jobs",
+        description: `Finding matches for "${query}"...`,
+      });
+      setSearchQuery(query);
     }
   };
 
@@ -89,6 +127,10 @@ export default function Recruitment() {
     "Long-term career planning",
   ];
 
+  if (currentSection === "about") {
+    return <AboutUs />;
+  }
+
   if (currentSection === "tech") {
     return (
       <div className="min-h-screen bg-background">
@@ -96,7 +138,7 @@ export default function Recruitment() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Technology Recruitment</h1>
+              <h1 className="text-4xl font-bold mb-2 neon-text-subtle">Technology Recruitment</h1>
               <p className="text-xl text-muted-foreground">
                 Specialist roles in software engineering, data science, cloud, and IT
               </p>
@@ -121,7 +163,7 @@ export default function Recruitment() {
                           <span className="font-semibold text-foreground">{job.salary}</span>
                         </div>
                       </div>
-                      <Button>Apply Now</Button>
+                      <Button onClick={() => handleApplyNow(job.title)}>Apply Now</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -140,7 +182,7 @@ export default function Recruitment() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Finance Recruitment</h1>
+              <h1 className="text-4xl font-bold mb-2 neon-text-subtle">Finance Recruitment</h1>
               <p className="text-xl text-muted-foreground">
                 Specialist roles in banking, investment, accounting, and financial services
               </p>
@@ -165,7 +207,7 @@ export default function Recruitment() {
                           <span className="font-semibold text-foreground">{job.salary}</span>
                         </div>
                       </div>
-                      <Button>Apply Now</Button>
+                      <Button onClick={() => handleApplyNow(job.title)}>Apply Now</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -184,7 +226,7 @@ export default function Recruitment() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Generalist Recruitment</h1>
+              <h1 className="text-4xl font-bold mb-2 neon-text-subtle">Generalist Recruitment</h1>
               <p className="text-xl text-muted-foreground">
                 Opportunities across all sectors including retail, healthcare, manufacturing, and more
               </p>
@@ -198,7 +240,11 @@ export default function Recruitment() {
                     <CardDescription>View all {dept.toLowerCase()} roles</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleBrowseJobs(dept)}
+                    >
                       Browse Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -216,13 +262,13 @@ export default function Recruitment() {
   return (
     <div className="min-h-screen bg-background">
       <RecruitmentHeader onNavigate={handleNavigate} currentSection={currentSection} />
-      <RecruitmentHero onSearch={setSearchQuery} heroImage={heroImage} imageLoading={imageLoading} />
+      <RecruitmentHero onSearch={handleSearch} heroImage={heroImage} imageLoading={imageLoading} />
 
       <div className="container mx-auto px-4 py-16 space-y-16">
         {/* Sectors */}
         <section>
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Our Specialist Sectors</h2>
+            <h2 className="text-3xl font-bold mb-4 neon-text-subtle">Our Specialist Sectors</h2>
             <p className="text-muted-foreground text-lg">
               Expert recruitment across technology, finance, and all other industries
             </p>
@@ -263,8 +309,8 @@ export default function Recruitment() {
         {/* Featured Jobs */}
         <section>
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Featured Opportunities</h2>
-            <Button variant="outline">View All Jobs</Button>
+            <h2 className="text-3xl font-bold neon-text-subtle">Featured Opportunities</h2>
+            <Button variant="outline" onClick={handleViewAllJobs}>View All Jobs</Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -284,7 +330,7 @@ export default function Recruitment() {
                       <span>{job.location}</span>
                       <span className="font-semibold text-foreground text-base">{job.salary}</span>
                     </div>
-                    <Button className="w-full">Apply Now</Button>
+                    <Button className="w-full" onClick={() => handleApplyNow(job.title)}>Apply Now</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -296,7 +342,7 @@ export default function Recruitment() {
         <section className="bg-muted/30 -mx-4 px-4 py-16 md:mx-0 md:rounded-lg">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Why Choose FlowPulse Recruitment?</h2>
+              <h2 className="text-3xl font-bold mb-4 neon-text-subtle">Why Choose FlowPulse Recruitment?</h2>
               <p className="text-muted-foreground text-lg">
                 More than just job placement - we're your career partner
               </p>

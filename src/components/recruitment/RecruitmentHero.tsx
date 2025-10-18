@@ -51,7 +51,7 @@ export function RecruitmentHero({ onSearch, heroImage, imageLoading }: Recruitme
             <span className="text-white text-sm font-medium">Live Jobs Updated Daily</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white neon-text">
             Transform Your
             <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               Career Journey

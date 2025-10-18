@@ -21,6 +21,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
   const navItems = [
     { id: "home", label: "Home" },
+    { id: "about", label: "About Us", icon: User },
     { id: "tech", label: "Technology", icon: Code },
     { id: "finance", label: "Finance", icon: TrendingUp },
     { id: "general", label: "All Sectors", icon: Building2 },
