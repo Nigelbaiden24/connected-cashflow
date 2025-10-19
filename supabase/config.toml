@@ -3,5 +3,11 @@ project_id = "wlsmdcdfyudtvbnbqfmn"
 [functions.financial-chat]
 verify_jwt = false
 
+[functions.generate-document]
+verify_jwt = false
+
+[functions.generate-recruitment-image]
+verify_jwt = false
+
 [functions.transcribe-audio]
 verify_jwt = false

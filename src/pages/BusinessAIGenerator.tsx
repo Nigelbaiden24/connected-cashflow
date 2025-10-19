@@ -109,7 +109,7 @@ Do NOT include HTML tags or markdown formatting.`;
       
       const fullPrompt = `${systemPrompt}\n\nClient: ${clientName || "Professional Client"}\nDocument Type: ${documentType}\n\nUser Instructions: ${prompt}\n\nAdditional Context: ${additionalDetails || "N/A"}`;
 
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('financial-chat', {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-document', {
         body: { 
           messages: [{ role: "user", content: fullPrompt }]
         }
@@ -272,29 +272,34 @@ Do NOT include HTML tags or markdown formatting.`;
             <Card>
               <CardHeader>
                 <CardTitle>Select Template</CardTitle>
-                <CardDescription>Choose a pre-designed template</CardDescription>
+                <CardDescription>Choose a pre-designed template for your document</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {templates.map((template) => (
                     <button
                       key={template.id}
                       onClick={() => setSelectedTemplate(template.id)}
-                      className={`p-4 border-2 rounded-lg text-left transition-all ${
+                      className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${
                         selectedTemplate === template.id
-                          ? "border-primary bg-primary/5"
+                          ? "border-primary bg-primary/5 shadow-lg"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <div className="aspect-video bg-muted rounded mb-2 overflow-hidden">
-                        <img 
-                          src={template.thumbnailUrl} 
-                          alt={template.name}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="flex gap-4 items-start">
+                        <div className="w-24 h-24 bg-muted rounded overflow-hidden flex-shrink-0 border">
+                          <img 
+                            src={template.thumbnailUrl} 
+                            alt={template.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-base mb-1">{template.name}</h4>
+                          <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
+                          <span className="text-xs bg-secondary px-2 py-1 rounded">{template.category}</span>
+                        </div>
                       </div>
-                      <h4 className="font-semibold text-sm">{template.name}</h4>
-                      <p className="text-xs text-muted-foreground">{template.category}</p>
                     </button>
                   ))}
                 </div>
