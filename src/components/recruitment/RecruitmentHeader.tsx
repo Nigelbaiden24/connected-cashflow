@@ -80,7 +80,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
           <nav className="hidden md:flex items-center gap-6">
             <button
               onClick={() => onNavigate("home")}
-              className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
+              className={`flex items-center gap-2 text-base font-bold transition-colors hover:text-primary ${
                 currentSection === "home" ? "text-primary" : "text-muted-foreground"
               }`}
             >
@@ -89,7 +89,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
             {/* Saas Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              <DropdownMenuTrigger className="flex items-center gap-2 text-base font-bold text-muted-foreground transition-colors hover:text-primary">
                 Saas
                 <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
@@ -109,7 +109,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
             {/* Recruitment Dropdown */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              <DropdownMenuTrigger className="flex items-center gap-2 text-base font-bold text-muted-foreground transition-colors hover:text-primary">
                 Recruitment
                 <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
