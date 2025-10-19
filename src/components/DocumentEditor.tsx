@@ -56,37 +56,14 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
 
   useEffect(() => {
     const trimmedContent = initialContent?.trim() || '';
-    console.log('DocumentEditor received content:', trimmedContent.substring(0, 200));
+    console.log('DocumentEditor received content, length:', trimmedContent.length);
+    console.log('First 100 chars:', trimmedContent.substring(0, 100));
     
-    if (initialContent && (trimmedContent.startsWith('<!DOCTYPE html>') || trimmedContent.startsWith('<html'))) {
-      // If it's full HTML document, show in preview mode
-      console.log('Showing HTML preview mode');
+    if (trimmedContent && trimmedContent.length > 0) {
+      // Always show HTML preview for generated content
+      console.log('Setting HTML preview mode');
       setShowHtmlPreview(true);
       setHtmlContent(initialContent);
-    } else if (initialContent) {
-      // Parse initial content if provided
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(initialContent, 'text/html');
-      // Convert HTML to editor elements (simplified)
-      const textElements = Array.from(doc.querySelectorAll('p, h1, h2, h3, span')).map((el, i) => ({
-        id: `element-${i}`,
-        type: "text" as const,
-        content: el.textContent || "",
-        x: 50,
-        y: 50 + (i * 40),
-        width: 400,
-        height: 30,
-        fontSize: 16,
-        fontWeight: "normal",
-        fontStyle: "normal",
-        textAlign: "left",
-        textDecoration: "none",
-        color: "#000000",
-        backgroundColor: "transparent",
-        zIndex: i
-      }));
-      setElements(textElements);
-      saveToHistory(textElements);
     }
   }, [initialContent]);
   
@@ -401,14 +378,14 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
 
   const selectedElementData = selectedElement ? elements.find(el => el.id === selectedElement) : null;
 
-  if (showHtmlPreview && htmlContent) {
+  if (showHtmlPreview && htmlContent.trim()) {
     return (
-      <div className="flex h-screen flex-col">
-        <div className="border-b bg-background p-4">
+      <div className="flex h-screen flex-col w-full">
+        <div className="border-b bg-background p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Generated Document</h2>
             <div className="flex gap-2">
-              <Button onClick={switchToEditMode}>
+              <Button onClick={switchToEditMode} size="lg">
                 <Layers className="h-4 w-4 mr-2" />
                 Edit Document
               </Button>
