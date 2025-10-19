@@ -123,100 +123,77 @@ Do NOT include HTML tags or markdown formatting.`;
       const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
       
       console.log('Parsed sections:', sections.length);
+      console.log('Using template:', selectedTemplate);
       
-      // Create a new styled document with the AI content
-      const styledContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-              max-width: 210mm;
-              margin: 0 auto;
-              padding: 40px;
-              background: white;
-              color: #333;
-              line-height: 1.6;
-            }
-            h1 {
-              color: #1a237e;
-              font-size: 28px;
-              margin-bottom: 30px;
-              border-bottom: 3px solid #3f51b5;
-              padding-bottom: 15px;
-            }
-            h2 {
-              color: #3f51b5;
-              font-size: 22px;
-              margin-top: 30px;
-              margin-bottom: 15px;
-            }
-            p {
-              margin-bottom: 15px;
-              text-align: justify;
-            }
-            ul {
-              margin: 20px 0;
-              padding-left: 30px;
-            }
-            li {
-              margin-bottom: 10px;
-            }
-            .section {
-              margin-bottom: 30px;
-            }
-            .meta {
-              color: #666;
-              font-size: 14px;
-              margin-bottom: 30px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="meta">
-            <strong>Client:</strong> ${clientName || 'Professional Client'} | 
-            <strong>Date:</strong> ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} | 
-            <strong>Document Type:</strong> ${documentType}
-          </div>
-          
-          <h1>${sections[0] || 'Business Document'}</h1>
-          
-          <div class="section">
-            <h2>Executive Summary</h2>
-            ${sections[1]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
-          </div>
-          
-          <div class="section">
-            <h2>Analysis</h2>
-            ${sections[2]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
-          </div>
-          
-          <div class="section">
-            <h2>Detailed Review</h2>
-            ${sections[3]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
-          </div>
-          
-          <div class="section">
-            <h2>Key Highlights</h2>
-            <ul>
-              ${sections[4]?.split('\n').filter(line => line.trim()).map(line => 
-                `<li>${line.replace(/^[•\-*]\s*/, '').trim()}</li>`
-              ).join('') || ''}
-            </ul>
-          </div>
-          
-          <div class="section">
-            <h2>Conclusion and Recommendations</h2>
-            ${sections[5]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
-          </div>
-        </body>
-        </html>
-      `;
+      // Replace placeholders in the template
+      const replaceInNode = (node: Node) => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+          node.textContent = node.textContent
+            .replace(/\[CLIENT_NAME\]/gi, clientName || 'Professional Client')
+            .replace(/\[DATE\]/gi, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
+            .replace(/\[COMPANY\]/gi, 'FlowPulse')
+            .replace(/\[DOCUMENT_TYPE\]/gi, documentType)
+            .replace(/\[YEAR\]/gi, new Date().getFullYear().toString());
+        }
+        node.childNodes.forEach(replaceInNode);
+      };
+      replaceInNode(doc.body);
       
-      console.log('Setting styled content');
-      setEditorContent(styledContent);
+      // Inject AI content into template structure
+      let sectionIndex = 0;
+      
+      // Replace main title (h1)
+      const h1 = doc.querySelector('h1');
+      if (h1 && sections[sectionIndex]) {
+        h1.textContent = sections[sectionIndex++];
+      }
+      
+      // Get all text containers in order
+      const allTextElements = Array.from(doc.querySelectorAll('p, h2, h3, li, div.content, section p, article p'))
+        .filter(el => {
+          // Filter out empty elements and navigation/header elements
+          const text = el.textContent?.trim() || '';
+          return text.length > 10 && !el.closest('nav, header');
+        });
+      
+      console.log('Found text elements:', allTextElements.length);
+      
+      // Distribute sections across available elements
+      sections.slice(sectionIndex).forEach((content, idx) => {
+        const contentLines = content.split('\n\n').filter(line => line.trim());
+        
+        contentLines.forEach((line, lineIdx) => {
+          const targetIdx = idx * 3 + lineIdx; // Spread content across elements
+          if (allTextElements[targetIdx]) {
+            const element = allTextElements[targetIdx];
+            
+            // Handle bullet points
+            if (line.includes('•') || /^[-*]\s/.test(line)) {
+              const parent = element.parentElement;
+              if (parent && element.tagName === 'P') {
+                const ul = doc.createElement('ul');
+                ul.className = element.className;
+                
+                line.split('\n').filter(l => l.trim()).forEach(bulletLine => {
+                  const li = doc.createElement('li');
+                  li.textContent = bulletLine.replace(/^[•\-*]\s*/, '').trim();
+                  ul.appendChild(li);
+                });
+                
+                parent.replaceChild(ul, element);
+              }
+            } else {
+              element.textContent = line;
+            }
+          }
+        });
+      });
+      
+      // Preserve the full template structure
+      const modifiedHtml = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+      
+      console.log('Setting template content with AI data');
+      setEditorContent(modifiedHtml);
       setGeneratedContent(aiContent);
       setShowEditor(true);
 
