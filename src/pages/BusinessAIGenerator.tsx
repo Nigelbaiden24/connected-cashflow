@@ -122,62 +122,101 @@ Do NOT include HTML tags or markdown formatting.`;
       // Parse AI sections
       const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
       
-      // Replace placeholders first
-      const replaceInNode = (node: Node) => {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-          node.textContent = node.textContent
-            .replace(/\[CLIENT_NAME\]/gi, clientName || 'Professional Client')
-            .replace(/\[DATE\]/gi, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
-            .replace(/\[COMPANY\]/gi, 'FlowPulse')
-            .replace(/\[YEAR\]/gi, new Date().getFullYear().toString());
-        }
-        node.childNodes.forEach(replaceInNode);
-      };
-      replaceInNode(doc.body);
+      console.log('Parsed sections:', sections.length);
       
-      let sectionIndex = 0;
-      
-      // Replace main title
-      const h1 = doc.querySelector('h1');
-      if (h1 && sections[sectionIndex]) {
-        h1.textContent = sections[sectionIndex++];
-      }
-      
-      // Get all content containers (paragraphs, divs with text)
-      const contentElements = Array.from(doc.querySelectorAll('p, .content-section p, article p, section p'));
-      
-      // Populate content sections
-      sections.slice(sectionIndex).forEach((content, idx) => {
-        if (contentElements[idx]) {
-          const element = contentElements[idx];
-          
-          // Check if content contains bullet points
-          if (content.includes('•') || /^[-*•]\s/.test(content)) {
-            const parent = element.parentElement;
-            if (parent) {
-              const ul = doc.createElement('ul');
-              ul.className = 'list-disc pl-6 space-y-2';
-              
-              content.split('\n').filter(line => line.trim()).forEach(line => {
-                const li = doc.createElement('li');
-                li.textContent = line.replace(/^[•\-*]\s*/, '').trim();
-                ul.appendChild(li);
-              });
-              
-              parent.replaceChild(ul, element);
+      // Create a new styled document with the AI content
+      const styledContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              max-width: 210mm;
+              margin: 0 auto;
+              padding: 40px;
+              background: white;
+              color: #333;
+              line-height: 1.6;
             }
-          } else {
-            element.textContent = content;
-          }
-        }
-      });
+            h1 {
+              color: #1a237e;
+              font-size: 28px;
+              margin-bottom: 30px;
+              border-bottom: 3px solid #3f51b5;
+              padding-bottom: 15px;
+            }
+            h2 {
+              color: #3f51b5;
+              font-size: 22px;
+              margin-top: 30px;
+              margin-bottom: 15px;
+            }
+            p {
+              margin-bottom: 15px;
+              text-align: justify;
+            }
+            ul {
+              margin: 20px 0;
+              padding-left: 30px;
+            }
+            li {
+              margin-bottom: 10px;
+            }
+            .section {
+              margin-bottom: 30px;
+            }
+            .meta {
+              color: #666;
+              font-size: 14px;
+              margin-bottom: 30px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="meta">
+            <strong>Client:</strong> ${clientName || 'Professional Client'} | 
+            <strong>Date:</strong> ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} | 
+            <strong>Document Type:</strong> ${documentType}
+          </div>
+          
+          <h1>${sections[0] || 'Business Document'}</h1>
+          
+          <div class="section">
+            <h2>Executive Summary</h2>
+            ${sections[1]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
+          </div>
+          
+          <div class="section">
+            <h2>Analysis</h2>
+            ${sections[2]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
+          </div>
+          
+          <div class="section">
+            <h2>Detailed Review</h2>
+            ${sections[3]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
+          </div>
+          
+          <div class="section">
+            <h2>Key Highlights</h2>
+            <ul>
+              ${sections[4]?.split('\n').filter(line => line.trim()).map(line => 
+                `<li>${line.replace(/^[•\-*]\s*/, '').trim()}</li>`
+              ).join('') || ''}
+            </ul>
+          </div>
+          
+          <div class="section">
+            <h2>Conclusion and Recommendations</h2>
+            ${sections[5]?.split('\n\n').map(para => `<p>${para}</p>`).join('') || ''}
+          </div>
+        </body>
+        </html>
+      `;
       
-      // Preserve DOCTYPE and full HTML structure
-      const modifiedHtml = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
-      
-      console.log('Setting editor content, HTML length:', modifiedHtml.length);
-      console.log('HTML preview:', modifiedHtml.substring(0, 200));
-      setEditorContent(modifiedHtml);
+      console.log('Setting styled content');
+      setEditorContent(styledContent);
       setGeneratedContent(aiContent);
       setShowEditor(true);
 

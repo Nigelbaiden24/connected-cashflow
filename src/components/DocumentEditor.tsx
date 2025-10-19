@@ -52,6 +52,7 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const [showHtmlPreview, setShowHtmlPreview] = useState(false);
+  const [htmlContent, setHtmlContent] = useState("");
 
   useEffect(() => {
     const trimmedContent = initialContent?.trim() || '';
@@ -61,6 +62,7 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
       // If it's full HTML document, show in preview mode
       console.log('Showing HTML preview mode');
       setShowHtmlPreview(true);
+      setHtmlContent(initialContent);
     } else if (initialContent) {
       // Parse initial content if provided
       const parser = new DOMParser();
@@ -87,6 +89,36 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
       saveToHistory(textElements);
     }
   }, [initialContent]);
+  
+  const switchToEditMode = () => {
+    // Parse HTML content and convert to editable elements
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    const textElements = Array.from(doc.querySelectorAll('h1, h2, p, li')).map((el, i) => ({
+      id: `element-${i}`,
+      type: "text" as const,
+      content: el.textContent || "",
+      x: 50,
+      y: 50 + (i * 50),
+      width: 600,
+      height: el.tagName === 'H1' ? 40 : el.tagName === 'H2' ? 35 : 30,
+      fontSize: el.tagName === 'H1' ? 28 : el.tagName === 'H2' ? 22 : 16,
+      fontWeight: el.tagName.startsWith('H') ? "bold" : "normal",
+      fontStyle: "normal",
+      textAlign: "left",
+      textDecoration: "none",
+      color: el.tagName.startsWith('H') ? "#1a237e" : "#000000",
+      backgroundColor: "transparent",
+      zIndex: i
+    }));
+    setElements(textElements);
+    saveToHistory(textElements);
+    setShowHtmlPreview(false);
+    toast({
+      title: "Edit mode enabled",
+      description: "You can now drag and edit elements"
+    });
+  };
 
   const saveToHistory = (newElements: EditorElement[]) => {
     const newHistory = history.slice(0, historyIndex + 1);
@@ -369,14 +401,15 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
 
   const selectedElementData = selectedElement ? elements.find(el => el.id === selectedElement) : null;
 
-  if (showHtmlPreview && initialContent) {
+  if (showHtmlPreview && htmlContent) {
     return (
       <div className="flex h-screen flex-col">
         <div className="border-b bg-background p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Document Preview</h2>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowHtmlPreview(false)}>
+              <Button variant="outline" onClick={switchToEditMode}>
+                <Layers className="h-4 w-4 mr-2" />
                 Edit Mode
               </Button>
               <Button onClick={exportAsHTML}>
@@ -393,7 +426,7 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
         <div className="flex-1 overflow-auto bg-muted p-4">
           <div className="mx-auto bg-white shadow-lg">
             <iframe
-              srcDoc={initialContent}
+              srcDoc={htmlContent}
               className="w-full h-full min-h-[1400px] border-0"
               title="Document Preview"
             />
