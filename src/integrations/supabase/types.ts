@@ -1001,6 +1001,101 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          candidate_email: string
+          candidate_name: string
+          candidate_phone: string | null
+          cover_letter: string | null
+          created_at: string | null
+          id: string
+          job_id: string | null
+          resume_url: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          candidate_email: string
+          candidate_name: string
+          candidate_phone?: string | null
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          candidate_email?: string
+          candidate_name?: string
+          candidate_phone?: string | null
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          company: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          location: string
+          requirements: string | null
+          salary: string
+          sector: string
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          company: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          location: string
+          requirements?: string | null
+          salary: string
+          sector: string
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          company?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          requirements?: string | null
+          salary?: string
+          sector?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           category: string | null
@@ -1616,7 +1711,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       user_role: "admin" | "manager" | "analyst" | "viewer"

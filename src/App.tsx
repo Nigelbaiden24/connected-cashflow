@@ -30,6 +30,7 @@ import FinancePayroll from "./pages/FinancePayroll";
 import Recruitment from "./pages/Recruitment";
 import CandidateRegistration from "./pages/CandidateRegistration";
 import EmployerVacancy from "./pages/EmployerVacancy";
+import AdminJobs from "./pages/AdminJobs";
 import FinancialPlanning from "./pages/FinancialPlanning";
 import FinancialPlanDetail from "./pages/FinancialPlanDetail";
 import CreateFinancialPlan from "./pages/CreateFinancialPlan";
@@ -73,6 +74,7 @@ const App = () => {
             <Route path="/recruitment" element={<Recruitment />} />
             <Route path="/candidate-registration" element={<CandidateRegistration />} />
             <Route path="/employer-vacancy" element={<EmployerVacancy />} />
+            <Route path="/admin/jobs" element={<AdminJobs />} />
             <Route path="/login" element={
               isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
             } />

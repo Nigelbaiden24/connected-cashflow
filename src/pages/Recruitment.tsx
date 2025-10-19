@@ -28,6 +28,9 @@ export default function Recruitment() {
   const [searchQuery, setSearchQuery] = useState("");
   const [heroImage, setHeroImage] = useState<string>("");
   const [imageLoading, setImageLoading] = useState(true);
+  const [techJobs, setTechJobs] = useState<any[]>([]);
+  const [financeJobs, setFinanceJobs] = useState<any[]>([]);
+  const [generalJobs, setGeneralJobs] = useState<any[]>([]);
 
   const handleNavigate = (section: string) => {
     if (section === "login") {
@@ -38,6 +41,8 @@ export default function Recruitment() {
       navigate("/candidate-registration");
     } else if (section === "employer-register") {
       navigate("/employer-vacancy");
+    } else if (section === "admin-jobs") {
+      navigate("/admin/jobs");
     } else if (section === "contact") {
       setCurrentSection("contact");
     } else {
@@ -97,20 +102,30 @@ export default function Recruitment() {
       }
     };
 
+    const fetchJobs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("jobs")
+          .select("*")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+          setTechJobs(data.filter((job) => job.sector === "Technology"));
+          setFinanceJobs(data.filter((job) => job.sector === "Finance"));
+          setGeneralJobs(data.filter((job) => job.sector === "General"));
+        }
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
     generateHeroImage();
+    fetchJobs();
   }, []);
 
-  const techJobs = [
-    { id: 1, title: "Senior Full Stack Developer", company: "TechCorp", location: "London", salary: "£80k-£100k", type: "Permanent" },
-    { id: 2, title: "DevOps Engineer", company: "CloudSystems", location: "Manchester", salary: "£70k-£90k", type: "Contract" },
-    { id: 3, title: "Data Scientist", company: "AI Solutions", location: "Remote", salary: "£75k-£95k", type: "Permanent" },
-  ];
-
-  const financeJobs = [
-    { id: 4, title: "Investment Analyst", company: "Global Finance", location: "London", salary: "£65k-£85k", type: "Permanent" },
-    { id: 5, title: "Financial Controller", company: "Asset Management", location: "Edinburgh", salary: "£90k-£110k", type: "Permanent" },
-    { id: 6, title: "Risk Manager", company: "Banking Group", location: "London", salary: "£85k-£105k", type: "Contract" },
-  ];
 
   const sectors = [
     { icon: Code, title: "Technology", desc: "Software, Data, Cloud & IT", count: "150+ roles" },

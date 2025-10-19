@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -8,8 +8,10 @@ import {
   TrendingUp, 
   Building2,
   User,
-  Phone
+  Phone,
+  Settings
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RecruitmentHeaderProps {
   onNavigate: (section: string) => void;
@@ -18,6 +20,28 @@ interface RecruitmentHeaderProps {
 
 export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdmin();
+  }, []);
+
+  const checkAdmin = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      setIsAdmin(roleData?.role === "admin");
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
+  };
 
   const navItems = [
     { id: "home", label: "Home" },
@@ -62,11 +86,17 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => onNavigate("candidate-register")}>
+            {isAdmin && (
+              <Button variant="outline" size="sm" onClick={() => onNavigate("admin-jobs")}>
+                <Settings className="h-4 w-4 mr-2" />
+                Admin
+              </Button>
+            )}
+            <Button size="sm" onClick={() => onNavigate("candidate-register")}>
               <User className="h-4 w-4 mr-2" />
               For Candidates
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => onNavigate("employer-register")}>
+            <Button size="sm" onClick={() => onNavigate("employer-register")}>
               <Building2 className="h-4 w-4 mr-2" />
               For Employers
             </Button>
@@ -105,14 +135,14 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 </button>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t">
-                <Button variant="ghost" size="sm" className="justify-start" onClick={() => {
+                <Button size="sm" className="justify-start" onClick={() => {
                   onNavigate("candidate-register");
                   setMobileMenuOpen(false);
                 }}>
                   <User className="h-4 w-4 mr-2" />
                   For Candidates
                 </Button>
-                <Button variant="ghost" size="sm" className="justify-start" onClick={() => {
+                <Button size="sm" className="justify-start" onClick={() => {
                   onNavigate("employer-register");
                   setMobileMenuOpen(false);
                 }}>
