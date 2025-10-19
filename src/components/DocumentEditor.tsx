@@ -406,17 +406,17 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
       <div className="flex h-screen flex-col">
         <div className="border-b bg-background p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Document Preview</h2>
+            <h2 className="text-lg font-semibold">Generated Document</h2>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={switchToEditMode}>
+              <Button onClick={switchToEditMode}>
                 <Layers className="h-4 w-4 mr-2" />
-                Edit Mode
+                Edit Document
               </Button>
-              <Button onClick={exportAsHTML}>
+              <Button variant="outline" onClick={exportAsHTML}>
                 <Download className="h-4 w-4 mr-2" />
                 Export HTML
               </Button>
-              <Button onClick={exportAsPDF}>
+              <Button variant="outline" onClick={exportAsPDF}>
                 <Download className="h-4 w-4 mr-2" />
                 Export PDF
               </Button>
