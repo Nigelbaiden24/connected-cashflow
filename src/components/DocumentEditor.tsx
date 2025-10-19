@@ -401,10 +401,11 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
           </div>
         </div>
         <div className="flex-1 overflow-auto bg-muted p-4">
-          <div className="mx-auto bg-white shadow-lg">
+          <div className="mx-auto bg-white shadow-lg w-full h-full">
             <iframe
               srcDoc={htmlContent}
-              className="w-full h-full min-h-[1400px] border-0"
+              className="w-full h-full border-0"
+              style={{ minHeight: '1400px' }}
               title="Document Preview"
             />
           </div>
