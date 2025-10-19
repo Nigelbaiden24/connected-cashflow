@@ -5,11 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, FileText, Download, Layout, ArrowLeft } from "lucide-react";
+import { Loader2, Layout, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { templates, loadTemplate } from "@/lib/templateManager";
 import { DocumentEditor } from "@/components/DocumentEditor";
 import { BusinessSidebar } from "@/components/BusinessSidebar";
@@ -58,24 +56,6 @@ const BusinessAIGenerator = () => {
     }
   };
 
-  const getSystemPrompt = (type: string) => {
-    const prompts: Record<string, string> = {
-      "financial-plan": `Create a comprehensive UK financial plan with clear sections, bold headings, specific figures, and realistic UK context. Include asset allocations, tax allowances (£20,000 ISA, £60,000 pension), and FCA-compliant advice.`,
-      "proposal": `Create a professional financial advisory proposal with firm credentials, services, fee structure in tables, and regulatory information.`,
-      "client-letter": `Create a UK business letter with proper formatting, date, address, salutation, and professional closing.`,
-      "portfolio-summary": `Create a detailed portfolio review with holdings tables, performance metrics, asset allocation, and risk analysis.`,
-      "kyc-form": `Create a comprehensive KYC form with personal information, financial situation, investment experience, risk assessment, and regulatory declarations.`,
-      "compliance-report": `Create a detailed compliance report with executive summary, regulatory framework, assessment by area, risk register, and recommendations.`,
-      "whitepaper": `Create an authoritative whitepaper with abstract, methodology, analysis, conclusions, and references.`,
-      "market-commentary": `Create market commentary with key takeaways, market overview, economic context, sector analysis, and outlook.`,
-      "meeting-agenda": `Create a professional meeting agenda with times, agenda items, action items table, and preparation materials.`,
-      "scenario-analysis": `Create scenario analysis with base/bull/bear cases, probability weights, sensitivity analysis, and recommendations.`,
-      "multi-page-report": `Create a comprehensive multi-page report with table of contents, executive summary, detailed analysis, and appendices.`,
-      "pitch-deck": `Create a pitch deck with 10-15 slides including problem, solution, market, business model, team, and financials.`
-    };
-    return prompts[type] || "Create a professional, detailed financial document with proper formatting and UK context.";
-  };
-
   const handleGenerateWithTemplate = async () => {
     if (!selectedTemplate) {
       toast({
@@ -86,22 +66,48 @@ const BusinessAIGenerator = () => {
       return;
     }
 
+    if (!prompt) {
+      toast({
+        title: "Missing information",
+        description: "Please provide content instructions",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const templateHtml = await loadTemplate(selectedTemplate);
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(templateHtml, 'text/html');
       
-      const systemPrompt = `You are a content generator. Generate ONLY the text content (no HTML tags) that should replace placeholder text in a professional document. 
-      Generate content for the following sections in order, separated by '---SECTION---':
-      1. Main title/heading
-      2. Executive summary or introduction (2-3 paragraphs)
-      3. First main section content (2-3 paragraphs)
-      4. Second main section content (2-3 paragraphs)
-      5. Key metrics or data points (as bullet points)
-      6. Conclusion or next steps (1-2 paragraphs)
+      // Extract all text elements from template for context
+      const headings = Array.from(doc.querySelectorAll('h1, h2, h3')).map(h => h.textContent?.trim()).filter(Boolean);
+      const templateStructure = headings.join(', ');
       
-      Keep the tone professional and the content relevant to: ${documentType}`;
+      const systemPrompt = `You are a professional content generator for financial documents. 
       
-      const fullPrompt = `${systemPrompt}\n\nClient: ${clientName}\nDocument Type: ${documentType}\n\nUser Request: ${prompt}\n\nAdditional Context: ${additionalDetails}`;
+Generate comprehensive, detailed content that will populate this document template structure: ${templateStructure}
+
+Your response must follow this EXACT format with sections separated by '---SECTION---':
+
+1. Document Title (one compelling line)
+---SECTION---
+2. Executive Summary (3-4 professional paragraphs)
+---SECTION---
+3. Main Content Section 1 (3-4 detailed paragraphs)
+---SECTION---
+4. Main Content Section 2 (3-4 detailed paragraphs)
+---SECTION---
+5. Key Data Points (5-8 bullet points, each starting with •)
+---SECTION---
+6. Conclusion and Recommendations (2-3 paragraphs)
+
+Make content specific, professional, and relevant to: ${documentType}.
+Use realistic figures, UK context, and industry terminology.
+Do NOT include HTML tags or markdown formatting.`;
+      
+      const fullPrompt = `${systemPrompt}\n\nClient: ${clientName || "Professional Client"}\nDocument Type: ${documentType}\n\nUser Instructions: ${prompt}\n\nAdditional Context: ${additionalDetails || "N/A"}`;
 
       const { data: functionData, error: functionError } = await supabase.functions.invoke('financial-chat', {
         body: { 
@@ -113,16 +119,17 @@ const BusinessAIGenerator = () => {
 
       const aiContent = functionData?.choices?.[0]?.message?.content || functionData?.response || functionData?.text || "";
       
+      // Parse AI sections
       const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
       
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(templateHtml, 'text/html');
-      
+      // Replace placeholders first
       const replaceInNode = (node: Node) => {
         if (node.nodeType === Node.TEXT_NODE && node.textContent) {
           node.textContent = node.textContent
-            .replace(/\[CLIENT_NAME\]/g, clientName || 'Client')
-            .replace(/\[DATE\]/g, new Date().toLocaleDateString('en-GB'));
+            .replace(/\[CLIENT_NAME\]/gi, clientName || 'Professional Client')
+            .replace(/\[DATE\]/gi, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
+            .replace(/\[COMPANY\]/gi, 'FlowPulse')
+            .replace(/\[YEAR\]/gi, new Date().getFullYear().toString());
         }
         node.childNodes.forEach(replaceInNode);
       };
@@ -130,30 +137,37 @@ const BusinessAIGenerator = () => {
       
       let sectionIndex = 0;
       
+      // Replace main title
       const h1 = doc.querySelector('h1');
       if (h1 && sections[sectionIndex]) {
         h1.textContent = sections[sectionIndex++];
       }
       
-      const paragraphs = Array.from(doc.querySelectorAll('p'));
-      const contentSections = sections.slice(sectionIndex);
+      // Get all content containers (paragraphs, divs with text)
+      const contentElements = Array.from(doc.querySelectorAll('p, .content-section p, article p, section p'));
       
-      contentSections.forEach((content, idx) => {
-        if (paragraphs[idx]) {
-          if (content.includes('•') || content.includes('-')) {
-            const parent = paragraphs[idx].parentElement;
+      // Populate content sections
+      sections.slice(sectionIndex).forEach((content, idx) => {
+        if (contentElements[idx]) {
+          const element = contentElements[idx];
+          
+          // Check if content contains bullet points
+          if (content.includes('•') || /^[-*•]\s/.test(content)) {
+            const parent = element.parentElement;
             if (parent) {
               const ul = doc.createElement('ul');
-              ul.className = paragraphs[idx].className;
+              ul.className = 'list-disc pl-6 space-y-2';
+              
               content.split('\n').filter(line => line.trim()).forEach(line => {
                 const li = doc.createElement('li');
-                li.textContent = line.replace(/^[•\-]\s*/, '');
+                li.textContent = line.replace(/^[•\-*]\s*/, '').trim();
                 ul.appendChild(li);
               });
-              parent.replaceChild(ul, paragraphs[idx]);
+              
+              parent.replaceChild(ul, element);
             }
           } else {
-            paragraphs[idx].textContent = content;
+            element.textContent = content;
           }
         }
       });
@@ -178,75 +192,6 @@ const BusinessAIGenerator = () => {
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const handleGenerate = async () => {
-    if (!documentType || !prompt) {
-      toast({
-        title: "Missing information",
-        description: "Please select a document type and provide details",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    setGeneratedContent("");
-
-    try {
-      const systemPrompt = getSystemPrompt(documentType);
-      const fullPrompt = `${systemPrompt}\n\nClient Name: ${clientName || "Not specified"}\n\nDocument Request: ${prompt}\n\nAdditional Details: ${additionalDetails || "None"}`;
-
-      const { data, error } = await supabase.functions.invoke('financial-chat', {
-        body: {
-          messages: [{ role: "user", content: fullPrompt }]
-        },
-      });
-
-      if (error) throw error;
-
-      const content = data?.choices?.[0]?.message?.content || data?.response || data?.text || "Failed to generate content";
-      setGeneratedContent(content);
-
-      toast({
-        title: "Document generated",
-        description: "Your document has been created successfully",
-      });
-    } catch (error) {
-      console.error('Generation error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate document. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleDownloadPDF = () => {
-    if (!generatedContent) {
-      toast({
-        title: "No content",
-        description: "Generate a document first before downloading",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const documentLabel = documentTypes.find(d => d.value === documentType)?.label || "Document";
-    
-    generateFinancialReport({
-      title: `${documentLabel}${clientName ? ` - ${clientName}` : ''}`,
-      content: generatedContent,
-      generatedBy: "FlowPulse AI Generator",
-      date: new Date()
-    });
-
-    toast({
-      title: "PDF downloaded",
-      description: "Your document has been saved as PDF",
-    });
   };
 
   if (showEditor) {
@@ -318,123 +263,12 @@ const BusinessAIGenerator = () => {
           </header>
 
           <main className="p-6 space-y-6">
-            <div>
-              <p className="text-muted-foreground">Generate professional financial documents with AI assistance</p>
-      </div>
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-2">Template-Based Document Generation</h2>
+              <p className="text-muted-foreground">Select a template and let AI generate professional content</p>
+            </div>
 
-      <Tabs defaultValue="standard" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="standard">Standard Generation</TabsTrigger>
-          <TabsTrigger value="template">
-            <Layout className="h-4 w-4 mr-2" />
-            Template-Based
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="standard" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Document Configuration</CardTitle>
-                <CardDescription>Configure your document parameters and requirements</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="documentType">Document Type</Label>
-                  <Select value={documentType} onValueChange={setDocumentType}>
-                    <SelectTrigger id="documentType">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {documentTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="clientName">Client Name (Optional)</Label>
-                  <Input
-                    id="clientName"
-                    placeholder="Enter client name"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="prompt">Document Details</Label>
-                  <Textarea
-                    id="prompt"
-                    placeholder="Describe what you want in the document..."
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    rows={6}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="additionalDetails">Additional Information</Label>
-                  <Textarea
-                    id="additionalDetails"
-                    placeholder="Any specific requirements..."
-                    value={additionalDetails}
-                    onChange={(e) => setAdditionalDetails(e.target.value)}
-                    rows={3}
-                  />
-                </div>
-
-                <Button
-                  onClick={handleGenerate}
-                  disabled={isGenerating || !documentType || !prompt}
-                  className="w-full"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Generate Document
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle>Generated Document</CardTitle>
-                <CardDescription>AI-generated content preview</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 space-y-4">
-                {generatedContent ? (
-                  <>
-                    <div className="bg-muted rounded-lg p-4 max-h-[500px] overflow-y-auto">
-                      <pre className="whitespace-pre-wrap text-sm">{generatedContent}</pre>
-                    </div>
-                    <Button onClick={handleDownloadPDF} className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download as PDF
-                    </Button>
-                  </>
-                ) : (
-                  <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground">
-                    Generated content will appear here
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="template" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Select Template</CardTitle>
@@ -520,27 +354,29 @@ const BusinessAIGenerator = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Template Preview</CardTitle>
-                <CardDescription>Preview of selected template</CardDescription>
+                <CardDescription>Live preview of selected template</CardDescription>
               </CardHeader>
               <CardContent>
                 {selectedTemplate ? (
-                  <div className="border rounded-lg overflow-hidden">
-                    <img 
-                      src={templates.find(t => t.id === selectedTemplate)?.thumbnailUrl} 
-                      alt="Template preview"
-                      className="w-full"
+                  <div className="border rounded-lg overflow-hidden bg-white">
+                    <iframe 
+                      src={templates.find(t => t.id === selectedTemplate)?.htmlPath} 
+                      title="Template preview"
+                      className="w-full h-[600px] border-0"
+                      sandbox="allow-same-origin"
                     />
                   </div>
                 ) : (
-                  <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground">
-                    Select a template to see preview
+                  <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground h-[600px] flex items-center justify-center">
+                    <div>
+                      <Layout className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>Select a template to see preview</p>
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-      </Tabs>
           </main>
         </div>
       </div>
