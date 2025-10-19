@@ -45,6 +45,7 @@ import Team from "./pages/Team";
 import Settings from "./pages/Settings";
 import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
+import DocumentEditorPage from "./pages/DocumentEditorPage";
 
 const queryClient = new QueryClient();
 
@@ -380,6 +381,12 @@ const App = () => {
                   </main>
                 </div>
               </SidebarProvider>
+            )
+          } />
+          
+          <Route path="/document-editor" element={
+            !isAuthenticated ? <Navigate to="/login" replace /> : (
+              <DocumentEditorPage />
             )
           } />
             

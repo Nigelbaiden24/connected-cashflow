@@ -39,7 +39,7 @@ const FinanceAIGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState(false);
-  const [editorContent, setEditorContent] = useState("");
+  const [generatedDocument, setGeneratedDocument] = useState<{html: string, rawContent: string} | null>(null);
   const [userEmail] = useState("finance@flowpulse.io");
   const { toast } = useToast();
 
@@ -76,7 +76,10 @@ const FinanceAIGenerator = () => {
     }
 
     setIsGenerating(true);
+    
     try {
+      // Wait for template to load
+      console.log('Loading template:', selectedTemplate);
       const templateHtml = await loadTemplate(selectedTemplate);
       const parser = new DOMParser();
       const doc = parser.parseFromString(templateHtml, 'text/html');
@@ -109,21 +112,30 @@ Do NOT include HTML tags or markdown formatting.`;
       
       const fullPrompt = `${systemPrompt}\n\nClient: ${clientName || "Professional Client"}\nDocument Type: ${documentType}\n\nUser Instructions: ${prompt}\n\nAdditional Context: ${additionalDetails || "N/A"}`;
 
+      // Generate AI content
+      console.log('Calling AI to generate content...');
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-document', {
         body: { 
           messages: [{ role: "user", content: fullPrompt }]
         }
       });
 
-      if (functionError) throw functionError;
+      if (functionError) {
+        console.error('AI generation error:', functionError);
+        throw functionError;
+      }
 
       const aiContent = functionData?.choices?.[0]?.message?.content || functionData?.response || functionData?.text || "";
+      
+      if (!aiContent) {
+        throw new Error('No content generated from AI');
+      }
       
       // Parse AI sections
       const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
       
-      console.log('Parsed sections:', sections.length);
-      console.log('Using template:', selectedTemplate);
+      console.log('AI generated', sections.length, 'sections');
+      console.log('Injecting into template:', selectedTemplate);
       
       // Replace placeholders in the template
       const replaceInNode = (node: Node) => {
@@ -192,15 +204,21 @@ Do NOT include HTML tags or markdown formatting.`;
       // Preserve the full template structure
       const modifiedHtml = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
       
-      console.log('Setting template content with AI data');
-      setEditorContent(modifiedHtml);
+      console.log('Document generated successfully, length:', modifiedHtml.length);
+      
+      // Store in persistent state
+      setGeneratedDocument({
+        html: modifiedHtml,
+        rawContent: aiContent
+      });
+      
       setGeneratedContent(aiContent);
-      setShowEditor(true);
 
       toast({
-        title: "Template ready!",
-        description: "Your document has been generated with AI content. You can now edit it.",
+        title: "Document generated!",
+        description: "Click 'Open in Editor' to view and customize your document.",
       });
+      
     } catch (error: any) {
       console.error('Generation error:', error);
       toast({
@@ -214,49 +232,24 @@ Do NOT include HTML tags or markdown formatting.`;
   };
 
 
-  if (showEditor) {
-    return (
-      <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-          
-          <div className="flex-1 flex flex-col">
-            <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="flex h-16 items-center gap-4 px-6">
-                <SidebarTrigger />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/dashboard")}
-                  className="gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
-                </Button>
-                <div className="flex-1">
-                  <h1 className="text-2xl font-bold">Document Editor</h1>
-                  <p className="text-sm text-muted-foreground">Edit your generated document</p>
-                </div>
-                <Button onClick={() => setShowEditor(false)} variant="outline">
-                  Back to Generator
-                </Button>
-              </div>
-            </header>
-            <DocumentEditor 
-              initialContent={editorContent}
-              onSave={(content) => {
-                setGeneratedContent(content);
-                toast({
-                  title: "Saved",
-                  description: "Document saved successfully"
-                });
-              }}
-            />
-          </div>
-        </div>
-      </SidebarProvider>
-    );
-  }
+  const handleOpenInEditor = () => {
+    if (!generatedDocument) {
+      toast({
+        title: "No document to edit",
+        description: "Please generate a document first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Navigate to editor with document data
+    navigate("/document-editor", { 
+      state: { 
+        generatedDocument: generatedDocument.html,
+        rawContent: generatedDocument.rawContent
+      } 
+    });
+  };
 
   return (
     <SidebarProvider>
@@ -373,6 +366,16 @@ Do NOT include HTML tags or markdown formatting.`;
                     </>
                   )}
                 </Button>
+                
+                {generatedDocument && (
+                  <Button
+                    onClick={handleOpenInEditor}
+                    variant="default"
+                    className="w-full"
+                  >
+                    Open in Editor
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
