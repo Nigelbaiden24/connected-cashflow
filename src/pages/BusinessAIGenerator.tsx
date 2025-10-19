@@ -172,8 +172,11 @@ Do NOT include HTML tags or markdown formatting.`;
         }
       });
       
-      const modifiedHtml = doc.documentElement.outerHTML;
+      // Preserve DOCTYPE and full HTML structure
+      const modifiedHtml = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
       
+      console.log('Setting editor content, HTML length:', modifiedHtml.length);
+      console.log('HTML preview:', modifiedHtml.substring(0, 200));
       setEditorContent(modifiedHtml);
       setGeneratedContent(aiContent);
       setShowEditor(true);

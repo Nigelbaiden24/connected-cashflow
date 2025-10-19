@@ -54,8 +54,12 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
   const [showHtmlPreview, setShowHtmlPreview] = useState(false);
 
   useEffect(() => {
-    if (initialContent && initialContent.trim().startsWith('<!DOCTYPE html>')) {
+    const trimmedContent = initialContent?.trim() || '';
+    console.log('DocumentEditor received content:', trimmedContent.substring(0, 200));
+    
+    if (initialContent && (trimmedContent.startsWith('<!DOCTYPE html>') || trimmedContent.startsWith('<html'))) {
       // If it's full HTML document, show in preview mode
+      console.log('Showing HTML preview mode');
       setShowHtmlPreview(true);
     } else if (initialContent) {
       // Parse initial content if provided
