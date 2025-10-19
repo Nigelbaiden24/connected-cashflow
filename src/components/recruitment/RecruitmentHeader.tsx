@@ -9,8 +9,15 @@ import {
   Building2,
   User,
   Phone,
-  Settings
+  Settings,
+  ChevronDown
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RecruitmentHeaderProps {
@@ -43,14 +50,15 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
     }
   };
 
-  const navItems = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About Us", icon: User },
+  const saasItems = [
+    { id: "login", label: "Flowpulse Finance", icon: TrendingUp },
+    { id: "business-dashboard", label: "Flowpulse Business", icon: Building2 },
+  ];
+
+  const recruitmentItems = [
     { id: "tech", label: "Technology", icon: Code },
     { id: "finance", label: "Finance", icon: TrendingUp },
     { id: "general", label: "All Sectors", icon: Building2 },
-    { id: "login", label: "Flowpulse Finance", icon: TrendingUp },
-    { id: "business-dashboard", label: "Flowpulse Business", icon: Building2 },
   ];
 
   return (
@@ -70,18 +78,54 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
-                  currentSection === item.id ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                {item.icon && <item.icon className="h-4 w-4" />}
-                {item.label}
-              </button>
-            ))}
+            <button
+              onClick={() => onNavigate("home")}
+              className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
+                currentSection === "home" ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              Home
+            </button>
+
+            {/* Saas Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Saas
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-background border z-50">
+                {saasItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className="cursor-pointer"
+                  >
+                    <item.icon className="h-4 w-4 mr-2" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Recruitment Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                Recruitment
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-background border z-50">
+                {recruitmentItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className="cursor-pointer"
+                  >
+                    <item.icon className="h-4 w-4 mr-2" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Right Side Actions */}
@@ -99,6 +143,10 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
             <Button size="sm" onClick={() => onNavigate("employer-register")}>
               <Building2 className="h-4 w-4 mr-2" />
               For Employers
+            </Button>
+            <Button size="sm" onClick={() => onNavigate("about")}>
+              <User className="h-4 w-4 mr-2" />
+              About Us
             </Button>
             <Button size="sm" onClick={() => onNavigate("contact")}>
               <Phone className="h-4 w-4 mr-2" />
@@ -119,21 +167,52 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col gap-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onNavigate(item.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
-                    currentSection === item.id ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  {item.icon && <item.icon className="h-4 w-4" />}
-                  {item.label}
-                </button>
-              ))}
+              <button
+                onClick={() => {
+                  onNavigate("home");
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              >
+                Home
+              </button>
+
+              {/* Saas Section */}
+              <div className="pl-2">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Saas</p>
+                {saasItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onNavigate(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground mb-2"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Recruitment Section */}
+              <div className="pl-2">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Recruitment</p>
+                {recruitmentItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onNavigate(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground mb-2"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex flex-col gap-2 pt-4 border-t">
                 <Button size="sm" className="justify-start" onClick={() => {
                   onNavigate("candidate-register");
@@ -148,6 +227,13 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 }}>
                   <Building2 className="h-4 w-4 mr-2" />
                   For Employers
+                </Button>
+                <Button size="sm" className="justify-start" onClick={() => {
+                  onNavigate("about");
+                  setMobileMenuOpen(false);
+                }}>
+                  <User className="h-4 w-4 mr-2" />
+                  About Us
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
                   onNavigate("contact");
