@@ -55,15 +55,21 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
   const [htmlContent, setHtmlContent] = useState("");
 
   useEffect(() => {
+    console.log('=== DocumentEditor Debug ===');
+    console.log('initialContent type:', typeof initialContent);
+    console.log('initialContent length:', initialContent?.length);
+    console.log('initialContent exists:', !!initialContent);
+    
     const trimmedContent = initialContent?.trim() || '';
-    console.log('DocumentEditor received content, length:', trimmedContent.length);
-    console.log('First 100 chars:', trimmedContent.substring(0, 100));
+    console.log('Trimmed content length:', trimmedContent.length);
+    console.log('First 200 chars:', trimmedContent.substring(0, 200));
     
     if (trimmedContent && trimmedContent.length > 0) {
-      // Always show HTML preview for generated content
-      console.log('Setting HTML preview mode');
+      console.log('✓ Setting HTML preview mode');
       setShowHtmlPreview(true);
       setHtmlContent(initialContent);
+    } else {
+      console.log('✗ No content to display');
     }
   }, [initialContent]);
   
@@ -379,8 +385,9 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
   const selectedElementData = selectedElement ? elements.find(el => el.id === selectedElement) : null;
 
   if (showHtmlPreview && htmlContent.trim()) {
+    console.log('Rendering HTML preview, content length:', htmlContent.length);
     return (
-      <div className="flex h-screen flex-col w-full">
+      <div className="flex flex-1 flex-col w-full">
         <div className="border-b bg-background p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Generated Document</h2>
@@ -400,12 +407,12 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
             </div>
           </div>
         </div>
-        <div className="flex-1 overflow-auto bg-muted p-4">
-          <div className="mx-auto bg-white shadow-lg w-full h-full">
+        <div className="flex-1 overflow-auto bg-muted p-4 min-h-0">
+          <div className="mx-auto bg-white shadow-lg" style={{ minHeight: '1400px' }}>
             <iframe
               srcDoc={htmlContent}
-              className="w-full h-full border-0"
-              style={{ minHeight: '1400px' }}
+              className="w-full border-0"
+              style={{ height: '1400px', display: 'block' }}
               title="Document Preview"
             />
           </div>
