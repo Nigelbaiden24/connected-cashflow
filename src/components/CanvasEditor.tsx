@@ -32,6 +32,7 @@ export function CanvasEditor({ template, aiContent, onSave }: CanvasEditorProps)
     if (!canvasRef.current) return;
 
     console.log("Initializing Fabric canvas with template:", template.id);
+    console.log("AI content:", aiContent);
     
     const canvas = new FabricCanvas(canvasRef.current, {
       width: template.width,
@@ -40,24 +41,34 @@ export function CanvasEditor({ template, aiContent, onSave }: CanvasEditorProps)
     });
 
     // Load background and decoration images
-    template.imageRegions.forEach(async (imgRegion) => {
-      if (imgRegion.src.startsWith('data:image')) {
-        const img = await FabricImage.fromURL(imgRegion.src);
-        img.set({
-          left: imgRegion.x,
-          top: imgRegion.y,
-          scaleX: imgRegion.width / (img.width || 1),
-          scaleY: imgRegion.height / (img.height || 1),
-          selectable: !imgRegion.locked,
-          evented: !imgRegion.locked,
-        });
-        canvas.add(img);
+    const loadImages = async () => {
+      for (const imgRegion of template.imageRegions) {
+        if (imgRegion.src && imgRegion.src.startsWith('data:image')) {
+          try {
+            const img = await FabricImage.fromURL(imgRegion.src);
+            img.set({
+              left: imgRegion.x,
+              top: imgRegion.y,
+              scaleX: imgRegion.width / (img.width || 1),
+              scaleY: imgRegion.height / (img.height || 1),
+              selectable: !imgRegion.locked,
+              evented: !imgRegion.locked,
+            });
+            canvas.add(img);
+          } catch (err) {
+            console.error("Error loading image:", err);
+          }
+        }
       }
-    });
+    };
+
+    loadImages();
 
     // Add text regions with AI content or placeholders
-    template.textRegions.forEach((region) => {
+    console.log("Adding text regions:", template.textRegions.length);
+    template.textRegions.forEach((region, index) => {
       const content = aiContent?.[region.id] || region.placeholder;
+      console.log(`Adding text region ${index}: ${region.id}`, content.substring(0, 50));
       
       const textbox = new Textbox(content, {
         left: region.x,
@@ -80,6 +91,9 @@ export function CanvasEditor({ template, aiContent, onSave }: CanvasEditorProps)
 
       canvas.add(textbox);
     });
+
+    console.log("Canvas objects count:", canvas.getObjects().length);
+    canvas.renderAll();
 
     canvas.on('selection:created', (e) => {
       setSelectedObject(e.selected?.[0]);
