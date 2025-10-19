@@ -13,7 +13,7 @@ export const templates: Template[] = [
     name: "Cross-Border M&A Tracker",
     description: "Professional M&A transaction tracking template with charts and data tables",
     category: "Investment Analysis",
-    thumbnailUrl: "/templates/cross-border-ma-tracker.html",
+    thumbnailUrl: "/thumbnails/cross-border-ma-thumb.png",
     htmlPath: "/templates/cross-border-ma-tracker.html"
   },
   {
@@ -21,7 +21,7 @@ export const templates: Template[] = [
     name: "Financial Report",
     description: "Clean, minimalist financial reporting template with key metrics",
     category: "Reports",
-    thumbnailUrl: "/templates/financial-report.html",
+    thumbnailUrl: "/thumbnails/financial-report-thumb.png",
     htmlPath: "/templates/financial-report.html"
   },
   {
@@ -29,7 +29,7 @@ export const templates: Template[] = [
     name: "Sector Capital Flows",
     description: "CleanTech, BioTech and FinTech sector analysis template",
     category: "Market Analysis",
-    thumbnailUrl: "/templates/sector-capital-flows.html",
+    thumbnailUrl: "/thumbnails/sector-flows-thumb.png",
     htmlPath: "/templates/sector-capital-flows.html"
   }
 ];

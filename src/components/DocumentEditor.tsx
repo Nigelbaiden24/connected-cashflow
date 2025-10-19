@@ -51,8 +51,13 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  const [showHtmlPreview, setShowHtmlPreview] = useState(false);
+
   useEffect(() => {
-    if (initialContent) {
+    if (initialContent && initialContent.trim().startsWith('<!DOCTYPE html>')) {
+      // If it's full HTML document, show in preview mode
+      setShowHtmlPreview(true);
+    } else if (initialContent) {
       // Parse initial content if provided
       const parser = new DOMParser();
       const doc = parser.parseFromString(initialContent, 'text/html');
@@ -359,6 +364,40 @@ export function DocumentEditor({ initialContent = "", onSave }: DocumentEditorPr
   };
 
   const selectedElementData = selectedElement ? elements.find(el => el.id === selectedElement) : null;
+
+  if (showHtmlPreview && initialContent) {
+    return (
+      <div className="flex h-screen flex-col">
+        <div className="border-b bg-background p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Document Preview</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowHtmlPreview(false)}>
+                Edit Mode
+              </Button>
+              <Button onClick={exportAsHTML}>
+                <Download className="h-4 w-4 mr-2" />
+                Export HTML
+              </Button>
+              <Button onClick={exportAsPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto bg-muted p-4">
+          <div className="mx-auto bg-white shadow-lg">
+            <iframe
+              srcDoc={initialContent}
+              className="w-full h-full min-h-[1400px] border-0"
+              title="Document Preview"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen">
