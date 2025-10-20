@@ -1,40 +1,25 @@
-export interface TextRegion {
+export interface TemplateSection {
   id: string;
-  type: "heading" | "subheading" | "body" | "bullet" | "caption";
+  type: "heading" | "subheading" | "body" | "bullet-list" | "image" | "divider";
   placeholder: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fontSize: number;
-  fontFamily: string;
-  fontWeight: string;
-  color: string;
-  textAlign: "left" | "center" | "right";
-  lineHeight: number;
+  defaultContent?: string;
+  className?: string;
+  editable: boolean;
 }
 
-export interface ImageRegion {
-  id: string;
-  type: "background" | "logo" | "chart" | "decoration";
-  src: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  locked?: boolean;
-}
-
-export interface CanvasTemplate {
+export interface DocumentTemplate {
   id: string;
   name: string;
   category: string;
-  width: number;
-  height: number;
-  backgroundColor: string;
-  textRegions: TextRegion[];
-  imageRegions: ImageRegion[];
+  description: string;
   thumbnail?: string;
+  sections: TemplateSection[];
+  styles: {
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+    backgroundColor: string;
+  };
 }
 
 export interface AIContent {

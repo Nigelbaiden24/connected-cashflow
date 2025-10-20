@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
-import { canvasTemplates } from "@/data/canvasTemplates";
+import { documentTemplates } from "@/data/documentTemplates";
 import { AIContent } from "@/types/template";
 
 const documentTypes = [
@@ -76,24 +76,25 @@ const FinanceAIGenerator = () => {
     setIsGenerating(true);
     
     try {
-      const template = canvasTemplates.find(t => t.id === selectedTemplate);
+      const template = documentTemplates.find(t => t.id === selectedTemplate);
       if (!template) {
         throw new Error('Template not found');
       }
 
       console.log('Using template:', template.name);
-      console.log('Template has', template.textRegions.length, 'text regions');
+      console.log('Template has', template.sections.length, 'sections');
       
-      const regionDescriptions = template.textRegions
-        .map(r => `- ${r.id} (${r.type}): ${r.placeholder}`)
+      const sectionDescriptions = template.sections
+        .filter(s => s.editable)
+        .map(s => `- ${s.id} (${s.type}): ${s.placeholder}`)
         .join('\n');
       
       const systemPrompt = `You are a professional content generator for financial documents.
 
-Generate content for a document template with these text regions:
-${regionDescriptions}
+Generate content for a document template with these editable sections:
+${sectionDescriptions}
 
-Return a JSON object where each key is a region ID and the value is the generated content for that region.
+Return a JSON object where each key is a section ID and the value is the generated content for that section.
 
 Requirements:
 - Make content specific, professional, and relevant to: ${documentType}
@@ -101,8 +102,9 @@ Requirements:
 - For "heading" types: Create short, impactful titles (max 10 words)
 - For "subheading" types: Create concise section titles (max 8 words)
 - For "body" types: Write 2-4 professional paragraphs
-- For "caption" types: Write short footer text
-- Do NOT include any formatting or special characters
+- For "bullet-list" types: Create 3-5 bullet points, separated by newlines
+- Do NOT include bullet characters (•, -, *) in bullet-list content
+- Do NOT include any special formatting
 
 Return ONLY valid JSON in this exact format:
 {
@@ -145,8 +147,8 @@ Return ONLY valid JSON in this exact format:
         console.error('JSON parse error:', parseError);
         const sections = aiResponse.split('\n\n').filter(s => s.trim());
         aiContent = {};
-        template.textRegions.forEach((region, idx) => {
-          aiContent[region.id] = sections[idx] || region.placeholder;
+        template.sections.filter(s => s.editable).forEach((section, idx) => {
+          aiContent[section.id] = sections[idx] || section.defaultContent || section.placeholder;
         });
       }
       
@@ -228,7 +230,7 @@ Return ONLY valid JSON in this exact format:
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4">
-                    {canvasTemplates.map((template) => (
+                    {documentTemplates.map((template) => (
                       <button
                         key={template.id}
                         onClick={() => setSelectedTemplate(template.id)}
@@ -250,8 +252,11 @@ Return ONLY valid JSON in this exact format:
                           </div>
                           <div className="flex-1">
                             <h4 className="font-semibold text-base mb-1">{template.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {template.textRegions.length} editable regions • Canvas-based
+                            <p className="text-sm text-muted-foreground mb-1">
+                              {template.description}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {template.sections.filter(s => s.editable).length} editable sections • Native components
                             </p>
                           </div>
                           {selectedTemplate === template.id && (
@@ -353,18 +358,21 @@ Return ONLY valid JSON in this exact format:
                   {selectedTemplate ? (
                     <div className="border rounded-lg overflow-hidden bg-white p-4">
                       <div className="aspect-[8/11] bg-gradient-to-br from-blue-50 to-white rounded flex items-center justify-center">
-                        {canvasTemplates.find(t => t.id === selectedTemplate)?.thumbnail ? (
+                        {documentTemplates.find(t => t.id === selectedTemplate)?.thumbnail ? (
                           <img 
-                            src={canvasTemplates.find(t => t.id === selectedTemplate)?.thumbnail}
+                            src={documentTemplates.find(t => t.id === selectedTemplate)?.thumbnail}
                             alt="Template preview"
                             className="max-w-full max-h-full object-contain"
                           />
                         ) : (
                           <div className="text-center p-8">
                             <Layout className="h-16 w-16 mx-auto mb-4 text-primary" />
-                            <p className="font-medium">{canvasTemplates.find(t => t.id === selectedTemplate)?.name}</p>
+                            <p className="font-medium">{documentTemplates.find(t => t.id === selectedTemplate)?.name}</p>
                             <p className="text-sm text-muted-foreground mt-2">
-                              Canvas template with {canvasTemplates.find(t => t.id === selectedTemplate)?.textRegions.length} editable regions
+                              {documentTemplates.find(t => t.id === selectedTemplate)?.description}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {documentTemplates.find(t => t.id === selectedTemplate)?.sections.filter(s => s.editable).length} editable sections
                             </p>
                           </div>
                         )}

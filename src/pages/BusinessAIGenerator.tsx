@@ -5,14 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Layout, ArrowLeft } from "lucide-react";
+import { Loader2, Layout, ArrowLeft, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { templates, loadTemplate } from "@/lib/templateManager";
-import { DocumentEditor } from "@/components/DocumentEditor";
 import { BusinessSidebar } from "@/components/BusinessSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
+import { businessTemplates } from "@/data/businessTemplates";
+import { AIContent } from "@/types/template";
 
 const documentTypes = [
   { value: "financial-plan", label: "Financial Plan" },
@@ -35,10 +35,9 @@ const BusinessAIGenerator = () => {
   const [prompt, setPrompt] = useState("");
   const [clientName, setClientName] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
-  const [generatedContent, setGeneratedContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [generatedDocument, setGeneratedDocument] = useState<{html: string, rawContent: string} | null>(null);
+  const [generatedAIContent, setGeneratedAIContent] = useState<AIContent | null>(null);
   const [userEmail] = useState("business@flowpulse.io");
   const { toast } = useToast();
 
@@ -274,8 +273,8 @@ Do NOT include HTML tags or markdown formatting.`;
                 <CardDescription>Choose a pre-designed template for your document</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  {templates.map((template) => (
+                  <div className="grid grid-cols-1 gap-4">
+                    {businessTemplates.map((template) => (
                     <button
                       key={template.id}
                       onClick={() => setSelectedTemplate(template.id)}

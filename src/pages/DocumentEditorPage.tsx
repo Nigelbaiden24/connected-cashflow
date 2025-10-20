@@ -1,13 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { CanvasEditor } from "@/components/CanvasEditor";
+import { DocumentEditor } from "@/components/DocumentEditor";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { canvasTemplates } from "@/data/canvasTemplates";
+import { documentTemplates } from "@/data/documentTemplates";
 import { AIContent } from "@/types/template";
 
 const DocumentEditorPage = () => {
@@ -36,15 +36,15 @@ const DocumentEditorPage = () => {
     }
   };
 
-  const handleSave = (data: string) => {
-    console.log('Document saved:', data.substring(0, 100));
+  const handleSave = (data: AIContent) => {
+    console.log('Document saved:', Object.keys(data).length, 'sections');
     toast({
       title: "Saved",
       description: "Document saved successfully"
     });
   };
 
-  const template = canvasTemplates.find(t => t.id === templateId);
+  const template = documentTemplates.find(t => t.id === templateId);
 
   if (!template) {
     return (
@@ -88,14 +88,14 @@ const DocumentEditorPage = () => {
                 Back to Generator
               </Button>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold">Canvas Editor</h1>
-                <p className="text-sm text-muted-foreground">Drag, edit, and customize your document</p>
+                <h1 className="text-2xl font-bold">Document Editor</h1>
+                <p className="text-sm text-muted-foreground">Edit and customize your document</p>
               </div>
             </div>
           </header>
           
           <div className="flex-1 min-h-0">
-            <CanvasEditor 
+            <DocumentEditor 
               template={template}
               aiContent={aiContent}
               onSave={handleSave}
