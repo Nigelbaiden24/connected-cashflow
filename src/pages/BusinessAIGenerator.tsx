@@ -31,15 +31,21 @@ const documentTypes = [
 
 const BusinessAIGenerator = () => {
   const navigate = useNavigate();
-  const [documentType, setDocumentType] = useState("financial-plan");
+  const [documentType, setDocumentType] = useState("business-plan");
   const [prompt, setPrompt] = useState("");
   const [clientName, setClientName] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTemplate] = useState<string>("business-plan"); // Auto-select first template
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("business-plan");
   const [generatedAIContent, setGeneratedAIContent] = useState<AIContent | null>(null);
   const [userEmail] = useState("business@flowpulse.io");
   const { toast } = useToast();
+
+  // Update selected template when document type changes
+  const handleDocumentTypeChange = (value: string) => {
+    setDocumentType(value);
+    setSelectedTemplate(value); // Use the same ID for template
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -196,6 +202,35 @@ Return ONLY valid JSON.`;
               <p className="text-muted-foreground">Generate professional business documents with AI</p>
             </div>
 
+            {/* Template Selection Grid */}
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold mb-4">Select a Template</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {businessTemplates.map((template) => (
+                  <Card 
+                    key={template.id}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${
+                      selectedTemplate === template.id 
+                        ? 'ring-2 ring-success shadow-lg' 
+                        : 'hover:ring-1 hover:ring-success/50'
+                    }`}
+                    onClick={() => {
+                      setSelectedTemplate(template.id);
+                      setDocumentType(template.id);
+                    }}
+                  >
+                    <CardContent className="p-4">
+                      <div className="aspect-video bg-gradient-to-br from-success/10 to-success/20 rounded-lg mb-3 flex items-center justify-center border border-success/20">
+                        <Layout className="h-8 w-8 text-success" />
+                      </div>
+                      <h4 className="font-semibold text-sm mb-1">{template.name}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
             <div className="max-w-2xl mx-auto">
             <Card>
               <CardHeader>
@@ -203,6 +238,18 @@ Return ONLY valid JSON.`;
                 <CardDescription>Provide details to generate your document</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="selectedTemplateDisplay">Selected Template</Label>
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="font-medium">
+                      {businessTemplates.find(t => t.id === selectedTemplate)?.name || "No template selected"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {businessTemplates.find(t => t.id === selectedTemplate)?.description}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="templateClientName">Client Name</Label>
                   <Input
