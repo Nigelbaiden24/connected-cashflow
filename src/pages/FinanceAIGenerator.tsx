@@ -36,7 +36,7 @@ const FinanceAIGenerator = () => {
   const [clientName, setClientName] = useState("");
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedTemplate] = useState<string>("financial-report"); // Auto-select first template
   const [generatedAIContent, setGeneratedAIContent] = useState<AIContent | null>(null);
   const [userEmail] = useState("finance@flowpulse.io");
   const { toast } = useToast();
@@ -218,57 +218,17 @@ Return ONLY valid JSON in this exact format:
 
           <main className="p-6 space-y-6">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-2">Template-Based Document Generation</h2>
-              <p className="text-muted-foreground">Select a template and let AI generate professional content</p>
+              <h2 className="text-lg font-semibold mb-2">AI Document Generation</h2>
+              <p className="text-muted-foreground">Generate professional financial documents with AI</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader>
-                  <CardTitle>Select Template</CardTitle>
-                  <CardDescription>Choose a canvas template for your document</CardDescription>
+                  <CardTitle>Document Generator</CardTitle>
+                  <CardDescription>Provide details to generate your document</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
-                    {documentTemplates.map((template) => (
-                      <button
-                        key={template.id}
-                        onClick={() => setSelectedTemplate(template.id)}
-                        className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-md ${
-                          selectedTemplate === template.id
-                            ? "border-primary bg-primary/5 shadow-lg"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                      >
-                        <div className="flex gap-4 items-start">
-                          <div className="w-24 h-24 bg-muted rounded overflow-hidden flex-shrink-0 border">
-                            {template.thumbnail && (
-                              <img 
-                                src={template.thumbnail} 
-                                alt={template.name}
-                                className="w-full h-full object-cover"
-                              />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-base mb-1">{template.name}</h4>
-                            <p className="text-sm text-muted-foreground mb-1">
-                              {template.description}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {template.sections.filter(s => s.editable).length} editable sections • Native components
-                            </p>
-                          </div>
-                          {selectedTemplate === template.id && (
-                            <div className="text-primary">
-                              <Layout className="h-5 w-5" />
-                            </div>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="templateClientName">Client Name</Label>
                     <Input
@@ -329,8 +289,8 @@ Return ONLY valid JSON in this exact format:
                       </>
                     ) : (
                       <>
-                        <Layout className="h-4 w-4 mr-2" />
-                        Generate from Template
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Document
                       </>
                     )}
                   </Button>
@@ -345,46 +305,6 @@ Return ONLY valid JSON in this exact format:
                       <Sparkles className="h-5 w-5 mr-2" />
                       Open in Editor
                     </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Template Preview</CardTitle>
-                  <CardDescription>Selected template layout</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {selectedTemplate ? (
-                    <div className="border rounded-lg overflow-hidden bg-white p-4">
-                      <div className="aspect-[8/11] bg-gradient-to-br from-blue-50 to-white rounded flex items-center justify-center">
-                        {documentTemplates.find(t => t.id === selectedTemplate)?.thumbnail ? (
-                          <img 
-                            src={documentTemplates.find(t => t.id === selectedTemplate)?.thumbnail}
-                            alt="Template preview"
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        ) : (
-                          <div className="text-center p-8">
-                            <Layout className="h-16 w-16 mx-auto mb-4 text-primary" />
-                            <p className="font-medium">{documentTemplates.find(t => t.id === selectedTemplate)?.name}</p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              {documentTemplates.find(t => t.id === selectedTemplate)?.description}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {documentTemplates.find(t => t.id === selectedTemplate)?.sections.filter(s => s.editable).length} editable sections
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground h-[600px] flex items-center justify-center">
-                      <div>
-                        <Layout className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>Select a template to see preview</p>
-                      </div>
-                    </div>
                   )}
                 </CardContent>
               </Card>
