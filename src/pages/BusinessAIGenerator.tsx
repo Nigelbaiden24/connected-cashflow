@@ -74,36 +74,35 @@ const BusinessAIGenerator = () => {
     }
 
     setIsGenerating(true);
+    
     try {
-      const templateHtml = await loadTemplate(selectedTemplate);
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(templateHtml, 'text/html');
-      
-      // Extract all text elements from template for context
-      const headings = Array.from(doc.querySelectorAll('h1, h2, h3')).map(h => h.textContent?.trim()).filter(Boolean);
-      const templateStructure = headings.join(', ');
-      
-      const systemPrompt = `You are a professional content generator for financial documents. 
-      
-Generate comprehensive, detailed content that will populate this document template structure: ${templateStructure}
+      const template = businessTemplates.find(t => t.id === selectedTemplate);
+      if (!template) {
+        throw new Error('Template not found');
+      }
 
-Your response must follow this EXACT format with sections separated by '---SECTION---':
+      const sectionDescriptions = template.sections
+        .filter(s => s.editable)
+        .map(s => `- ${s.id} (${s.type}): ${s.placeholder}`)
+        .join('\n');
+      
+      const systemPrompt = `You are a professional content generator for business documents.
 
-1. Document Title (one compelling line)
----SECTION---
-2. Executive Summary (3-4 professional paragraphs)
----SECTION---
-3. Main Content Section 1 (3-4 detailed paragraphs)
----SECTION---
-4. Main Content Section 2 (3-4 detailed paragraphs)
----SECTION---
-5. Key Data Points (5-8 bullet points, each starting with •)
----SECTION---
-6. Conclusion and Recommendations (2-3 paragraphs)
+Generate content for a document template with these editable sections:
+${sectionDescriptions}
 
-Make content specific, professional, and relevant to: ${documentType}.
-Use realistic figures, UK context, and industry terminology.
-Do NOT include HTML tags or markdown formatting.`;
+Return a JSON object where each key is a section ID and the value is the generated content.
+
+Requirements:
+- Make content specific, professional, and relevant to: ${documentType}
+- Use realistic figures and UK context
+- For "heading" types: Create short, impactful titles (max 10 words)
+- For "subheading" types: Create concise section titles (max 8 words)
+- For "body" types: Write 2-4 professional paragraphs
+- For "bullet-list" types: Create 3-5 bullet points, separated by newlines
+- Do NOT include bullet characters in bullet-list content
+
+Return ONLY valid JSON.`;
       
       const fullPrompt = `${systemPrompt}\n\nClient: ${clientName || "Professional Client"}\nDocument Type: ${documentType}\n\nUser Instructions: ${prompt}\n\nAdditional Context: ${additionalDetails || "N/A"}`;
 
@@ -115,94 +114,26 @@ Do NOT include HTML tags or markdown formatting.`;
 
       if (functionError) throw functionError;
 
-      const aiContent = functionData?.choices?.[0]?.message?.content || functionData?.response || functionData?.text || "";
+      const aiResponse = functionData?.choices?.[0]?.message?.content || "";
       
-      // Parse AI sections
-      const sections = aiContent.split('---SECTION---').map(s => s.trim()).filter(s => s);
-      
-      console.log('Parsed sections:', sections.length);
-      console.log('Using template:', selectedTemplate);
-      
-      // Replace placeholders in the template
-      const replaceInNode = (node: Node) => {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-          node.textContent = node.textContent
-            .replace(/\[CLIENT_NAME\]/gi, clientName || 'Professional Client')
-            .replace(/\[DATE\]/gi, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
-            .replace(/\[COMPANY\]/gi, 'FlowPulse')
-            .replace(/\[DOCUMENT_TYPE\]/gi, documentType)
-            .replace(/\[YEAR\]/gi, new Date().getFullYear().toString());
-        }
-        node.childNodes.forEach(replaceInNode);
-      };
-      replaceInNode(doc.body);
-      
-      // Inject AI content into template structure
-      let sectionIndex = 0;
-      
-      // Replace main title (h1)
-      const h1 = doc.querySelector('h1');
-      if (h1 && sections[sectionIndex]) {
-        h1.textContent = sections[sectionIndex++];
+      let aiContent: AIContent;
+      try {
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+        aiContent = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(aiResponse);
+      } catch (parseError) {
+        const sections = aiResponse.split('\n\n').filter(s => s.trim());
+        aiContent = {};
+        template.sections.filter(s => s.editable).forEach((section, idx) => {
+          aiContent[section.id] = sections[idx] || section.defaultContent || section.placeholder;
+        });
       }
       
-      // Get all text containers in order
-      const allTextElements = Array.from(doc.querySelectorAll('p, h2, h3, li, div.content, section p, article p'))
-        .filter(el => {
-          // Filter out empty elements and navigation/header elements
-          const text = el.textContent?.trim() || '';
-          return text.length > 10 && !el.closest('nav, header');
-        });
-      
-      console.log('Found text elements:', allTextElements.length);
-      
-      // Distribute sections across available elements
-      sections.slice(sectionIndex).forEach((content, idx) => {
-        const contentLines = content.split('\n\n').filter(line => line.trim());
-        
-        contentLines.forEach((line, lineIdx) => {
-          const targetIdx = idx * 3 + lineIdx; // Spread content across elements
-          if (allTextElements[targetIdx]) {
-            const element = allTextElements[targetIdx];
-            
-            // Handle bullet points
-            if (line.includes('•') || /^[-*]\s/.test(line)) {
-              const parent = element.parentElement;
-              if (parent && element.tagName === 'P') {
-                const ul = doc.createElement('ul');
-                ul.className = element.className;
-                
-                line.split('\n').filter(l => l.trim()).forEach(bulletLine => {
-                  const li = doc.createElement('li');
-                  li.textContent = bulletLine.replace(/^[•\-*]\s*/, '').trim();
-                  ul.appendChild(li);
-                });
-                
-                parent.replaceChild(ul, element);
-              }
-            } else {
-              element.textContent = line;
-            }
-          }
-        });
-      });
-      
-      // Preserve the full template structure
-      const modifiedHtml = `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
-      
-      console.log('Document generated successfully, length:', modifiedHtml.length);
-      
-      // Store in persistent state
-      setGeneratedDocument({
-        html: modifiedHtml,
-        rawContent: aiContent
-      });
-      
-      setGeneratedContent(aiContent);
+      setGeneratedAIContent(aiContent);
 
       toast({
-        title: "Document generated!",
+        title: "Content generated!",
         description: "Click 'Open in Editor' to view and customize your document.",
+        duration: 5000,
       });
       
     } catch (error: any) {
@@ -218,7 +149,7 @@ Do NOT include HTML tags or markdown formatting.`;
   };
 
   const handleOpenInEditor = () => {
-    if (!generatedDocument) {
+    if (!generatedAIContent || !selectedTemplate) {
       toast({
         title: "No document to edit",
         description: "Please generate a document first",
@@ -227,11 +158,10 @@ Do NOT include HTML tags or markdown formatting.`;
       return;
     }
     
-    // Navigate to editor with document data
     navigate("/document-editor", { 
       state: { 
-        generatedDocument: generatedDocument.html,
-        rawContent: generatedDocument.rawContent
+        templateId: selectedTemplate,
+        aiContent: generatedAIContent
       } 
     });
   };
@@ -286,16 +216,22 @@ Do NOT include HTML tags or markdown formatting.`;
                     >
                       <div className="flex gap-4 items-start">
                         <div className="w-24 h-24 bg-muted rounded overflow-hidden flex-shrink-0 border">
-                          <img 
-                            src={template.thumbnailUrl} 
-                            alt={template.name}
-                            className="w-full h-full object-cover"
-                          />
+                          {template.thumbnail && (
+                            <img 
+                              src={template.thumbnail} 
+                              alt={template.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-base mb-1">{template.name}</h4>
-                          <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
-                          <span className="text-xs bg-secondary px-2 py-1 rounded">{template.category}</span>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            {template.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {template.sections.filter(s => s.editable).length} editable sections • Native components
+                          </p>
                         </div>
                       </div>
                     </button>
@@ -352,12 +288,14 @@ Do NOT include HTML tags or markdown formatting.`;
                   )}
                 </Button>
                 
-                {generatedDocument && (
+                {generatedAIContent && (
                   <Button
                     onClick={handleOpenInEditor}
                     variant="default"
+                    size="lg"
                     className="w-full"
                   >
+                    <Sparkles className="h-5 w-5 mr-2" />
                     Open in Editor
                   </Button>
                 )}
@@ -371,13 +309,27 @@ Do NOT include HTML tags or markdown formatting.`;
               </CardHeader>
               <CardContent>
                 {selectedTemplate ? (
-                  <div className="border rounded-lg overflow-hidden bg-white">
-                    <iframe 
-                      src={templates.find(t => t.id === selectedTemplate)?.htmlPath} 
-                      title="Template preview"
-                      className="w-full h-[600px] border-0"
-                      sandbox="allow-same-origin"
-                    />
+                  <div className="border rounded-lg overflow-hidden bg-white p-4">
+                    <div className="aspect-[8/11] bg-gradient-to-br from-green-50 to-white rounded flex items-center justify-center">
+                      {businessTemplates.find(t => t.id === selectedTemplate)?.thumbnail ? (
+                        <img 
+                          src={businessTemplates.find(t => t.id === selectedTemplate)?.thumbnail}
+                          alt="Template preview"
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      ) : (
+                        <div className="text-center p-8">
+                          <Layout className="h-16 w-16 mx-auto mb-4 text-success" />
+                          <p className="font-medium">{businessTemplates.find(t => t.id === selectedTemplate)?.name}</p>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {businessTemplates.find(t => t.id === selectedTemplate)?.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {businessTemplates.find(t => t.id === selectedTemplate)?.sections.filter(s => s.editable).length} editable sections
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="bg-muted rounded-lg p-8 text-center text-muted-foreground h-[600px] flex items-center justify-center">
