@@ -6,6 +6,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Business Plan",
     category: "Business",
     description: "Comprehensive business plan with market analysis and financial projections",
+    thumbnail: "/thumbnails/business-plan-thumb.png",
     sections: [
       {
         id: "title",
@@ -99,6 +100,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Business Proposal",
     category: "Business",
     description: "Professional proposal template for client projects",
+    thumbnail: "/thumbnails/business-proposal-thumb.png",
     sections: [
       {
         id: "title",
@@ -185,6 +187,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Client Letter",
     category: "Business",
     description: "Formal business correspondence",
+    thumbnail: "/thumbnails/business-letter-thumb.png",
     sections: [
       {
         id: "date",
@@ -263,6 +266,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Company Portfolio",
     category: "Business",
     description: "Overview of company projects and achievements",
+    thumbnail: "/thumbnails/company-portfolio-thumb.png",
     sections: [
       {
         id: "title",
@@ -349,6 +353,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Business Onboarding",
     category: "Business",
     description: "Client onboarding and verification documentation",
+    thumbnail: "/thumbnails/business-onboarding-thumb.png",
     sections: [
       {
         id: "title",
@@ -435,6 +440,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Compliance Report",
     category: "Business",
     description: "Corporate compliance and audit documentation",
+    thumbnail: "/thumbnails/business-compliance-thumb.png",
     sections: [
       {
         id: "title",
@@ -521,6 +527,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Industry Whitepaper",
     category: "Business",
     description: "Thought leadership and research publication",
+    thumbnail: "/thumbnails/industry-whitepaper-thumb.png",
     sections: [
       {
         id: "title",
@@ -623,6 +630,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Market Update",
     category: "Business",
     description: "Industry news and market analysis",
+    thumbnail: "/thumbnails/market-update-thumb.png",
     sections: [
       {
         id: "title",
@@ -709,6 +717,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Meeting Agenda",
     category: "Business",
     description: "Structured meeting agenda and action items",
+    thumbnail: "/thumbnails/business-meeting-thumb.png",
     sections: [
       {
         id: "title",
@@ -803,6 +812,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Strategic Analysis",
     category: "Business",
     description: "Business scenario planning and risk assessment",
+    thumbnail: "/thumbnails/strategic-analysis-thumb.png",
     sections: [
       {
         id: "title",
@@ -905,6 +915,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Annual Report",
     category: "Business",
     description: "Comprehensive annual business report",
+    thumbnail: "/thumbnails/annual-report-thumb.png",
     sections: [
       {
         id: "cover-title",
@@ -1030,6 +1041,7 @@ export const businessTemplates: DocumentTemplate[] = [
     name: "Pitch Deck",
     category: "Business",
     description: "Startup pitch presentation document",
+    thumbnail: "/thumbnails/business-pitch-thumb.png",
     sections: [
       {
         id: "cover-title",

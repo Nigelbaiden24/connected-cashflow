@@ -6,6 +6,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Financial Plan",
     category: "Finance",
     description: "Comprehensive financial planning document with projections and strategies",
+    thumbnail: "/thumbnails/financial-plan-thumb.png",
     sections: [
       {
         id: "title",
@@ -99,6 +100,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Business Proposal",
     category: "Finance",
     description: "Professional proposal for client services and partnerships",
+    thumbnail: "/thumbnails/proposal-thumb.png",
     sections: [
       {
         id: "title",
@@ -185,6 +187,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Client Letter",
     category: "Finance",
     description: "Formal correspondence for client communications",
+    thumbnail: "/thumbnails/client-letter-thumb.png",
     sections: [
       {
         id: "date",
@@ -271,6 +274,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Portfolio Summary",
     category: "Finance",
     description: "Comprehensive overview of investment portfolio performance",
+    thumbnail: "/thumbnails/portfolio-summary-thumb.png",
     sections: [
       {
         id: "title",
@@ -357,6 +361,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "KYC Onboarding Form",
     category: "Finance",
     description: "Know Your Customer compliance documentation",
+    thumbnail: "/thumbnails/kyc-form-thumb.png",
     sections: [
       {
         id: "title",
@@ -443,6 +448,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Compliance Report",
     category: "Finance",
     description: "Regulatory compliance and audit documentation",
+    thumbnail: "/thumbnails/compliance-report-thumb.png",
     sections: [
       {
         id: "title",
@@ -529,6 +535,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Whitepaper",
     category: "Finance",
     description: "In-depth research and thought leadership document",
+    thumbnail: "/thumbnails/whitepaper-thumb.png",
     sections: [
       {
         id: "title",
@@ -631,6 +638,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Market Commentary",
     category: "Finance",
     description: "Timely analysis of market trends and investment implications",
+    thumbnail: "/thumbnails/market-commentary-thumb.png",
     sections: [
       {
         id: "title",
@@ -717,6 +725,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Meeting Agenda",
     category: "Finance",
     description: "Structured agenda for client meetings and reviews",
+    thumbnail: "/thumbnails/meeting-agenda-thumb.png",
     sections: [
       {
         id: "title",
@@ -811,6 +820,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Scenario Analysis",
     category: "Finance",
     description: "Strategic planning and risk modeling document",
+    thumbnail: "/thumbnails/scenario-analysis-thumb.png",
     sections: [
       {
         id: "title",
@@ -913,6 +923,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Multi-Page Report",
     category: "Finance",
     description: "Comprehensive multi-section analytical report",
+    thumbnail: "/thumbnails/multi-page-report-thumb.png",
     sections: [
       {
         id: "cover-title",
@@ -1038,6 +1049,7 @@ export const documentTemplates: DocumentTemplate[] = [
     name: "Pitch Deck",
     category: "Finance",
     description: "Investment pitch presentation document",
+    thumbnail: "/thumbnails/pitch-deck-thumb.png",
     sections: [
       {
         id: "cover-title",

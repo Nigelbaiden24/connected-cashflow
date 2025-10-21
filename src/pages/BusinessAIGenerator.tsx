@@ -220,8 +220,14 @@ Return ONLY valid JSON.`;
                     }}
                   >
                     <CardContent className="p-4">
-                      <div className="aspect-video bg-gradient-to-br from-success/10 to-success/20 rounded-lg mb-3 flex items-center justify-center border border-success/20">
-                        <Layout className="h-8 w-8 text-success" />
+                      <div className="aspect-video rounded-lg mb-3 overflow-hidden">
+                        {template.thumbnail ? (
+                          <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="bg-gradient-to-br from-success/10 to-success/20 h-full flex items-center justify-center border border-success/20">
+                            <Layout className="h-8 w-8 text-success" />
+                          </div>
+                        )}
                       </div>
                       <h4 className="font-semibold text-sm mb-1">{template.name}</h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
