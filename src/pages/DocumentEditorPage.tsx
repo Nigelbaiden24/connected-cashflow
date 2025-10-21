@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { DocumentEditor } from "@/components/DocumentEditor";
+import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
@@ -95,7 +95,7 @@ const DocumentEditorPage = () => {
           </header>
           
           <div className="flex-1 min-h-0">
-            <DocumentEditor 
+            <EnhancedDocumentEditor 
               template={template}
               aiContent={aiContent}
               onSave={handleSave}
