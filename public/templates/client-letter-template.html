@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Letter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Georgia', serif; line-height: 1.8; color: #2d3748; }
+        .document { max-width: 8.5in; margin: 0 auto; background: white; padding: 1in; }
+        .letterhead { text-align: center; margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 3px solid #2c5282; }
+        .company-name { font-size: 2rem; font-weight: 700; color: #2c5282; margin-bottom: 0.5rem; }
+        .company-details { color: #718096; font-size: 0.95rem; font-family: 'Helvetica', sans-serif; }
+        .date { text-align: right; margin-bottom: 2rem; color: #4a5568; font-size: 1rem; }
+        .recipient { margin-bottom: 2rem; }
+        .recipient-line { margin-bottom: 0.25rem; color: #2d3748; }
+        .salutation { margin-bottom: 1.5rem; font-size: 1.1rem; }
+        .body-content { margin-bottom: 2rem; }
+        .body-content p { margin-bottom: 1.25rem; text-align: justify; }
+        .signature-section { margin-top: 3rem; }
+        .signature-line { margin-top: 4rem; border-top: 2px solid #2d3748; width: 250px; padding-top: 0.5rem; }
+        .signer-name { font-weight: 600; color: #2d3748; }
+        .signer-title { color: #718096; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="letterhead">
+            <div class="company-name">{{company_name}}</div>
+            <div class="company-details">{{company_address}}</div>
+            <div class="company-details">{{company_contact}}</div>
+        </div>
+
+        <div class="date">{{date}}</div>
+
+        <div class="recipient">
+            <div class="recipient-line">{{recipient_name}}</div>
+            <div class="recipient-line">{{recipient_company}}</div>
+            <div class="recipient-line">{{recipient_address}}</div>
+        </div>
+
+        <div class="salutation">{{salutation}},</div>
+
+        <div class="body-content">
+            <p>{{paragraph1}}</p>
+            <p>{{paragraph2}}</p>
+            <p>{{paragraph3}}</p>
+            <p>{{paragraph4}}</p>
+        </div>
+
+        <div class="signature-section">
+            <p>{{closing}},</p>
+            <div class="signature-line">
+                <div class="signer-name">{{signer_name}}</div>
+                <div class="signer-title">{{signer_title}}</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

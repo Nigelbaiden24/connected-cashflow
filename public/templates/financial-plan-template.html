@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Plan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1a1a1a; }
+        .document { max-width: 8.5in; margin: 0 auto; background: white; padding: 0.75in; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2.5rem; border-radius: 8px; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .header .subtitle { font-size: 1.1rem; opacity: 0.95; }
+        .section { margin-bottom: 2.5rem; }
+        .section-title { font-size: 1.75rem; color: #667eea; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 3px solid #667eea; font-weight: 600; }
+        .content-block { background: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 1rem; }
+        .content-block h3 { color: #495057; margin-bottom: 0.75rem; font-size: 1.25rem; }
+        .content-block p { color: #6c757d; line-height: 1.8; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 1.5rem 0; }
+        .metric-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; border-top: 4px solid #667eea; }
+        .metric-value { font-size: 2rem; font-weight: 700; color: #667eea; }
+        .metric-label { color: #6c757d; margin-top: 0.5rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid #e9ecef; text-align: center; color: #6c757d; font-size: 0.9rem; }
+        ul { margin-left: 1.5rem; color: #6c757d; }
+        ul li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="header">
+            <h1>{{title}}</h1>
+            <div class="subtitle">{{subtitle}}</div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Executive Summary</h2>
+            <div class="content-block">
+                <p>{{executive_summary}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Financial Goals</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">{{metric1_value}}</div>
+                    <div class="metric-label">{{metric1_label}}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{metric2_value}}</div>
+                    <div class="metric-label">{{metric2_label}}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">{{metric3_value}}</div>
+                    <div class="metric-label">{{metric3_label}}</div>
+                </div>
+            </div>
+            <div class="content-block">
+                <p>{{goals_description}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Investment Strategy</h2>
+            <div class="content-block">
+                <h3>Portfolio Allocation</h3>
+                <p>{{investment_strategy}}</p>
+            </div>
+            <div class="content-block">
+                <h3>Risk Management</h3>
+                <p>{{risk_management}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Action Plan</h2>
+            <div class="content-block">
+                <p>{{action_plan}}</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>{{footer_text}}</p>
+        </div>
+    </div>
+</body>
+</html>

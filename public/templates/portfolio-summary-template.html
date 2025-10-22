@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Summary</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #2c3e50; background: #f8f9fa; }
+        .document { max-width: 8.5in; margin: 0 auto; background: white; padding: 0.75in; }
+        .header { background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%); color: white; padding: 2.5rem; border-radius: 10px; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .header .date { font-size: 1rem; opacity: 0.9; }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0; }
+        .summary-box { background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%); padding: 1.5rem; border-radius: 8px; text-align: center; }
+        .summary-label { font-size: 0.85rem; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .summary-value { font-size: 1.75rem; font-weight: 700; color: #2c3e50; }
+        .section { margin-bottom: 2rem; }
+        .section-title { font-size: 1.5rem; color: #34495e; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #34495e; font-weight: 600; }
+        .content-block { background: #ecf0f1; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; }
+        .holdings-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .holdings-table th { background: #34495e; color: white; padding: 0.75rem; text-align: left; }
+        .holdings-table td { padding: 0.75rem; border-bottom: 1px solid #bdc3c7; }
+        .holdings-table tr:nth-child(even) { background: #ecf0f1; }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="header">
+            <h1>{{title}}</h1>
+            <div class="date">{{date}}</div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="summary-label">Total Value</div>
+                <div class="summary-value">{{total_value}}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">YTD Return</div>
+                <div class="summary-value">{{ytd_return}}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">Asset Count</div>
+                <div class="summary-value">{{asset_count}}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">Risk Score</div>
+                <div class="summary-value">{{risk_score}}</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Portfolio Overview</h2>
+            <div class="content-block">
+                <p>{{portfolio_overview}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Top Holdings</h2>
+            <div class="content-block">
+                <p>{{top_holdings}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Performance Analysis</h2>
+            <div class="content-block">
+                <p>{{performance_analysis}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Recommendations</h2>
+            <div class="content-block">
+                <p>{{recommendations}}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

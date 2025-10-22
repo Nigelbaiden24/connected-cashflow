@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Plan</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; line-height: 1.7; color: #1a202c; }
+        .document { max-width: 8.5in; margin: 0 auto; background: white; padding: 0.75in; }
+        .cover { background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 12px; margin-bottom: 2.5rem; }
+        .cover h1 { font-size: 3rem; margin-bottom: 1rem; font-weight: 800; }
+        .cover .tagline { font-size: 1.3rem; opacity: 0.9; margin-bottom: 2rem; }
+        .cover .company-info { font-size: 1rem; opacity: 0.8; }
+        .section { margin-bottom: 2.5rem; page-break-inside: avoid; }
+        .section-title { font-size: 1.875rem; color: #1a202c; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 3px solid #4a5568; font-weight: 700; }
+        .subsection-title { font-size: 1.35rem; color: #2d3748; margin: 1.5rem 0 0.75rem 0; font-weight: 600; }
+        .content-box { background: #f7fafc; padding: 1.75rem; border-radius: 10px; border-left: 4px solid #4a5568; margin-bottom: 1.25rem; }
+        .content-box p { color: #4a5568; line-height: 1.8; }
+        .key-points { background: white; padding: 1.5rem; border-radius: 10px; border: 2px solid #e2e8f0; margin: 1rem 0; }
+        .key-points ul { margin-left: 1.5rem; color: #4a5568; }
+        .key-points li { margin-bottom: 0.75rem; }
+        .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin: 1.5rem 0; }
+        .metric-box { background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%); padding: 1.5rem; border-radius: 10px; text-align: center; }
+        .metric-title { font-size: 0.9rem; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .metric-value { font-size: 2rem; font-weight: 700; color: #1a202c; }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <div class="cover">
+            <h1>{{title}}</h1>
+            <div class="tagline">{{tagline}}</div>
+            <div class="company-info">{{company_info}}</div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Executive Summary</h2>
+            <div class="content-box">
+                <p>{{executive_summary}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Company Description</h2>
+            <div class="content-box">
+                <p>{{company_description}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Market Analysis</h2>
+            <div class="content-box">
+                <h3 class="subsection-title">Target Market</h3>
+                <p>{{target_market}}</p>
+            </div>
+            <div class="content-box">
+                <h3 class="subsection-title">Market Opportunity</h3>
+                <p>{{market_opportunity}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Products & Services</h2>
+            <div class="content-box">
+                <p>{{products_services}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Financial Projections</h2>
+            <div class="metrics-row">
+                <div class="metric-box">
+                    <div class="metric-title">Year 1 Revenue</div>
+                    <div class="metric-value">{{year1_revenue}}</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-title">Year 3 Revenue</div>
+                    <div class="metric-value">{{year3_revenue}}</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-title">Target Profit</div>
+                    <div class="metric-value">{{target_profit}}</div>
+                </div>
+            </div>
+            <div class="content-box">
+                <p>{{financial_details}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Implementation Strategy</h2>
+            <div class="content-box">
+                <p>{{implementation_strategy}}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

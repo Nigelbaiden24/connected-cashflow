@@ -1,27 +1,53 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
+import { ArrowLeft, Download } from "lucide-react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { documentTemplates } from "@/data/documentTemplates";
 import { AIContent } from "@/types/template";
+import { GrapesjsEditor } from "@/components/GrapesjsEditor";
+import { loadTemplate, fillTemplate } from "@/lib/templateLoader";
+import html2pdf from 'html2pdf.js';
 
 const DocumentEditorPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userEmail] = useState("finance@flowpulse.io");
+  const [filledHtml, setFilledHtml] = useState<string>("");
+  const [loading, setLoading] = useState(true);
   
   const templateId = location.state?.templateId as string;
   const aiContent = location.state?.aiContent as AIContent;
 
-  console.log('=== DocumentEditorPage Debug ===');
-  console.log('templateId:', templateId);
-  console.log('aiContent:', aiContent);
+  useEffect(() => {
+    const loadAndFillTemplate = async () => {
+      if (!templateId || !aiContent) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const templateHtml = await loadTemplate(templateId);
+        const filled = fillTemplate(templateHtml, aiContent);
+        setFilledHtml(filled);
+      } catch (error) {
+        console.error('Error loading template:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load template",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAndFillTemplate();
+  }, [templateId, aiContent, toast]);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -36,17 +62,39 @@ const DocumentEditorPage = () => {
     }
   };
 
-  const handleSave = (data: AIContent) => {
-    console.log('Document saved:', Object.keys(data).length, 'sections');
+  const handleSave = (html: string, css: string) => {
+    console.log('Document saved');
+    // Store the HTML and CSS
+    localStorage.setItem(`document_${templateId}`, JSON.stringify({ html, css, timestamp: Date.now() }));
     toast({
       title: "Saved",
       description: "Document saved successfully"
     });
   };
 
-  const template = documentTemplates.find(t => t.id === templateId);
+  const handleExportPDF = () => {
+    if (!filledHtml) return;
 
-  if (!template) {
+    const element = document.createElement('div');
+    element.innerHTML = filledHtml;
+    
+    const opt = {
+      margin: 0.5,
+      filename: `document_${templateId}_${Date.now()}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in' as const, format: 'letter' as const, orientation: 'portrait' as const }
+    };
+
+    html2pdf().set(opt).from(element).save();
+    
+    toast({
+      title: "Exporting",
+      description: "Your PDF is being generated...",
+    });
+  };
+
+  if (!templateId || !aiContent) {
     return (
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
@@ -81,25 +129,42 @@ const DocumentEditorPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/finance-ai-generator")}
+                onClick={() => navigate(-1)}
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Back to Generator
+                Back
               </Button>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">Document Editor</h1>
-                <p className="text-sm text-muted-foreground">Edit and customize your document</p>
+                <p className="text-sm text-muted-foreground">Drag-and-drop editor with full customization</p>
               </div>
+              <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export PDF
+              </Button>
             </div>
           </header>
           
           <div className="flex-1 min-h-0">
-            <EnhancedDocumentEditor 
-              template={template}
-              aiContent={aiContent}
-              onSave={handleSave}
-            />
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading template...</p>
+                </div>
+              </div>
+            ) : filledHtml ? (
+              <GrapesjsEditor 
+                initialHtml={filledHtml}
+                onSave={handleSave}
+                height="calc(100vh - 64px)"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground">No template content available</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
