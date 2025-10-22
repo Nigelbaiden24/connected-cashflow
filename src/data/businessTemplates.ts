@@ -106,78 +106,158 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "title",
         type: "heading",
         placeholder: "{{title}}",
-        defaultContent: "Project Proposal",
-        className: "text-5xl font-bold bg-gradient-to-r from-success to-chart-2 bg-clip-text text-transparent mb-3",
+        defaultContent: "Business Proposal",
+        className: "text-5xl font-bold text-white mb-4",
         editable: true
       },
       {
-        id: "subtitle",
+        id: "tagline",
         type: "subheading",
-        placeholder: "{{subtitle}}",
-        defaultContent: "Transforming Vision into Reality",
-        className: "text-2xl text-muted-foreground mb-8",
+        placeholder: "{{tagline}}",
+        defaultContent: "Strategic Partnership Opportunity",
+        className: "text-2xl text-white/90 mb-8",
         editable: true
       },
       {
-        id: "client-info-heading",
+        id: "executive_overview_heading",
         type: "subheading",
         placeholder: "{{section1_heading}}",
-        defaultContent: "Project Overview",
-        className: "text-3xl font-semibold text-success mb-4 mt-10",
+        defaultContent: "Executive Overview",
+        className: "text-3xl font-bold mb-4 mt-10",
         editable: true
       },
       {
-        id: "overview",
+        id: "executive_overview",
         type: "body",
-        placeholder: "{{overview}}",
-        defaultContent: "This proposal outlines our approach to delivering exceptional value...",
-        className: "text-lg leading-relaxed mb-8 text-foreground",
+        placeholder: "{{executive_overview}}",
+        defaultContent: "This proposal outlines our comprehensive approach to delivering exceptional value and achieving your strategic objectives...",
+        className: "text-lg leading-relaxed mb-8 p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border-2 border-blue-200",
         editable: true
       },
       {
-        id: "scope-heading",
+        id: "benefits_heading",
         type: "subheading",
         placeholder: "{{section2_heading}}",
-        defaultContent: "Scope of Work",
-        className: "text-3xl font-semibold text-success mb-4 mt-10",
+        defaultContent: "Key Benefits",
+        className: "text-3xl font-bold mb-6 mt-10",
         editable: true
       },
       {
-        id: "scope",
-        type: "bullet-list",
-        placeholder: "{{scope}}",
-        defaultContent: "Initial consultation and requirements gathering\nDetailed project planning and timeline\nImplementation and quality assurance\nTraining and knowledge transfer\nOngoing support and maintenance",
-        className: "space-y-3 mb-8 text-lg",
+        id: "benefit1_title",
+        type: "subheading",
+        placeholder: "{{benefit1_title}}",
+        defaultContent: "Enhanced Efficiency",
+        className: "text-xl font-bold mb-2",
         editable: true
       },
       {
-        id: "timeline-visual",
-        type: "image",
-        placeholder: "{{timeline}}",
-        defaultContent: "",
-        className: "w-full h-72 bg-gradient-to-br from-success/5 via-success/10 to-success/5 rounded-xl flex items-center justify-center my-10 border border-success/30",
+        id: "benefit1_text",
+        type: "body",
+        placeholder: "{{benefit1_text}}",
+        defaultContent: "Streamlined processes that reduce operational costs by up to 40% while maintaining quality standards.",
+        className: "text-base mb-6 pl-4 border-l-4 border-blue-500",
         editable: true
       },
       {
-        id: "investment-heading",
+        id: "benefit2_title",
+        type: "subheading",
+        placeholder: "{{benefit2_title}}",
+        defaultContent: "Scalable Solutions",
+        className: "text-xl font-bold mb-2",
+        editable: true
+      },
+      {
+        id: "benefit2_text",
+        type: "body",
+        placeholder: "{{benefit2_text}}",
+        defaultContent: "Flexible architecture designed to grow with your business needs and adapt to market changes.",
+        className: "text-base mb-6 pl-4 border-l-4 border-blue-500",
+        editable: true
+      },
+      {
+        id: "roadmap_heading",
         type: "subheading",
         placeholder: "{{section3_heading}}",
-        defaultContent: "Investment & Timeline",
-        className: "text-3xl font-semibold text-success mb-4 mt-10",
+        defaultContent: "Implementation Roadmap",
+        className: "text-3xl font-bold mb-6 mt-10",
         editable: true
       },
       {
-        id: "investment",
+        id: "phase1_title",
+        type: "subheading",
+        placeholder: "{{phase1_title}}",
+        defaultContent: "Phase 1: Discovery & Planning",
+        className: "text-xl font-semibold mb-2",
+        editable: true
+      },
+      {
+        id: "phase1_content",
         type: "body",
-        placeholder: "{{investment}}",
-        defaultContent: "The project is structured to deliver value at each phase...",
-        className: "text-lg leading-relaxed mb-8 text-foreground",
+        placeholder: "{{phase1_content}}",
+        defaultContent: "Comprehensive analysis of requirements, stakeholder interviews, and detailed project roadmap development.",
+        className: "text-base mb-4",
+        editable: true
+      },
+      {
+        id: "phase2_title",
+        type: "subheading",
+        placeholder: "{{phase2_title}}",
+        defaultContent: "Phase 2: Implementation",
+        className: "text-xl font-semibold mb-2",
+        editable: true
+      },
+      {
+        id: "phase2_content",
+        type: "body",
+        placeholder: "{{phase2_content}}",
+        defaultContent: "Agile development sprints with continuous testing, quality assurance, and stakeholder feedback integration.",
+        className: "text-base mb-4",
+        editable: true
+      },
+      {
+        id: "phase3_title",
+        type: "subheading",
+        placeholder: "{{phase3_title}}",
+        defaultContent: "Phase 3: Launch & Support",
+        className: "text-xl font-semibold mb-2",
+        editable: true
+      },
+      {
+        id: "phase3_content",
+        type: "body",
+        placeholder: "{{phase3_content}}",
+        defaultContent: "Seamless deployment, comprehensive training, and ongoing support to ensure long-term success.",
+        className: "text-base mb-6",
+        editable: true
+      },
+      {
+        id: "financial_heading",
+        type: "subheading",
+        placeholder: "{{section4_heading}}",
+        defaultContent: "Investment & ROI",
+        className: "text-3xl font-bold mb-4 mt-10",
+        editable: true
+      },
+      {
+        id: "financial_overview",
+        type: "body",
+        placeholder: "{{financial_overview}}",
+        defaultContent: "Our pricing structure is designed to deliver exceptional value while ensuring sustainable returns on your investment...",
+        className: "text-lg leading-relaxed mb-8 p-6 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl",
+        editable: true
+      },
+      {
+        id: "footer_text",
+        type: "body",
+        placeholder: "{{footer_text}}",
+        defaultContent: "We look forward to partnering with you on this exciting journey. Contact us to discuss how we can bring this vision to life.",
+        className: "text-center text-base mt-12 p-6 bg-gray-100 rounded-xl",
         editable: true
       }
     ],
     styles: {
-      primaryColor: "hsl(142 76% 36%)",
-      secondaryColor: "hsl(142 70% 45%)",
+      primaryColor: "hsl(221 83% 53%)",
+      secondaryColor: "hsl(217 91% 60%)",
       accentColor: "hsl(199 89% 48%)",
       backgroundColor: "hsl(0 0% 100%)"
     }

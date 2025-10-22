@@ -6,9 +6,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AIContent } from "@/types/template";
+import { AIContent, DocumentTemplate } from "@/types/template";
 import { GrapesjsEditor } from "@/components/GrapesjsEditor";
-import { loadTemplate, fillTemplate } from "@/lib/templateLoader";
+import { renderTemplateToHtml } from "@/lib/templateRenderer";
+import { documentTemplates } from "@/data/documentTemplates";
+import { businessTemplates } from "@/data/businessTemplates";
 import html2pdf from 'html2pdf.js';
 
 const DocumentEditorPage = () => {
@@ -31,9 +33,23 @@ const DocumentEditorPage = () => {
 
       try {
         setLoading(true);
-        const templateHtml = await loadTemplate(templateId);
-        const filled = fillTemplate(templateHtml, aiContent);
-        setFilledHtml(filled);
+        
+        // Find template from both collections
+        let template: DocumentTemplate | undefined = documentTemplates.find(t => t.id === templateId);
+        if (!template) {
+          template = businessTemplates.find(t => t.id === templateId);
+        }
+        
+        if (!template) {
+          throw new Error(`Template ${templateId} not found`);
+        }
+        
+        // Render template with AI content
+        const renderedHtml = renderTemplateToHtml(template, aiContent);
+        setFilledHtml(renderedHtml);
+        
+        console.log('Template loaded:', template.name);
+        console.log('Sections rendered:', template.sections.length);
       } catch (error) {
         console.error('Error loading template:', error);
         toast({
