@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Layout, ArrowLeft, Sparkles, Download, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, Sparkles, Download, FileText, Upload, Image as ImageIcon, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -13,15 +13,20 @@ import { useNavigate } from "react-router-dom";
 import { documentTemplates } from "@/data/documentTemplates";
 import { renderTemplateToHtml } from "@/lib/templateRenderer";
 import html2pdf from "html2pdf.js";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const FinanceAIGenerator = () => {
   const navigate = useNavigate();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("financial-plan");
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [isGeneratingField, setIsGeneratingField] = useState<string | null>(null);
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+  const [editPrompts, setEditPrompts] = useState<Record<string, string>>({});
+  const [showPrompt, setShowPrompt] = useState<string | null>(null);
   const [userEmail] = useState("finance@flowpulse.io");
   const { toast } = useToast();
   const previewRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -39,13 +44,14 @@ const FinanceAIGenerator = () => {
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
     setFormData({});
+    setEditPrompts({});
   };
 
   const handleFieldChange = (fieldId: string, value: string) => {
     setFormData(prev => ({ ...prev, [fieldId]: value }));
   };
 
-  const handleAIAssist = async (fieldId: string) => {
+  const handleAIAssist = async (fieldId: string, customPrompt?: string) => {
     const template = documentTemplates.find(t => t.id === selectedTemplate);
     if (!template) return;
 
@@ -55,7 +61,7 @@ const FinanceAIGenerator = () => {
     setIsGeneratingField(fieldId);
     
     try {
-      const prompt = `Generate professional financial content for a ${section.type} section titled "${section.id}". 
+      const basePrompt = customPrompt || `Generate professional financial content for a ${section.type} section titled "${section.id}". 
       Context: ${formData.clientName || 'Professional client'} - ${template.name}
       Requirements: 
       - ${section.type === 'heading' ? 'Create a short, impactful title (max 10 words)' : ''}
@@ -65,18 +71,115 @@ const FinanceAIGenerator = () => {
       Return ONLY the content, no formatting or explanations.`;
 
       const { data, error } = await supabase.functions.invoke('generate-document', {
-        body: { messages: [{ role: "user", content: prompt }] }
+        body: { messages: [{ role: "user", content: basePrompt }] }
       });
 
       if (error) throw error;
 
       const content = data?.choices?.[0]?.message?.content || data?.response || "";
       handleFieldChange(fieldId, content.trim());
+      setShowPrompt(null);
+      setEditPrompts(prev => ({ ...prev, [fieldId]: '' }));
 
       toast({
         title: "Content generated!",
         description: "AI has filled this field for you.",
       });
+    } catch (error: any) {
+      toast({
+        title: "Generation failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingField(null);
+    }
+  };
+
+  const handleFillEntireDocument = async () => {
+    const template = documentTemplates.find(t => t.id === selectedTemplate);
+    if (!template) return;
+
+    setIsGeneratingAll(true);
+    
+    try {
+      const editableFields = template.sections.filter(s => s.editable && s.type !== 'image');
+      
+      for (const field of editableFields) {
+        await handleAIAssist(field.id);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      toast({
+        title: "Document generated!",
+        description: "All fields have been filled with AI content.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingAll(false);
+    }
+  };
+
+  const handleImageUpload = async (fieldId: string, file: File) => {
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        handleFieldChange(fieldId, result);
+      };
+      reader.readAsDataURL(file);
+      
+      toast({
+        title: "Image uploaded!",
+        description: "Your image has been added to the document.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleGenerateImage = async (fieldId: string, prompt: string) => {
+    if (!prompt.trim()) {
+      toast({
+        title: "Prompt required",
+        description: "Please enter a description for the image.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingField(fieldId);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-document', {
+        body: {
+          model: "google/gemini-2.5-flash-image-preview",
+          messages: [{ role: "user", content: prompt }],
+          modalities: ["image", "text"]
+        }
+      });
+
+      if (error) throw error;
+
+      const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      if (imageUrl) {
+        handleFieldChange(fieldId, imageUrl);
+        setShowPrompt(null);
+        setEditPrompts(prev => ({ ...prev, [fieldId]: '' }));
+        toast({
+          title: "Image generated!",
+          description: "AI has created your image.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Generation failed",
@@ -139,10 +242,25 @@ const FinanceAIGenerator = () => {
                 <h1 className="text-2xl font-bold">AI Document Generator</h1>
               </div>
               {template && (
-                <Button onClick={handleDownloadPDF} variant="outline" size="sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Download PDF
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleFillEntireDocument} 
+                    variant="default" 
+                    size="sm"
+                    disabled={isGeneratingAll}
+                  >
+                    {isGeneratingAll ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Wand2 className="h-4 w-4 mr-2" />
+                    )}
+                    Fill Entire Document
+                  </Button>
+                  <Button onClick={handleDownloadPDF} variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                </div>
               )}
             </div>
           </header>
@@ -195,24 +313,133 @@ const FinanceAIGenerator = () => {
                     {editableFields.map((field) => (
                       <div key={field.id} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor={field.id} className="capitalize">
+                          <Label htmlFor={field.id} className="capitalize font-medium">
                             {field.id.replace(/-/g, ' ')}
                           </Label>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleAIAssist(field.id)}
-                            disabled={isGeneratingField === field.id}
-                          >
-                            {isGeneratingField === field.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            ) : (
-                              <Sparkles className="h-3 w-3" />
-                            )}
-                            <span className="ml-1 text-xs">AI</span>
-                          </Button>
+                          {field.type === 'image' ? (
+                            <Dialog open={showPrompt === field.id} onOpenChange={(open) => setShowPrompt(open ? field.id : null)}>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <ImageIcon className="h-3 w-3 mr-1" />
+                                  <span className="text-xs">Add Image</span>
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Add Image</DialogTitle>
+                                  <DialogDescription>Upload your own image or generate one with AI</DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <Label className="text-sm mb-2 block">Upload Image</Label>
+                                    <input
+                                      ref={fileInputRef}
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleImageUpload(field.id, file);
+                                      }}
+                                    />
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="w-full"
+                                      onClick={() => fileInputRef.current?.click()}
+                                    >
+                                      <Upload className="h-4 w-4 mr-2" />
+                                      Choose File
+                                    </Button>
+                                  </div>
+                                  <div className="relative">
+                                    <div className="absolute inset-0 flex items-center">
+                                      <span className="w-full border-t" />
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                      <span className="bg-background px-2 text-muted-foreground">Or</span>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <Label className="text-sm mb-2 block">Generate with AI</Label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        placeholder="Describe the image you want..."
+                                        value={editPrompts[field.id] || ''}
+                                        onChange={(e) => setEditPrompts(prev => ({ ...prev, [field.id]: e.target.value }))}
+                                      />
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleGenerateImage(field.id, editPrompts[field.id] || '')}
+                                        disabled={isGeneratingField === field.id}
+                                      >
+                                        {isGeneratingField === field.id ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <Sparkles className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          ) : (
+                            <Dialog open={showPrompt === field.id} onOpenChange={(open) => setShowPrompt(open ? field.id : null)}>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <Sparkles className="h-3 w-3 mr-1" />
+                                  <span className="text-xs">Edit with AI</span>
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit with AI</DialogTitle>
+                                  <DialogDescription>
+                                    Describe what you want or leave empty for auto-generation
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <Textarea
+                                    placeholder="E.g., 'Write about investment strategies for retirement planning' or leave empty..."
+                                    value={editPrompts[field.id] || ''}
+                                    onChange={(e) => setEditPrompts(prev => ({ ...prev, [field.id]: e.target.value }))}
+                                    rows={3}
+                                  />
+                                  <Button
+                                    onClick={() => handleAIAssist(field.id, editPrompts[field.id])}
+                                    disabled={isGeneratingField === field.id}
+                                    className="w-full"
+                                  >
+                                    {isGeneratingField === field.id ? (
+                                      <>
+                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                        Generating...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Sparkles className="h-4 w-4 mr-2" />
+                                        Generate Content
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
                         </div>
-                        {field.type === 'body' || field.type === 'bullet-list' ? (
+                        {field.type === 'image' ? (
+                          <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                            {formData[field.id] ? (
+                              <img src={formData[field.id]} alt={field.id} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="text-center text-muted-foreground">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No image added</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : field.type === 'body' || field.type === 'bullet-list' ? (
                           <Textarea
                             id={field.id}
                             placeholder={field.placeholder}
