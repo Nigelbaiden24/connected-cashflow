@@ -23,6 +23,7 @@ const FinanceAIGenerator = () => {
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [editPrompts, setEditPrompts] = useState<Record<string, string>>({});
   const [showPrompt, setShowPrompt] = useState<string | null>(null);
+  const [customHeaders, setCustomHeaders] = useState<Record<string, string>>({});
   const [userEmail] = useState("finance@flowpulse.io");
   const { toast } = useToast();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -45,6 +46,7 @@ const FinanceAIGenerator = () => {
     setSelectedTemplate(templateId);
     setFormData({});
     setEditPrompts({});
+    setCustomHeaders({});
   };
 
   const handleFieldChange = (fieldId: string, value: string) => {
@@ -96,7 +98,7 @@ const FinanceAIGenerator = () => {
     }
   };
 
-  const handleFillEntireDocument = async () => {
+  const handleFillEntireDocument = async (generalPrompt: string) => {
     const template = documentTemplates.find(t => t.id === selectedTemplate);
     if (!template) return;
 
@@ -106,7 +108,10 @@ const FinanceAIGenerator = () => {
       const editableFields = template.sections.filter(s => s.editable && s.type !== 'image');
       
       for (const field of editableFields) {
-        await handleAIAssist(field.id);
+        const contextualPrompt = generalPrompt 
+          ? `${generalPrompt}\n\nNow generate content for the "${field.id}" section of this ${template.name}.`
+          : '';
+        await handleAIAssist(field.id, contextualPrompt);
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
@@ -122,6 +127,7 @@ const FinanceAIGenerator = () => {
       });
     } finally {
       setIsGeneratingAll(false);
+      setShowPrompt(null);
     }
   };
 
@@ -239,23 +245,59 @@ const FinanceAIGenerator = () => {
                 Back
               </Button>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold">AI Document Generator</h1>
+                <h1 className="text-2xl font-bold">Document Generator</h1>
               </div>
               {template && (
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={handleFillEntireDocument} 
-                    variant="default" 
-                    size="sm"
-                    disabled={isGeneratingAll}
-                  >
-                    {isGeneratingAll ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Wand2 className="h-4 w-4 mr-2" />
-                    )}
-                    Fill Entire Document
-                  </Button>
+                  <Dialog open={showPrompt === 'fill-all'} onOpenChange={(open) => setShowPrompt(open ? 'fill-all' : null)}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        disabled={isGeneratingAll}
+                      >
+                        {isGeneratingAll ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-4 w-4 mr-2" />
+                        )}
+                        Fill Entire Document
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Fill Entire Document</DialogTitle>
+                        <DialogDescription>
+                          Describe the overall context or theme for this document (optional)
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <Textarea
+                          placeholder="E.g., 'This is for a technology startup seeking Series A funding...' or leave empty for default generation"
+                          value={editPrompts['fill-all'] || ''}
+                          onChange={(e) => setEditPrompts(prev => ({ ...prev, 'fill-all': e.target.value }))}
+                          rows={4}
+                        />
+                        <Button
+                          onClick={() => handleFillEntireDocument(editPrompts['fill-all'] || '')}
+                          disabled={isGeneratingAll}
+                          className="w-full"
+                        >
+                          {isGeneratingAll ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Wand2 className="h-4 w-4 mr-2" />
+                              Generate All Fields
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                   <Button onClick={handleDownloadPDF} variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
                     Download PDF
@@ -313,9 +355,13 @@ const FinanceAIGenerator = () => {
                     {editableFields.map((field) => (
                       <div key={field.id} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor={field.id} className="capitalize font-medium">
-                            {field.id.replace(/-/g, ' ')}
-                          </Label>
+                          <div className="flex items-center gap-2 flex-1">
+                            <Input
+                              value={customHeaders[field.id] || field.id.replace(/-/g, ' ')}
+                              onChange={(e) => setCustomHeaders(prev => ({ ...prev, [field.id]: e.target.value }))}
+                              className="font-medium capitalize max-w-xs"
+                            />
+                          </div>
                           {field.type === 'image' ? (
                             <Dialog open={showPrompt === field.id} onOpenChange={(open) => setShowPrompt(open ? field.id : null)}>
                               <DialogTrigger asChild>

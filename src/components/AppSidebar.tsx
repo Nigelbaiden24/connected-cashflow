@@ -52,7 +52,7 @@ const aiToolsItems = [
     icon: MessageSquare,
   },
   {
-    title: "AI Generator",
+    title: "Document Generator",
     url: "/finance-ai-generator",
     icon: Sparkles,
   },

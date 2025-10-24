@@ -65,7 +65,7 @@ const businessToolsItems = [
     icon: Calendar,
   },
   {
-    title: "AI Generator",
+    title: "Document Generator",
     url: "/business-ai-generator",
     icon: Briefcase,
   },

@@ -28,6 +28,8 @@ import CRMContactDetail from "./pages/CRMContactDetail";
 import Payroll from "./pages/Payroll";
 import FinancePayroll from "./pages/FinancePayroll";
 import Recruitment from "./pages/Recruitment";
+import Technology from "./pages/Technology";
+import Finance from "./pages/Finance";
 import CandidateRegistration from "./pages/CandidateRegistration";
 import EmployerVacancy from "./pages/EmployerVacancy";
 import AdminJobs from "./pages/AdminJobs";
@@ -73,6 +75,8 @@ const App = () => {
             {/* Public routes */}
             <Route path="/" element={<Recruitment />} />
             <Route path="/recruitment" element={<Recruitment />} />
+            <Route path="/technology" element={<Technology />} />
+            <Route path="/finance" element={<Finance />} />
             <Route path="/candidate-registration" element={<CandidateRegistration />} />
             <Route path="/employer-vacancy" element={<EmployerVacancy />} />
             <Route path="/admin/jobs" element={<AdminJobs />} />
