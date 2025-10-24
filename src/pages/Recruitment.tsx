@@ -153,7 +153,7 @@ export default function Recruitment() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2 neon-text-subtle">Technology Recruitment</h1>
+              <h1 className="text-4xl font-bold mb-2">Technology Recruitment</h1>
               <p className="text-xl text-muted-foreground">
                 Specialist roles in software engineering, data science, cloud, and IT
               </p>
@@ -197,7 +197,7 @@ export default function Recruitment() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2 neon-text-subtle">Finance Recruitment</h1>
+              <h1 className="text-4xl font-bold mb-2">Finance Recruitment</h1>
               <p className="text-xl text-muted-foreground">
                 Specialist roles in banking, investment, accounting, and financial services
               </p>
@@ -241,7 +241,7 @@ export default function Recruitment() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-5xl mx-auto space-y-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2 neon-text-subtle">Generalist Recruitment</h1>
+              <h1 className="text-4xl font-bold mb-2">Generalist Recruitment</h1>
               <p className="text-xl text-muted-foreground">
                 Opportunities across all sectors including retail, healthcare, manufacturing, and more
               </p>
@@ -283,7 +283,7 @@ export default function Recruitment() {
         {/* Sectors */}
         <section>
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4 neon-text-subtle">Our Specialist Sectors</h2>
+            <h2 className="text-3xl font-bold mb-4">Our Specialist Sectors</h2>
             <p className="text-muted-foreground text-lg">
               Expert recruitment across technology, finance, and all other industries
             </p>
@@ -324,7 +324,7 @@ export default function Recruitment() {
         {/* Featured Jobs */}
         <section>
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold neon-text-subtle">Featured Opportunities</h2>
+            <h2 className="text-3xl font-bold">Featured Opportunities</h2>
             <Button variant="outline" onClick={handleViewAllJobs}>View All Jobs</Button>
           </div>
 
@@ -357,7 +357,7 @@ export default function Recruitment() {
         <section className="bg-muted/30 -mx-4 px-4 py-16 md:mx-0 md:rounded-lg">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4 neon-text-subtle">Why Choose FlowPulse Recruitment?</h2>
+              <h2 className="text-3xl font-bold mb-4">Why Choose FlowPulse Recruitment?</h2>
               <p className="text-muted-foreground text-lg">
                 More than just job placement - we're your career partner
               </p>

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ArrowLeft, Sparkles, Download, FileText, Upload, Image as ImageIcon, Wand2 } from "lucide-react";
+import { Loader2, ArrowLeft, Sparkles, Download, FileText, Upload, Image as ImageIcon, Wand2, Plus, Trash2, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessSidebar } from "@/components/BusinessSidebar";
@@ -24,6 +24,9 @@ const BusinessAIGenerator = () => {
   const [editPrompts, setEditPrompts] = useState<Record<string, string>>({});
   const [showPrompt, setShowPrompt] = useState<string | null>(null);
   const [customHeaders, setCustomHeaders] = useState<Record<string, string>>({});
+  const [textColors, setTextColors] = useState<Record<string, string>>({});
+  const [pages, setPages] = useState<number[]>([1]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [userEmail] = useState("business@flowpulse.io");
   const { toast } = useToast();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -47,6 +50,30 @@ const BusinessAIGenerator = () => {
     setFormData({});
     setEditPrompts({});
     setCustomHeaders({});
+    setTextColors({});
+    setPages([1]);
+    setCurrentPage(1);
+  };
+
+  const handleAddPage = () => {
+    const newPageNumber = Math.max(...pages) + 1;
+    setPages([...pages, newPageNumber]);
+    setCurrentPage(newPageNumber);
+  };
+
+  const handleRemovePage = (pageNumber: number) => {
+    if (pages.length <= 1) {
+      toast({
+        title: "Cannot remove page",
+        description: "Document must have at least one page.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setPages(pages.filter(p => p !== pageNumber));
+    if (currentPage === pageNumber) {
+      setCurrentPage(pages[0]);
+    }
   };
 
   const handleFieldChange = (fieldId: string, value: string) => {
@@ -248,7 +275,38 @@ const BusinessAIGenerator = () => {
                 <h1 className="text-2xl font-bold">Document Generator</h1>
               </div>
               {template && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  <div className="flex gap-1 items-center border-r pr-2">
+                    {pages.map((page) => (
+                      <div key={page} className="flex items-center gap-1">
+                        <Button
+                          variant={currentPage === page ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          Page {page}
+                        </Button>
+                        {pages.length > 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemovePage(page)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddPage}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add Page
+                    </Button>
+                  </div>
                   <Dialog open={showPrompt === 'fill-all'} onOpenChange={(open) => setShowPrompt(open ? 'fill-all' : null)}>
                     <DialogTrigger asChild>
                       <Button 
@@ -486,22 +544,52 @@ const BusinessAIGenerator = () => {
                             )}
                           </div>
                         ) : field.type === 'body' || field.type === 'bullet-list' ? (
-                          <Textarea
-                            id={field.id}
-                            placeholder={field.placeholder}
-                            value={formData[field.id] || ''}
-                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                            rows={field.type === 'body' ? 4 : 6}
-                            className="text-sm"
-                          />
+                          <div className="space-y-2">
+                            <div className="flex gap-2 items-center">
+                              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Palette className="h-3 w-3" />
+                                Text Color
+                              </Label>
+                              <Input
+                                type="color"
+                                value={textColors[field.id] || '#000000'}
+                                onChange={(e) => setTextColors(prev => ({ ...prev, [field.id]: e.target.value }))}
+                                className="w-16 h-8 p-1 cursor-pointer"
+                              />
+                            </div>
+                            <Textarea
+                              id={field.id}
+                              placeholder={field.placeholder}
+                              value={formData[field.id] || ''}
+                              onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                              rows={field.type === 'body' ? 4 : 6}
+                              className="text-sm"
+                              style={{ color: textColors[field.id] || '#000000' }}
+                            />
+                          </div>
                         ) : (
-                          <Input
-                            id={field.id}
-                            placeholder={field.placeholder}
-                            value={formData[field.id] || ''}
-                            onChange={(e) => handleFieldChange(field.id, e.target.value)}
-                            className="text-sm"
-                          />
+                          <div className="space-y-2">
+                            <div className="flex gap-2 items-center">
+                              <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Palette className="h-3 w-3" />
+                                Text Color
+                              </Label>
+                              <Input
+                                type="color"
+                                value={textColors[field.id] || '#000000'}
+                                onChange={(e) => setTextColors(prev => ({ ...prev, [field.id]: e.target.value }))}
+                                className="w-16 h-8 p-1 cursor-pointer"
+                              />
+                            </div>
+                            <Input
+                              id={field.id}
+                              placeholder={field.placeholder}
+                              value={formData[field.id] || ''}
+                              onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                              className="text-sm"
+                              style={{ color: textColors[field.id] || '#000000' }}
+                            />
+                          </div>
                         )}
                       </div>
                     ))}
@@ -517,13 +605,19 @@ const BusinessAIGenerator = () => {
                     <CardDescription>See your document as you type</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div 
-                      ref={previewRef}
-                      className="bg-white p-8 rounded-lg shadow-sm min-h-[297mm]"
-                      dangerouslySetInnerHTML={{
-                        __html: renderTemplateToHtml(template, formData)
-                      }}
-                    />
+                    <div className="space-y-4">
+                      {pages.map((page) => (
+                        <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
+                          <div 
+                            ref={page === currentPage ? previewRef : null}
+                            className="bg-white p-8 rounded-lg shadow-sm min-h-[297mm]"
+                            dangerouslySetInnerHTML={{
+                              __html: renderTemplateToHtml(template, formData, textColors)
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </div>

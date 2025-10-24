@@ -1,6 +1,6 @@
 import { DocumentTemplate, AIContent } from "@/types/template";
 
-export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AIContent): string {
+export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AIContent, textColors?: Record<string, string>): string {
   const { styles } = template;
   
   // Create header with gradient for business proposal
@@ -122,20 +122,21 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
     
     const content = aiContent[section.id] || section.defaultContent || section.placeholder.replace(/\{\{|\}\}/g, '');
     const className = `${section.className || ''} ${section.editable ? 'editable' : ''}`;
+    const color = textColors?.[section.id] || (styles.primaryColor || '#1a202c');
     
     switch (section.type) {
       case 'heading':
-        return `<h1 class="${className}" data-section-id="${section.id}">${content}</h1>`;
+        return `<h1 class="${className}" data-section-id="${section.id}" style="color: ${color}">${content}</h1>`;
       
       case 'subheading':
-        return `<h2 class="${className}" data-section-id="${section.id}">${content}</h2>`;
+        return `<h2 class="${className}" data-section-id="${section.id}" style="color: ${color}">${content}</h2>`;
       
       case 'body':
-        return `<div class="section ${className}" data-section-id="${section.id}"><p>${content.replace(/\n/g, '</p><p>')}</p></div>`;
+        return `<div class="section ${className}" data-section-id="${section.id}" style="color: ${color}"><p>${content.replace(/\n/g, '</p><p>')}</p></div>`;
       
       case 'bullet-list':
         const items = content.split('\n').filter(item => item.trim());
-        return `<div class="section ${className}" data-section-id="${section.id}"><ul>${items.map(item => `<li>${item}</li>`).join('')}</ul></div>`;
+        return `<div class="section ${className}" data-section-id="${section.id}" style="color: ${color}"><ul>${items.map(item => `<li>${item}</li>`).join('')}</ul></div>`;
       
       case 'image':
         if (content && content.startsWith('http')) {
@@ -149,7 +150,7 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
         return `<hr class="${className}" style="border: none; border-top: 2px solid ${styles.primaryColor}; margin: 40px 0; opacity: 0.2;" />`;
       
       default:
-        return `<div class="section ${className}" data-section-id="${section.id}">${content}</div>`;
+        return `<div class="section ${className}" data-section-id="${section.id}" style="color: ${color}">${content}</div>`;
     }
   }).join('\n');
   
