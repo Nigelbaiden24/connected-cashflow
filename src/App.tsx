@@ -30,6 +30,7 @@ import FinancePayroll from "./pages/FinancePayroll";
 import Recruitment from "./pages/Recruitment";
 import Technology from "./pages/Technology";
 import Finance from "./pages/Finance";
+import AllSectors from "./pages/AllSectors";
 import CandidateRegistration from "./pages/CandidateRegistration";
 import EmployerVacancy from "./pages/EmployerVacancy";
 import AdminJobs from "./pages/AdminJobs";
@@ -77,6 +78,7 @@ const App = () => {
             <Route path="/recruitment" element={<Recruitment />} />
             <Route path="/technology" element={<Technology />} />
             <Route path="/finance" element={<Finance />} />
+            <Route path="/all-sectors" element={<AllSectors />} />
             <Route path="/candidate-registration" element={<CandidateRegistration />} />
             <Route path="/employer-vacancy" element={<EmployerVacancy />} />
             <Route path="/admin/jobs" element={<AdminJobs />} />
