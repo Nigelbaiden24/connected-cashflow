@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -26,6 +27,7 @@ interface RecruitmentHeaderProps {
 }
 
 export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHeaderProps) {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -56,10 +58,18 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
   ];
 
   const recruitmentItems = [
-    { id: "tech", label: "Technology", icon: Code },
-    { id: "finance", label: "Finance", icon: TrendingUp },
+    { id: "/technology", label: "Technology", icon: Code },
+    { id: "/finance", label: "Finance", icon: TrendingUp },
     { id: "general", label: "All Sectors", icon: Building2 },
   ];
+
+  const handleRecruitmentClick = (id: string) => {
+    if (id.startsWith("/")) {
+      navigate(id);
+    } else {
+      onNavigate(id);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -117,7 +127,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 {recruitmentItems.map((item) => (
                   <DropdownMenuItem
                     key={item.id}
-                    onClick={() => onNavigate(item.id)}
+                    onClick={() => handleRecruitmentClick(item.id)}
                     className="cursor-pointer"
                   >
                     <item.icon className="h-4 w-4 mr-2" />
@@ -202,7 +212,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                   <button
                     key={item.id}
                     onClick={() => {
-                      onNavigate(item.id);
+                      handleRecruitmentClick(item.id);
                       setMobileMenuOpen(false);
                     }}
                     className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground mb-2"
