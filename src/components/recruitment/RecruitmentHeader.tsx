@@ -59,8 +59,6 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
   const recruitmentItems = [
     { id: "/technology", label: "Technology", icon: Code },
-    { id: "/finance", label: "Finance", icon: TrendingUp },
-    { id: "/all-sectors", label: "All Sectors", icon: Building2 },
   ];
 
   const handleRecruitmentClick = (id: string) => {

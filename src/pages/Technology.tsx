@@ -18,6 +18,86 @@ const Technology = () => {
     }
   };
 
+  const popularRoleCategories = [
+    {
+      category: "Software Development",
+      roles: [
+        "Full Stack Developer",
+        "Frontend Developer",
+        "Backend Developer",
+        "Software Engineer",
+        "Senior Software Engineer",
+        "Lead Software Engineer",
+        "Principal Engineer",
+        "Software Architect",
+      ],
+      icon: Code,
+    },
+    {
+      category: "Cloud & Infrastructure",
+      roles: [
+        "DevOps Engineer",
+        "Site Reliability Engineer (SRE)",
+        "Cloud Architect",
+        "Platform Engineer",
+        "Infrastructure Engineer",
+        "Cloud Solutions Architect",
+        "Kubernetes Engineer",
+      ],
+      icon: Cloud,
+    },
+    {
+      category: "Data & Analytics",
+      roles: [
+        "Data Engineer",
+        "Data Scientist",
+        "Data Analyst",
+        "Business Intelligence Developer",
+        "Analytics Engineer",
+        "Data Architect",
+        "Big Data Engineer",
+      ],
+      icon: Database,
+    },
+    {
+      category: "Mobile Development",
+      roles: [
+        "iOS Developer",
+        "Android Developer",
+        "React Native Developer",
+        "Flutter Developer",
+        "Mobile App Developer",
+        "Mobile Architect",
+      ],
+      icon: Smartphone,
+    },
+    {
+      category: "AI & Machine Learning",
+      roles: [
+        "Machine Learning Engineer",
+        "AI Engineer",
+        "MLOps Engineer",
+        "NLP Engineer",
+        "Computer Vision Engineer",
+        "Research Scientist",
+        "AI Architect",
+      ],
+      icon: Cpu,
+    },
+    {
+      category: "Security & Quality",
+      roles: [
+        "Security Engineer",
+        "Cybersecurity Analyst",
+        "Penetration Tester",
+        "QA Engineer",
+        "Test Automation Engineer",
+        "Security Architect",
+      ],
+      icon: Globe,
+    },
+  ];
+
   const techRoles = [
     {
       id: 1,
@@ -122,6 +202,44 @@ const Technology = () => {
                 <div className="text-sm text-muted-foreground">Success Rate</div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Popular Tech Roles by Category */}
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-bold">Popular Technology Roles</h2>
+              <p className="text-muted-foreground">
+                Explore the most in-demand tech positions companies are actively recruiting for
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {popularRoleCategories.map((category) => {
+                const Icon = category.icon;
+                return (
+                  <Card key={category.category} className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-3 rounded-lg bg-primary/10">
+                          <Icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <h3 className="font-bold text-lg">{category.category}</h3>
+                      </div>
+                      <ul className="space-y-2">
+                        {category.roles.map((role) => (
+                          <li key={role} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                            {role}
+                          </li>
+                        ))}
+                      </ul>
+                      <Button className="w-full mt-4" variant="outline" onClick={() => navigate("/candidate-registration")}>
+                        View Opportunities
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
 
           {/* Featured Roles */}
