@@ -1,0 +1,107 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+interface TextToSpeechProps {
+  text: string;
+}
+
+const voices = [
+  { id: "alloy", name: "Alloy (Neutral)" },
+  { id: "echo", name: "Echo (Male)" },
+  { id: "fable", name: "Fable (British)" },
+  { id: "onyx", name: "Onyx (Deep)" },
+  { id: "nova", name: "Nova (Female)" },
+  { id: "shimmer", name: "Shimmer (Soft)" },
+];
+
+export const TextToSpeech = ({ text }: TextToSpeechProps) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState("alloy");
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
+
+  const handleSpeak = async () => {
+    if (isPlaying && audio) {
+      audio.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text, voice: selectedVoice },
+      });
+
+      if (error) throw error;
+
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(data.audioContent), (c) => c.charCodeAt(0))],
+        { type: "audio/mpeg" }
+      );
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const newAudio = new Audio(audioUrl);
+
+      newAudio.onended = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      setAudio(newAudio);
+      await newAudio.play();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error("Text-to-speech error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate speech. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+        <SelectTrigger className="w-[140px] h-8">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {voices.map((voice) => (
+            <SelectItem key={voice.id} value={voice.id}>
+              {voice.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleSpeak}
+        disabled={isLoading || !text}
+        className="h-8 w-8 p-0"
+      >
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : isPlaying ? (
+          <VolumeX className="h-4 w-4" />
+        ) : (
+          <Volume2 className="h-4 w-4" />
+        )}
+      </Button>
+    </div>
+  );
+};
