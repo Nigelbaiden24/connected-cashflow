@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, FileText, Edit, Trash2, Eye, TrendingUp, Calendar, Target, ArrowLeft } from "lucide-react";
+import { Plus, FileText, Edit, Trash2, Eye, TrendingUp, Calendar, Target, ArrowLeft, Search, Filter, Grid3x3, List, Download, Upload, Copy, LayoutGrid, MoreVertical, CheckSquare, Square, Sparkles, Clock, Users, DollarSign, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FinancialPlan {
   id: string;
@@ -41,7 +45,13 @@ export default function FinancialPlanning() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<FinancialPlan | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "table">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [selectedPlans, setSelectedPlans] = useState<Set<string>>(new Set());
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [quickViewPlan, setQuickViewPlan] = useState<FinancialPlan | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -195,6 +205,106 @@ export default function FinancialPlanning() {
     });
   };
 
+  const filteredPlans = plans.filter((plan) => {
+    const matchesSearch = plan.plan_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === "all" || plan.plan_type === filterType;
+    const matchesStatus = filterStatus === "all" || plan.status === filterStatus;
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const togglePlanSelection = (planId: string) => {
+    const newSelected = new Set(selectedPlans);
+    if (newSelected.has(planId)) {
+      newSelected.delete(planId);
+    } else {
+      newSelected.add(planId);
+    }
+    setSelectedPlans(newSelected);
+  };
+
+  const toggleAllPlans = () => {
+    if (selectedPlans.size === filteredPlans.length) {
+      setSelectedPlans(new Set());
+    } else {
+      setSelectedPlans(new Set(filteredPlans.map(p => p.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedPlans.size} selected plans?`)) return;
+    try {
+      const { error } = await supabase
+        .from("financial_plans")
+        .delete()
+        .in("id", Array.from(selectedPlans));
+      if (error) throw error;
+      toast.success("Plans deleted successfully");
+      setSelectedPlans(new Set());
+      fetchPlans();
+    } catch (error: any) {
+      toast.error("Failed to delete plans");
+    }
+  };
+
+  const handleBulkExport = () => {
+    const selectedPlanData = plans.filter(p => selectedPlans.has(p.id));
+    const csv = [
+      ["Plan Name", "Type", "Status", "Start Date", "Current Net Worth", "Target Net Worth"].join(","),
+      ...selectedPlanData.map(p => [
+        p.plan_name,
+        p.plan_type,
+        p.status,
+        p.start_date,
+        p.current_net_worth || "N/A",
+        p.target_net_worth || "N/A"
+      ].join(","))
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `financial-plans-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    toast.success("Plans exported successfully");
+  };
+
+  const handleDuplicatePlan = async (plan: FinancialPlan) => {
+    try {
+      const { id, created_at, ...planData } = plan;
+      const { error } = await supabase
+        .from("financial_plans")
+        .insert({ ...planData, plan_name: `${plan.plan_name} (Copy)` });
+      if (error) throw error;
+      toast.success("Plan duplicated successfully");
+      fetchPlans();
+    } catch (error: any) {
+      toast.error("Failed to duplicate plan");
+    }
+  };
+
+  const planTemplates = [
+    { name: "Retirement Planning", type: "retirement", objectives: ["Maximize retirement savings", "Tax-efficient withdrawal strategy"] },
+    { name: "Investment Strategy", type: "investment", objectives: ["Diversified portfolio", "Long-term wealth growth"] },
+    { name: "Estate Planning", type: "estate", objectives: ["Wealth transfer", "Minimize estate taxes"] }
+  ];
+
+  const createFromTemplate = (template: typeof planTemplates[0]) => {
+    setFormData({
+      ...formData,
+      plan_name: template.name,
+      plan_type: template.type,
+      notes: template.objectives.join("\n")
+    });
+    setIsDialogOpen(true);
+  };
+
+  const stats = {
+    total: plans.length,
+    active: plans.filter(p => p.status === "active").length,
+    totalValue: plans.reduce((sum, p) => sum + (p.current_net_worth || 0), 0),
+    avgTimeHorizon: plans.length > 0 ? Math.round(plans.reduce((sum, p) => sum + (p.time_horizon || 0), 0) / plans.length) : 0
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "bg-green-500";
@@ -219,35 +329,182 @@ export default function FinancialPlanning() {
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/")}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Financial Planning</h1>
-            <p className="text-muted-foreground">Create and manage comprehensive financial plans for clients</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-6 space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Financial Planning</h1>
+              <p className="text-muted-foreground">Create and manage comprehensive financial plans</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Templates
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {planTemplates.map((template, idx) => (
+                  <DropdownMenuItem key={idx} onClick={() => createFromTemplate(template)}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    {template.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={() => {
+              resetForm();
+              setIsDialogOpen(true);
+            }}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Plan
+            </Button>
           </div>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Financial Plan
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{selectedPlan ? "Edit" : "Create"} Financial Plan</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card className="border-primary/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Plans</p>
+                  <p className="text-2xl font-bold">{stats.total}</p>
+                </div>
+                <FileText className="h-8 w-8 text-primary opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-green-500/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Active Plans</p>
+                  <p className="text-2xl font-bold">{stats.active}</p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-green-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-blue-500/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total AUM</p>
+                  <p className="text-2xl font-bold">£{(stats.totalValue / 1000000).toFixed(1)}M</p>
+                </div>
+                <DollarSign className="h-8 w-8 text-blue-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-purple-500/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Avg Horizon</p>
+                  <p className="text-2xl font-bold">{stats.avgTimeHorizon} yrs</p>
+                </div>
+                <Clock className="h-8 w-8 text-purple-500 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters and Actions */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex flex-1 gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search plans..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-40">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="comprehensive">Comprehensive</SelectItem>
+                <SelectItem value="retirement">Retirement</SelectItem>
+                <SelectItem value="investment">Investment</SelectItem>
+                <SelectItem value="estate">Estate</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2">
+            {selectedPlans.size > 0 && (
+              <>
+                <Button variant="outline" size="sm" onClick={handleBulkExport}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export ({selectedPlans.size})
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleBulkDelete}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete ({selectedPlans.size})
+                </Button>
+              </>
+            )}
+            <div className="flex border rounded-md">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-r-none"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-none border-x"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "table" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("table")}
+                className="rounded-l-none"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedPlan ? "Edit" : "Create"} Financial Plan</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-6">
               <Tabs defaultValue="basic" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -449,27 +706,40 @@ export default function FinancialPlanning() {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+        </DialogContent>
+      </Dialog>
 
-      {plans.length === 0 ? (
+      {/* Content Area */}
+      {filteredPlans.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64">
             <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium mb-2">No financial plans yet</p>
-            <p className="text-sm text-muted-foreground mb-4">Create your first financial plan to get started</p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Financial Plan
-            </Button>
+            <p className="text-lg font-medium mb-2">{searchQuery || filterType !== "all" || filterStatus !== "all" ? "No plans found" : "No financial plans yet"}</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {searchQuery || filterType !== "all" || filterStatus !== "all" 
+                ? "Try adjusting your filters" 
+                : "Create your first financial plan to get started"}
+            </p>
+            {!searchQuery && filterType === "all" && filterStatus === "all" && (
+              <Button onClick={() => setIsDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Financial Plan
+              </Button>
+            )}
           </CardContent>
         </Card>
-      ) : (
+      ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <Card key={plan.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
+          {filteredPlans.map((plan) => (
+            <Card key={plan.id} className="hover:shadow-lg transition-all hover:scale-[1.02] group relative">
+              <div className="absolute top-4 left-4 z-10">
+                <Checkbox
+                  checked={selectedPlans.has(plan.id)}
+                  onCheckedChange={() => togglePlanSelection(plan.id)}
+                  className="bg-background"
+                />
+              </div>
+              <CardHeader className="pt-12">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
                     {getPlanTypeIcon(plan.plan_type)}
@@ -487,61 +757,311 @@ export default function FinancialPlanning() {
                     <span className="text-muted-foreground">Start Date:</span>
                     <span>{format(new Date(plan.start_date), "MMM d, yyyy")}</span>
                   </div>
-                  {plan.end_date && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">End Date:</span>
-                      <span>{format(new Date(plan.end_date), "MMM d, yyyy")}</span>
-                    </div>
-                  )}
-                  {plan.time_horizon && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Time Horizon:</span>
-                      <span>{plan.time_horizon} years</span>
-                    </div>
-                  )}
                   {plan.current_net_worth && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Current Net Worth:</span>
-                      <span>£{plan.current_net_worth.toLocaleString()}</span>
+                      <span className="text-muted-foreground">Current:</span>
+                      <span className="font-semibold">£{plan.current_net_worth.toLocaleString()}</span>
                     </div>
                   )}
                   {plan.target_net_worth && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Target Net Worth:</span>
-                      <span>£{plan.target_net_worth.toLocaleString()}</span>
-                    </div>
-                  )}
-                  {plan.risk_tolerance && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Risk Tolerance:</span>
-                      <span className="capitalize">{plan.risk_tolerance}</span>
+                      <span className="text-muted-foreground">Target:</span>
+                      <span className="font-semibold text-primary">£{plan.target_net_worth.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
-
                 <div className="flex gap-2 pt-2">
-                  <Button size="sm" variant="outline" className="flex-1" onClick={() => handleEdit(plan)}>
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1">
+                  <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+                    setQuickViewPlan(plan);
+                    setIsQuickViewOpen(true);
+                  }}>
                     <Eye className="h-3 w-3 mr-1" />
-                    View
+                    Quick View
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(plan.id)}
-                  >
-                    <Trash2 className="h-3 w-3" />
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(plan)}>
+                    <Edit className="h-3 w-3" />
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        <MoreVertical className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleDelete(plan.id)} className="text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+      ) : viewMode === "list" ? (
+        <div className="space-y-3">
+          {filteredPlans.map((plan) => (
+            <Card key={plan.id} className="hover:shadow-md transition-all">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    checked={selectedPlans.has(plan.id)}
+                    onCheckedChange={() => togglePlanSelection(plan.id)}
+                  />
+                  <div className="flex items-center gap-3 flex-1">
+                    {getPlanTypeIcon(plan.plan_type)}
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{plan.plan_name}</h3>
+                      <p className="text-sm text-muted-foreground capitalize">{plan.plan_type.replace("_", " ")}</p>
+                    </div>
+                  </div>
+                  <Badge className={getStatusColor(plan.status)}>{plan.status}</Badge>
+                  <div className="text-sm text-muted-foreground">
+                    {format(new Date(plan.start_date), "MMM d, yyyy")}
+                  </div>
+                  {plan.current_net_worth && (
+                    <div className="text-sm font-semibold">
+                      £{plan.current_net_worth.toLocaleString()}
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      setQuickViewPlan(plan);
+                      setIsQuickViewOpen(true);
+                    }}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleEdit(plan)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="ghost">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDelete(plan.id)} className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <ScrollArea className="h-[600px]">
+            <div className="p-4">
+              <div className="flex items-center gap-4 pb-3 border-b font-semibold text-sm">
+                <div className="w-8">
+                  <Checkbox
+                    checked={selectedPlans.size === filteredPlans.length && filteredPlans.length > 0}
+                    onCheckedChange={toggleAllPlans}
+                  />
+                </div>
+                <div className="flex-1">Plan Name</div>
+                <div className="w-32">Type</div>
+                <div className="w-24">Status</div>
+                <div className="w-32">Start Date</div>
+                <div className="w-32">Net Worth</div>
+                <div className="w-24">Actions</div>
+              </div>
+              {filteredPlans.map((plan) => (
+                <div key={plan.id} className="flex items-center gap-4 py-3 border-b hover:bg-muted/50 transition-colors">
+                  <div className="w-8">
+                    <Checkbox
+                      checked={selectedPlans.has(plan.id)}
+                      onCheckedChange={() => togglePlanSelection(plan.id)}
+                    />
+                  </div>
+                  <div className="flex-1 flex items-center gap-2">
+                    {getPlanTypeIcon(plan.plan_type)}
+                    <span className="font-medium">{plan.plan_name}</span>
+                  </div>
+                  <div className="w-32 text-sm capitalize text-muted-foreground">{plan.plan_type.replace("_", " ")}</div>
+                  <div className="w-24">
+                    <Badge className={getStatusColor(plan.status)}>{plan.status}</Badge>
+                  </div>
+                  <div className="w-32 text-sm">{format(new Date(plan.start_date), "MMM d, yyyy")}</div>
+                  <div className="w-32 text-sm font-semibold">
+                    {plan.current_net_worth ? `£${plan.current_net_worth.toLocaleString()}` : "N/A"}
+                  </div>
+                  <div className="w-24 flex gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      setQuickViewPlan(plan);
+                      setIsQuickViewOpen(true);
+                    }}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => handleEdit(plan)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="ghost">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDuplicatePlan(plan)}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDelete(plan.id)} className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </Card>
       )}
+
+      {/* Quick View Drawer */}
+      <Drawer open={isQuickViewOpen} onOpenChange={setIsQuickViewOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <div className="flex items-center justify-between">
+              <DrawerTitle>{quickViewPlan?.plan_name}</DrawerTitle>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="sm">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
+          {quickViewPlan && (
+            <ScrollArea className="h-[60vh] px-6 pb-6">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  {getPlanTypeIcon(quickViewPlan.plan_type)}
+                  <div>
+                    <Badge className={getStatusColor(quickViewPlan.status)}>{quickViewPlan.status}</Badge>
+                    <p className="text-sm text-muted-foreground mt-1 capitalize">{quickViewPlan.plan_type.replace("_", " ")}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Start Date</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-lg font-semibold">{format(new Date(quickViewPlan.start_date), "MMMM d, yyyy")}</p>
+                    </CardContent>
+                  </Card>
+                  {quickViewPlan.end_date && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">End Date</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold">{format(new Date(quickViewPlan.end_date), "MMMM d, yyyy")}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {quickViewPlan.time_horizon && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Time Horizon</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold">{quickViewPlan.time_horizon} years</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {quickViewPlan.risk_tolerance && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Risk Tolerance</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-lg font-semibold capitalize">{quickViewPlan.risk_tolerance}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {(quickViewPlan.current_net_worth || quickViewPlan.target_net_worth) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Financial Overview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {quickViewPlan.current_net_worth && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Current Net Worth:</span>
+                          <span className="text-xl font-bold">£{quickViewPlan.current_net_worth.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {quickViewPlan.target_net_worth && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Target Net Worth:</span>
+                          <span className="text-xl font-bold text-primary">£{quickViewPlan.target_net_worth.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {quickViewPlan.current_net_worth && quickViewPlan.target_net_worth && (
+                        <div className="flex justify-between pt-2 border-t">
+                          <span className="text-muted-foreground">Growth Needed:</span>
+                          <span className="text-lg font-semibold text-green-600">
+                            +{((quickViewPlan.target_net_worth - quickViewPlan.current_net_worth) / quickViewPlan.current_net_worth * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {quickViewPlan.notes && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Notes & Objectives</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm whitespace-pre-wrap">{quickViewPlan.notes}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="flex gap-2 pt-4">
+                  <Button className="flex-1" onClick={() => {
+                    handleEdit(quickViewPlan);
+                    setIsQuickViewOpen(false);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Plan
+                  </Button>
+                  <Button variant="outline" onClick={() => handleDuplicatePlan(quickViewPlan)}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Duplicate
+                  </Button>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
