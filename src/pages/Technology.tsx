@@ -162,15 +162,44 @@ const Technology = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
+        <div className="absolute top-0 -right-4 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-700"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-1000"></div>
+        
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.05)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]"></div>
+        
+        {/* Circuit pattern */}
+        <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="circuit" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              <circle cx="25" cy="25" r="2" fill="currentColor" className="text-cyan-400"/>
+              <circle cx="75" cy="75" r="2" fill="currentColor" className="text-blue-400"/>
+              <line x1="25" y1="25" x2="75" y2="25" stroke="currentColor" strokeWidth="0.5" className="text-cyan-400"/>
+              <line x1="75" y1="25" x2="75" y2="75" stroke="currentColor" strokeWidth="0.5" className="text-blue-400"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circuit)"/>
+        </svg>
+      </div>
+
       <RecruitmentHeader onNavigate={handleNavigate} currentSection="tech" />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-12 relative z-10">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold">Technology Recruitment</h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
+              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+              <span className="text-sm text-blue-300 font-medium">Connecting Tech Talent Globally</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
+              Technology Recruitment
+            </h1>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed">
               Connecting top technology talent with innovative companies. Specializing in software development, 
               cloud infrastructure, data engineering, and emerging technologies.
             </p>
@@ -178,28 +207,28 @@ const Technology = () => {
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
               <CardContent className="pt-6 text-center">
-                <div className="text-3xl font-bold text-primary">500+</div>
-                <div className="text-sm text-muted-foreground">Active Tech Roles</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">500+</div>
+                <div className="text-sm text-slate-400">Active Tech Roles</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
               <CardContent className="pt-6 text-center">
-                <div className="text-3xl font-bold text-primary">2,000+</div>
-                <div className="text-sm text-muted-foreground">Tech Candidates</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">2,000+</div>
+                <div className="text-sm text-slate-400">Tech Candidates</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
               <CardContent className="pt-6 text-center">
-                <div className="text-3xl font-bold text-primary">150+</div>
-                <div className="text-sm text-muted-foreground">Tech Companies</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">150+</div>
+                <div className="text-sm text-slate-400">Tech Companies</div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-all">
               <CardContent className="pt-6 text-center">
-                <div className="text-3xl font-bold text-primary">95%</div>
-                <div className="text-sm text-muted-foreground">Success Rate</div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">95%</div>
+                <div className="text-sm text-slate-400">Success Rate</div>
               </CardContent>
             </Card>
           </div>
@@ -207,8 +236,8 @@ const Technology = () => {
           {/* Popular Tech Roles by Category */}
           <div className="space-y-6">
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-bold">Popular Technology Roles</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-3xl font-bold text-white">Popular Technology Roles</h2>
+              <p className="text-slate-400">
                 Explore the most in-demand tech positions companies are actively recruiting for
               </p>
             </div>
@@ -216,23 +245,23 @@ const Technology = () => {
               {popularRoleCategories.map((category) => {
                 const Icon = category.icon;
                 return (
-                  <Card key={category.category} className="hover:shadow-lg transition-shadow">
+                  <Card key={category.category} className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 hover:border-blue-700/50 transition-all group">
                     <CardContent className="p-6 space-y-4">
                       <div className="flex items-center gap-3">
-                        <div className="p-3 rounded-lg bg-primary/10">
-                          <Icon className="h-6 w-6 text-primary" />
+                        <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 group-hover:from-blue-500/30 group-hover:to-cyan-500/30 transition-all">
+                          <Icon className="h-6 w-6 text-blue-400" />
                         </div>
-                        <h3 className="font-bold text-lg">{category.category}</h3>
+                        <h3 className="font-bold text-lg text-white">{category.category}</h3>
                       </div>
                       <ul className="space-y-2">
                         {category.roles.map((role) => (
-                          <li key={role} className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                          <li key={role} className="flex items-center gap-2 text-sm text-slate-400">
+                            <div className="h-1.5 w-1.5 rounded-full bg-cyan-500 flex-shrink-0" />
                             {role}
                           </li>
                         ))}
                       </ul>
-                      <Button className="w-full mt-4" variant="outline" onClick={() => navigate("/candidate-registration")}>
+                      <Button className="w-full mt-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-0" onClick={() => navigate("/candidate-registration")}>
                         View Opportunities
                       </Button>
                     </CardContent>
@@ -244,48 +273,48 @@ const Technology = () => {
 
           {/* Featured Roles */}
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold">Featured Technology Roles</h2>
+            <h2 className="text-3xl font-bold text-white">Featured Technology Roles</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {techRoles.map((role) => {
                 const Icon = role.icon;
                 return (
-                  <Card key={role.id} className="hover:shadow-lg transition-shadow">
+                  <Card key={role.id} className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 hover:border-blue-700/50 hover:shadow-xl hover:shadow-blue-500/10 transition-all">
                     <CardContent className="p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10">
-                            <Icon className="h-6 w-6 text-primary" />
+                          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
+                            <Icon className="h-6 w-6 text-blue-400" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-lg">{role.title}</h3>
-                            <p className="text-sm text-muted-foreground">{role.company}</p>
+                            <h3 className="font-semibold text-lg text-white">{role.title}</h3>
+                            <p className="text-sm text-slate-400">{role.company}</p>
                           </div>
                         </div>
-                        <Badge variant="secondary">{role.type}</Badge>
+                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">{role.type}</Badge>
                       </div>
                       
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Location:</span>
-                          <span className="font-medium">{role.location}</span>
+                          <span className="text-slate-400">Location:</span>
+                          <span className="font-medium text-slate-200">{role.location}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Salary:</span>
-                          <span className="font-medium">{role.salary}</span>
+                          <span className="text-slate-400">Salary:</span>
+                          <span className="font-medium text-cyan-400">{role.salary}</span>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap gap-2">
                         {role.skills.map((skill) => (
-                          <Badge key={skill} variant="outline">{skill}</Badge>
+                          <Badge key={skill} className="bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700">{skill}</Badge>
                         ))}
                       </div>
 
                       <div className="flex gap-2 pt-2">
-                        <Button className="flex-1" onClick={() => navigate("/candidate-registration")}>
+                        <Button className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white border-0" onClick={() => navigate("/candidate-registration")}>
                           Apply Now
                         </Button>
-                        <Button variant="outline">View Details</Button>
+                        <Button className="bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700">View Details</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -295,18 +324,19 @@ const Technology = () => {
           </div>
 
           {/* CTA Section */}
-          <Card className="bg-primary text-primary-foreground">
-            <CardContent className="p-8 text-center space-y-4">
-              <h2 className="text-3xl font-bold">Ready to Find Your Next Tech Role?</h2>
-              <p className="text-lg opacity-90 max-w-2xl mx-auto">
+          <Card className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 border-0 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,.05)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%,100%_100%] animate-[shimmer_3s_linear_infinite]"></div>
+            <CardContent className="p-8 text-center space-y-4 relative z-10">
+              <h2 className="text-3xl font-bold text-white">Ready to Find Your Next Tech Role?</h2>
+              <p className="text-lg text-blue-50 max-w-2xl mx-auto">
                 Register with our expert technology recruiters today and get access to exclusive opportunities 
                 from leading tech companies across the UK and globally.
               </p>
               <div className="flex gap-4 justify-center pt-4">
-                <Button size="lg" variant="secondary" onClick={() => navigate("/candidate-registration")}>
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100" onClick={() => navigate("/candidate-registration")}>
                   Register as Candidate
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => navigate("/employer-vacancy")}>
+                <Button size="lg" className="bg-slate-900 text-white border-slate-700 hover:bg-slate-800" onClick={() => navigate("/employer-vacancy")}>
                   Post a Job
                 </Button>
               </div>
