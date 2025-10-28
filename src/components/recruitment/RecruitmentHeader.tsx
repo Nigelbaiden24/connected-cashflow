@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import flowpulseLogo from "@/assets/flowpulse-logo.jpeg";
 
 interface RecruitmentHeaderProps {
   onNavigate: (section: string) => void;
@@ -74,12 +75,10 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate("home")}>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Building2 className="h-4 w-4" />
-            </div>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate("home")}>
+            <img src={flowpulseLogo} alt="The Flowpulse Group" className="h-10 w-10 rounded-lg object-contain" />
             <div className="flex flex-col">
-              <span className="text-lg font-bold">FlowPulse</span>
+              <span className="text-lg font-bold">The Flowpulse Group</span>
               <span className="text-xs text-muted-foreground">Recruitment</span>
             </div>
           </div>
@@ -146,11 +145,11 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
             )}
             <Button size="sm" onClick={() => onNavigate("candidate-register")}>
               <User className="h-4 w-4 mr-2" />
-              For Candidates
+              Candidates
             </Button>
             <Button size="sm" onClick={() => onNavigate("employer-register")}>
               <Building2 className="h-4 w-4 mr-2" />
-              For Employers
+              Employers
             </Button>
             <Button size="sm" onClick={() => onNavigate("about")}>
               <User className="h-4 w-4 mr-2" />
@@ -227,14 +226,14 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                   setMobileMenuOpen(false);
                 }}>
                   <User className="h-4 w-4 mr-2" />
-                  For Candidates
+                  Candidates
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
                   onNavigate("employer-register");
                   setMobileMenuOpen(false);
                 }}>
                   <Building2 className="h-4 w-4 mr-2" />
-                  For Employers
+                  Employers
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
                   onNavigate("about");

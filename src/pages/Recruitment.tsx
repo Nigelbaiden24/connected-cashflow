@@ -357,7 +357,7 @@ export default function Recruitment() {
         <section className="bg-muted/30 -mx-4 px-4 py-16 md:mx-0 md:rounded-lg">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Why Choose FlowPulse Recruitment?</h2>
+              <h2 className="text-3xl font-bold mb-4">Why Choose The Flowpulse Group Recruitment?</h2>
               <p className="text-muted-foreground text-lg">
                 More than just job placement - we're your career partner
               </p>

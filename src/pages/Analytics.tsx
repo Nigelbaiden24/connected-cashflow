@@ -1,13 +1,37 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter, Plus } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { useState } from "react";
 
 const Analytics = () => {
   const navigate = useNavigate();
+  
+  const [revenueData, setRevenueData] = useState([
+    { month: "Jan", revenue: 45000, expenses: 32000 },
+    { month: "Feb", revenue: 52000, expenses: 35000 },
+    { month: "Mar", revenue: 48000, expenses: 33000 },
+    { month: "Apr", revenue: 61000, expenses: 38000 },
+    { month: "May", revenue: 55000, expenses: 36000 },
+    { month: "Jun", revenue: 67000, expenses: 40000 },
+  ]);
+
+  const [customerData, setCustomerData] = useState([
+    { month: "Jan", customers: 120 },
+    { month: "Feb", customers: 145 },
+    { month: "Mar", customers: 160 },
+    { month: "Apr", customers: 178 },
+    { month: "May", customers: 195 },
+    { month: "Jun", customers: 215 },
+  ]);
+
+  const [newRevenue, setNewRevenue] = useState({ month: "", revenue: "", expenses: "" });
+  const [newCustomer, setNewCustomer] = useState({ month: "", customers: "" });
 
   const handleDownloadPDF = () => {
     const pdf = new jsPDF();
@@ -51,7 +75,7 @@ const Analytics = () => {
     
     // Add footer
     pdf.setFontSize(8);
-    pdf.text("FlowPulse Business - Confidential", 20, 280);
+    pdf.text("The Flowpulse Group - Confidential", 20, 280);
     
     pdf.save(`analytics-report-${new Date().toISOString().split('T')[0]}.pdf`);
     toast.success("Analytics report downloaded successfully");
@@ -66,24 +90,33 @@ const Analytics = () => {
     toast.info("Exporting data to CSV...");
     // In a real app, this would export to CSV
   };
-  
-  const revenueData = [
-    { month: "Jan", revenue: 45000, expenses: 32000 },
-    { month: "Feb", revenue: 52000, expenses: 35000 },
-    { month: "Mar", revenue: 48000, expenses: 33000 },
-    { month: "Apr", revenue: 61000, expenses: 38000 },
-    { month: "May", revenue: 55000, expenses: 36000 },
-    { month: "Jun", revenue: 67000, expenses: 40000 },
-  ];
 
-  const customerData = [
-    { month: "Jan", customers: 120 },
-    { month: "Feb", customers: 145 },
-    { month: "Mar", customers: 160 },
-    { month: "Apr", customers: 178 },
-    { month: "May", customers: 195 },
-    { month: "Jun", customers: 215 },
-  ];
+  const handleAddRevenue = () => {
+    if (newRevenue.month && newRevenue.revenue && newRevenue.expenses) {
+      setRevenueData([...revenueData, {
+        month: newRevenue.month,
+        revenue: parseFloat(newRevenue.revenue),
+        expenses: parseFloat(newRevenue.expenses)
+      }]);
+      setNewRevenue({ month: "", revenue: "", expenses: "" });
+      toast.success("Revenue data added successfully");
+    } else {
+      toast.error("Please fill all revenue fields");
+    }
+  };
+
+  const handleAddCustomer = () => {
+    if (newCustomer.month && newCustomer.customers) {
+      setCustomerData([...customerData, {
+        month: newCustomer.month,
+        customers: parseInt(newCustomer.customers)
+      }]);
+      setNewCustomer({ month: "", customers: "" });
+      toast.success("Customer data added successfully");
+    } else {
+      toast.error("Please fill all customer fields");
+    }
+  };
 
   return (
     <div className="flex-1 p-6 space-y-6">
@@ -198,7 +231,7 @@ const Analytics = () => {
               Revenue vs Expenses
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -209,6 +242,47 @@ const Analytics = () => {
                 <Bar dataKey="expenses" fill="hsl(var(--muted))" />
               </BarChart>
             </ResponsiveContainer>
+            
+            <div className="border-t pt-4 space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add New Data
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label htmlFor="month">Month</Label>
+                  <Input
+                    id="month"
+                    placeholder="e.g., Jul"
+                    value={newRevenue.month}
+                    onChange={(e) => setNewRevenue({ ...newRevenue, month: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="revenue">Revenue</Label>
+                  <Input
+                    id="revenue"
+                    type="number"
+                    placeholder="45000"
+                    value={newRevenue.revenue}
+                    onChange={(e) => setNewRevenue({ ...newRevenue, revenue: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="expenses">Expenses</Label>
+                  <Input
+                    id="expenses"
+                    type="number"
+                    placeholder="32000"
+                    value={newRevenue.expenses}
+                    onChange={(e) => setNewRevenue({ ...newRevenue, expenses: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleAddRevenue} size="sm" className="w-full">
+                Add Revenue Data
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -219,7 +293,7 @@ const Analytics = () => {
               Customer Growth
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={customerData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -229,6 +303,37 @@ const Analytics = () => {
                 <Line type="monotone" dataKey="customers" stroke="hsl(var(--primary))" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
+            
+            <div className="border-t pt-4 space-y-3">
+              <h4 className="font-semibold flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add New Data
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="customer-month">Month</Label>
+                  <Input
+                    id="customer-month"
+                    placeholder="e.g., Jul"
+                    value={newCustomer.month}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, month: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="customers">Customers</Label>
+                  <Input
+                    id="customers"
+                    type="number"
+                    placeholder="220"
+                    value={newCustomer.customers}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, customers: e.target.value })}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleAddCustomer} size="sm" className="w-full">
+                Add Customer Data
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
