@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,22 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 const Calendar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [events, setEvents] = useState([
-    { id: 1, title: "Team Meeting", time: "09:00", date: "2024-02-20", type: "meeting" },
-    { id: 2, title: "Client Presentation", time: "14:00", date: "2024-02-20", type: "presentation" },
-    { id: 3, title: "Project Deadline", time: "11:30", date: "2024-02-22", type: "deadline" },
-    { id: 4, title: "Strategy Review", time: "15:00", date: "2024-02-23", type: "meeting" },
-  ]);
-
+  const [events, setEvents] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<typeof events[0] | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     date: "",
@@ -35,7 +30,39 @@ const Calendar = () => {
     description: "",
   });
 
-  const handleSaveEvent = () => {
+  useEffect(() => {
+    fetchMeetings();
+  }, []);
+
+  const fetchMeetings = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from("client_meetings")
+      .select("*")
+      .eq("client_id", user.id)
+      .order("meeting_date", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching meetings:", error);
+      return;
+    }
+
+    if (data) {
+      const formattedEvents = data.map((meeting) => ({
+        id: meeting.id,
+        title: meeting.agenda?.[0] || "Meeting",
+        time: format(new Date(meeting.meeting_date), "HH:mm"),
+        date: format(new Date(meeting.meeting_date), "yyyy-MM-dd"),
+        type: meeting.meeting_type || "meeting",
+        description: meeting.notes || "",
+      }));
+      setEvents(formattedEvents);
+    }
+  };
+
+  const handleSaveEvent = async () => {
     if (!formData.title || !formData.date || !formData.time) {
       toast({
         title: "Error",
@@ -45,14 +72,40 @@ const Calendar = () => {
       return;
     }
 
-    const newEvent = {
-      id: events.length > 0 ? Math.max(...events.map(e => e.id)) + 1 : 1,
-      title: formData.title,
-      date: formData.date,
-      time: formData.time,
-      type: formData.type,
-    };
-    setEvents([...events, newEvent]);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create events",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const [hours, minutes] = formData.time.split(":");
+    const meetingDateTime = new Date(formData.date);
+    meetingDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+    const { error } = await supabase.from("client_meetings").insert({
+      client_id: user.id,
+      meeting_date: meetingDateTime.toISOString(),
+      duration_minutes: 60,
+      meeting_type: formData.type,
+      status: "Scheduled",
+      notes: formData.description,
+      agenda: [formData.title],
+    });
+
+    if (error) {
+      console.error("Error creating meeting:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Success",
       description: "Event created successfully",
@@ -65,9 +118,10 @@ const Calendar = () => {
       type: "meeting",
       description: "",
     });
+    fetchMeetings();
   };
 
-  const handleUpdateEvent = () => {
+  const handleUpdateEvent = async () => {
     if (!selectedEvent || !formData.title || !formData.date || !formData.time) {
       toast({
         title: "Error",
@@ -77,11 +131,30 @@ const Calendar = () => {
       return;
     }
 
-    setEvents(events.map(e => 
-      e.id === selectedEvent.id 
-        ? { ...e, title: formData.title, date: formData.date, time: formData.time, type: formData.type }
-        : e
-    ));
+    const [hours, minutes] = formData.time.split(":");
+    const meetingDateTime = new Date(formData.date);
+    meetingDateTime.setHours(parseInt(hours), parseInt(minutes));
+
+    const { error } = await supabase
+      .from("client_meetings")
+      .update({
+        meeting_date: meetingDateTime.toISOString(),
+        meeting_type: formData.type,
+        notes: formData.description,
+        agenda: [formData.title],
+      })
+      .eq("id", selectedEvent.id);
+
+    if (error) {
+      console.error("Error updating meeting:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update event. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Success",
       description: "Event updated successfully",
@@ -95,16 +168,32 @@ const Calendar = () => {
       type: "meeting",
       description: "",
     });
+    fetchMeetings();
   };
 
-  const handleDeleteEvent = (id: number) => {
-    setEvents(events.filter(e => e.id !== id));
+  const handleDeleteEvent = async (id: string) => {
+    const { error } = await supabase
+      .from("client_meetings")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting meeting:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
       title: "Success",
       description: "Event deleted successfully",
     });
     setEditDialogOpen(false);
     setSelectedEvent(null);
+    fetchMeetings();
   };
 
   const handleEditEvent = (event: typeof events[0]) => {

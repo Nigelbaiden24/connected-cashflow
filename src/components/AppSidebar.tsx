@@ -33,6 +33,7 @@ import {
   Briefcase,
   Activity,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -50,6 +51,11 @@ const aiToolsItems = [
     title: "Theodore",
     url: "/theodore",
     icon: MessageSquare,
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
   },
   {
     title: "Document Generator",

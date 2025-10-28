@@ -56,17 +56,16 @@ export const MeetingBooker = () => {
     const meetingDateTime = new Date(date);
     meetingDateTime.setHours(parseInt(hours), parseInt(minutes));
 
-    // For now, just show success toast - meetings table can be added later
-    // const { error } = await supabase.from("meetings").insert({
-    //   user_id: user.id,
-    //   title,
-    //   description,
-    //   scheduled_at: meetingDateTime.toISOString(),
-    //   duration_minutes: parseInt(duration),
-    //   status: "scheduled",
-    // });
-
-    const error = null; // Placeholder until meetings table is created
+    // Insert meeting into client_meetings table
+    const { error } = await supabase.from("client_meetings").insert({
+      client_id: user.id,
+      meeting_date: meetingDateTime.toISOString(),
+      duration_minutes: parseInt(duration),
+      meeting_type: "consultation",
+      status: "Scheduled",
+      notes: description,
+      agenda: [title],
+    });
 
     if (error) {
       console.error("Error booking meeting:", error);

@@ -7,7 +7,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Users, UserCheck, Clock, Mail, Phone, ArrowLeft, MessageSquare, Eye } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { Plus, Users, UserCheck, Clock, Mail, Phone, ArrowLeft, MessageSquare, Eye, Shield, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -23,6 +25,8 @@ const Team = () => {
       phone: "+1 234 567 8901",
       status: "active",
       joinDate: "2023-01-15",
+      permissions: ["view", "edit", "manage"],
+      workload: 85,
     },
     {
       id: 2,
@@ -33,6 +37,8 @@ const Team = () => {
       phone: "+1 234 567 8902",
       status: "active",
       joinDate: "2022-08-20",
+      permissions: ["view", "edit"],
+      workload: 72,
     },
     {
       id: 3,
@@ -43,6 +49,8 @@ const Team = () => {
       phone: "+1 234 567 8903",
       status: "active",
       joinDate: "2023-03-10",
+      permissions: ["view", "edit", "manage"],
+      workload: 90,
     },
     {
       id: 4,
@@ -53,6 +61,8 @@ const Team = () => {
       phone: "+1 234 567 8904",
       status: "away",
       joinDate: "2023-06-05",
+      permissions: ["view"],
+      workload: 65,
     },
   ]);
 
@@ -99,6 +109,8 @@ const Team = () => {
       ...newMember,
       status: "active" as const,
       joinDate: new Date().toISOString().split('T')[0],
+      permissions: ["view"] as string[],
+      workload: 0,
     };
 
     setTeamMembers([...teamMembers, member]);
@@ -108,11 +120,17 @@ const Team = () => {
   };
 
   const handleViewProfile = (member: typeof teamMembers[0]) => {
-    toast.info(`Viewing profile for ${member.name}`);
+    navigate("/team/profile", { state: { member } });
   };
 
   const handleMessage = (member: typeof teamMembers[0]) => {
-    toast.info(`Opening chat with ${member.name}`);
+    navigate("/team/chat", { state: { member } });
+  };
+
+  const getWorkloadColor = (workload: number) => {
+    if (workload >= 85) return "text-destructive";
+    if (workload >= 70) return "text-warning";
+    return "text-success";
   };
 
   return (
@@ -120,7 +138,7 @@ const Team = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Team Management</h1>
-          <p className="text-muted-foreground">Manage your team members and departments</p>
+          <p className="text-muted-foreground">Manage team members, roles, permissions, and workload</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -245,70 +263,161 @@ const Team = () => {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        {teamMembers.map((member) => (
-          <Card key={member.id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                    {getInitials(member.name)}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-lg">{member.name}</h3>
-                      <Badge className={getDepartmentColor(member.department)}>
-                        {member.department}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{member.role}</p>
-                  </div>
+      <Tabs defaultValue="members" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="members">Team Members</TabsTrigger>
+          <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
+          <TabsTrigger value="workload">Workload</TabsTrigger>
+        </TabsList>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Mail className="h-4 w-4" />
-                      {member.email}
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="h-4 w-4" />
-                      {member.phone}
+        <TabsContent value="members" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            {teamMembers.map((member) => (
+              <Card key={member.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarFallback className="text-lg bg-primary text-primary-foreground">
+                        {getInitials(member.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-semibold text-lg">{member.name}</h3>
+                          <Badge className={getDepartmentColor(member.department)}>
+                            {member.department}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="h-4 w-4" />
+                          {member.email}
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="h-4 w-4" />
+                          {member.phone}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <span className="text-xs text-muted-foreground">
+                          Joined {new Date(member.joinDate).toLocaleDateString()}
+                        </span>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewProfile(member)}
+                            className="gap-1"
+                          >
+                            <Eye className="h-3 w-3" />
+                            View Profile
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleMessage(member)}
+                            className="gap-1"
+                          >
+                            <MessageSquare className="h-3 w-3" />
+                            Message
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-muted-foreground">
-                      Joined {new Date(member.joinDate).toLocaleDateString()}
-                    </span>
+        <TabsContent value="roles" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Roles & Permissions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(member.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">{member.name}</p>
+                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                      </div>
+                    </div>
                     <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleViewProfile(member)}
-                        className="gap-1"
-                      >
-                        <Eye className="h-3 w-3" />
-                        View Profile
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleMessage(member)}
-                        className="gap-1"
-                      >
-                        <MessageSquare className="h-3 w-3" />
-                        Message
+                      {member.permissions.map((permission) => (
+                        <Badge key={permission} variant="outline">
+                          {permission}
+                        </Badge>
+                      ))}
+                      <Button variant="outline" size="sm">
+                        Edit Permissions
                       </Button>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        </TabsContent>
+
+        <TabsContent value="workload" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Team Workload Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {teamMembers.map((member) => (
+                  <div key={member.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                            {getInitials(member.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{member.name}</p>
+                          <p className="text-sm text-muted-foreground">{member.role}</p>
+                        </div>
+                      </div>
+                      <span className={`text-lg font-bold ${getWorkloadColor(member.workload)}`}>
+                        {member.workload}%
+                      </span>
+                    </div>
+                    <Progress value={member.workload} className="h-2" />
+                    <p className="text-xs text-muted-foreground">
+                      {member.workload >= 85 ? "High workload - consider reallocation" : 
+                       member.workload >= 70 ? "Moderate workload" : 
+                       "Capacity available"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

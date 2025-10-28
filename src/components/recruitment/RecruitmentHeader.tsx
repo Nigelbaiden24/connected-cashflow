@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
-import flowpulseLogo from "@/assets/flowpulse-logo.jpeg";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface RecruitmentHeaderProps {
   onNavigate: (section: string) => void;
@@ -76,10 +76,9 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate("home")}>
-            <img src={flowpulseLogo} alt="The Flowpulse Group" className="h-10 w-10 rounded-lg object-contain" />
+            <img src={flowpulseLogo} alt="The Flowpulse Group" className="h-14 w-14 rounded-lg object-contain" />
             <div className="flex flex-col">
               <span className="text-lg font-bold">The Flowpulse Group</span>
-              <span className="text-xs text-muted-foreground">Recruitment</span>
             </div>
           </div>
 

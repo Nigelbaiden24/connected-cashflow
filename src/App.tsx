@@ -45,6 +45,8 @@ import BusinessPlanning from "./pages/BusinessPlanning";
 import Analytics from "./pages/Analytics";
 import Revenue from "./pages/Revenue";
 import Team from "./pages/Team";
+import TeamProfile from "./pages/TeamProfile";
+import TeamChat from "./pages/TeamChat";
 import Settings from "./pages/Settings";
 import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
@@ -371,6 +373,8 @@ const App = () => {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/revenue" element={<Revenue />} />
           <Route path="/team" element={<Team />} />
+          <Route path="/team/profile" element={<TeamProfile />} />
+          <Route path="/team/chat" element={<TeamChat />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/crm" element={<CRM />} />
           <Route path="/crm/:id" element={<CRMContactDetail />} />
