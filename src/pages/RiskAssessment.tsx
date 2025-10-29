@@ -11,6 +11,8 @@ import { Slider } from "@/components/ui/slider";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { AlertTriangle, Shield, TrendingUp, Target, CheckCircle2, Info, Calculator, Download, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { generateFinancialReport } from "@/utils/pdfGenerator";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 // Risk assessment questionnaire
 const riskQuestions = [
@@ -197,6 +199,12 @@ export default function RiskAssessment() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
+          <img 
+            src={flowpulseLogo} 
+            alt="The Flowpulse Group" 
+            className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
+            onClick={() => navigate('/')}
+          />
           <Button
             variant="outline"
             size="sm"
@@ -216,16 +224,36 @@ export default function RiskAssessment() {
             variant="outline" 
             size="sm"
             onClick={() => {
-              toast({
-                title: "Generating Risk Report",
-                description: "Creating comprehensive risk assessment report...",
+              const reportContent = `Risk Assessment Report
+              
+Risk Profile Analysis:
+- Risk Score: ${riskScore}%
+- Risk Level: ${getRiskLevel(riskScore).level}
+- Risk Tolerance: ${riskTolerance[0]}%
+
+Portfolio Risk Metrics:
+${riskMetrics.map(m => `- ${m.metric}: ${m.value}${typeof m.value === 'number' && m.value < 0 ? '%' : ''} (Target: ${m.target})`).join('\n')}
+
+Recommended Asset Allocation:
+${riskScore < 40 ? '- Stocks: 30%\n- Bonds: 60%\n- Alternatives: 10%' : riskScore >= 70 ? '- Stocks: 80%\n- Bonds: 10%\n- Alternatives: 10%' : '- Stocks: 60%\n- Bonds: 30%\n- Alternatives: 10%'}
+
+Stress Test Results:
+${stressTestScenarios.map(s => `${s.scenario}: ${s.impact}% impact over ${s.duration} with ${s.recovery} recovery time`).join('\n')}
+
+Recommendations:
+Based on your risk profile and tolerance, we recommend maintaining a ${getRiskLevel(riskScore).level.toLowerCase()} investment strategy that aligns with your financial goals and objectives.`;
+
+              generateFinancialReport({
+                title: 'Risk Assessment Report',
+                content: reportContent,
+                generatedBy: 'FlowPulse.io Risk Analysis Team',
+                date: new Date(),
               });
-              setTimeout(() => {
-                toast({
-                  title: "Report Ready",
-                  description: "Risk assessment report downloaded successfully.",
-                });
-              }, 1500);
+
+              toast({
+                title: "Report Ready",
+                description: "Risk assessment report downloaded successfully.",
+              });
             }}
           >
             <Download className="h-4 w-4 mr-2" />

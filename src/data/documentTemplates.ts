@@ -2,6 +2,212 @@ import { DocumentTemplate } from "@/types/template";
 
 export const documentTemplates: DocumentTemplate[] = [
   {
+    id: "contact",
+    name: "Contact Sheet",
+    category: "Business",
+    description: "Professional contact information sheet for clients and partners",
+    thumbnail: "/thumbnails/business-letter-thumb.png",
+    sections: [
+      {
+        id: "title",
+        type: "heading",
+        placeholder: "{{title}}",
+        defaultContent: "Contact Information",
+        className: "text-4xl font-bold text-primary mb-4",
+        editable: true
+      },
+      {
+        id: "contact-name",
+        type: "subheading",
+        placeholder: "{{contact_name}}",
+        defaultContent: "John Smith",
+        className: "text-2xl font-semibold mb-2",
+        editable: true
+      },
+      {
+        id: "contact-details-heading",
+        type: "subheading",
+        placeholder: "{{section1_heading}}",
+        defaultContent: "Contact Details",
+        className: "text-xl font-semibold text-primary mb-3 mt-6",
+        editable: true
+      },
+      {
+        id: "contact-details",
+        type: "body",
+        placeholder: "{{contact_details}}",
+        defaultContent: "Email: john.smith@example.com\nPhone: +44 20 1234 5678\nMobile: +44 7700 900123\nAddress: 123 Business Street, London, UK",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "company-heading",
+        type: "subheading",
+        placeholder: "{{section2_heading}}",
+        defaultContent: "Company Information",
+        className: "text-xl font-semibold text-chart-2 mb-3 mt-6",
+        editable: true
+      },
+      {
+        id: "company-details",
+        type: "body",
+        placeholder: "{{company_details}}",
+        defaultContent: "Company: Example Corp Ltd\nPosition: Managing Director\nDepartment: Operations\nIndustry: Technology",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "notes-heading",
+        type: "subheading",
+        placeholder: "{{section3_heading}}",
+        defaultContent: "Notes",
+        className: "text-xl font-semibold text-chart-3 mb-3 mt-6",
+        editable: true
+      },
+      {
+        id: "notes",
+        type: "body",
+        placeholder: "{{notes}}",
+        defaultContent: "Key contact for project management\nPrefers email communication\nAvailable for meetings Tuesday-Thursday",
+        className: "text-base leading-relaxed mb-6 text-muted-foreground bg-muted/30 p-4 rounded",
+        editable: true
+      }
+    ],
+    styles: {
+      primaryColor: "hsl(221 83% 53%)",
+      secondaryColor: "hsl(217 91% 60%)",
+      accentColor: "hsl(199 89% 48%)",
+      backgroundColor: "hsl(0 0% 100%)"
+    }
+  },
+  {
+    id: "invoice",
+    name: "Invoice",
+    category: "Business",
+    description: "Professional invoice template for billing and payments",
+    thumbnail: "/thumbnails/business-proposal-thumb.png",
+    sections: [
+      {
+        id: "title",
+        type: "heading",
+        placeholder: "{{title}}",
+        defaultContent: "INVOICE",
+        className: "text-5xl font-bold text-primary mb-2",
+        editable: true
+      },
+      {
+        id: "invoice-number",
+        type: "subheading",
+        placeholder: "{{invoice_number}}",
+        defaultContent: "Invoice #INV-2025-001",
+        className: "text-xl text-muted-foreground mb-6",
+        editable: true
+      },
+      {
+        id: "from-heading",
+        type: "subheading",
+        placeholder: "{{section1_heading}}",
+        defaultContent: "From:",
+        className: "text-lg font-semibold text-primary mb-2",
+        editable: true
+      },
+      {
+        id: "from-details",
+        type: "body",
+        placeholder: "{{from_details}}",
+        defaultContent: "Your Company Name\n123 Business Street\nLondon, UK, SW1A 1AA\nEmail: billing@company.com\nPhone: +44 20 1234 5678",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "to-heading",
+        type: "subheading",
+        placeholder: "{{section2_heading}}",
+        defaultContent: "Bill To:",
+        className: "text-lg font-semibold text-chart-2 mb-2 mt-6",
+        editable: true
+      },
+      {
+        id: "to-details",
+        type: "body",
+        placeholder: "{{to_details}}",
+        defaultContent: "Client Company Name\n456 Client Road\nManchester, UK, M1 1AA\nEmail: accounts@client.com",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "invoice-details-heading",
+        type: "subheading",
+        placeholder: "{{section3_heading}}",
+        defaultContent: "Invoice Details",
+        className: "text-lg font-semibold text-primary mb-2 mt-8 border-t pt-6",
+        editable: true
+      },
+      {
+        id: "invoice-dates",
+        type: "body",
+        placeholder: "{{invoice_dates}}",
+        defaultContent: "Invoice Date: 20 October 2025\nDue Date: 20 November 2025\nPayment Terms: Net 30",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "items-heading",
+        type: "subheading",
+        placeholder: "{{section4_heading}}",
+        defaultContent: "Items",
+        className: "text-lg font-semibold text-primary mb-3 mt-6 bg-primary/10 p-3 rounded",
+        editable: true
+      },
+      {
+        id: "items",
+        type: "bullet-list",
+        placeholder: "{{items}}",
+        defaultContent: "Consulting Services - 10 hours @ £150/hr - £1,500.00\nProject Management - 5 hours @ £120/hr - £600.00\nDocumentation & Reports - Fixed Fee - £400.00",
+        className: "space-y-2 mb-6 text-base",
+        editable: true
+      },
+      {
+        id: "total-heading",
+        type: "subheading",
+        placeholder: "{{section5_heading}}",
+        defaultContent: "Summary",
+        className: "text-lg font-semibold text-primary mb-3 mt-8 border-t pt-6",
+        editable: true
+      },
+      {
+        id: "totals",
+        type: "body",
+        placeholder: "{{totals}}",
+        defaultContent: "Subtotal: £2,500.00\nVAT (20%): £500.00\nTotal Amount Due: £3,000.00",
+        className: "text-xl leading-relaxed mb-6 text-foreground font-bold",
+        editable: true
+      },
+      {
+        id: "payment-info",
+        type: "body",
+        placeholder: "{{payment_info}}",
+        defaultContent: "Payment Information:\nBank: Example Bank\nAccount Name: Your Company Name\nAccount Number: 12345678\nSort Code: 12-34-56\nReference: INV-2025-001",
+        className: "text-sm leading-relaxed mb-6 text-muted-foreground bg-muted/30 p-4 rounded",
+        editable: true
+      },
+      {
+        id: "terms",
+        type: "body",
+        placeholder: "{{terms}}",
+        defaultContent: "Terms & Conditions: Payment is due within 30 days of invoice date. Late payments may incur additional charges.",
+        className: "text-xs text-muted-foreground italic mt-8",
+        editable: true
+      }
+    ],
+    styles: {
+      primaryColor: "hsl(221 83% 53%)",
+      secondaryColor: "hsl(217 91% 60%)",
+      accentColor: "hsl(199 89% 48%)",
+      backgroundColor: "hsl(0 0% 100%)"
+    }
+  },
+  {
     id: "financial-plan",
     name: "Financial Plan",
     category: "Finance",

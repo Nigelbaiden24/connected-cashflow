@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 export default function BusinessDashboard() {
   const navigate = useNavigate();
@@ -72,6 +73,12 @@ export default function BusinessDashboard() {
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
+              <img 
+                src={flowpulseLogo} 
+                alt="The Flowpulse Group" 
+                className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
+                onClick={() => navigate('/')}
+              />
               <Button
                 variant="ghost"
                 size="sm"

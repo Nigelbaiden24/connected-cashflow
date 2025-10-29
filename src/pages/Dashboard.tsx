@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -127,6 +128,12 @@ const Dashboard = () => {
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
+          <img 
+            src={flowpulseLogo} 
+            alt="The Flowpulse Group" 
+            className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
+            onClick={() => navigate('/')}
+          />
           <Button
             variant="outline"
             size="sm"

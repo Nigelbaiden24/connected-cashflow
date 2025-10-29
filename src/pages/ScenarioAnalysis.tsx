@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -24,6 +26,7 @@ import {
 } from "lucide-react";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
@@ -189,6 +192,36 @@ const retirementData = Array.from({ length: 41 }, (_, i) => {
 
 export default function ScenarioAnalysis() {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [clients, setClients] = useState<any[]>([]);
+  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name, client_id, aum')
+        .eq('status', 'active')
+        .order('name');
+      
+      if (error) throw error;
+      setClients(data || []);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      toast({
+        title: "Error loading clients",
+        description: "Unable to fetch client list",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-GB', {
@@ -325,6 +358,12 @@ This analysis was generated using advanced statistical modeling and historical m
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
+          <img 
+            src={flowpulseLogo} 
+            alt="The Flowpulse Group" 
+            className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
+            onClick={() => navigate('/')}
+          />
           <Button
             variant="outline"
             size="sm"
@@ -365,6 +404,38 @@ This analysis was generated using advanced statistical modeling and historical m
           </Button>
         </div>
       </div>
+
+      {/* Client Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Select Client</CardTitle>
+          <CardDescription>Choose a client to perform scenario analysis</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <Label>Client</Label>
+              <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loading ? "Loading clients..." : "Select a client"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name} ({client.client_id}) - AUM: {formatCurrency(client.aum || 0)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedClient && (
+              <Badge variant="outline" className="mb-2">
+                Client Selected
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="monte-carlo" className="space-y-6">
         <TabsList className="grid grid-cols-6 w-full">
