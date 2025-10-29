@@ -81,7 +81,7 @@ const CRM = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$125K</div>
+            <div className="text-2xl font-bold">£125K</div>
             <p className="text-xs text-muted-foreground">Potential revenue</p>
           </CardContent>
         </Card>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,25 @@ export default function PracticeManagement() {
   const navigate = useNavigate();
   const [selectedTimeframe, setSelectedTimeframe] = useState("6months");
   const [selectedSegment, setSelectedSegment] = useState("all");
+  const [activities, setActivities] = useState(recentActivities);
+
+  // Auto-update activities every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActivities(prev => [
+        {
+          id: Date.now(),
+          type: ['client_meeting', 'new_client', 'trade_execution', 'compliance', 'document_upload'][Math.floor(Math.random() * 5)],
+          client: 'System Update',
+          description: 'Activity auto-refreshed',
+          time: 'Just now'
+        },
+        ...prev.slice(0, 4)
+      ]);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleExportReport = () => {
     // Create comprehensive report data
@@ -104,11 +123,11 @@ export default function PracticeManagement() {
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
+      return `£${(amount / 1000000).toFixed(1)}M`;
     }
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GBP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -273,7 +292,7 @@ export default function PracticeManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentActivities.slice(0, 5).map((activity) => {
+                  {activities.slice(0, 5).map((activity) => {
                     const ActivityIcon = getActivityIcon(activity.type);
                     return (
                       <div key={activity.id} className="flex items-start gap-3">

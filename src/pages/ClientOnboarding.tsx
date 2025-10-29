@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +74,30 @@ export default function ClientOnboarding() {
   const [investmentGoals, setInvestmentGoals] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [isCompleting, setIsCompleting] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [isNewClient, setIsNewClient] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      setClients(data || []);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCompleteOnboarding = async () => {
     setIsCompleting(true);
@@ -183,7 +207,26 @@ export default function ClientOnboarding() {
           <h1 className="text-3xl font-bold">Client Onboarding</h1>
           <p className="text-muted-foreground">Streamlined client intake and setup process</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Select value={isNewClient ? "new" : selectedClient} onValueChange={(value) => {
+            if (value === "new") {
+              setIsNewClient(true);
+              setSelectedClient("");
+            } else {
+              setIsNewClient(false);
+              setSelectedClient(value);
+            }
+          }}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select client" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="new">+ New Client</SelectItem>
+              {clients.map((client) => (
+                <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button 
             variant="outline" 
             size="sm"

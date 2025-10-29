@@ -48,10 +48,9 @@ const Analytics = () => {
     pdf.setFontSize(14);
     pdf.text("Key Metrics", 20, 45);
     pdf.setFontSize(10);
-    pdf.text("Total Revenue: $328K (+12.5%)", 20, 55);
-    pdf.text("Active Customers: 1,013 (+8.2%)", 20, 62);
-    pdf.text("Conversion Rate: 3.24% (-2.1%)", 20, 69);
-    pdf.text("Avg. Transaction: $324 (+5.7%)", 20, 76);
+    pdf.text("Total Revenue: £328K (+12.5%)", 20, 55);
+    pdf.text("Total Expenses: £196K (+8.3%)", 20, 65);
+    pdf.text("Avg. Transaction: £324 (+5.7%)", 20, 76);
     
     // Add revenue data section
     pdf.setFontSize(14);
@@ -59,7 +58,7 @@ const Analytics = () => {
     pdf.setFontSize(10);
     let yPos = 105;
     revenueData.forEach((item) => {
-      pdf.text(`${item.month}: Revenue $${item.revenue.toLocaleString()}, Expenses $${item.expenses.toLocaleString()}`, 25, yPos);
+      pdf.text(`${item.month}: Revenue £${item.revenue.toLocaleString()}, Expenses £${item.expenses.toLocaleString()}`, 25, yPos);
       yPos += 7;
     });
     
@@ -172,7 +171,7 @@ const Analytics = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$328K</div>
+            <div className="text-2xl font-bold">£328K</div>
             <p className="text-xs text-success flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3" />
               12.5% from last period
@@ -214,7 +213,7 @@ const Analytics = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$324</div>
+            <div className="text-2xl font-bold">£324</div>
             <p className="text-xs text-success flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3" />
               5.7% from last period

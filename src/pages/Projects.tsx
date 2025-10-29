@@ -331,7 +331,7 @@ const Projects = () => {
                 <div>
                   <div className="flex items-center justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="font-medium">{project.progress}%</span>
+                    <span className="font-medium">{project.progress}</span>
                   </div>
                   <Progress value={project.progress} className="h-2" />
                 </div>

@@ -15,7 +15,7 @@ const BusinessPlanning = () => {
   const { toast } = useToast();
   
   const [goals, setGoals] = useState([
-    { id: 1, name: "Revenue Growth", target: 1000000, current: 750000, unit: "$" },
+    { id: 1, name: "Revenue Growth", target: 1000000, current: 750000, unit: "£" },
     { id: 2, name: "Customer Acquisition", target: 500, current: 380, unit: "" },
     { id: 3, name: "Market Share", target: 15, current: 11, unit: "%" },
     { id: 4, name: "Team Expansion", target: 50, current: 42, unit: " people" },
@@ -28,7 +28,7 @@ const BusinessPlanning = () => {
     name: "",
     target: "",
     current: "",
-    unit: "$",
+    unit: "£",
   });
 
   const handleSaveGoal = () => {
@@ -54,7 +54,7 @@ const BusinessPlanning = () => {
       description: "Goal created successfully",
     });
     setDialogOpen(false);
-    setFormData({ name: "", target: "", current: "", unit: "$" });
+    setFormData({ name: "", target: "", current: "", unit: "£" });
   };
 
   const handleUpdateGoal = () => {
@@ -78,7 +78,7 @@ const BusinessPlanning = () => {
     });
     setEditDialogOpen(false);
     setSelectedGoal(null);
-    setFormData({ name: "", target: "", current: "", unit: "$" });
+    setFormData({ name: "", target: "", current: "", unit: "£" });
   };
 
   const handleDeleteGoal = (id: number) => {
@@ -133,7 +133,7 @@ const BusinessPlanning = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$1M</div>
+            <div className="text-2xl font-bold">£1M</div>
             <p className="text-xs text-muted-foreground">75% achieved</p>
           </CardContent>
         </Card>
@@ -187,7 +187,7 @@ const BusinessPlanning = () => {
                   <span className="font-medium">{goal.name}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">
-                      {goal.unit === "$" ? "$" : ""}{goal.current.toLocaleString()}{goal.unit !== "$" ? goal.unit : ""} / {goal.unit === "$" ? "$" : ""}{goal.target.toLocaleString()}{goal.unit !== "$" ? goal.unit : ""}
+                      {goal.unit === "£" ? "£" : ""}{goal.current.toLocaleString()}{goal.unit !== "£" ? goal.unit : ""} / {goal.unit === "£" ? "£" : ""}{goal.target.toLocaleString()}{goal.unit !== "£" ? goal.unit : ""}
                     </span>
                     <Button variant="ghost" size="icon" onClick={() => handleEditGoal(goal)}>
                       <Edit className="h-4 w-4" />
@@ -280,7 +280,7 @@ const BusinessPlanning = () => {
                 id="unit"
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                placeholder="$ or % or people"
+                placeholder="£ or % or people"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -334,7 +334,7 @@ const BusinessPlanning = () => {
                 id="edit-unit"
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                placeholder="$ or % or people"
+                placeholder="£ or % or people"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">

@@ -13,6 +13,15 @@ import { useToast } from "@/hooks/use-toast";
 const Revenue = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
+
+  const monthlyData = [
+    { month: "January", revenue: 198000, recurring: 42000, transactions: 14 },
+    { month: "February", revenue: 215000, recurring: 44000, transactions: 16 },
+    { month: "March", revenue: 203000, recurring: 45000, transactions: 15 },
+    { month: "April", revenue: 226000, recurring: 46000, transactions: 17 },
+    { month: "May", revenue: 223000, recurring: 48000, transactions: 15 },
+  ];
 
   const [recentTransactions, setRecentTransactions] = useState([
     { id: 1, client: "Acme Corp", amount: 15000, date: "2024-02-18", status: "completed" },
@@ -184,6 +193,50 @@ const Revenue = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Month-to-Month Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 mb-6">
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Months</SelectItem>
+                {monthlyData.map((data) => (
+                  <SelectItem key={data.month} value={data.month}>{data.month}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {(selectedMonth === "all" ? monthlyData : monthlyData.filter(d => d.month === selectedMonth)).map((data) => (
+              <Card key={data.month}>
+                <CardContent className="p-6">
+                  <h4 className="font-semibold mb-2">{data.month}</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Revenue:</span>
+                      <span className="font-bold">£{data.revenue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Recurring:</span>
+                      <span>£{data.recurring.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Transactions:</span>
+                      <span>{data.transactions}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="streams" className="space-y-4">
         <TabsList>

@@ -2,6 +2,164 @@ import { DocumentTemplate } from "@/types/template";
 
 export const businessTemplates: DocumentTemplate[] = [
   {
+    id: "contract",
+    name: "Contract",
+    category: "Business",
+    description: "Professional contract template for agreements and partnerships",
+    thumbnail: "/thumbnails/business-proposal-thumb.png",
+    sections: [
+      {
+        id: "title",
+        type: "heading",
+        placeholder: "{{title}}",
+        defaultContent: "SERVICE AGREEMENT",
+        className: "text-5xl font-bold text-success mb-4",
+        editable: true
+      },
+      {
+        id: "contract-number",
+        type: "subheading",
+        placeholder: "{{contract_number}}",
+        defaultContent: "Contract No. SA-2025-001",
+        className: "text-xl text-muted-foreground mb-8",
+        editable: true
+      },
+      {
+        id: "parties-heading",
+        type: "subheading",
+        placeholder: "{{section1_heading}}",
+        defaultContent: "Parties",
+        className: "text-2xl font-semibold text-success mb-4",
+        editable: true
+      },
+      {
+        id: "parties",
+        type: "body",
+        placeholder: "{{parties}}",
+        defaultContent: "This Agreement is entered into on [Date] between:\n\nParty A: [Company Name]\nAddress: [Address]\n\nAND\n\nParty B: [Client Name]\nAddress: [Address]",
+        className: "text-base leading-relaxed mb-8 text-foreground bg-muted/30 p-6 rounded",
+        editable: true
+      },
+      {
+        id: "services-heading",
+        type: "subheading",
+        placeholder: "{{section2_heading}}",
+        defaultContent: "Services & Deliverables",
+        className: "text-2xl font-semibold text-success mb-4 mt-8",
+        editable: true
+      },
+      {
+        id: "services",
+        type: "bullet-list",
+        placeholder: "{{services}}",
+        defaultContent: "Consulting and advisory services\nProject management and oversight\nDelivery of agreed milestones\nOngoing support and maintenance",
+        className: "space-y-2 mb-8 text-base",
+        editable: true
+      },
+      {
+        id: "terms-heading",
+        type: "subheading",
+        placeholder: "{{section3_heading}}",
+        defaultContent: "Terms & Conditions",
+        className: "text-2xl font-semibold text-success mb-4 mt-8",
+        editable: true
+      },
+      {
+        id: "terms",
+        type: "body",
+        placeholder: "{{terms}}",
+        defaultContent: "Duration: 12 months from date of execution\nPayment Terms: Net 30 days\nTermination: 30 days written notice\nConfidentiality: Both parties agree to maintain confidentiality",
+        className: "text-base leading-relaxed mb-8 text-foreground",
+        editable: true
+      },
+      {
+        id: "signatures",
+        type: "body",
+        placeholder: "{{signatures}}",
+        defaultContent: "Party A Signature: _____________________\nDate: _____________________\n\nParty B Signature: _____________________\nDate: _____________________",
+        className: "text-base mt-12 border-t pt-8",
+        editable: true
+      }
+    ],
+    styles: {
+      primaryColor: "hsl(142 76% 36%)",
+      secondaryColor: "hsl(142 70% 45%)",
+      accentColor: "hsl(142 65% 50%)",
+      backgroundColor: "hsl(0 0% 100%)"
+    }
+  },
+  {
+    id: "invoice",
+    name: "Invoice",
+    category: "Business",
+    description: "Professional invoice template for billing",
+    thumbnail: "/thumbnails/business-proposal-thumb.png",
+    sections: [
+      {
+        id: "title",
+        type: "heading",
+        placeholder: "{{title}}",
+        defaultContent: "INVOICE",
+        className: "text-5xl font-bold text-success mb-2",
+        editable: true
+      },
+      {
+        id: "invoice-number",
+        type: "subheading",
+        placeholder: "{{invoice_number}}",
+        defaultContent: "Invoice #INV-2025-001",
+        className: "text-xl text-muted-foreground mb-6",
+        editable: true
+      },
+      {
+        id: "from-details",
+        type: "body",
+        placeholder: "{{from_details}}",
+        defaultContent: "From: Your Company\n123 Business Street\nLondon, UK\nPhone: +44 20 1234 5678",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "to-details",
+        type: "body",
+        placeholder: "{{to_details}}",
+        defaultContent: "Bill To: Client Name\n456 Client Road\nManchester, UK",
+        className: "text-base leading-relaxed mb-6 text-foreground",
+        editable: true
+      },
+      {
+        id: "items",
+        type: "bullet-list",
+        placeholder: "{{items}}",
+        defaultContent: "Consulting - 10 hours @ £150/hr - £1,500\nProject Management - 5 hours @ £120/hr - £600\nDocumentation - £400",
+        className: "space-y-2 mb-6 text-base bg-muted/20 p-4 rounded",
+        editable: true
+      },
+      {
+        id: "totals",
+        type: "body",
+        placeholder: "{{totals}}",
+        defaultContent: "Subtotal: £2,500.00\nVAT (20%): £500.00\n\nTotal Due: £3,000.00",
+        className: "text-xl leading-relaxed mb-6 font-bold border-t pt-4",
+        editable: true
+      },
+      {
+        id: "payment-info",
+        type: "body",
+        placeholder: "{{payment_info}}",
+        defaultContent: "Payment due within 30 days\nBank: Example Bank\nAccount: 12345678\nSort Code: 12-34-56",
+        className: "text-sm text-muted-foreground bg-muted/30 p-4 rounded",
+        editable: true
+      }
+    ],
+    styles: {
+      primaryColor: "hsl(142 76% 36%)",
+      secondaryColor: "hsl(142 70% 45%)",
+      accentColor: "hsl(142 65% 50%)",
+      backgroundColor: "hsl(0 0% 100%)"
+    }
+  },
+  {
     id: "business-plan",
     name: "Business Plan",
     category: "Business",
