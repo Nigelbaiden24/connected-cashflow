@@ -82,7 +82,7 @@ const TeamChat = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/team")}
+                onClick={() => navigate(-1)}
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />

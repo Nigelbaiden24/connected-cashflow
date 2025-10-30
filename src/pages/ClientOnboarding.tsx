@@ -13,10 +13,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { UserPlus, Calendar as CalendarIcon, FileText, Shield, Target, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { UserPlus, Calendar as CalendarIcon, FileText, Shield, Target, CheckCircle2, Clock, AlertCircle, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 // Onboarding steps
 const onboardingSteps = [
@@ -69,6 +70,7 @@ const requiredDocuments = [
 ];
 
 export default function ClientOnboarding() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(3);
   const [riskAnswers, setRiskAnswers] = useState<Record<string, string>>({});
   const [investmentGoals, setInvestmentGoals] = useState<any[]>([]);
@@ -203,9 +205,20 @@ export default function ClientOnboarding() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Client Onboarding</h1>
-          <p className="text-muted-foreground">Streamlined client intake and setup process</p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Client Onboarding</h1>
+            <p className="text-muted-foreground">Streamlined client intake and setup process</p>
+          </div>
         </div>
         <div className="flex gap-2 items-center">
           <Select value={isNewClient ? "new" : selectedClient} onValueChange={(value) => {

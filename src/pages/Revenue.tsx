@@ -21,6 +21,13 @@ const Revenue = () => {
     { month: "March", revenue: 203000, recurring: 45000, transactions: 15 },
     { month: "April", revenue: 226000, recurring: 46000, transactions: 17 },
     { month: "May", revenue: 223000, recurring: 48000, transactions: 15 },
+    { month: "June", revenue: 235000, recurring: 49000, transactions: 18 },
+    { month: "July", revenue: 241000, recurring: 50000, transactions: 19 },
+    { month: "August", revenue: 229000, recurring: 51000, transactions: 16 },
+    { month: "September", revenue: 247000, recurring: 52000, transactions: 20 },
+    { month: "October", revenue: 253000, recurring: 53000, transactions: 21 },
+    { month: "November", revenue: 268000, recurring: 54000, transactions: 22 },
+    { month: "December", revenue: 279000, recurring: 55000, transactions: 24 },
   ];
 
   const [recentTransactions, setRecentTransactions] = useState([
@@ -29,6 +36,14 @@ const Revenue = () => {
     { id: 3, client: "Global Solutions", amount: 22000, date: "2024-02-16", status: "pending" },
     { id: 4, client: "Innovation Labs", amount: 12000, date: "2024-02-15", status: "completed" },
   ]);
+
+  // Calculate dynamic totals
+  const currentMonthData = monthlyData[monthlyData.length - 1];
+  const previousMonthData = monthlyData[monthlyData.length - 2];
+  const revenueGrowth = ((currentMonthData.revenue - previousMonthData.revenue) / previousMonthData.revenue * 100).toFixed(1);
+  const recurringGrowth = ((currentMonthData.recurring - previousMonthData.recurring) / previousMonthData.recurring * 100).toFixed(1);
+  const avgTransaction = Math.round(currentMonthData.revenue / currentMonthData.transactions);
+  const pendingAmount = recentTransactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -149,10 +164,10 @@ const Revenue = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£223,000</div>
+            <div className="text-2xl font-bold">£{currentMonthData.revenue.toLocaleString()}</div>
             <p className="text-xs text-success flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3" />
-              10.2% vs last month
+              <ArrowUpRight className="h-4 w-4" />
+              {revenueGrowth}% vs last month
             </p>
           </CardContent>
         </Card>
@@ -163,10 +178,10 @@ const Revenue = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£48,000</div>
+            <div className="text-2xl font-bold">£{currentMonthData.recurring.toLocaleString()}</div>
             <p className="text-xs text-success flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3" />
-              8.3% growth
+              <ArrowUpRight className="h-4 w-4" />
+              {recurringGrowth}% growth
             </p>
           </CardContent>
         </Card>
@@ -177,8 +192,8 @@ const Revenue = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£14,375</div>
-            <p className="text-xs text-muted-foreground">Based on last 30 days</p>
+            <div className="text-2xl font-bold">£{avgTransaction.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Based on current month</p>
           </CardContent>
         </Card>
 
@@ -188,8 +203,8 @@ const Revenue = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£22,000</div>
-            <p className="text-xs text-muted-foreground">3 invoices pending</p>
+            <div className="text-2xl font-bold">£{pendingAmount.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">{recentTransactions.filter(t => t.status === 'pending').length} invoices pending</p>
           </CardContent>
         </Card>
       </div>

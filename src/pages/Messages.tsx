@@ -114,9 +114,17 @@ const Messages = () => {
             Chat with your team members
           </p>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          {teamMembers.filter(m => m.unreadCount && m.unreadCount > 0).length} Unread
-        </Badge>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate("/team")}
+            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+          >
+            Team Management
+          </button>
+          <Badge variant="secondary" className="text-sm">
+            {teamMembers.filter(m => m.unreadCount && m.unreadCount > 0).length} Unread
+          </Badge>
+        </div>
       </div>
 
       <div className="relative">

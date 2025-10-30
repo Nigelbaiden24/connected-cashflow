@@ -144,11 +144,11 @@ const Team = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back
           </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
@@ -344,31 +344,57 @@ const Team = () => {
                 <Shield className="h-5 w-5" />
                 Roles & Permissions
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Manage access control and permissions based on modern RBAC principles
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {teamMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                  <div key={member.id} className="p-4 border rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {getInitials(member.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold">{member.name}</p>
+                          <p className="text-sm text-muted-foreground">{member.role}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {member.permissions.map((permission) => (
-                        <Badge key={permission} variant="outline">
-                          {permission}
-                        </Badge>
-                      ))}
-                      <Button variant="outline" size="sm">
-                        Edit Permissions
+                      <Button variant="outline" size="sm" onClick={() => {
+                        toast.success("Permission management opened");
+                      }}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Manage Access
                       </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Access Level:</span>
+                        <Badge variant={member.permissions.includes("manage") ? "default" : "secondary"}>
+                          {member.permissions.includes("manage") ? "Administrator" : 
+                           member.permissions.includes("edit") ? "Editor" : "Viewer"}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          <Shield className="h-3 w-3 mr-1" />
+                          {member.permissions.includes("view") && "Read Access"}
+                        </Badge>
+                        {member.permissions.includes("edit") && (
+                          <Badge variant="outline" className="text-xs">
+                            Write Access
+                          </Badge>
+                        )}
+                        {member.permissions.includes("manage") && (
+                          <Badge variant="outline" className="text-xs">
+                            Full Control
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -266,8 +266,8 @@ const Projects = () => {
             <FolderKanban className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">4 active projects</p>
+            <div className="text-2xl font-bold">{projects.length}</div>
+            <p className="text-xs text-muted-foreground">{projects.filter(p => p.status === 'in-progress').length} active projects</p>
           </CardContent>
         </Card>
 
@@ -277,8 +277,10 @@ const Projects = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4</div>
-            <p className="text-xs text-muted-foreground">67% completion rate</p>
+            <div className="text-2xl font-bold">{projects.filter(p => p.status === 'in-progress').length}</div>
+            <p className="text-xs text-muted-foreground">
+              {Math.round(projects.filter(p => p.status === 'in-progress').reduce((sum, p) => sum + p.progress, 0) / projects.filter(p => p.status === 'in-progress').length)}% avg completion
+            </p>
           </CardContent>
         </Card>
 
@@ -288,7 +290,7 @@ const Projects = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
+            <div className="text-2xl font-bold">{projects.reduce((sum, p) => sum + p.team, 0)}</div>
             <p className="text-xs text-muted-foreground">Across all projects</p>
           </CardContent>
         </Card>
@@ -299,7 +301,7 @@ const Projects = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
+            <div className="text-2xl font-bold">{projects.filter(p => p.priority === 'high' && p.status !== 'completed').length}</div>
             <p className="text-xs text-muted-foreground">Require attention</p>
           </CardContent>
         </Card>
@@ -331,7 +333,6 @@ const Projects = () => {
                 <div>
                   <div className="flex items-center justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Progress</span>
-                    <span className="font-medium">{project.progress}</span>
                   </div>
                   <Progress value={project.progress} className="h-2" />
                 </div>
