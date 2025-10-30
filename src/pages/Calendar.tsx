@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const Calendar = () => {
   const navigate = useNavigate();
@@ -270,13 +271,59 @@ const Calendar = () => {
             <p className="text-muted-foreground">Manage your schedule and events</p>
           </div>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              New Event
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Connect Calendar
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Connect External Calendars</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Sync your FlowPulse calendar with Google Calendar or Outlook
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-2"
+                    onClick={() => toast({
+                      title: "Coming Soon",
+                      description: "Google Calendar integration will be available soon",
+                    })}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    Connect Google Calendar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-2"
+                    onClick={() => toast({
+                      title: "Coming Soon",
+                      description: "Outlook Calendar integration will be available soon",
+                    })}
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                    Connect Outlook Calendar
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Once connected, your meetings will automatically sync across all platforms.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Event
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Create New Event</DialogTitle>
@@ -340,6 +387,7 @@ const Calendar = () => {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

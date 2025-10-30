@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Users, DollarSign, TrendingUp, Filter, Phone, Mail, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { MeetingScheduler } from "@/components/MeetingScheduler";
 
 interface Client {
   id: string;
@@ -27,6 +28,8 @@ const Clients = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  const [schedulerOpen, setSchedulerOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   useEffect(() => {
     fetchClients();
@@ -239,10 +242,10 @@ const Clients = () => {
                         </Button>
                         <Button 
                           size="sm"
-                          onClick={() => toast({
-                            title: "Call Scheduled",
-                            description: `Call scheduled with ${client.name} for tomorrow at 2:00 PM.`,
-                          })}
+                          onClick={() => {
+                            setSelectedClient(client);
+                            setSchedulerOpen(true);
+                          }}
                         >
                           Schedule Call
                         </Button>
@@ -344,10 +347,10 @@ const Clients = () => {
                         <Button 
                           size="sm" 
                           className="w-full"
-                          onClick={() => toast({
-                            title: "Meeting Scheduled",
-                            description: `Meeting scheduled with ${client.name}.`,
-                          })}
+                          onClick={() => {
+                            setSelectedClient(client);
+                            setSchedulerOpen(true);
+                          }}
                         >
                           Schedule Meeting
                         </Button>
@@ -429,6 +432,15 @@ const Clients = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {selectedClient && (
+        <MeetingScheduler
+          open={schedulerOpen}
+          onOpenChange={setSchedulerOpen}
+          clientId={selectedClient.id}
+          clientName={selectedClient.name}
+        />
+      )}
     </div>
   );
 };

@@ -34,6 +34,7 @@ import {
   Activity,
   Sparkles,
   Calendar,
+  Mail,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -56,6 +57,11 @@ const aiToolsItems = [
     title: "Calendar",
     url: "/calendar",
     icon: Calendar,
+  },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: Mail,
   },
   {
     title: "Document Generator",
