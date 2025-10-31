@@ -292,6 +292,18 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
       category: 'Media',
     });
 
+    bm.add('logo-upload', {
+      label: '🏢 Logo',
+      content: `<div style="text-align: center; padding: 20px; margin: 20px 0;">
+        <img src="https://via.placeholder.com/200x80?text=Your+Logo" style="max-width: 200px; height: auto; display: inline-block;" alt="Company Logo"/>
+      </div>`,
+      category: 'Media',
+      attributes: { 
+        title: 'Upload your company logo',
+        class: 'logo-block'
+      }
+    });
+
     bm.add('video-embed', {
       label: '🎥 Video',
       content: '<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px;"><iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe></div>',

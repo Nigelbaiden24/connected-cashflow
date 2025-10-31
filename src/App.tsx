@@ -54,6 +54,7 @@ import NotFound from "./pages/NotFound";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 
 import AboutUs from "./pages/AboutUs";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,7 @@ const App = () => {
             <Route path="/" element={<Recruitment />} />
             <Route path="/recruitment" element={<Recruitment />} />
             <Route path="/about" element={<AboutUs />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/technology" element={<Technology />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/all-sectors" element={<AllSectors />} />

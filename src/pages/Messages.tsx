@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, MessageSquare } from "lucide-react";
+import { Search, MessageSquare, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TeamMember {
   id: string;
@@ -107,6 +108,18 @@ const Messages = () => {
 
   return (
     <div className="flex-1 space-y-6 p-6">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      </div>
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Messages</h1>
