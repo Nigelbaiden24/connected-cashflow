@@ -11,7 +11,8 @@ import {
   User,
   Phone,
   Settings,
-  ChevronDown
+  ChevronDown,
+  DollarSign
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -56,6 +57,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
   const saasItems = [
     { id: "login", label: "Flowpulse Finance", icon: TrendingUp },
     { id: "business-dashboard", label: "Flowpulse Business", icon: Building2 },
+    { id: "pricing", label: "Pricing", icon: DollarSign },
   ];
 
   const recruitmentItems = [
@@ -84,6 +86,14 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
 
   const handleContactClick = () => {
     onNavigate("contact");
+  };
+
+  const handleSaasClick = (id: string) => {
+    if (id === "pricing") {
+      navigate("/pricing");
+    } else {
+      onNavigate(id);
+    }
   };
 
   return (
@@ -119,7 +129,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 {saasItems.map((item) => (
                   <DropdownMenuItem
                     key={item.id}
-                    onClick={() => onNavigate(item.id)}
+                    onClick={() => handleSaasClick(item.id)}
                     className="cursor-pointer"
                   >
                     <item.icon className="h-4 w-4 mr-2" />
@@ -206,7 +216,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                   <button
                     key={item.id}
                     onClick={() => {
-                      onNavigate(item.id);
+                      handleSaasClick(item.id);
                       setMobileMenuOpen(false);
                     }}
                     className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground mb-2"
