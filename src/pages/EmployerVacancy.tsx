@@ -80,7 +80,7 @@ export default function EmployerVacancy() {
       if (error) throw error;
 
       toast.success("Vacancy posted successfully! We'll review and publish it shortly.");
-      navigate("/");
+      navigate("/recruitment");
     } catch (error: any) {
       console.error("Error submitting vacancy:", error);
       toast.error(error.message || "Failed to submit vacancy. Please try again.");
@@ -94,11 +94,11 @@ export default function EmployerVacancy() {
       <div className="container mx-auto max-w-4xl">
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
+          Back
         </Button>
 
         <Card className="border-2">

@@ -9,8 +9,20 @@ const Technology = () => {
   const navigate = useNavigate();
 
   const handleNavigate = (section: string) => {
-    if (section === "login") {
+    if (section === "home") {
+      navigate("/recruitment");
+    } else if (section === "login") {
       navigate("/login");
+    } else if (section === "business-dashboard") {
+      navigate("/business-dashboard");
+    } else if (section === "candidate-register") {
+      navigate("/candidate-registration");
+    } else if (section === "employer-register") {
+      navigate("/employer-vacancy");
+    } else if (section === "admin-jobs") {
+      navigate("/admin/jobs");
+    } else if (section === "about") {
+      navigate("/about");
     } else if (section === "tech") {
       navigate("/technology");
     } else if (section === "finance") {

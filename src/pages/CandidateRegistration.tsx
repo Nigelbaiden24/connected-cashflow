@@ -90,7 +90,7 @@ export default function CandidateRegistration() {
       if (error) throw error;
 
       toast.success("Registration submitted successfully! We'll review your application and be in touch soon.");
-      navigate("/");
+      navigate("/recruitment");
     } catch (error: any) {
       console.error("Error submitting registration:", error);
       toast.error(error.message || "Failed to submit registration. Please try again.");
@@ -104,11 +104,11 @@ export default function CandidateRegistration() {
       <div className="container mx-auto max-w-4xl">
         <Button 
           variant="ghost" 
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
+          Back
         </Button>
 
         <Card className="border-2">

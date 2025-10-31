@@ -70,6 +70,22 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
     }
   };
 
+  const handleCandidatesClick = () => {
+    navigate("/candidate-registration");
+  };
+
+  const handleEmployersClick = () => {
+    navigate("/employer-vacancy");
+  };
+
+  const handleAboutClick = () => {
+    onNavigate("about");
+  };
+
+  const handleContactClick = () => {
+    onNavigate("contact");
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -137,24 +153,24 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
           {/* Right Side Actions */}
           <div className="hidden md:flex items-center gap-3">
             {isAdmin && (
-              <Button variant="outline" size="sm" onClick={() => onNavigate("admin-jobs")}>
+              <Button variant="outline" size="sm" onClick={() => navigate("/admin/jobs")}>
                 <Settings className="h-4 w-4 mr-2" />
                 Admin
               </Button>
             )}
-            <Button size="sm" onClick={() => onNavigate("candidate-register")}>
+            <Button size="sm" onClick={handleCandidatesClick}>
               <User className="h-4 w-4 mr-2" />
               Candidates
             </Button>
-            <Button size="sm" onClick={() => onNavigate("employer-register")}>
+            <Button size="sm" onClick={handleEmployersClick}>
               <Building2 className="h-4 w-4 mr-2" />
               Employers
             </Button>
-            <Button size="sm" onClick={() => onNavigate("about")}>
+            <Button size="sm" onClick={handleAboutClick}>
               <User className="h-4 w-4 mr-2" />
               About Us
             </Button>
-            <Button size="sm" onClick={() => onNavigate("contact")}>
+            <Button size="sm" onClick={handleContactClick}>
               <Phone className="h-4 w-4 mr-2" />
               Contact Us
             </Button>
@@ -220,29 +236,38 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
               </div>
 
               <div className="flex flex-col gap-2 pt-4 border-t">
+                {isAdmin && (
+                  <Button size="sm" className="justify-start" onClick={() => {
+                    navigate("/admin/jobs");
+                    setMobileMenuOpen(false);
+                  }}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                )}
                 <Button size="sm" className="justify-start" onClick={() => {
-                  onNavigate("candidate-register");
+                  handleCandidatesClick();
                   setMobileMenuOpen(false);
                 }}>
                   <User className="h-4 w-4 mr-2" />
                   Candidates
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
-                  onNavigate("employer-register");
+                  handleEmployersClick();
                   setMobileMenuOpen(false);
                 }}>
                   <Building2 className="h-4 w-4 mr-2" />
                   Employers
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
-                  onNavigate("about");
+                  handleAboutClick();
                   setMobileMenuOpen(false);
                 }}>
                   <User className="h-4 w-4 mr-2" />
                   About Us
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
-                  onNavigate("contact");
+                  handleContactClick();
                   setMobileMenuOpen(false);
                 }}>
                   <Phone className="h-4 w-4 mr-2" />

@@ -53,6 +53,8 @@ import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 
+import AboutUs from "./pages/AboutUs";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -79,6 +81,7 @@ const App = () => {
             {/* Public routes */}
             <Route path="/" element={<Recruitment />} />
             <Route path="/recruitment" element={<Recruitment />} />
+            <Route path="/about" element={<AboutUs />} />
             <Route path="/technology" element={<Technology />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/all-sectors" element={<AllSectors />} />

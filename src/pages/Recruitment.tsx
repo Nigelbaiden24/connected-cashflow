@@ -33,7 +33,9 @@ export default function Recruitment() {
   const [generalJobs, setGeneralJobs] = useState<any[]>([]);
 
   const handleNavigate = (section: string) => {
-    if (section === "login") {
+    if (section === "home") {
+      setCurrentSection("home");
+    } else if (section === "login") {
       navigate("/login");
     } else if (section === "business-dashboard") {
       navigate("/business-dashboard");
@@ -45,6 +47,12 @@ export default function Recruitment() {
       navigate("/admin/jobs");
     } else if (section === "contact") {
       setCurrentSection("contact");
+    } else if (section === "tech") {
+      navigate("/technology");
+    } else if (section === "finance") {
+      setCurrentSection("finance");
+    } else if (section === "general") {
+      setCurrentSection("general");
     } else {
       setCurrentSection(section);
     }
@@ -294,7 +302,11 @@ export default function Recruitment() {
               <Card 
                 key={idx} 
                 className="hover:shadow-xl transition-all hover:scale-105 cursor-pointer bg-gradient-to-br from-card to-card/50 border-2 hover:border-primary"
-                onClick={() => handleNavigate(idx === 0 ? "tech" : idx === 1 ? "finance" : "general")}
+                onClick={() => {
+                  if (idx === 0) navigate("/technology");
+                  else if (idx === 1) setCurrentSection("finance");
+                  else setCurrentSection("general");
+                }}
               >
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
