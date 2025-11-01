@@ -82,18 +82,17 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
-      <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="gap-2 mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-
+    <div className="min-h-screen bg-background">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="fixed top-4 left-4 z-50 gap-2 bg-background/80 backdrop-blur-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+      <div className="container mx-auto px-4 py-8 pt-20">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
             Choose Your Perfect Plan

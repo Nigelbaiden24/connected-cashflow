@@ -121,6 +121,12 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
                 command: 'save-template',
                 context: 'save-template',
               },
+              {
+                id: 'bg-color',
+                className: 'btn-bg-color',
+                label: '🎨',
+                command: 'change-bg-color',
+              },
             ],
           },
           {
@@ -187,6 +193,16 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
     });
     editor.Commands.add('set-device-mobile', {
       run: () => editor.setDevice('Mobile'),
+    });
+
+    editor.Commands.add('change-bg-color', {
+      run: () => {
+        const color = prompt('Enter background color (e.g., #ffffff, rgb(255,255,255), or white):', '#ffffff');
+        if (color) {
+          const wrapper = editor.getWrapper();
+          wrapper?.setStyle({ 'background-color': color });
+        }
+      },
     });
 
     // Enhanced Custom Blocks
@@ -294,12 +310,50 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
 
     bm.add('logo-upload', {
       label: '🏢 Logo',
-      content: `<div style="text-align: center; padding: 20px; margin: 20px 0;">
-        <img src="https://via.placeholder.com/200x80?text=Your+Logo" style="max-width: 200px; height: auto; display: inline-block;" alt="Company Logo"/>
-      </div>`,
+      content: {
+        type: 'image',
+        style: {
+          'max-width': '200px',
+          'height': 'auto',
+          'display': 'block',
+          'margin': '20px auto',
+        },
+        attributes: {
+          src: 'https://via.placeholder.com/200x80?text=Your+Logo',
+          alt: 'Company Logo',
+        },
+        traits: [
+          {
+            type: 'button',
+            label: 'Upload Logo',
+            name: 'upload-logo',
+            text: 'Choose File',
+            full: true,
+            command: (editor: Editor) => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = 'image/*';
+              input.onchange = (e: any) => {
+                const file = e.target?.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const selected = editor.getSelected();
+                    if (selected && event.target?.result) {
+                      selected.set('src', event.target.result as string);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              };
+              input.click();
+            }
+          }
+        ]
+      },
       category: 'Media',
       attributes: { 
-        title: 'Upload your company logo',
+        title: 'Click the image and use Settings panel to upload your logo',
         class: 'logo-block'
       }
     });
