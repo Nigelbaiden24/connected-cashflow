@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -14,6 +14,7 @@ import { TextToSpeech } from "@/components/TextToSpeech";
 import { MeetingBooker } from "@/components/MeetingBooker";
 import { FileManager } from "@/components/FileManager";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
+import { useStreamingChat } from "@/hooks/useStreamingChat";
 import {
   Sheet,
   SheetContent,
@@ -22,6 +23,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Message {
   id: string;
@@ -43,6 +46,9 @@ const Chat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [useStreaming, setUseStreaming] = useState(() => {
+    return localStorage.getItem('useStreaming') === 'true';
+  });
   const [botName, setBotName] = useState(() => {
     return localStorage.getItem('botName') || 'Theodore';
   });
@@ -52,6 +58,7 @@ const Chat = () => {
   const [showMeetingIntegration, setShowMeetingIntegration] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { streamChat, isStreaming } = useStreamingChat();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -79,6 +86,10 @@ const Chat = () => {
   useEffect(() => {
     localStorage.setItem('botName', botName);
   }, [botName]);
+
+  useEffect(() => {
+    localStorage.setItem('useStreaming', String(useStreaming));
+  }, [useStreaming]);
 
   const loadConversations = async () => {
     if (!user) return;
@@ -241,41 +252,111 @@ const Chat = () => {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('financial-chat', {
-        body: { messages: [...messages, userMessage].map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content })) },
-      });
-
-      if (error) throw error;
-
-      const aiResponse: Message = {
-        id: Date.now().toString(),
-        type: "assistant",
-        content: data.choices?.[0]?.message?.content || "I apologize, but I couldn't generate a response. Please try again.",
-        timestamp: new Date(),
-        category: categorizeMessage(data.choices?.[0]?.message?.content || ""),
-      };
-
-      setMessages(prev => [...prev, aiResponse]);
-      
-      // Save AI response
-      if (convId) {
-        await saveMessage(aiResponse, convId);
+      if (useStreaming) {
+        // Streaming mode
+        let streamedContent = '';
+        const tempId = Date.now().toString();
         
-        // Update conversation title if it's the first exchange
-        if (messages.length === 1) {
-          const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
-          await supabase
-            .from('conversations')
-            .update({ title })
-            .eq('id', convId);
-          loadConversations();
+        // Add placeholder message
+        const placeholderMessage: Message = {
+          id: tempId,
+          type: "assistant",
+          content: '',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, placeholderMessage]);
+
+        await streamChat({
+          messages: [...messages, userMessage].map(m => ({ 
+            role: m.type === 'user' ? 'user' : 'assistant', 
+            content: m.content 
+          })),
+          onDelta: (chunk) => {
+            streamedContent += chunk;
+            setMessages(prev => 
+              prev.map(m => m.id === tempId 
+                ? { ...m, content: streamedContent, category: categorizeMessage(streamedContent) }
+                : m
+              )
+            );
+          },
+          onDone: async () => {
+            const finalMessage: Message = {
+              id: tempId,
+              type: "assistant",
+              content: streamedContent || "I apologize, but I couldn't generate a response. Please try again.",
+              timestamp: new Date(),
+              category: categorizeMessage(streamedContent),
+            };
+
+            if (convId) {
+              await saveMessage(finalMessage, convId);
+              
+              if (messages.length === 1) {
+                const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
+                await supabase.from('conversations').update({ title }).eq('id', convId);
+                loadConversations();
+              }
+            }
+            
+            setIsLoading(false);
+            toast({
+              title: "Response complete",
+              description: "AI analysis finished",
+            });
+          },
+          onError: (error) => {
+            console.error('Streaming error:', error);
+            toast({
+              title: "Error",
+              description: error || "Failed to get AI response. Please try again.",
+              variant: "destructive",
+            });
+            setMessages(prev => prev.filter(m => m.id !== userMessage.id && m.id !== tempId));
+            setInput(currentInput);
+            setIsLoading(false);
+          },
+        });
+      } else {
+        // Non-streaming mode
+        const { data, error } = await supabase.functions.invoke('financial-chat', {
+          body: { 
+            messages: [...messages, userMessage].map(m => ({ 
+              role: m.type === 'user' ? 'user' : 'assistant', 
+              content: m.content 
+            })),
+            stream: false
+          },
+        });
+
+        if (error) throw error;
+
+        const aiResponse: Message = {
+          id: Date.now().toString(),
+          type: "assistant",
+          content: data.choices?.[0]?.message?.content || "I apologize, but I couldn't generate a response. Please try again.",
+          timestamp: new Date(),
+          category: categorizeMessage(data.choices?.[0]?.message?.content || ""),
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+        
+        if (convId) {
+          await saveMessage(aiResponse, convId);
+          
+          if (messages.length === 1) {
+            const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
+            await supabase.from('conversations').update({ title }).eq('id', convId);
+            loadConversations();
+          }
         }
+        
+        toast({
+          title: "Response received",
+          description: "AI analysis complete",
+        });
+        setIsLoading(false);
       }
-      
-      toast({
-        title: "Response received",
-        description: "AI analysis complete",
-      });
     } catch (error) {
       console.error('Chat error:', error);
       toast({
@@ -284,10 +365,8 @@ const Chat = () => {
         variant: "destructive",
       });
       
-      // Remove user message on error
       setMessages(prev => prev.filter(m => m.id !== userMessage.id));
       setInput(currentInput);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -447,6 +526,14 @@ const Chat = () => {
                 </div>
               </SheetContent>
             </Sheet>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="streaming-mode"
+                checked={useStreaming}
+                onCheckedChange={setUseStreaming}
+              />
+              <Label htmlFor="streaming-mode" className="text-sm">Stream</Label>
+            </div>
             <Input
               placeholder="Bot name"
               value={botName}

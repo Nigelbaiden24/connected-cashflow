@@ -47,6 +47,7 @@ import Revenue from "./pages/Revenue";
 import Team from "./pages/Team";
 import TeamProfile from "./pages/TeamProfile";
 import TeamChat from "./pages/TeamChat";
+import EnhancedTeamChat from "./components/EnhancedTeamChat";
 import Messages from "./pages/Messages";
 import Settings from "./pages/Settings";
 import CRM from "./pages/CRM";
@@ -380,7 +381,7 @@ const App = () => {
           <Route path="/revenue" element={<Revenue />} />
           <Route path="/team" element={<Team />} />
             <Route path="/team/profile" element={<TeamProfile />} />
-            <Route path="/team/chat" element={<TeamChat />} />
+            <Route path="/team/chat" element={<EnhancedTeamChat />} />
             <Route path="/messages" element={<Messages />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/crm" element={<CRM />} />
