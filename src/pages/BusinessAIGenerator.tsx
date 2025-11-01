@@ -25,12 +25,15 @@ const BusinessAIGenerator = () => {
   const [showPrompt, setShowPrompt] = useState<string | null>(null);
   const [customHeaders, setCustomHeaders] = useState<Record<string, string>>({});
   const [textColors, setTextColors] = useState<Record<string, string>>({});
+  const [backgroundColor, setBackgroundColor] = useState<string>("#ffffff");
+  const [logoUrl, setLogoUrl] = useState<string>("");
   const [pages, setPages] = useState<number[]>([1]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [userEmail] = useState("business@flowpulse.io");
   const { toast } = useToast();
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -51,8 +54,23 @@ const BusinessAIGenerator = () => {
     setEditPrompts({});
     setCustomHeaders({});
     setTextColors({});
+    setBackgroundColor("#ffffff");
+    setLogoUrl("");
     setPages([1]);
     setCurrentPage(1);
+  };
+
+  const handleLogoUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setLogoUrl(result);
+      toast({
+        title: "Logo uploaded!",
+        description: "Your logo has been added to the document.",
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAddPage = () => {
@@ -409,7 +427,63 @@ const BusinessAIGenerator = () => {
                       Change Template
                     </Button>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                   <CardContent className="space-y-6">
+                    {/* Document Settings */}
+                    <div className="space-y-4 pb-6 border-b">
+                      <h3 className="font-semibold text-sm">Document Settings</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-sm mb-2 block">Background Color</Label>
+                          <div className="flex gap-2 items-center">
+                            <Input
+                              type="color"
+                              value={backgroundColor}
+                              onChange={(e) => setBackgroundColor(e.target.value)}
+                              className="w-20 h-10 cursor-pointer"
+                            />
+                            <span className="text-sm text-muted-foreground">{backgroundColor}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm mb-2 block">Company Logo</Label>
+                          <div className="flex gap-2 items-center">
+                            <input
+                              ref={logoInputRef}
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleLogoUpload(file);
+                              }}
+                              className="hidden"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => logoInputRef.current?.click()}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              {logoUrl ? "Change Logo" : "Upload Logo"}
+                            </Button>
+                            {logoUrl && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setLogoUrl("")}
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                          {logoUrl && (
+                            <div className="mt-2 border rounded-md p-2 inline-block">
+                              <img src={logoUrl} alt="Logo" className="h-12 object-contain" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                     {editableFields.map((field) => (
                       <div key={field.id} className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -604,21 +678,28 @@ const BusinessAIGenerator = () => {
                     <CardTitle>Live Preview</CardTitle>
                     <CardDescription>See your document as you type</CardDescription>
                   </CardHeader>
-                  <CardContent>
+                   <CardContent>
                     <div className="space-y-4">
                       {pages.map((page) => (
                         <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
                           <div 
                             ref={page === currentPage ? previewRef : null}
-                            className="bg-white p-8 rounded-lg shadow-sm min-h-[297mm]"
-                            dangerouslySetInnerHTML={{
+                            className="p-8 rounded-lg shadow-sm min-h-[297mm]"
+                            style={{ backgroundColor }}
+                          >
+                            {logoUrl && (
+                              <div className="mb-6 flex justify-start">
+                                <img src={logoUrl} alt="Company Logo" className="h-16 object-contain" />
+                              </div>
+                            )}
+                            <div dangerouslySetInnerHTML={{
                               __html: renderTemplateToHtml(template, formData, textColors)
-                            }}
-                          />
+                            }} />
+                          </div>
                         </div>
                       ))}
                     </div>
-                  </CardContent>
+                   </CardContent>
                 </Card>
               </div>
             </div>
