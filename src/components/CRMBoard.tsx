@@ -26,6 +26,7 @@ export const CRMBoard = () => {
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<any[]>([]);
   const [customColumns, setCustomColumns] = useState<any[]>([]);
+  const [customData, setCustomData] = useState<Record<string, Record<string, string>>>({});
   const [tables, setTables] = useState<CRMTable[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
   const [showColumnManager, setShowColumnManager] = useState(false);
@@ -48,6 +49,12 @@ export const CRMBoard = () => {
     fetchCustomColumns();
   }, []);
 
+  useEffect(() => {
+    if (customColumns.length > 0 && contacts.length > 0) {
+      fetchCustomData();
+    }
+  }, [customColumns, contacts]);
+
   const fetchCustomColumns = async () => {
     try {
       const { data, error } = await supabase
@@ -59,6 +66,29 @@ export const CRMBoard = () => {
       setCustomColumns(data || []);
     } catch (error) {
       console.error("Error fetching custom columns:", error);
+    }
+  };
+
+  const fetchCustomData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_contact_data")
+        .select("*");
+
+      if (error) throw error;
+
+      // Organize data by contact_id and column_id
+      const organized: Record<string, Record<string, string>> = {};
+      data?.forEach((item) => {
+        if (!organized[item.contact_id]) {
+          organized[item.contact_id] = {};
+        }
+        organized[item.contact_id][item.column_id] = item.value || "";
+      });
+
+      setCustomData(organized);
+    } catch (error) {
+      console.error("Error fetching custom data:", error);
     }
   };
 
@@ -99,9 +129,24 @@ export const CRMBoard = () => {
     }
 
     try {
-      const { error } = await supabase.from("crm_contacts").insert([newContact]);
+      const { data, error } = await supabase
+        .from("crm_contacts")
+        .insert([newContact])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Initialize custom column data for new contact
+      if (customColumns.length > 0) {
+        const customDataInserts = customColumns.map((col) => ({
+          contact_id: data.id,
+          column_id: col.id,
+          value: "",
+        }));
+
+        await supabase.from("crm_contact_data").insert(customDataInserts);
+      }
 
       toast.success("Contact added successfully");
       setNewContact({
@@ -123,16 +168,32 @@ export const CRMBoard = () => {
 
   const addEmptyRow = async () => {
     try {
-      const { error } = await supabase.from("crm_contacts").insert([
-        {
-          name: "New Contact",
-          status: "active",
-          priority: "medium",
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("crm_contacts")
+        .insert([
+          {
+            name: "New Contact",
+            status: "active",
+            priority: "medium",
+          },
+        ])
+        .select()
+        .single();
 
       if (error) throw error;
-      toast.success("Row added");
+
+      // Initialize custom column data for new contact
+      if (customColumns.length > 0) {
+        const customDataInserts = customColumns.map((col) => ({
+          contact_id: data.id,
+          column_id: col.id,
+          value: "",
+        }));
+
+        await supabase.from("crm_contact_data").insert(customDataInserts);
+      }
+
+      toast.success("Row added successfully");
       fetchContacts();
     } catch (error) {
       console.error("Error adding row:", error);
@@ -158,8 +219,60 @@ export const CRMBoard = () => {
     }
   };
 
+  const updateCustomField = async (
+    contactId: string,
+    columnId: string,
+    value: string
+  ) => {
+    try {
+      // Check if record exists
+      const { data: existing } = await supabase
+        .from("crm_contact_data")
+        .select("id")
+        .eq("contact_id", contactId)
+        .eq("column_id", columnId)
+        .single();
+
+      if (existing) {
+        // Update existing
+        const { error } = await supabase
+          .from("crm_contact_data")
+          .update({ value })
+          .eq("contact_id", contactId)
+          .eq("column_id", columnId);
+
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase.from("crm_contact_data").insert({
+          contact_id: contactId,
+          column_id: columnId,
+          value,
+        });
+
+        if (error) throw error;
+      }
+
+      // Update local state
+      setCustomData((prev) => ({
+        ...prev,
+        [contactId]: {
+          ...prev[contactId],
+          [columnId]: value,
+        },
+      }));
+    } catch (error) {
+      console.error("Error updating custom field:", error);
+      toast.error("Failed to update custom field");
+    }
+  };
+
   const deleteContact = async (id: string) => {
     try {
+      // Delete custom data first
+      await supabase.from("crm_contact_data").delete().eq("contact_id", id);
+
+      // Then delete contact
       const { error } = await supabase.from("crm_contacts").delete().eq("id", id);
 
       if (error) throw error;
@@ -175,6 +288,13 @@ export const CRMBoard = () => {
     if (selectedContacts.length === 0) return;
 
     try {
+      // Delete custom data first
+      await supabase
+        .from("crm_contact_data")
+        .delete()
+        .in("contact_id", selectedContacts);
+
+      // Then delete contacts
       const { error } = await supabase
         .from("crm_contacts")
         .delete()
@@ -468,7 +588,13 @@ export const CRMBoard = () => {
       <ColumnManager
         open={showColumnManager}
         onOpenChange={setShowColumnManager}
-        onColumnAdded={fetchCustomColumns}
+        onColumnAdded={() => {
+          fetchCustomColumns();
+          // Initialize empty data for existing contacts
+          if (contacts.length > 0) {
+            setTimeout(() => fetchCustomData(), 500);
+          }
+        }}
         existingColumns={customColumns}
       />
 
@@ -497,6 +623,12 @@ export const CRMBoard = () => {
                   <th className="text-left p-4 font-semibold text-sm">Position</th>
                   <th className="text-left p-4 font-semibold text-sm w-32">Status</th>
                   <th className="text-left p-4 font-semibold text-sm w-32">Priority</th>
+                  {customColumns.map((col) => (
+                    <th key={col.id} className="text-left p-4 font-semibold text-sm">
+                      {col.column_name}
+                      {col.is_required && <span className="text-destructive ml-1">*</span>}
+                    </th>
+                  ))}
                   <th className="w-12"></th>
                 </tr>
               </thead>
@@ -677,6 +809,65 @@ export const CRMBoard = () => {
                         </SelectContent>
                       </Select>
                     </td>
+                    {customColumns.map((col) => (
+                      <td key={col.id} className="p-4">
+                        {editingCell?.id === contact.id && editingCell?.field === col.id ? (
+                          col.column_type === "select" ? (
+                            <Select
+                              value={customData[contact.id]?.[col.id] || ""}
+                              onValueChange={(value) => {
+                                updateCustomField(contact.id, col.id, value);
+                                setEditingCell(null);
+                              }}
+                            >
+                              <SelectTrigger className="h-8">
+                                <SelectValue placeholder="Select..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {col.column_options?.map((option: string) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : col.column_type === "checkbox" ? (
+                            <Checkbox
+                              checked={customData[contact.id]?.[col.id] === "true"}
+                              onCheckedChange={(checked) => {
+                                updateCustomField(contact.id, col.id, checked ? "true" : "false");
+                                setEditingCell(null);
+                              }}
+                            />
+                          ) : (
+                            <Input
+                              autoFocus
+                              type={col.column_type === "number" ? "number" : col.column_type === "date" ? "date" : "text"}
+                              value={customData[contact.id]?.[col.id] || ""}
+                              onChange={(e) => updateCustomField(contact.id, col.id, e.target.value)}
+                              onBlur={() => setEditingCell(null)}
+                              onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
+                              className="h-8"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )
+                        ) : (
+                          <span
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCell({ id: contact.id, field: col.id });
+                            }}
+                            className="cursor-text"
+                          >
+                            {col.column_type === "checkbox"
+                              ? customData[contact.id]?.[col.id] === "true"
+                                ? "✓"
+                                : "—"
+                              : customData[contact.id]?.[col.id] || "—"}
+                          </span>
+                        )}
+                      </td>
+                    ))}
                     <td className="p-4">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>

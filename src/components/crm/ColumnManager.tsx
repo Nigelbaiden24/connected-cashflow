@@ -69,15 +69,41 @@ export function ColumnManager({ open, onOpenChange, onColumnAdded, existingColum
     }
 
     try {
-      const { error } = await supabase.from("crm_custom_columns").insert({
-        column_name: columnName,
-        column_type: columnType,
-        column_options: needsOptions ? options : [],
-        is_required: isRequired,
-        column_order: existingColumns.length,
-      });
+      // Insert the new column
+      const { data: newColumn, error: columnError } = await supabase
+        .from("crm_custom_columns")
+        .insert({
+          column_name: columnName,
+          column_type: columnType,
+          column_options: needsOptions ? options : [],
+          is_required: isRequired,
+          column_order: existingColumns.length,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (columnError) throw columnError;
+
+      // Fetch all contacts and create empty data entries for the new column
+      const { data: contacts, error: contactsError } = await supabase
+        .from("crm_contacts")
+        .select("id");
+
+      if (contactsError) throw contactsError;
+
+      if (contacts && contacts.length > 0) {
+        const dataInserts = contacts.map((contact) => ({
+          contact_id: contact.id,
+          column_id: newColumn.id,
+          value: "",
+        }));
+
+        const { error: dataError } = await supabase
+          .from("crm_contact_data")
+          .insert(dataInserts);
+
+        if (dataError) throw dataError;
+      }
 
       toast({
         title: "Success",
