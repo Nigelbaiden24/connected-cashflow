@@ -1,23 +1,81 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings as SettingsIcon, User, Bell, Shield, Palette } from "lucide-react";
+import { Settings as SettingsIcon, User, Bell, Shield, Palette, Building } from "lucide-react";
+import { ProfileSettings } from "@/components/settings/ProfileSettings";
+import { SecuritySettings } from "@/components/settings/SecuritySettings";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [timezone, setTimezone] = useState("UTC");
+  const [language, setLanguage] = useState("en");
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      setUserId(user.id);
+
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("timezone, language")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error && error.code !== "PGRST116") throw error;
+
+      if (data) {
+        setTimezone(data.timezone || "UTC");
+        setLanguage(data.language || "en");
+      }
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+    }
+  };
+
+  const handleGeneralSettingUpdate = async () => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from("user_profiles")
+        .upsert({
+          user_id: userId,
+          timezone,
+          language,
+        });
+
+      if (error) throw error;
+
+      toast.success("Settings updated successfully");
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      toast.error("Failed to update settings");
+    }
+  };
+
   return (
     <div className="flex-1 p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your application preferences</p>
+        <p className="text-muted-foreground">Manage your application preferences and account settings</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList>
           <TabsTrigger value="general" className="gap-2">
-            <SettingsIcon className="h-4 w-4" />
+            <Building className="h-4 w-4" />
             General
           </TabsTrigger>
           <TabsTrigger value="profile" className="gap-2">
@@ -42,154 +100,69 @@ const Settings = () => {
           <Card>
             <CardHeader>
               <CardTitle>General Settings</CardTitle>
+              <CardDescription>Configure your basic application preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="company">Company Name</Label>
-                <Input id="company" placeholder="Your Company Inc." />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="timezone">Timezone</Label>
-                <Input id="timezone" placeholder="UTC-5 (Eastern Time)" />
+                <Select value={timezone} onValueChange={setTimezone}>
+                  <SelectTrigger id="timezone">
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="UTC">UTC</SelectItem>
+                    <SelectItem value="America/New_York">Eastern Time (ET)</SelectItem>
+                    <SelectItem value="America/Chicago">Central Time (CT)</SelectItem>
+                    <SelectItem value="America/Denver">Mountain Time (MT)</SelectItem>
+                    <SelectItem value="America/Los_Angeles">Pacific Time (PT)</SelectItem>
+                    <SelectItem value="Europe/London">London (GMT)</SelectItem>
+                    <SelectItem value="Europe/Paris">Central European Time</SelectItem>
+                    <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="language">Language</Label>
-                <Input id="language" placeholder="English" />
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger id="language">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="fr">Français</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
+                    <SelectItem value="ja">日本語</SelectItem>
+                    <SelectItem value="zh">中文</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Button>Save Changes</Button>
+
+              <button
+                onClick={handleGeneralSettingUpdate}
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+              >
+                Save Changes
+              </button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="profile" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" placeholder="John Doe" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="john@company.com" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" placeholder="+1 234 567 8900" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Input id="bio" placeholder="Tell us about yourself" />
-              </div>
-              <Button>Update Profile</Button>
-            </CardContent>
-          </Card>
+          <ProfileSettings />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive email updates about your activity</p>
-                </div>
-                <Switch />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive push notifications on your devices</p>
-                </div>
-                <Switch />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Task Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Get reminders about upcoming tasks</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Weekly Reports</Label>
-                  <p className="text-sm text-muted-foreground">Receive weekly summary reports</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
+          <NotificationSettings />
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Current Password</Label>
-                <Input id="current-password" type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
-                <Input id="new-password" type="password" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <Input id="confirm-password" type="password" />
-              </div>
-              <Button>Update Password</Button>
-              
-              <div className="pt-4 border-t space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Two-Factor Authentication</Label>
-                    <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                  </div>
-                  <Button variant="outline">Enable</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <SecuritySettings />
         </TabsContent>
 
         <TabsContent value="appearance" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Appearance Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Dark Mode</Label>
-                  <p className="text-sm text-muted-foreground">Toggle dark mode theme</p>
-                </div>
-                <Switch />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Compact View</Label>
-                  <p className="text-sm text-muted-foreground">Use compact spacing in lists</p>
-                </div>
-                <Switch />
-              </div>
-              <div className="space-y-2">
-                <Label>Accent Color</Label>
-                <div className="flex gap-2">
-                  <div className="h-8 w-8 rounded-full bg-primary border-2 border-foreground cursor-pointer" />
-                  <div className="h-8 w-8 rounded-full bg-secondary cursor-pointer" />
-                  <div className="h-8 w-8 rounded-full bg-warning cursor-pointer" />
-                  <div className="h-8 w-8 rounded-full bg-destructive cursor-pointer" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AppearanceSettings />
         </TabsContent>
       </Tabs>
     </div>

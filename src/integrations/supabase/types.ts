@@ -1592,6 +1592,54 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          company_name: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          language: string | null
+          phone: string | null
+          position: string | null
+          timezone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string | null
+          phone?: string | null
+          position?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string | null
+          phone?: string | null
+          position?: string | null
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1616,6 +1664,51 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          accent_color: string | null
+          compact_view: boolean | null
+          created_at: string
+          dark_mode: boolean | null
+          email_notifications: boolean | null
+          id: string
+          marketing_emails: boolean | null
+          push_notifications: boolean | null
+          task_reminders: boolean | null
+          updated_at: string
+          user_id: string
+          weekly_reports: boolean | null
+        }
+        Insert: {
+          accent_color?: string | null
+          compact_view?: boolean | null
+          created_at?: string
+          dark_mode?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          push_notifications?: boolean | null
+          task_reminders?: boolean | null
+          updated_at?: string
+          user_id: string
+          weekly_reports?: boolean | null
+        }
+        Update: {
+          accent_color?: string | null
+          compact_view?: boolean | null
+          created_at?: string
+          dark_mode?: boolean | null
+          email_notifications?: boolean | null
+          id?: string
+          marketing_emails?: boolean | null
+          push_notifications?: boolean | null
+          task_reminders?: boolean | null
+          updated_at?: string
+          user_id?: string
+          weekly_reports?: boolean | null
         }
         Relationships: []
       }
@@ -1711,10 +1804,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       user_role: "admin" | "manager" | "analyst" | "viewer"
