@@ -14,6 +14,17 @@ import { businessTemplates } from "@/data/businessTemplates";
 import { renderTemplateToHtml } from "@/lib/templateRenderer";
 import html2pdf from "html2pdf.js";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DocumentImageUpload } from "@/components/DocumentImageUpload";
+import { DraggableImage } from "@/components/DraggableImage";
+
+interface UploadedImage {
+  id: string;
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 const BusinessAIGenerator = () => {
   const navigate = useNavigate();
@@ -29,6 +40,7 @@ const BusinessAIGenerator = () => {
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [pages, setPages] = useState<number[]>([1]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [userEmail] = useState("business@flowpulse.io");
   const { toast } = useToast();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -56,8 +68,25 @@ const BusinessAIGenerator = () => {
     setTextColors({});
     setBackgroundColor("#ffffff");
     setLogoUrl("");
+    setUploadedImages([]);
     setPages([1]);
     setCurrentPage(1);
+  };
+
+  const handleImagePositionChange = (id: string, x: number, y: number) => {
+    setUploadedImages(images =>
+      images.map(img => img.id === id ? { ...img, x, y } : img)
+    );
+  };
+
+  const handleImageSizeChange = (id: string, width: number, height: number) => {
+    setUploadedImages(images =>
+      images.map(img => img.id === id ? { ...img, width, height } : img)
+    );
+  };
+
+  const handleRemoveImage = (id: string) => {
+    setUploadedImages(images => images.filter(img => img.id !== id));
   };
 
   const handleLogoUpload = (file: File) => {
@@ -428,7 +457,7 @@ const BusinessAIGenerator = () => {
                     </Button>
                   </CardHeader>
                    <CardContent className="space-y-6">
-                    {/* Document Settings */}
+                     {/* Document Settings */}
                     <div className="space-y-4 pb-6 border-b">
                       <h3 className="font-semibold text-sm">Document Settings</h3>
                       <div className="space-y-3">
@@ -482,6 +511,14 @@ const BusinessAIGenerator = () => {
                           )}
                         </div>
                       </div>
+                    </div>
+
+                    {/* Image Upload Section */}
+                    <div className="pb-6 border-b">
+                      <DocumentImageUpload 
+                        images={uploadedImages}
+                        onImagesChange={setUploadedImages}
+                      />
                     </div>
 
                     {editableFields.map((field) => (
@@ -684,7 +721,7 @@ const BusinessAIGenerator = () => {
                         <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
                           <div 
                             ref={page === currentPage ? previewRef : null}
-                            className="p-8 rounded-lg shadow-sm min-h-[297mm]"
+                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative"
                             style={{ backgroundColor }}
                           >
                             {logoUrl && (
@@ -695,6 +732,22 @@ const BusinessAIGenerator = () => {
                             <div dangerouslySetInnerHTML={{
                               __html: renderTemplateToHtml(template, formData, textColors)
                             }} />
+                            
+                            {/* Draggable Images */}
+                            {uploadedImages.map((image) => (
+                              <DraggableImage
+                                key={image.id}
+                                id={image.id}
+                                src={image.url}
+                                x={image.x}
+                                y={image.y}
+                                width={image.width}
+                                height={image.height}
+                                onPositionChange={handleImagePositionChange}
+                                onSizeChange={handleImageSizeChange}
+                                onRemove={handleRemoveImage}
+                              />
+                            ))}
                           </div>
                         </div>
                       ))}
