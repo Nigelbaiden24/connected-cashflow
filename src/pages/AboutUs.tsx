@@ -80,14 +80,15 @@ export default function AboutUs() {
       <RecruitmentHeader onNavigate={handleNavigate} currentSection="about" />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-secondary to-accent py-20">
-        <div className="absolute inset-0 bg-grid-white/10" />
+      <section className="relative overflow-hidden py-24 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         <div className="container mx-auto px-4 relative">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold text-white neon-text">
+            <h1 className="text-5xl md:text-7xl font-bold text-white drop-shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
               About FlowPulse
             </h1>
-            <p className="text-xl md:text-2xl text-white/90">
+            <p className="text-xl md:text-2xl text-white/95 drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-150">
               Leading recruitment agency and SaaS provider transforming how businesses find talent and manage operations
             </p>
           </div>
@@ -118,8 +119,9 @@ export default function AboutUs() {
       </section>
 
       {/* Services */}
-      <section className="bg-muted/30 py-16">
-        <div className="container mx-auto px-4">
+      <section className="relative py-16 bg-gradient-to-br from-cyan-50 via-blue-50 to-purple-50 dark:from-cyan-950/20 dark:via-blue-950/20 dark:to-purple-950/20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(168,85,247,0.1),transparent_50%)]" />
+        <div className="container mx-auto px-4 relative">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 neon-text-subtle">Our Services</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -129,9 +131,9 @@ export default function AboutUs() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {services.map((service, idx) => (
-              <Card key={idx} className="hover:shadow-xl transition-all hover:scale-105">
+              <Card key={idx} className="hover:shadow-2xl transition-all hover:scale-105 hover:-translate-y-2 duration-300 border-2 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/30">
                 <CardHeader>
-                  <div className="p-3 bg-gradient-to-br from-primary to-secondary rounded-xl w-fit mb-4">
+                  <div className="p-3 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-xl w-fit mb-4 shadow-lg">
                     <service.icon className="h-6 w-6 text-white" />
                   </div>
                   <CardTitle className="text-xl">{service.title}</CardTitle>
@@ -182,12 +184,13 @@ export default function AboutUs() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-br from-primary via-secondary to-accent py-16">
-        <div className="container mx-auto px-4 text-center space-y-6">
-          <h2 className="text-4xl font-bold text-white neon-text">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 py-20">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImRvdHMiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IndoaXRlIiBmaWxsLW9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNkb3RzKSIvPjwvc3ZnPg==')] opacity-40" />
+        <div className="container mx-auto px-4 text-center space-y-6 relative">
+          <h2 className="text-4xl md:text-5xl font-bold text-white drop-shadow-2xl">
             Ready to Work With Us?
           </h2>
-          <p className="text-xl text-white/90 max-w-2xl mx-auto">
+          <p className="text-xl text-white/95 max-w-2xl mx-auto drop-shadow-lg">
             Whether you're looking for your next career move or need to build your team, we're here to help.
           </p>
           <div className="flex flex-wrap justify-center gap-4">

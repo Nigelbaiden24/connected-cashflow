@@ -31,9 +31,9 @@ export function RecruitmentHero({ onSearch, heroImage, imageLoading }: Recruitme
             <img 
               src={heroImage} 
               alt="London Financial District" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover brightness-90"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 via-purple-900/85 to-pink-900/90" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-purple-900/50 to-pink-900/60" />
           </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600" />
