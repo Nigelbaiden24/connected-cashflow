@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Palette, Moon, Sun } from "lucide-react";
+import { Palette, Moon, Sun, Monitor } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const accentColors = [
   { name: "Blue", value: "blue", class: "bg-blue-500" },
@@ -20,6 +21,7 @@ export const AppearanceSettings = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [compactView, setCompactView] = useState(false);
   const [accentColor, setAccentColor] = useState("blue");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -91,6 +93,21 @@ export const AppearanceSettings = () => {
   const handleAccentColorChange = (value: string) => {
     setAccentColor(value);
     updateSetting("accent_color", value);
+  };
+
+  const resetToDefaults = async () => {
+    setDarkMode(false);
+    setCompactView(false);
+    setAccentColor("blue");
+    document.documentElement.classList.remove("dark");
+    
+    if (userId) {
+      await updateSetting("dark_mode", false);
+      await updateSetting("compact_view", false);
+      await updateSetting("accent_color", "blue");
+    }
+    
+    toast.success("Reset to default appearance");
   };
 
   return (
@@ -173,14 +190,29 @@ export const AppearanceSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle>Display Preferences</CardTitle>
-          <CardDescription>Additional display options</CardDescription>
+          <CardDescription>Customize your viewing experience</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">
-            <p>
-              More display customization options will be available in future updates.
-              Your preferences are automatically saved.
-            </p>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <Monitor className="h-4 w-4" />
+                <Label>Font Size</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Adjust the base font size for better readability
+              </p>
+            </div>
+            <div className="text-sm text-muted-foreground">Coming soon</div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4">
+            <div className="text-sm text-muted-foreground">
+              Your preferences are automatically saved and synced across devices.
+            </div>
+            <Button variant="outline" onClick={resetToDefaults}>
+              Reset to Defaults
+            </Button>
           </div>
         </CardContent>
       </Card>

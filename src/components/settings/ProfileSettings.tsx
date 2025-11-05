@@ -114,21 +114,54 @@ export const ProfileSettings = () => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
 
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB");
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("File must be an image");
+      return;
+    }
+
+    setLoading(true);
     try {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${userId}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
 
-      toast.success("Avatar updated");
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(data.publicUrl);
+      
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from("user_profiles")
+        .upsert({
+          user_id: userId,
+          avatar_url: data.publicUrl,
+        });
+
+      if (updateError) throw updateError;
+
+      toast.success("Avatar updated successfully");
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast.error("Failed to upload avatar");
+    } finally {
+      setLoading(false);
     }
   };
 

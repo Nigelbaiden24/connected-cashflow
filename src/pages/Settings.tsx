@@ -1,12 +1,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings as SettingsIcon, User, Bell, Shield, Palette, Building } from "lucide-react";
+import { User, Bell, Shield, Palette, Building, UserCog, History } from "lucide-react";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { AccountSettings } from "@/components/settings/AccountSettings";
+import { ActivityLog } from "@/components/settings/ActivityLog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +18,7 @@ const Settings = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [timezone, setTimezone] = useState("UTC");
   const [language, setLanguage] = useState("en");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -47,6 +51,7 @@ const Settings = () => {
   const handleGeneralSettingUpdate = async () => {
     if (!userId) return;
 
+    setSaving(true);
     try {
       const { error } = await supabase
         .from("user_profiles")
@@ -62,7 +67,15 @@ const Settings = () => {
     } catch (error) {
       console.error("Error updating settings:", error);
       toast.error("Failed to update settings");
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const detectTimezone = () => {
+    const detected = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setTimezone(detected);
+    toast.success(`Timezone detected: ${detected}`);
   };
 
   return (
@@ -94,6 +107,14 @@ const Settings = () => {
             <Palette className="h-4 w-4" />
             Appearance
           </TabsTrigger>
+          <TabsTrigger value="account" className="gap-2">
+            <UserCog className="h-4 w-4" />
+            Account
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="gap-2">
+            <History className="h-4 w-4" />
+            Activity
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
@@ -104,7 +125,17 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="timezone">Timezone</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={detectTimezone}
+                    className="text-xs"
+                  >
+                    Auto-detect
+                  </Button>
+                </div>
                 <Select value={timezone} onValueChange={setTimezone}>
                   <SelectTrigger id="timezone">
                     <SelectValue placeholder="Select timezone" />
@@ -118,6 +149,9 @@ const Settings = () => {
                     <SelectItem value="Europe/London">London (GMT)</SelectItem>
                     <SelectItem value="Europe/Paris">Central European Time</SelectItem>
                     <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                    <SelectItem value="Asia/Dubai">Dubai (GST)</SelectItem>
+                    <SelectItem value="Asia/Singapore">Singapore (SGT)</SelectItem>
+                    <SelectItem value="Australia/Sydney">Sydney (AEDT)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -139,12 +173,12 @@ const Settings = () => {
                 </Select>
               </div>
 
-              <button
+              <Button
                 onClick={handleGeneralSettingUpdate}
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                disabled={saving}
               >
-                Save Changes
-              </button>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -163,6 +197,14 @@ const Settings = () => {
 
         <TabsContent value="appearance" className="space-y-4">
           <AppearanceSettings />
+        </TabsContent>
+
+        <TabsContent value="account" className="space-y-4">
+          <AccountSettings />
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-4">
+          <ActivityLog />
         </TabsContent>
       </Tabs>
     </div>

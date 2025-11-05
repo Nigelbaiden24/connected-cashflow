@@ -25,6 +25,8 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 export const SecuritySettings = () => {
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
@@ -34,6 +36,16 @@ export const SecuritySettings = () => {
       confirmPassword: "",
     },
   });
+
+  const calculatePasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    return strength;
+  };
 
   const onSubmit = async (values: PasswordFormValues) => {
     setLoading(true);
@@ -109,8 +121,41 @@ export const SecuritySettings = () => {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input 
+                        type="password" 
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setPasswordStrength(calculatePasswordStrength(e.target.value));
+                        }}
+                      />
                     </FormControl>
+                    {field.value && (
+                      <div className="space-y-1">
+                        <div className="flex gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-1 flex-1 rounded-full transition-colors ${
+                                i < passwordStrength
+                                  ? passwordStrength <= 2
+                                    ? 'bg-destructive'
+                                    : passwordStrength <= 3
+                                    ? 'bg-orange-500'
+                                    : 'bg-green-500'
+                                  : 'bg-muted'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {passwordStrength <= 2 && 'Weak password'}
+                          {passwordStrength === 3 && 'Medium strength'}
+                          {passwordStrength === 4 && 'Strong password'}
+                          {passwordStrength === 5 && 'Very strong password'}
+                        </p>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -181,6 +226,34 @@ export const SecuritySettings = () => {
       <Separator />
 
       <MFASettings />
+
+      <Card className="border-destructive">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-destructive" />
+            <CardTitle>Danger Zone</CardTitle>
+          </div>
+          <CardDescription>
+            Irreversible and destructive actions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-4 border border-destructive/50 rounded-lg">
+            <div>
+              <p className="font-medium">Delete Account</p>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete your account and all associated data
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              Delete Account
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
