@@ -721,8 +721,8 @@ const BusinessAIGenerator = () => {
                         <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
                           <div 
                             ref={page === currentPage ? previewRef : null}
-                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative"
-                            style={{ backgroundColor }}
+                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative overflow-hidden"
+                            style={{ backgroundColor, position: 'relative' }}
                           >
                             {logoUrl && (
                               <div className="mb-6 flex justify-start">

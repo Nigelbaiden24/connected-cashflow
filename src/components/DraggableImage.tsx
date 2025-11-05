@@ -33,8 +33,12 @@ export function DraggableImage({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
+    if ((e.target as HTMLElement).closest('button')) return; // Don't drag when clicking buttons
     e.preventDefault();
     e.stopPropagation();
+    
+    const rect = imageRef.current?.parentElement?.getBoundingClientRect();
+    if (!rect) return;
     
     setIsDragging(true);
     setDragStart({
@@ -56,10 +60,24 @@ export function DraggableImage({
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
+        e.preventDefault();
+        const rect = imageRef.current?.parentElement?.getBoundingClientRect();
+        if (!rect) return;
+        
         const newX = e.clientX - dragStart.x;
         const newY = e.clientY - dragStart.y;
-        onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
+        
+        // Keep within parent bounds
+        const maxX = rect.width - width;
+        const maxY = rect.height - height;
+        
+        onPositionChange(
+          id, 
+          Math.max(0, Math.min(maxX, newX)), 
+          Math.max(0, Math.min(maxY, newY))
+        );
       } else if (isResizing) {
+        e.preventDefault();
         const deltaX = e.clientX - dragStart.x;
         const deltaY = e.clientY - dragStart.y;
         const newWidth = Math.max(50, width + deltaX);
@@ -88,13 +106,14 @@ export function DraggableImage({
   return (
     <div
       ref={imageRef}
-      className={`absolute group ${isDragging || isResizing ? 'cursor-move' : ''}`}
+      className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
         width: `${width}px`,
         height: `${height}px`,
-        zIndex: 50
+        zIndex: isHovered || isDragging || isResizing ? 100 : 50,
+        userSelect: 'none'
       }}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
