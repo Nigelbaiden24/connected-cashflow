@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -10,6 +11,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -31,6 +35,12 @@ import {
   TrendingUp,
   UserPlus,
   Calculator,
+  ChevronRight,
+  User,
+  Bell,
+  Palette,
+  UserCog,
+  History,
 } from "lucide-react";
 
 interface BusinessSidebarProps {
@@ -110,10 +120,38 @@ const operationsItems = [
     url: "/security",
     icon: Shield,
   },
+];
+
+const settingsSubItems = [
   {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
+    title: "Profile",
+    url: "/settings?tab=profile",
+    icon: User,
+  },
+  {
+    title: "Security",
+    url: "/settings?tab=security",
+    icon: Shield,
+  },
+  {
+    title: "Notifications",
+    url: "/settings?tab=notifications",
+    icon: Bell,
+  },
+  {
+    title: "Appearance",
+    url: "/settings?tab=appearance",
+    icon: Palette,
+  },
+  {
+    title: "Account",
+    url: "/settings?tab=account",
+    icon: UserCog,
+  },
+  {
+    title: "Activity",
+    url: "/settings?tab=activity",
+    icon: History,
   },
 ];
 
@@ -121,8 +159,17 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
+  const [settingsExpanded, setSettingsExpanded] = useState(
+    location.pathname === "/settings"
+  );
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path.includes("?tab=")) {
+      const [pathname, query] = path.split("?");
+      return location.pathname === pathname && location.search.includes(query);
+    }
+    return location.pathname === path;
+  };
 
   const getNavClassName = (path: string) => {
     return isActive(path)
@@ -207,6 +254,43 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              
+              {/* Settings with submenu */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => setSettingsExpanded(!settingsExpanded)}
+                  className={getNavClassName("/settings")}
+                >
+                  <Settings className="h-4 w-4" />
+                  {!isCollapsed && (
+                    <>
+                      <span>Settings</span>
+                      <ChevronRight
+                        className={`ml-auto h-4 w-4 transition-transform ${
+                          settingsExpanded ? "rotate-90" : ""
+                        }`}
+                      />
+                    </>
+                  )}
+                </SidebarMenuButton>
+                {settingsExpanded && !isCollapsed && (
+                  <SidebarMenuSub>
+                    {settingsSubItems.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton asChild>
+                          <NavLink
+                            to={subItem.url}
+                            className={getNavClassName(subItem.url)}
+                          >
+                            <subItem.icon className="h-3 w-3" />
+                            <span>{subItem.title}</span>
+                          </NavLink>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

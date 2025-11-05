@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,6 +20,11 @@ const Settings = () => {
   const [timezone, setTimezone] = useState("UTC");
   const [language, setLanguage] = useState("en");
   const [saving, setSaving] = useState(false);
+  const location = useLocation();
+  
+  // Get tab from URL query parameter
+  const searchParams = new URLSearchParams(location.search);
+  const tabFromUrl = searchParams.get("tab") || "general";
 
   useEffect(() => {
     fetchSettings();
@@ -85,7 +91,7 @@ const Settings = () => {
         <p className="text-muted-foreground">Manage your application preferences and account settings</p>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-4">
+      <Tabs defaultValue={tabFromUrl} className="space-y-4">
         <TabsList>
           <TabsTrigger value="general" className="gap-2">
             <Building className="h-4 w-4" />
