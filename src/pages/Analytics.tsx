@@ -6,11 +6,12 @@ import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, Arrow
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import { useState } from "react";
+import html2pdf from "html2pdf.js";
+import { useState, useRef } from "react";
 
 const Analytics = () => {
   const navigate = useNavigate();
+  const contentRef = useRef<HTMLDivElement>(null);
   
   const [revenueData, setRevenueData] = useState([
     { month: "Jan", revenue: 45000, expenses: 32000 },
@@ -33,51 +34,26 @@ const Analytics = () => {
   const [newRevenue, setNewRevenue] = useState({ month: "", revenue: "", expenses: "" });
   const [newCustomer, setNewCustomer] = useState({ month: "", customers: "" });
 
-  const handleDownloadPDF = () => {
-    const pdf = new jsPDF();
-    
-    // Add title
-    pdf.setFontSize(20);
-    pdf.text("Business Analytics Report", 20, 20);
-    
-    // Add date
-    pdf.setFontSize(12);
-    pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 30);
-    
-    // Add metrics
-    pdf.setFontSize(14);
-    pdf.text("Key Metrics", 20, 45);
-    pdf.setFontSize(10);
-    pdf.text("Total Revenue: £328K (+12.5%)", 20, 55);
-    pdf.text("Total Expenses: £196K (+8.3%)", 20, 65);
-    pdf.text("Avg. Transaction: £324 (+5.7%)", 20, 76);
-    
-    // Add revenue data section
-    pdf.setFontSize(14);
-    pdf.text("Revenue vs Expenses (Last 6 Months)", 20, 95);
-    pdf.setFontSize(10);
-    let yPos = 105;
-    revenueData.forEach((item) => {
-      pdf.text(`${item.month}: Revenue £${item.revenue.toLocaleString()}, Expenses £${item.expenses.toLocaleString()}`, 25, yPos);
-      yPos += 7;
-    });
-    
-    // Add customer growth section
-    pdf.setFontSize(14);
-    pdf.text("Customer Growth", 20, yPos + 10);
-    pdf.setFontSize(10);
-    yPos += 20;
-    customerData.forEach((item) => {
-      pdf.text(`${item.month}: ${item.customers} customers`, 25, yPos);
-      yPos += 7;
-    });
-    
-    // Add footer
-    pdf.setFontSize(8);
-    pdf.text("The Flowpulse Group - Confidential", 20, 280);
-    
-    pdf.save(`analytics-report-${new Date().toISOString().split('T')[0]}.pdf`);
-    toast.success("Analytics report downloaded successfully");
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current) return;
+
+    toast.info("Generating PDF from screen content...");
+
+    const options = {
+      margin: 10,
+      filename: `analytics-report-${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+    };
+
+    try {
+      await html2pdf().set(options).from(contentRef.current).save();
+      toast.success("Analytics report downloaded successfully");
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast.error("Failed to generate PDF");
+    }
   };
 
   const handleRefresh = () => {
@@ -118,7 +94,7 @@ const Analytics = () => {
   };
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-6 space-y-6" ref={contentRef}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import html2pdf from "html2pdf.js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Portfolio() {
   const navigate = useNavigate();
+  const contentRef = useRef<HTMLDivElement>(null);
   const [selectedClient, setSelectedClient] = useState<string>("");
   const [clients, setClients] = useState<any[]>([]);
   const [portfolioHoldings, setPortfolioHoldings] = useState<any[]>([]);
@@ -61,12 +63,36 @@ export default function Portfolio() {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
+    if (!contentRef.current) return;
+
     toast({
-      title: "Preparing Download",
-      description: "Opening print dialog for PDF export...",
+      title: "Generating PDF",
+      description: "Capturing portfolio content...",
     });
-    window.print();
+
+    const options = {
+      margin: 10,
+      filename: `portfolio-${selectedClientData?.name || 'client'}-${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+    };
+
+    try {
+      await html2pdf().set(options).from(contentRef.current).save();
+      toast({
+        title: "Download Complete",
+        description: "Portfolio PDF downloaded successfully",
+      });
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -137,7 +163,7 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6" ref={contentRef}>
       <div className="flex justify-between items-center print:hidden">
         <div className="flex items-center gap-4">
           <Button
