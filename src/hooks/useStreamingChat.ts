@@ -23,25 +23,53 @@ export const useStreamingChat = () => {
     setIsStreaming(true);
 
     try {
-      const CHAT_URL = `https://wlsmdcdfyudtvbnbqfmn.supabase.co/functions/v1/financial-chat`;
+      const { data, error: invokeError } = await supabase.functions.invoke('financial-chat', {
+        body: { messages, stream: true },
+      });
 
-      const resp = await fetch(CHAT_URL, {
+      if (invokeError) {
+        throw invokeError;
+      }
+
+      if (!data) {
+        throw new Error('No response from server');
+      }
+
+      // If we get a direct response (non-streaming fallback)
+      if (data.choices) {
+        const content = data.choices[0]?.message?.content;
+        if (content) {
+          onDelta(content);
+        }
+        onDone();
+        setIsStreaming(false);
+        return;
+      }
+
+      // For streaming, we need to use fetch directly with the function URL
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://wlsmdcdfyudtvbnbqfmn.supabase.co';
+      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indsc21kY2RmeXVkdHZibmJxZm1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTEyMTYsImV4cCI6MjA3Mzk2NzIxNn0.EChqxdjqS0FmjSoC65x557HdB2sY9AFiAsN5fXH-AmU';
+
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/financial-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indsc21kY2RmeXVkdHZibmJxZm1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgzOTEyMTYsImV4cCI6MjA3Mzk2NzIxNn0.EChqxdjqS0FmjSoC65x557HdB2sY9AFiAsN5fXH-AmU'}`,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ messages, stream: true }),
       });
 
       if (!resp.ok) {
+        const errorText = await resp.text();
+        console.error('Stream error:', resp.status, errorText);
+        
         if (resp.status === 429) {
           throw new Error('Rate limit exceeded. Please try again later.');
         }
         if (resp.status === 402) {
           throw new Error('AI credits depleted. Please contact support.');
         }
-        throw new Error('Failed to start stream');
+        throw new Error(`Failed to start stream: ${resp.status} ${errorText}`);
       }
 
       if (!resp.body) {

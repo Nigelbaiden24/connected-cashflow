@@ -49,13 +49,6 @@ serve(async (req) => {
 - Retirement planning and wealth preservation
 - ESG and sustainable investing
 - Alternative investments (property, commodities, crypto)
-- Meeting integration and transcription services
-
-**Meeting Integration Capabilities:**
-- Join and transcribe meetings on Zoom, Google Meet, and Microsoft Teams
-- Provide real-time transcription of meeting dialogues
-- Summarize meeting outcomes and action items
-- Extract key insights from meeting discussions
 
 **Regulatory Awareness:**
 - FCA Consumer Duty requirements and fair value assessments
@@ -77,6 +70,8 @@ serve(async (req) => {
 - Include relevant data points, percentages, and figures
 - Be concise but comprehensive
 - Reference regulatory requirements where relevant
+- Structure responses with clear headings and bullet points
+- Use examples to illustrate complex concepts
 
 **Key UK Financial Context:**
 - ISA allowances (£20,000 annual limit), pension contributions, capital gains tax
@@ -87,68 +82,12 @@ serve(async (req) => {
 
 When analyzing portfolios or markets, provide specific insights with relevant metrics. When discussing compliance, reference UK regulations and FCA guidance. Always prioritize client suitability and risk-appropriate advice. Flag regulatory considerations and compliance requirements in your responses.
 
-When asked about meeting integration, guide users to use the meeting tools to join Zoom, Google Meet, or Microsoft Teams meetings.`
+Format your responses to be clear and actionable, with proper structure for readability.`
           },
           ...messages,
         ],
-        tools: [
-          {
-            type: "function",
-            name: "join_zoom_meeting",
-            description: "Join a Zoom meeting and start transcription. Provide the meeting URL or ID.",
-            parameters: {
-              type: "object",
-              properties: {
-                meeting_url: { type: "string", description: "The Zoom meeting URL or ID" },
-                participant_name: { type: "string", description: "Name to join the meeting with" }
-              },
-              required: ["meeting_url"],
-              additionalProperties: false
-            }
-          },
-          {
-            type: "function",
-            name: "join_google_meet",
-            description: "Join a Google Meet meeting and start transcription. Provide the meeting URL.",
-            parameters: {
-              type: "object",
-              properties: {
-                meeting_url: { type: "string", description: "The Google Meet URL" },
-                participant_name: { type: "string", description: "Name to join the meeting with" }
-              },
-              required: ["meeting_url"],
-              additionalProperties: false
-            }
-          },
-          {
-            type: "function",
-            name: "join_teams_meeting",
-            description: "Join a Microsoft Teams meeting and start transcription. Provide the meeting URL.",
-            parameters: {
-              type: "object",
-              properties: {
-                meeting_url: { type: "string", description: "The Microsoft Teams meeting URL" },
-                participant_name: { type: "string", description: "Name to join the meeting with" }
-              },
-              required: ["meeting_url"],
-              additionalProperties: false
-            }
-          },
-          {
-            type: "function",
-            name: "get_meeting_transcript",
-            description: "Retrieve the transcript of an active or completed meeting.",
-            parameters: {
-              type: "object",
-              properties: {
-                meeting_id: { type: "string", description: "The ID of the meeting" }
-              },
-              required: ["meeting_id"],
-              additionalProperties: false
-            }
-          }
-        ],
-        tool_choice: "auto",
+        temperature: 0.8,
+        max_tokens: 2000,
         stream: stream,
       }),
     });
