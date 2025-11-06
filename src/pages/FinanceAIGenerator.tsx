@@ -14,6 +14,17 @@ import { documentTemplates } from "@/data/documentTemplates";
 import { renderTemplateToHtml } from "@/lib/templateRenderer";
 import html2pdf from "html2pdf.js";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DocumentImageUpload } from "@/components/DocumentImageUpload";
+import { DraggableImage } from "@/components/DraggableImage";
+
+interface UploadedImage {
+  id: string;
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 const FinanceAIGenerator = () => {
   const navigate = useNavigate();
@@ -29,6 +40,7 @@ const FinanceAIGenerator = () => {
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [pages, setPages] = useState<number[]>([1]);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [userEmail] = useState("finance@flowpulse.io");
   const { toast } = useToast();
   const previewRef = useRef<HTMLDivElement>(null);
@@ -56,8 +68,25 @@ const FinanceAIGenerator = () => {
     setTextColors({});
     setBackgroundColor("#ffffff");
     setLogoUrl("");
+    setUploadedImages([]);
     setPages([1]);
     setCurrentPage(1);
+  };
+
+  const handleImagePositionChange = (id: string, x: number, y: number) => {
+    setUploadedImages(images =>
+      images.map(img => img.id === id ? { ...img, x, y } : img)
+    );
+  };
+
+  const handleImageSizeChange = (id: string, width: number, height: number) => {
+    setUploadedImages(images =>
+      images.map(img => img.id === id ? { ...img, width, height } : img)
+    );
+  };
+
+  const handleRemoveImage = (id: string) => {
+    setUploadedImages(images => images.filter(img => img.id !== id));
   };
 
   const handleLogoUpload = (file: File) => {
@@ -484,6 +513,14 @@ const FinanceAIGenerator = () => {
                       </div>
                     </div>
 
+                    {/* Image Upload Section */}
+                    <div className="pb-6 border-b">
+                      <DocumentImageUpload 
+                        images={uploadedImages}
+                        onImagesChange={setUploadedImages}
+                      />
+                    </div>
+
                     {editableFields.map((field) => (
                       <div key={field.id} className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -684,8 +721,8 @@ const FinanceAIGenerator = () => {
                         <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
                           <div 
                             ref={page === currentPage ? previewRef : null}
-                            className="p-8 rounded-lg shadow-sm min-h-[297mm]"
-                            style={{ backgroundColor }}
+                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative overflow-hidden"
+                            style={{ backgroundColor, position: 'relative' }}
                           >
                             {logoUrl && (
                               <div className="mb-6 flex justify-start">
@@ -695,6 +732,22 @@ const FinanceAIGenerator = () => {
                             <div dangerouslySetInnerHTML={{
                               __html: renderTemplateToHtml(template, formData, textColors)
                             }} />
+                            
+                            {/* Draggable Images */}
+                            {uploadedImages.map((image) => (
+                              <DraggableImage
+                                key={image.id}
+                                id={image.id}
+                                src={image.url}
+                                x={image.x}
+                                y={image.y}
+                                width={image.width}
+                                height={image.height}
+                                onPositionChange={handleImagePositionChange}
+                                onSizeChange={handleImageSizeChange}
+                                onRemove={handleRemoveImage}
+                              />
+                            ))}
                           </div>
                         </div>
                       ))}
