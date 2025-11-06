@@ -695,40 +695,41 @@ export const CRMBoard = () => {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-muted/30 border-b">
+                <tr className={compactView ? "bg-muted/30 border-b h-8" : "bg-muted/30 border-b"}>
                   <th className="p-0 w-12">
-                    <div className="flex items-center justify-center h-12">
+                    <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-12"}>
                       <Checkbox
                         checked={
                           filteredContacts.length > 0 &&
                           selectedContacts.length === filteredContacts.length
                         }
                         onCheckedChange={toggleSelectAll}
+                        className={compactView ? "h-3 w-3" : ""}
                       />
                     </div>
                   </th>
-                  <th className="text-left p-4 font-semibold text-sm">Name</th>
-                  <th className="text-left p-4 font-semibold text-sm">Email</th>
-                  <th className="text-left p-4 font-semibold text-sm">Phone</th>
-                  <th className="text-left p-4 font-semibold text-sm">Company</th>
-                  <th className="text-left p-4 font-semibold text-sm">Position</th>
-                  <th className="text-left p-4 font-semibold text-sm w-32">Status</th>
-                  <th className="text-left p-4 font-semibold text-sm w-32">Priority</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Name</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Email</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Phone</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Company</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Position</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs w-24" : "text-left p-4 font-semibold text-sm w-32"}>Status</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs w-24" : "text-left p-4 font-semibold text-sm w-32"}>Priority</th>
                   {customColumns.map((col) => (
-                    <th key={col.id} className="text-left p-4 font-semibold text-sm relative group">
+                    <th key={col.id} className={compactView ? "text-left p-2 font-semibold text-xs relative group" : "text-left p-4 font-semibold text-sm relative group"}>
                       <div className="flex items-center justify-between">
-                        <span>
+                        <span className={compactView ? "text-[10px]" : ""}>
                           {col.column_name}
                           {col.is_required && <span className="text-destructive ml-1">*</span>}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                          className={compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100"}
                           onClick={() => deleteCustomColumn(col.id)}
                           title="Delete column"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className={compactView ? "h-2.5 w-2.5" : "h-3 w-3"} />
                         </Button>
                       </div>
                     </th>
@@ -740,11 +741,11 @@ export const CRMBoard = () => {
                 {filteredContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
-                    className="border-b hover:bg-muted/20 transition-colors group"
+                    className={compactView ? "border-b hover:bg-muted/20 transition-colors group h-8" : "border-b hover:bg-muted/20 transition-colors group"}
                     style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.05)" }}
                   >
                     <td className="p-0">
-                      <div className="flex items-center justify-center h-14">
+                      <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-14"}>
                         <Checkbox
                           checked={selectedContacts.includes(contact.id)}
                           onCheckedChange={(checked) => {
@@ -755,15 +756,16 @@ export const CRMBoard = () => {
                             }
                           }}
                           onClick={(e) => e.stopPropagation()}
+                          className={compactView ? "h-3 w-3" : ""}
                         />
                       </div>
                     </td>
                     <td
-                      className="p-4 cursor-pointer"
+                      className={compactView ? "p-2 cursor-pointer" : "p-4 cursor-pointer"}
                       onClick={() => navigate(`/crm/${contact.id}`)}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getPriorityColor(contact.priority)}`} />
+                        <div className={compactView ? "w-1.5 h-1.5 rounded-full" : `w-2 h-2 rounded-full ${getPriorityColor(contact.priority)}`} style={compactView ? {backgroundColor: `var(--priority-${contact.priority})`} : undefined} />
                         {editingCell?.id === contact.id && editingCell?.field === "name" ? (
                           <Input
                             autoFocus
@@ -771,12 +773,12 @@ export const CRMBoard = () => {
                             onChange={(e) => updateContactField(contact.id, "name", e.target.value)}
                             onBlur={() => setEditingCell(null)}
                             onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
-                            className="h-8"
+                            className={compactView ? "h-6 text-xs" : "h-8"}
                             onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
                           <span
-                            className="font-medium hover:text-primary"
+                            className={compactView ? "font-medium hover:text-primary text-xs" : "font-medium hover:text-primary"}
                             onDoubleClick={(e) => {
                               e.stopPropagation();
                               setEditingCell({ id: contact.id, field: "name" });
@@ -787,7 +789,7 @@ export const CRMBoard = () => {
                         )}
                       </div>
                     </td>
-                    <td className="p-4">
+                    <td className={compactView ? "p-2" : "p-4"}>
                       {editingCell?.id === contact.id && editingCell?.field === "email" ? (
                         <Input
                           autoFocus
@@ -795,7 +797,7 @@ export const CRMBoard = () => {
                           onChange={(e) => updateContactField(contact.id, "email", e.target.value)}
                           onBlur={() => setEditingCell(null)}
                           onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
-                          className="h-8"
+                          className={compactView ? "h-6 text-xs" : "h-8"}
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
@@ -804,13 +806,13 @@ export const CRMBoard = () => {
                             e.stopPropagation();
                             setEditingCell({ id: contact.id, field: "email" });
                           }}
-                          className="cursor-text"
+                          className={compactView ? "cursor-text text-xs" : "cursor-text"}
                         >
                           {contact.email || "—"}
                         </span>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className={compactView ? "p-2" : "p-4"}>
                       {editingCell?.id === contact.id && editingCell?.field === "phone" ? (
                         <Input
                           autoFocus
@@ -818,7 +820,7 @@ export const CRMBoard = () => {
                           onChange={(e) => updateContactField(contact.id, "phone", e.target.value)}
                           onBlur={() => setEditingCell(null)}
                           onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
-                          className="h-8"
+                          className={compactView ? "h-6 text-xs" : "h-8"}
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
@@ -827,13 +829,13 @@ export const CRMBoard = () => {
                             e.stopPropagation();
                             setEditingCell({ id: contact.id, field: "phone" });
                           }}
-                          className="cursor-text"
+                          className={compactView ? "cursor-text text-xs" : "cursor-text"}
                         >
                           {contact.phone || "—"}
                         </span>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className={compactView ? "p-2" : "p-4"}>
                       {editingCell?.id === contact.id && editingCell?.field === "company" ? (
                         <Input
                           autoFocus
@@ -841,7 +843,7 @@ export const CRMBoard = () => {
                           onChange={(e) => updateContactField(contact.id, "company", e.target.value)}
                           onBlur={() => setEditingCell(null)}
                           onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
-                          className="h-8"
+                          className={compactView ? "h-6 text-xs" : "h-8"}
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
@@ -850,13 +852,13 @@ export const CRMBoard = () => {
                             e.stopPropagation();
                             setEditingCell({ id: contact.id, field: "company" });
                           }}
-                          className="cursor-text"
+                          className={compactView ? "cursor-text text-xs" : "cursor-text"}
                         >
                           {contact.company || "—"}
                         </span>
                       )}
                     </td>
-                    <td className="p-4">
+                    <td className={compactView ? "p-2" : "p-4"}>
                       {editingCell?.id === contact.id && editingCell?.field === "position" ? (
                         <Input
                           autoFocus
@@ -864,7 +866,7 @@ export const CRMBoard = () => {
                           onChange={(e) => updateContactField(contact.id, "position", e.target.value)}
                           onBlur={() => setEditingCell(null)}
                           onKeyDown={(e) => e.key === "Enter" && setEditingCell(null)}
-                          className="h-8"
+                          className={compactView ? "h-6 text-xs" : "h-8"}
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
@@ -873,19 +875,19 @@ export const CRMBoard = () => {
                             e.stopPropagation();
                             setEditingCell({ id: contact.id, field: "position" });
                           }}
-                          className="cursor-text"
+                          className={compactView ? "cursor-text text-xs" : "cursor-text"}
                         >
                           {contact.position || "—"}
                         </span>
                       )}
                     </td>
-                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                    <td className={compactView ? "p-2" : "p-4"} onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={contact.status}
                         onValueChange={(value) => updateContactField(contact.id, "status", value)}
                       >
-                        <SelectTrigger className="h-8 border-0 bg-transparent">
-                          <Badge variant="outline" className={getStatusColor(contact.status)}>
+                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent" : "h-8 border-0 bg-transparent"}>
+                          <Badge variant="outline" className={compactView ? `${getStatusColor(contact.status)} text-[10px] h-5 px-1.5` : getStatusColor(contact.status)}>
                             {contact.status}
                           </Badge>
                         </SelectTrigger>
@@ -896,13 +898,13 @@ export const CRMBoard = () => {
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="p-4" onClick={(e) => e.stopPropagation()}>
+                    <td className={compactView ? "p-2" : "p-4"} onClick={(e) => e.stopPropagation()}>
                       <Select
                         value={contact.priority}
                         onValueChange={(value) => updateContactField(contact.id, "priority", value)}
                       >
-                        <SelectTrigger className="h-8 border-0 bg-transparent">
-                          <Badge variant="outline" className="capitalize">
+                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent" : "h-8 border-0 bg-transparent"}>
+                          <Badge variant="outline" className={compactView ? "capitalize text-[10px] h-5 px-1.5" : "capitalize"}>
                             {contact.priority}
                           </Badge>
                         </SelectTrigger>
@@ -961,7 +963,7 @@ export const CRMBoard = () => {
                               e.stopPropagation();
                               setEditingCell({ id: contact.id, field: col.id });
                             }}
-                            className="cursor-text"
+                            className={compactView ? "cursor-text text-xs" : "cursor-text"}
                           >
                             {col.column_type === "checkbox"
                               ? customData[contact.id]?.[col.id] === "true"
@@ -975,8 +977,8 @@ export const CRMBoard = () => {
                     <td className={compactView ? "p-2" : "p-4"}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button variant="ghost" size="sm" className={compactView ? "h-6 w-6 p-0 opacity-0 group-hover:opacity-100" : "h-8 w-8 p-0 opacity-0 group-hover:opacity-100"}>
+                            <MoreVertical className={compactView ? "h-3 w-3" : "h-4 w-4"} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -1123,25 +1125,26 @@ export const CRMBoard = () => {
               <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className={table.compactView ? "h-8" : ""}>
                       <TableHead className={table.compactView ? "w-12 p-2" : "w-12 p-4"}>
                         <Checkbox
                           checked={selectedRows.length === filteredRows.length && filteredRows.length > 0}
                           onCheckedChange={() => toggleAllRowsSelection(table.id)}
+                          className={table.compactView ? "h-3 w-3" : ""}
                         />
                       </TableHead>
                       {table.columns.map((column) => (
-                        <TableHead key={column} className={table.compactView ? "relative group p-2" : "relative group p-4"}>
+                        <TableHead key={column} className={table.compactView ? "relative group p-2 text-xs" : "relative group p-4"}>
                           <div className="flex items-center justify-between">
                             <span>{column}</span>
                             {table.columns.length > 1 && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                                className={table.compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100"}
                                 onClick={() => deleteColumn(table.id, column)}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className={table.compactView ? "h-2.5 w-2.5" : "h-3 w-3"} />
                               </Button>
                             )}
                           </div>
@@ -1152,11 +1155,12 @@ export const CRMBoard = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredRows.map((row) => (
-                      <TableRow key={row.id} className="group">
+                      <TableRow key={row.id} className={table.compactView ? "group h-8" : "group"}>
                         <TableCell className={table.compactView ? "p-2" : "p-4"}>
                           <Checkbox
                             checked={selectedRows.includes(row.id)}
                             onCheckedChange={() => toggleRowSelection(table.id, row.id)}
+                            className={table.compactView ? "h-3 w-3" : ""}
                           />
                         </TableCell>
                         {table.columns.map((column) => (
@@ -1166,7 +1170,7 @@ export const CRMBoard = () => {
                               onChange={(e) =>
                                 updateCell(table.id, row.id, column, e.target.value)
                               }
-                              className={table.compactView ? "border-0 focus-visible:ring-1 h-7" : "border-0 focus-visible:ring-1"}
+                              className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
                             />
                           </TableCell>
                         ))}
@@ -1174,10 +1178,10 @@ export const CRMBoard = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100"
+                            className={table.compactView ? "h-6 w-6 p-0 opacity-0 group-hover:opacity-100" : "h-8 w-8 p-0 opacity-0 group-hover:opacity-100"}
                             onClick={() => deleteRow(table.id, row.id)}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className={table.compactView ? "h-3 w-3" : "h-4 w-4"} />
                           </Button>
                         </TableCell>
                       </TableRow>
