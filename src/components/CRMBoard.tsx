@@ -284,6 +284,23 @@ export const CRMBoard = () => {
     }
   };
 
+  const deleteCustomColumn = async (columnId: string) => {
+    try {
+      // Delete all data associated with this column
+      await supabase.from("crm_contact_data").delete().eq("column_id", columnId);
+
+      // Then delete the column definition
+      const { error } = await supabase.from("crm_custom_columns").delete().eq("id", columnId);
+
+      if (error) throw error;
+      toast.success("Column deleted");
+      fetchCustomColumns();
+    } catch (error) {
+      console.error("Error deleting column:", error);
+      toast.error("Failed to delete column");
+    }
+  };
+
   const deleteSelected = async () => {
     if (selectedContacts.length === 0) return;
 
@@ -624,9 +641,22 @@ export const CRMBoard = () => {
                   <th className="text-left p-4 font-semibold text-sm w-32">Status</th>
                   <th className="text-left p-4 font-semibold text-sm w-32">Priority</th>
                   {customColumns.map((col) => (
-                    <th key={col.id} className="text-left p-4 font-semibold text-sm">
-                      {col.column_name}
-                      {col.is_required && <span className="text-destructive ml-1">*</span>}
+                    <th key={col.id} className="text-left p-4 font-semibold text-sm relative group">
+                      <div className="flex items-center justify-between">
+                        <span>
+                          {col.column_name}
+                          {col.is_required && <span className="text-destructive ml-1">*</span>}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                          onClick={() => deleteCustomColumn(col.id)}
+                          title="Delete column"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </th>
                   ))}
                   <th className="w-12"></th>
