@@ -45,6 +45,8 @@ import {
   Palette,
   UserCog,
   History,
+  FolderKanban,
+  ClipboardList,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -59,8 +61,18 @@ const aiToolsItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Theodore",
-    url: "/theodore",
+    title: "Projects",
+    url: "/projects",
+    icon: FolderKanban,
+  },
+  {
+    title: "Tasks",
+    url: "/tasks",
+    icon: ClipboardList,
+  },
+  {
+    title: "AI Chatbot",
+    url: "/chat",
     icon: MessageSquare,
   },
   {
@@ -83,16 +95,6 @@ const aiToolsItems = [
     url: "/market",
     icon: TrendingUp,
   },
-  {
-    title: "Security",
-    url: "/security",
-    icon: Shield,
-  },
-  {
-    title: "Compliance",
-    url: "/compliance",
-    icon: Shield,
-  },
 ];
 
 const financialPlanningItems = [
@@ -100,6 +102,21 @@ const financialPlanningItems = [
     title: "Financial Planning",
     url: "/financial-planning",
     icon: Calculator,
+  },
+  {
+    title: "Business Planning",
+    url: "/business-planning",
+    icon: Target,
+  },
+  {
+    title: "Analytics",
+    url: "/analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "Revenue Tracking",
+    url: "/revenue",
+    icon: TrendingUp,
   },
   {
     title: "Portfolio Management",
@@ -130,6 +147,11 @@ const financialPlanningItems = [
 
 const practiceManagementItems = [
   {
+    title: "CRM",
+    url: "/crm",
+    icon: Users,
+  },
+  {
     title: "Client Management",
     url: "/clients",
     icon: Users,
@@ -137,6 +159,11 @@ const practiceManagementItems = [
   {
     title: "Client Onboarding",
     url: "/onboarding",
+    icon: UserPlus,
+  },
+  {
+    title: "Team Management",
+    url: "/team",
     icon: UserPlus,
   },
   {
@@ -148,6 +175,16 @@ const practiceManagementItems = [
     title: "Payroll",
     url: "/finance-payroll",
     icon: Calculator,
+  },
+  {
+    title: "Security",
+    url: "/security",
+    icon: Shield,
+  },
+  {
+    title: "Compliance",
+    url: "/compliance",
+    icon: Shield,
   },
   {
     title: "Reports",
