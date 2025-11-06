@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign, ArrowLeft } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign, ArrowLeft, FileText, Calendar, UserPlus, PieChart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,6 +97,13 @@ const Dashboard = () => {
     },
   ];
 
+  const quickActions = [
+    { title: "Create Financial Plan", icon: FileText, description: "Build a new plan", path: "/create-financial-plan" },
+    { title: "Add Client", icon: UserPlus, description: "Onboard a new client", path: "/client-onboarding" },
+    { title: "Generate Report", icon: PieChart, description: "Create financial report", path: "/finance-ai-generator" },
+    { title: "Schedule Meeting", icon: Calendar, description: "Plan client meeting", path: "/calendar" },
+  ];
+
   const recentQueries = [
     {
       query: "What's the current P/E ratio for AAPL?",
@@ -185,6 +192,32 @@ const Dashboard = () => {
               </Card>
             ))}
           </div>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Common tasks and operations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {quickActions.map((action, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    className="h-auto flex-col items-start p-4 hover:bg-accent"
+                    onClick={() => navigate(action.path)}
+                  >
+                    <action.icon className="h-6 w-6 mb-2 text-primary" />
+                    <div className="text-left">
+                      <div className="font-semibold">{action.title}</div>
+                      <div className="text-xs text-muted-foreground">{action.description}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Recent Activity */}
           <Card>

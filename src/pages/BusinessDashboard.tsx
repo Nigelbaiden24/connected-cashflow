@@ -58,10 +58,10 @@ export default function BusinessDashboard() {
   ];
 
   const quickActions = [
-    { title: "Create Project", icon: Briefcase, description: "Start a new project" },
-    { title: "Add Client", icon: Users, description: "Onboard a new client" },
-    { title: "Generate Report", icon: FileText, description: "Create business report" },
-    { title: "Schedule Meeting", icon: Calendar, description: "Plan team meeting" },
+    { title: "Create Project", icon: Briefcase, description: "Start a new project", path: "/projects" },
+    { title: "Add Client", icon: Users, description: "Onboard a new client", path: "/client-onboarding" },
+    { title: "Generate Report", icon: FileText, description: "Create business report", path: "/business-ai-generator" },
+    { title: "Schedule Meeting", icon: Calendar, description: "Plan team meeting", path: "/calendar" },
   ];
 
   return (
@@ -140,6 +140,7 @@ export default function BusinessDashboard() {
                       key={idx}
                       variant="outline"
                       className="h-auto flex-col items-start p-4 hover:bg-accent"
+                      onClick={() => navigate(action.path)}
                     >
                       <action.icon className="h-6 w-6 mb-2 text-primary" />
                       <div className="text-left">
@@ -231,7 +232,7 @@ export default function BusinessDashboard() {
                       <p className="text-sm text-muted-foreground">5 unread messages</p>
                     </div>
                   </div>
-                  <Button>Open Chat</Button>
+                  <Button onClick={() => navigate('/team-chat')}>Open Chat</Button>
                 </div>
               </CardContent>
             </Card>
