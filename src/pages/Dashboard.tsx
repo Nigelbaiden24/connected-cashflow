@@ -98,8 +98,8 @@ const Dashboard = () => {
   ];
 
   const quickActions = [
-    { title: "Create Financial Plan", icon: FileText, description: "Build a new plan", path: "/create-financial-plan" },
-    { title: "Add Client", icon: UserPlus, description: "Onboard a new client", path: "/client-onboarding" },
+    { title: "Create Financial Plan", icon: FileText, description: "Build a new plan", path: "/financial-planning/new" },
+    { title: "Add Client", icon: UserPlus, description: "Onboard a new client", path: "/onboarding" },
     { title: "Generate Report", icon: PieChart, description: "Create financial report", path: "/finance-ai-generator" },
     { title: "Schedule Meeting", icon: Calendar, description: "Plan client meeting", path: "/calendar" },
   ];

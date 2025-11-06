@@ -59,7 +59,7 @@ export default function BusinessDashboard() {
 
   const quickActions = [
     { title: "Create Project", icon: Briefcase, description: "Start a new project", path: "/projects" },
-    { title: "Add Client", icon: Users, description: "Onboard a new client", path: "/client-onboarding" },
+    { title: "Add Client", icon: Users, description: "Onboard a new client", path: "/onboarding" },
     { title: "Generate Report", icon: FileText, description: "Create business report", path: "/business-ai-generator" },
     { title: "Schedule Meeting", icon: Calendar, description: "Plan team meeting", path: "/calendar" },
   ];

@@ -372,7 +372,9 @@ const App = () => {
               )
             } />
             
-          <Route path="/business-dashboard" element={<BusinessDashboard />} />
+          <Route path="/business-dashboard" element={
+            !isAuthenticated ? <Navigate to="/login" replace /> : <BusinessDashboard />
+          } />
           <Route path="/projects" element={<Projects />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/calendar" element={<Calendar />} />
