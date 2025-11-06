@@ -334,7 +334,7 @@ export default function FinancialPlanning() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
