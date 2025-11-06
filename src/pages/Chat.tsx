@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2 } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -35,6 +36,7 @@ interface Message {
 }
 
 const Chat = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -475,11 +477,22 @@ const Chat = () => {
       {/* Header */}
       <div className="border-b p-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">{botName} - FlowPulse AI Assistant</h1>
-            <p className="text-sm text-muted-foreground">
-              Your intelligent financial advisor with voice, document analysis & reporting
-            </p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-xl font-semibold">{botName} - FlowPulse AI Assistant</h1>
+              <p className="text-sm text-muted-foreground">
+                Your intelligent financial advisor with voice, document analysis & reporting
+              </p>
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap">
             <FileManager />

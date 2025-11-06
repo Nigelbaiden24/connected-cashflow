@@ -40,8 +40,16 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "Failed to generate speech");
+      const errorData = await response.json();
+      console.error("OpenAI API error:", errorData);
+      const errorMessage = errorData.error?.message || "Failed to generate speech";
+      return new Response(
+        JSON.stringify({ error: errorMessage }),
+        {
+          status: response.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const arrayBuffer = await response.arrayBuffer();

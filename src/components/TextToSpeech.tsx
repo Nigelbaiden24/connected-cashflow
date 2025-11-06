@@ -44,7 +44,14 @@ export const TextToSpeech = ({ text }: TextToSpeechProps) => {
         body: { text, voice: selectedVoice },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("TTS error:", error);
+        throw new Error(error.message || "Failed to generate speech");
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       const audioBlob = new Blob(
         [Uint8Array.from(atob(data.audioContent), (c) => c.charCodeAt(0))],
@@ -63,9 +70,13 @@ export const TextToSpeech = ({ text }: TextToSpeechProps) => {
       setIsPlaying(true);
     } catch (error) {
       console.error("Text-to-speech error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate speech";
+      
       toast({
-        title: "Error",
-        description: "Failed to generate speech. Please try again.",
+        title: "Text-to-Speech Error",
+        description: errorMessage.includes("quota") || errorMessage.includes("billing")
+          ? "OpenAI quota exceeded. Please check your billing at platform.openai.com"
+          : errorMessage,
         variant: "destructive",
       });
     } finally {
