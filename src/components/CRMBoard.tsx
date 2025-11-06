@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
@@ -20,6 +20,10 @@ interface CRMTable {
   name: string;
   columns: string[];
   rows: Record<string, string>[];
+  searchQuery?: string;
+  filterStatus?: string;
+  selectedRows?: string[];
+  compactView?: boolean;
 }
 
 export const CRMBoard = () => {
@@ -34,6 +38,7 @@ export const CRMBoard = () => {
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [compactView, setCompactView] = useState(false);
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -484,6 +489,67 @@ export const CRMBoard = () => {
     );
   };
 
+  const toggleTableCompactView = (tableId: string) => {
+    setTables(tables.map(t => t.id === tableId ? { ...t, compactView: !t.compactView } : t));
+  };
+
+  const updateTableSearch = (tableId: string, query: string) => {
+    setTables(tables.map(t => t.id === tableId ? { ...t, searchQuery: query } : t));
+  };
+
+  const toggleRowSelection = (tableId: string, rowId: string) => {
+    setTables(tables.map(t => {
+      if (t.id === tableId) {
+        const selected = t.selectedRows || [];
+        return {
+          ...t,
+          selectedRows: selected.includes(rowId)
+            ? selected.filter(id => id !== rowId)
+            : [...selected, rowId]
+        };
+      }
+      return t;
+    }));
+  };
+
+  const toggleAllRowsSelection = (tableId: string) => {
+    setTables(tables.map(t => {
+      if (t.id === tableId) {
+        const selected = t.selectedRows || [];
+        return {
+          ...t,
+          selectedRows: selected.length === t.rows.length ? [] : t.rows.map(r => r.id)
+        };
+      }
+      return t;
+    }));
+  };
+
+  const deleteSelectedRows = (tableId: string) => {
+    setTables(tables.map(t => {
+      if (t.id === tableId) {
+        const selected = t.selectedRows || [];
+        return {
+          ...t,
+          rows: t.rows.filter(row => !selected.includes(row.id)),
+          selectedRows: []
+        };
+      }
+      return t;
+    }));
+    toast.success("Selected rows deleted");
+  };
+
+  const getFilteredTableRows = (table: CRMTable) => {
+    return table.rows.filter(row => {
+      const searchMatch = !table.searchQuery || 
+        Object.values(row).some(val => 
+          String(val).toLowerCase().includes(table.searchQuery!.toLowerCase())
+        );
+      return searchMatch;
+    });
+  };
+
   return (
     <div className="space-y-4">
       {/* Toolbar */}
@@ -575,6 +641,14 @@ export const CRMBoard = () => {
           <Button variant="outline" onClick={() => setShowColumnManager(true)}>
             <Columns className="h-4 w-4 mr-2" />
             Add Column
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setCompactView(!compactView)}
+            title={compactView ? "Expand view" : "Compact view"}
+          >
+            {compactView ? <Maximize2 className="h-4 w-4 mr-2" /> : <Minimize2 className="h-4 w-4 mr-2" />}
+            {compactView ? "Expand" : "Compact"}
           </Button>
           <Dialog>
             <DialogTrigger asChild>
@@ -840,7 +914,7 @@ export const CRMBoard = () => {
                       </Select>
                     </td>
                     {customColumns.map((col) => (
-                      <td key={col.id} className="p-4">
+                      <td key={col.id} className={compactView ? "p-2" : "p-4"}>
                         {editingCell?.id === contact.id && editingCell?.field === col.id ? (
                           col.column_type === "select" ? (
                             <Select
@@ -898,7 +972,7 @@ export const CRMBoard = () => {
                         )}
                       </td>
                     ))}
-                    <td className="p-4">
+                    <td className={compactView ? "p-2" : "p-4"}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100">
@@ -938,7 +1012,11 @@ export const CRMBoard = () => {
       {/* Custom Tables */}
 
       <div className="grid gap-6">
-        {tables.map((table) => (
+        {tables.map((table) => {
+          const filteredRows = getFilteredTableRows(table);
+          const selectedRows = table.selectedRows || [];
+          
+          return (
           <Card key={table.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div className="flex items-center gap-2">
@@ -963,12 +1041,36 @@ export const CRMBoard = () => {
                   <CardTitle>{table.name}</CardTitle>
                 )}
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="h-4 w-4" />
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    value={table.searchQuery || ""}
+                    onChange={(e) => updateTableSearch(table.id, e.target.value)}
+                    className="pl-9 w-48 h-8"
+                  />
+                </div>
+                {selectedRows.length > 0 && (
+                  <Button variant="destructive" size="sm" onClick={() => deleteSelectedRows(table.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete ({selectedRows.length})
                   </Button>
-                </DropdownMenuTrigger>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleTableCompactView(table.id)}
+                  title={table.compactView ? "Expand view" : "Compact view"}
+                >
+                  {table.compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => {
@@ -994,6 +1096,7 @@ export const CRMBoard = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </CardHeader>
             <CardContent>
               {addingColumnTo === table.id && (
@@ -1021,8 +1124,14 @@ export const CRMBoard = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className={table.compactView ? "w-12 p-2" : "w-12 p-4"}>
+                        <Checkbox
+                          checked={selectedRows.length === filteredRows.length && filteredRows.length > 0}
+                          onCheckedChange={() => toggleAllRowsSelection(table.id)}
+                        />
+                      </TableHead>
                       {table.columns.map((column) => (
-                        <TableHead key={column} className="relative group">
+                        <TableHead key={column} className={table.compactView ? "relative group p-2" : "relative group p-4"}>
                           <div className="flex items-center justify-between">
                             <span>{column}</span>
                             {table.columns.length > 1 && (
@@ -1042,20 +1151,26 @@ export const CRMBoard = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {table.rows.map((row) => (
+                    {filteredRows.map((row) => (
                       <TableRow key={row.id} className="group">
+                        <TableCell className={table.compactView ? "p-2" : "p-4"}>
+                          <Checkbox
+                            checked={selectedRows.includes(row.id)}
+                            onCheckedChange={() => toggleRowSelection(table.id, row.id)}
+                          />
+                        </TableCell>
                         {table.columns.map((column) => (
-                          <TableCell key={column}>
+                          <TableCell key={column} className={table.compactView ? "p-2" : "p-4"}>
                             <Input
                               value={row[column] || ""}
                               onChange={(e) =>
                                 updateCell(table.id, row.id, column, e.target.value)
                               }
-                              className="border-0 focus-visible:ring-1"
+                              className={table.compactView ? "border-0 focus-visible:ring-1 h-7" : "border-0 focus-visible:ring-1"}
                             />
                           </TableCell>
                         ))}
-                        <TableCell>
+                        <TableCell className={table.compactView ? "p-2" : "p-4"}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1081,7 +1196,8 @@ export const CRMBoard = () => {
               </Button>
             </CardContent>
           </Card>
-        ))}
+        );
+        })}
       </div>
     </div>
   );
