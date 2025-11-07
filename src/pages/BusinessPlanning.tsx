@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const BusinessPlanning = () => {
@@ -21,14 +22,32 @@ const BusinessPlanning = () => {
     { id: 4, name: "Team Expansion", target: 50, current: 42, unit: " people" },
   ]);
 
+  const [initiatives, setInitiatives] = useState([
+    { id: 1, name: "Product Expansion", description: "Launch 3 new product lines", progress: 60, deadline: "Q2 2024", status: "in-progress" },
+    { id: 2, name: "Market Penetration", description: "Enter 2 new regional markets", progress: 45, deadline: "Q3 2024", status: "in-progress" },
+    { id: 3, name: "Digital Transformation", description: "Modernize core systems", progress: 75, deadline: "Q4 2024", status: "in-progress" },
+  ]);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [initiativeDialogOpen, setInitiativeDialogOpen] = useState(false);
+  const [editInitiativeDialogOpen, setEditInitiativeDialogOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
+  const [selectedInitiative, setSelectedInitiative] = useState<typeof initiatives[0] | null>(null);
+  
   const [formData, setFormData] = useState({
     name: "",
     target: "",
     current: "",
     unit: "£",
+  });
+
+  const [initiativeFormData, setInitiativeFormData] = useState({
+    name: "",
+    description: "",
+    progress: "0",
+    deadline: "",
+    status: "in-progress",
   });
 
   const handleSaveGoal = () => {
@@ -100,6 +119,86 @@ const BusinessPlanning = () => {
       unit: goal.unit,
     });
     setEditDialogOpen(true);
+  };
+
+  const handleSaveInitiative = () => {
+    if (!initiativeFormData.name || !initiativeFormData.description || !initiativeFormData.deadline) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newInitiative = {
+      id: initiatives.length > 0 ? Math.max(...initiatives.map(i => i.id)) + 1 : 1,
+      name: initiativeFormData.name,
+      description: initiativeFormData.description,
+      progress: parseFloat(initiativeFormData.progress),
+      deadline: initiativeFormData.deadline,
+      status: initiativeFormData.status,
+    };
+    setInitiatives([...initiatives, newInitiative]);
+    toast({
+      title: "Success",
+      description: "Strategic initiative created successfully",
+    });
+    setInitiativeDialogOpen(false);
+    setInitiativeFormData({ name: "", description: "", progress: "0", deadline: "", status: "in-progress" });
+  };
+
+  const handleUpdateInitiative = () => {
+    if (!selectedInitiative || !initiativeFormData.name || !initiativeFormData.description || !initiativeFormData.deadline) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setInitiatives(initiatives.map(i => 
+      i.id === selectedInitiative.id 
+        ? { 
+            ...i, 
+            name: initiativeFormData.name, 
+            description: initiativeFormData.description,
+            progress: parseFloat(initiativeFormData.progress),
+            deadline: initiativeFormData.deadline,
+            status: initiativeFormData.status
+          }
+        : i
+    ));
+    toast({
+      title: "Success",
+      description: "Strategic initiative updated successfully",
+    });
+    setEditInitiativeDialogOpen(false);
+    setSelectedInitiative(null);
+    setInitiativeFormData({ name: "", description: "", progress: "0", deadline: "", status: "in-progress" });
+  };
+
+  const handleDeleteInitiative = (id: number) => {
+    setInitiatives(initiatives.filter(i => i.id !== id));
+    toast({
+      title: "Success",
+      description: "Strategic initiative deleted successfully",
+    });
+    setEditInitiativeDialogOpen(false);
+    setSelectedInitiative(null);
+  };
+
+  const handleEditInitiative = (initiative: typeof initiatives[0]) => {
+    setSelectedInitiative(initiative);
+    setInitiativeFormData({
+      name: initiative.name,
+      description: initiative.description,
+      progress: initiative.progress.toString(),
+      deadline: initiative.deadline,
+      status: initiative.status,
+    });
+    setEditInitiativeDialogOpen(true);
   };
 
   return (
@@ -230,31 +329,40 @@ const BusinessPlanning = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Strategic Initiatives
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Strategic Initiatives
+            </CardTitle>
+            <Button size="sm" onClick={() => setInitiativeDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Initiative
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2 p-4 border rounded-lg">
-              <h4 className="font-semibold">Product Expansion</h4>
-              <p className="text-sm text-muted-foreground">Launch 3 new product lines</p>
-              <Progress value={60} className="h-2" />
-              <p className="text-xs text-muted-foreground">Q2 2024</p>
-            </div>
-            <div className="space-y-2 p-4 border rounded-lg">
-              <h4 className="font-semibold">Market Penetration</h4>
-              <p className="text-sm text-muted-foreground">Enter 2 new regional markets</p>
-              <Progress value={45} className="h-2" />
-              <p className="text-xs text-muted-foreground">Q3 2024</p>
-            </div>
-            <div className="space-y-2 p-4 border rounded-lg">
-              <h4 className="font-semibold">Digital Transformation</h4>
-              <p className="text-sm text-muted-foreground">Modernize core systems</p>
-              <Progress value={75} className="h-2" />
-              <p className="text-xs text-muted-foreground">Q4 2024</p>
-            </div>
+            {initiatives.map((initiative) => (
+              <div key={initiative.id} className="space-y-2 p-4 border rounded-lg relative group">
+                <div className="flex items-start justify-between">
+                  <h4 className="font-semibold">{initiative.name}</h4>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleEditInitiative(initiative)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">{initiative.description}</p>
+                <Progress value={initiative.progress} className="h-2" />
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">{initiative.deadline}</p>
+                  <span className="text-xs font-medium">{initiative.progress}%</span>
+                </div>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -371,6 +479,155 @@ const BusinessPlanning = () => {
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleUpdateGoal}>Update Goal</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={initiativeDialogOpen} onOpenChange={setInitiativeDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Strategic Initiative</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="initiative-name">Initiative Name *</Label>
+              <Input
+                id="initiative-name"
+                value={initiativeFormData.name}
+                onChange={(e) => setInitiativeFormData({ ...initiativeFormData, name: e.target.value })}
+                placeholder="Enter initiative name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="initiative-description">Description *</Label>
+              <Textarea
+                id="initiative-description"
+                value={initiativeFormData.description}
+                onChange={(e) => setInitiativeFormData({ ...initiativeFormData, description: e.target.value })}
+                placeholder="Describe the strategic initiative"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="initiative-progress">Progress (%)</Label>
+                <Input
+                  id="initiative-progress"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={initiativeFormData.progress}
+                  onChange={(e) => setInitiativeFormData({ ...initiativeFormData, progress: e.target.value })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="initiative-deadline">Deadline *</Label>
+                <Input
+                  id="initiative-deadline"
+                  value={initiativeFormData.deadline}
+                  onChange={(e) => setInitiativeFormData({ ...initiativeFormData, deadline: e.target.value })}
+                  placeholder="Q1 2025"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="initiative-status">Status</Label>
+              <Select value={initiativeFormData.status} onValueChange={(value) => setInitiativeFormData({ ...initiativeFormData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planning">Planning</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="on-hold">On Hold</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setInitiativeDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveInitiative}>Create Initiative</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editInitiativeDialogOpen} onOpenChange={setEditInitiativeDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Strategic Initiative</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-initiative-name">Initiative Name *</Label>
+              <Input
+                id="edit-initiative-name"
+                value={initiativeFormData.name}
+                onChange={(e) => setInitiativeFormData({ ...initiativeFormData, name: e.target.value })}
+                placeholder="Enter initiative name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-initiative-description">Description *</Label>
+              <Textarea
+                id="edit-initiative-description"
+                value={initiativeFormData.description}
+                onChange={(e) => setInitiativeFormData({ ...initiativeFormData, description: e.target.value })}
+                placeholder="Describe the strategic initiative"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-initiative-progress">Progress (%)</Label>
+                <Input
+                  id="edit-initiative-progress"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={initiativeFormData.progress}
+                  onChange={(e) => setInitiativeFormData({ ...initiativeFormData, progress: e.target.value })}
+                  placeholder="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-initiative-deadline">Deadline *</Label>
+                <Input
+                  id="edit-initiative-deadline"
+                  value={initiativeFormData.deadline}
+                  onChange={(e) => setInitiativeFormData({ ...initiativeFormData, deadline: e.target.value })}
+                  placeholder="Q1 2025"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-initiative-status">Status</Label>
+              <Select value={initiativeFormData.status} onValueChange={(value) => setInitiativeFormData({ ...initiativeFormData, status: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planning">Planning</SelectItem>
+                  <SelectItem value="in-progress">In Progress</SelectItem>
+                  <SelectItem value="on-hold">On Hold</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-between gap-2">
+            <Button 
+              variant="destructive" 
+              onClick={() => selectedInitiative && handleDeleteInitiative(selectedInitiative.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditInitiativeDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleUpdateInitiative}>Update Initiative</Button>
             </div>
           </div>
         </DialogContent>
