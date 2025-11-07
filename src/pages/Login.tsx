@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Shield, Eye, EyeOff } from "lucide-react";
+import { TrendingUp, Eye, EyeOff, Lock, Mail, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface LoginProps {
   onLogin: (email: string) => void;
@@ -41,8 +41,8 @@ const Login = ({ onLogin }: LoginProps) => {
   };
 
   const handleDemoLogin = () => {
-    setEmail("advisor@wealthfirm.com");
-    setPassword("demo123");
+    setEmail("finance@flowpulse.com");
+    setPassword("finance2024");
     toast({
       title: "Demo Credentials Loaded",
       description: "Click Sign In to continue with demo account",
@@ -50,50 +50,112 @@ const Login = ({ onLogin }: LoginProps) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-primary/10 rounded-full">
-              <Shield className="h-8 w-8 text-primary" />
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white">
+        <div>
+          <img src={flowpulseLogo} alt="FlowPulse Finance" className="h-12 mb-8" />
+          <h1 className="text-4xl font-bold mb-4">Welcome to FlowPulse Finance</h1>
+          <p className="text-xl text-blue-100 mb-8">
+            Your intelligent financial advisory platform for wealth management excellence
+          </p>
+        </div>
+        
+        <div className="space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold mb-1">Advanced Portfolio Management</h3>
+              <p className="text-sm text-blue-100">Track and optimize client investments with real-time analytics</p>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">
-            FlowPulse.io
-          </CardTitle>
-          <CardDescription>
-            Intelligent Financial Advisory Platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="advisor@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+          
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+              <Lock className="h-6 w-6" />
             </div>
+            <div>
+              <h3 className="font-semibold mb-1">Bank-Level Security</h3>
+              <p className="text-sm text-blue-100">SOC 2 Compliant & FINRA Approved infrastructure</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold mb-1">Compliance Ready</h3>
+              <p className="text-sm text-blue-100">Built-in regulatory compliance and reporting tools</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="text-sm text-blue-100">
+          © 2024 FlowPulse Finance. All rights reserved.
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="flex items-center justify-center p-8 bg-background">
+        <div className="w-full max-w-md space-y-8">
+          <div className="lg:hidden text-center mb-8">
+            <img src={flowpulseLogo} alt="FlowPulse Finance" className="h-10 mx-auto mb-4" />
+          </div>
+          
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Sign in to your account</h2>
+            <p className="text-muted-foreground mt-2">
+              Access your financial advisory dashboard
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email Address
+              </Label>
               <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="advisor@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </Label>
+                <button type="button" className="text-sm text-primary hover:underline">
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10"
                   required
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -104,12 +166,13 @@ const Login = ({ onLogin }: LoginProps) => {
                 </Button>
               </div>
             </div>
+
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-11 text-base"
               disabled={isLoading}
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
           
@@ -119,7 +182,7 @@ const Login = ({ onLogin }: LoginProps) => {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Or try demo
+                Or use demo account
               </span>
             </div>
           </div>
@@ -127,23 +190,21 @@ const Login = ({ onLogin }: LoginProps) => {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full h-11"
             onClick={handleDemoLogin}
           >
             Load Demo Credentials
           </Button>
           
-          <div className="text-center space-y-2">
-            <p className="text-xs text-muted-foreground">
-              Secured with enterprise-grade encryption
-            </p>
-            <div className="flex justify-center items-center gap-2 text-xs text-muted-foreground">
-              <Shield className="h-3 w-3" />
-              <span>SOC 2 Compliant • FINRA Approved</span>
+          <div className="bg-muted/50 p-4 rounded-lg border">
+            <p className="text-sm font-medium mb-2">Demo Account Details:</p>
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <p>Email: <span className="font-mono">finance@flowpulse.com</span></p>
+              <p>Password: <span className="font-mono">finance2024</span></p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
