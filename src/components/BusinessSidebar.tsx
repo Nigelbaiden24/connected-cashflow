@@ -51,32 +51,32 @@ interface BusinessSidebarProps {
 const businessToolsItems = [
   {
     title: "Dashboard",
-    url: "/business-dashboard",
+    url: "/business/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Projects",
-    url: "/projects",
+    url: "/business/projects",
     icon: FolderKanban,
   },
   {
     title: "Tasks",
-    url: "/tasks",
+    url: "/business/tasks",
     icon: ClipboardList,
   },
   {
     title: "AI Chatbot",
-    url: "/chat",
+    url: "/business/chat",
     icon: MessageSquare,
   },
   {
     title: "Calendar",
-    url: "/calendar",
+    url: "/business/calendar",
     icon: Calendar,
   },
   {
     title: "Document Generator",
-    url: "/business-ai-generator",
+    url: "/business/ai-generator",
     icon: Briefcase,
   },
 ];
@@ -84,27 +84,27 @@ const businessToolsItems = [
 const businessManagementItems = [
   {
     title: "Business Planning",
-    url: "/business-planning",
+    url: "/business/planning",
     icon: Target,
   },
   {
     title: "Analytics",
-    url: "/analytics",
+    url: "/business/analytics",
     icon: BarChart3,
   },
   {
     title: "Revenue Tracking",
-    url: "/revenue",
+    url: "/business/revenue",
     icon: TrendingUp,
   },
   {
     title: "CRM",
-    url: "/crm",
+    url: "/business/crm",
     icon: Users,
   },
   {
     title: "Team Management",
-    url: "/team",
+    url: "/business/team",
     icon: UserPlus,
   },
 ];
@@ -112,12 +112,12 @@ const businessManagementItems = [
 const operationsItems = [
   {
     title: "HR & Payroll",
-    url: "/payroll",
+    url: "/business/payroll",
     icon: Calculator,
   },
   {
     title: "Security",
-    url: "/security",
+    url: "/business/security",
     icon: Shield,
   },
 ];
@@ -125,32 +125,32 @@ const operationsItems = [
 const settingsSubItems = [
   {
     title: "Profile",
-    url: "/settings?tab=profile",
+    url: "/business/settings?tab=profile",
     icon: User,
   },
   {
     title: "Security",
-    url: "/settings?tab=security",
+    url: "/business/settings?tab=security",
     icon: Shield,
   },
   {
     title: "Notifications",
-    url: "/settings?tab=notifications",
+    url: "/business/settings?tab=notifications",
     icon: Bell,
   },
   {
     title: "Appearance",
-    url: "/settings?tab=appearance",
+    url: "/business/settings?tab=appearance",
     icon: Palette,
   },
   {
     title: "Account",
-    url: "/settings?tab=account",
+    url: "/business/settings?tab=account",
     icon: UserCog,
   },
   {
     title: "Activity",
-    url: "/settings?tab=activity",
+    url: "/business/settings?tab=activity",
     icon: History,
   },
 ];
@@ -160,7 +160,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
   const location = useLocation();
   const isCollapsed = state === "collapsed";
   const [settingsExpanded, setSettingsExpanded] = useState(
-    location.pathname === "/settings"
+    location.pathname === "/business/settings"
   );
 
   const isActive = (path: string) => {
@@ -259,7 +259,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => setSettingsExpanded(!settingsExpanded)}
-                  className={getNavClassName("/settings")}
+                  className={getNavClassName("/business/settings")}
                 >
                   <Settings className="h-4 w-4" />
                   {!isCollapsed && (

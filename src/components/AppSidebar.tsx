@@ -61,31 +61,6 @@ const aiToolsItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Projects",
-    url: "/projects",
-    icon: FolderKanban,
-  },
-  {
-    title: "Tasks",
-    url: "/tasks",
-    icon: ClipboardList,
-  },
-  {
-    title: "AI Chatbot",
-    url: "/chat",
-    icon: MessageSquare,
-  },
-  {
-    title: "Calendar",
-    url: "/calendar",
-    icon: Calendar,
-  },
-  {
-    title: "Messages",
-    url: "/messages",
-    icon: Mail,
-  },
-  {
     title: "Document Generator",
     url: "/finance-ai-generator",
     icon: Sparkles,
@@ -102,21 +77,6 @@ const financialPlanningItems = [
     title: "Financial Planning",
     url: "/financial-planning",
     icon: Calculator,
-  },
-  {
-    title: "Business Planning",
-    url: "/business-planning",
-    icon: Target,
-  },
-  {
-    title: "Analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Revenue Tracking",
-    url: "/revenue",
-    icon: TrendingUp,
   },
   {
     title: "Portfolio Management",
@@ -147,11 +107,6 @@ const financialPlanningItems = [
 
 const practiceManagementItems = [
   {
-    title: "CRM",
-    url: "/crm",
-    icon: Users,
-  },
-  {
     title: "Client Management",
     url: "/clients",
     icon: Users,
@@ -159,11 +114,6 @@ const practiceManagementItems = [
   {
     title: "Client Onboarding",
     url: "/onboarding",
-    icon: UserPlus,
-  },
-  {
-    title: "Team Management",
-    url: "/team",
     icon: UserPlus,
   },
   {
@@ -175,11 +125,6 @@ const practiceManagementItems = [
     title: "Payroll",
     url: "/finance-payroll",
     icon: Calculator,
-  },
-  {
-    title: "Security",
-    url: "/security",
-    icon: Shield,
   },
   {
     title: "Compliance",
