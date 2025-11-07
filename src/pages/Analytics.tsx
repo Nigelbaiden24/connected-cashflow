@@ -2,12 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter, Plus } from "lucide-react";
+import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter, Plus, Eye, List } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -44,7 +46,53 @@ const Analytics = () => {
   ]);
 
   const [newRevenue, setNewRevenue] = useState({ month: "", revenue: "", expenses: "" });
-  const [newCustomer, setNewCustomer] = useState({ month: "", customers: "" });
+  
+  // Individual customer tracking
+  interface IndividualCustomer {
+    id: string;
+    name: string;
+    revenue: number;
+    month: string;
+    date: string;
+  }
+  
+  const [individualCustomers, setIndividualCustomers] = useState<IndividualCustomer[]>([
+    { id: "1", name: "Acme Corp", revenue: 12500, month: "Jan", date: "2025-01-15" },
+    { id: "2", name: "TechStart Ltd", revenue: 8900, month: "Jan", date: "2025-01-22" },
+    { id: "3", name: "Global Industries", revenue: 15600, month: "Feb", date: "2025-02-05" },
+    { id: "4", name: "Innovation Hub", revenue: 11200, month: "Feb", date: "2025-02-18" },
+    { id: "5", name: "Future Systems", revenue: 9800, month: "Mar", date: "2025-03-08" },
+  ]);
+  
+  const [newIndividualCustomer, setNewIndividualCustomer] = useState({
+    name: "",
+    revenue: "",
+    month: "",
+    date: ""
+  });
+
+  // Calculate aggregate customer data from individual customers
+  const aggregateCustomerData = useMemo(() => {
+    const monthCounts: { [key: string]: number } = {};
+    
+    individualCustomers.forEach(customer => {
+      monthCounts[customer.month] = (monthCounts[customer.month] || 0) + 1;
+    });
+    
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let cumulative = 0;
+    
+    return months.map(month => {
+      const count = monthCounts[month] || 0;
+      cumulative += count;
+      return { month, customers: cumulative };
+    });
+  }, [individualCustomers]);
+
+  // Calculate total revenue from individual customers
+  const totalCustomerRevenue = useMemo(() => {
+    return individualCustomers.reduce((sum, customer) => sum + customer.revenue, 0);
+  }, [individualCustomers]);
 
   const handleDownloadPDF = async () => {
     if (!contentRef.current) return;
@@ -92,17 +140,30 @@ const Analytics = () => {
     }
   };
 
-  const handleAddCustomer = () => {
-    if (newCustomer.month && newCustomer.customers) {
-      setCustomerData([...customerData, {
-        month: newCustomer.month,
-        customers: parseInt(newCustomer.customers)
-      }]);
-      setNewCustomer({ month: "", customers: "" });
-      toast.success("Customer data added successfully");
+  const handleAddIndividualCustomer = () => {
+    if (newIndividualCustomer.name && newIndividualCustomer.revenue && newIndividualCustomer.month && newIndividualCustomer.date) {
+      const customer: IndividualCustomer = {
+        id: Date.now().toString(),
+        name: newIndividualCustomer.name,
+        revenue: parseFloat(newIndividualCustomer.revenue),
+        month: newIndividualCustomer.month,
+        date: newIndividualCustomer.date
+      };
+      setIndividualCustomers([...individualCustomers, customer]);
+      setNewIndividualCustomer({ name: "", revenue: "", month: "", date: "" });
+      toast.success("Customer added successfully");
     } else {
       toast.error("Please fill all customer fields");
     }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
   return (
@@ -275,52 +336,126 @@ const Analytics = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Customer Growth
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Customer Growth & Revenue
+              </div>
+              <div className="text-sm font-normal text-muted-foreground">
+                Total Revenue: {formatCurrency(totalCustomerRevenue)}
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={customerData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="customers" stroke="hsl(var(--primary))" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-            
-            <div className="border-t pt-4 space-y-3">
-              <h4 className="font-semibold flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add New Data
-              </h4>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="customer-month">Month</Label>
-                  <Input
-                    id="customer-month"
-                    placeholder="e.g., Jul"
-                    value={newCustomer.month}
-                    onChange={(e) => setNewCustomer({ ...newCustomer, month: e.target.value })}
-                  />
+          <CardContent>
+            <Tabs defaultValue="overview" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="overview" className="gap-2">
+                  <Eye className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="individual" className="gap-2">
+                  <List className="h-4 w-4" />
+                  Individual Customers
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-4">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={aggregateCustomerData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="customers" stroke="hsl(var(--primary))" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="text-sm text-muted-foreground">
+                  Total Customers: {individualCustomers.length}
                 </div>
-                <div>
-                  <Label htmlFor="customers">Customers</Label>
-                  <Input
-                    id="customers"
-                    type="number"
-                    placeholder="220"
-                    value={newCustomer.customers}
-                    onChange={(e) => setNewCustomer({ ...newCustomer, customers: e.target.value })}
-                  />
+              </TabsContent>
+
+              <TabsContent value="individual" className="space-y-4">
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Customer Name</TableHead>
+                        <TableHead>Revenue</TableHead>
+                        <TableHead>Month</TableHead>
+                        <TableHead>Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {individualCustomers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground">
+                            No customers added yet
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        individualCustomers.map((customer) => (
+                          <TableRow key={customer.id}>
+                            <TableCell className="font-medium">{customer.name}</TableCell>
+                            <TableCell>{formatCurrency(customer.revenue)}</TableCell>
+                            <TableCell>{customer.month}</TableCell>
+                            <TableCell>{customer.date}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
+              </TabsContent>
+
+              <div className="border-t pt-4 space-y-3">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add New Customer
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <Label htmlFor="customer-name">Customer Name</Label>
+                    <Input
+                      id="customer-name"
+                      placeholder="e.g., Acme Corp"
+                      value={newIndividualCustomer.name}
+                      onChange={(e) => setNewIndividualCustomer({ ...newIndividualCustomer, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="customer-revenue">Revenue (£)</Label>
+                    <Input
+                      id="customer-revenue"
+                      type="number"
+                      placeholder="12500"
+                      value={newIndividualCustomer.revenue}
+                      onChange={(e) => setNewIndividualCustomer({ ...newIndividualCustomer, revenue: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="customer-month">Month</Label>
+                    <Input
+                      id="customer-month"
+                      placeholder="e.g., Jan"
+                      value={newIndividualCustomer.month}
+                      onChange={(e) => setNewIndividualCustomer({ ...newIndividualCustomer, month: e.target.value })}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="customer-date">Date</Label>
+                    <Input
+                      id="customer-date"
+                      type="date"
+                      value={newIndividualCustomer.date}
+                      onChange={(e) => setNewIndividualCustomer({ ...newIndividualCustomer, date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <Button onClick={handleAddIndividualCustomer} size="sm" className="w-full">
+                  Add Customer
+                </Button>
               </div>
-              <Button onClick={handleAddCustomer} size="sm" className="w-full">
-                Add Customer Data
-              </Button>
-            </div>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
