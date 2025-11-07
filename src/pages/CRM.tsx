@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, TrendingUp, DollarSign, ArrowLeft } from "lucide-react";
+import { Users, TrendingUp, DollarSign, ArrowLeft, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 import { useNavigate } from "react-router-dom";
+import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
 
 const CRM = () => {
   const navigate = useNavigate();
   const [totalContacts, setTotalContacts] = useState(0);
   const [activeContacts, setActiveContacts] = useState(0);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     fetchStats();
@@ -39,15 +42,21 @@ const CRM = () => {
           <h1 className="text-3xl font-bold">CRM</h1>
           <p className="text-muted-foreground">Customer Relationship Management</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setImportDialogOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Import
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -87,7 +96,16 @@ const CRM = () => {
         </Card>
       </div>
 
-      <CRMBoard />
+      <CRMBoard key={refreshTrigger} />
+
+      <BulkImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImportComplete={() => {
+          fetchStats();
+          setRefreshTrigger(prev => prev + 1);
+        }}
+      />
     </div>
   );
 };
