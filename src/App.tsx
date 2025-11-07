@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { BusinessLayout } from "@/components/BusinessLayout";
 import { FinanceLayout } from "@/components/FinanceLayout";
+import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoginBusiness from "./pages/LoginBusiness";
 import Dashboard from "./pages/Dashboard";
@@ -30,13 +31,6 @@ import Security from "./pages/Security";
 import CRMContactDetail from "./pages/CRMContactDetail";
 import Payroll from "./pages/Payroll";
 import FinancePayroll from "./pages/FinancePayroll";
-import Recruitment from "./pages/Recruitment";
-import Technology from "./pages/Technology";
-import Finance from "./pages/Finance";
-import AllSectors from "./pages/AllSectors";
-import CandidateRegistration from "./pages/CandidateRegistration";
-import EmployerVacancy from "./pages/EmployerVacancy";
-import AdminJobs from "./pages/AdminJobs";
 import FinancialPlanning from "./pages/FinancialPlanning";
 import FinancialPlanDetail from "./pages/FinancialPlanDetail";
 import CreateFinancialPlan from "./pages/CreateFinancialPlan";
@@ -95,16 +89,9 @@ const App = () => {
           <Sonner />
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Recruitment />} />
-            <Route path="/recruitment" element={<Recruitment />} />
+            <Route path="/" element={<Index />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/technology" element={<Technology />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/all-sectors" element={<AllSectors />} />
-            <Route path="/candidate-registration" element={<CandidateRegistration />} />
-            <Route path="/employer-vacancy" element={<EmployerVacancy />} />
-            <Route path="/admin/jobs" element={<AdminJobs />} />
             <Route path="/login" element={
               isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
             } />
