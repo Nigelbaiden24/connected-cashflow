@@ -1,5 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   TrendingUp, 
   Building2, 
@@ -12,14 +16,36 @@ import {
   Target,
   Calendar,
   Sparkles,
-  Lock
+  Lock,
+  Video
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [demoDialogOpen, setDemoDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    company: "",
+    phone: "",
+    message: ""
+  });
+
+  const handleDemoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Demo Request Received!",
+      description: "Our team will contact you within 24 hours to schedule your demo.",
+    });
+    setDemoDialogOpen(false);
+    setFormData({ name: "", email: "", company: "", phone: "", message: "" });
+  };
 
   const financeFeatures = [
     { icon: TrendingUp, title: "Portfolio Management", desc: "Advanced investment tracking" },
@@ -57,7 +83,7 @@ const Index = () => {
           <nav className="hidden md:flex items-center gap-8">
             <button 
               onClick={() => navigate('/login')}
-              className="relative font-semibold text-lg group"
+              className="relative font-space-grotesk font-semibold text-lg group"
             >
               <span className="relative z-10">FlowPulse Finance</span>
               <span className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -66,7 +92,7 @@ const Index = () => {
             
             <button 
               onClick={() => navigate('/business-login')}
-              className="relative font-semibold text-lg group"
+              className="relative font-space-grotesk font-semibold text-lg group"
             >
               <span className="relative z-10">FlowPulse Business</span>
               <span className="absolute inset-0 bg-green-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -75,56 +101,124 @@ const Index = () => {
             
             <button 
               onClick={() => navigate('/pricing')}
-              className="relative font-semibold text-lg group"
+              className="relative font-space-grotesk font-semibold text-lg group"
             >
               <span className="relative z-10">Pricing</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 group-hover:w-full transition-all duration-300" />
             </button>
           </nav>
 
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/login')}>Sign In</Button>
-            <Button onClick={() => navigate('/pricing')}>Get Started</Button>
-          </div>
+          <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 font-semibold">
+                <Video className="mr-2 h-4 w-4" />
+                Book Demo
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-space-grotesk">Book Your Demo</DialogTitle>
+                <DialogDescription>
+                  Fill out the form below and our team will contact you within 24 hours to schedule your personalized demo.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleDemoSubmit} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    placeholder="John Smith"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Work Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="john@company.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company Name *</Label>
+                  <Input
+                    id="company"
+                    required
+                    value={formData.company}
+                    onChange={(e) => setFormData({...formData, company: e.target.value})}
+                    placeholder="Acme Corp"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    placeholder="+44 20 1234 5678"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">What would you like to see in the demo?</Label>
+                  <Textarea
+                    id="message"
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    placeholder="Tell us about your needs..."
+                    rows={3}
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                  Request Demo
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Background Image with Overlay */}
+        {/* Background Image with Lighter Overlay */}
         <div className="absolute inset-0">
           <img 
             src={heroBackground} 
             alt="Business Presentation" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/95 via-background/90 to-green-900/95" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-background/60 to-green-900/70" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
         </div>
 
         <div className="relative container mx-auto px-6 py-32 text-center">
           <div className="max-w-4xl mx-auto space-y-8">
-            <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/20 to-green-500/20 backdrop-blur-sm rounded-full border border-blue-500/30 mb-4">
-              <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+            <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
+              <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
                 ✨ AI-Powered Workflow Intelligence
               </span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white drop-shadow-2xl">
               <span className="block mb-2">Transform Your Workflow with</span>
-              <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent animate-gradient">
+              <span className="font-space-grotesk bg-gradient-to-r from-blue-300 via-cyan-300 to-green-300 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
                 FlowPulse Intelligence
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Enterprise platforms powered by AI for financial advisors and modern businesses
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
               <Button 
                 size="lg" 
-                className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/50"
+                className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-2xl shadow-blue-500/50 font-semibold"
                 onClick={() => navigate('/login')}
               >
                 <Sparkles className="mr-2 h-5 w-5" />
@@ -133,8 +227,7 @@ const Index = () => {
               </Button>
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="text-lg px-8 py-6 border-2 border-green-500 hover:bg-green-500/10 backdrop-blur-sm"
+                className="text-lg px-8 py-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-2xl shadow-green-500/50 font-semibold"
                 onClick={() => navigate('/business-login')}
               >
                 <Building2 className="mr-2 h-5 w-5" />
