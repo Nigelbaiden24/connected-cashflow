@@ -107,6 +107,11 @@ const financialPlanningItems = [
 
 const practiceManagementItems = [
   {
+    title: "CRM",
+    url: "/finance-crm",
+    icon: Users,
+  },
+  {
     title: "Client Management",
     url: "/clients",
     icon: Users,
