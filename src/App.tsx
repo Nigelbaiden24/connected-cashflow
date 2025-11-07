@@ -6,6 +6,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
+import { BusinessLayout } from "@/components/BusinessLayout";
+import { FinanceLayout } from "@/components/FinanceLayout";
 import Login from "./pages/Login";
 import LoginBusiness from "./pages/LoginBusiness";
 import Dashboard from "./pages/Dashboard";
@@ -113,309 +115,224 @@ const App = () => {
             {/* Protected routes with sidebar */}
             <Route path="/dashboard" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Dashboard />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Dashboard />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/theodore" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Chat />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Chat />
+                </FinanceLayout>
               )
             } />
             
             
             <Route path="/market" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <MarketData />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <MarketData />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/compliance" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Compliance />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Compliance />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/portfolio" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Portfolio />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Portfolio />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/financial-planning" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <FinancialPlanning />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinancialPlanning />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/goals" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <GoalPlanning />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <GoalPlanning />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/investments" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <InvestmentAnalysis />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <InvestmentAnalysis />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/risk" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <RiskAssessment />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <RiskAssessment />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/scenario" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <ScenarioAnalysis />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <ScenarioAnalysis />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/clients" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Clients />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Clients />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/clients/:id" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <ClientProfile />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <ClientProfile />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/onboarding" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <ClientOnboarding />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <ClientOnboarding />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/practice" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <PracticeManagement />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <PracticeManagement />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/reports" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Reports />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Reports />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/finance-payroll" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <FinancePayroll />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinancePayroll />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/crm/:id" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <CRMContactDetail />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <CRMContactDetail />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/chat" element={<Chat />} />
             
-            <Route path="/financial-planning" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <FinancialPlanning />
-                    </main>
-                  </div>
-                </SidebarProvider>
-              )
-            } />
-            
             <Route path="/financial-planning/new" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <CreateFinancialPlan />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <CreateFinancialPlan />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/financial-planning/:id" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <FinancialPlanDetail />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinancialPlanDetail />
+                </FinanceLayout>
               )
             } />
             
             <Route path="/settings" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
-                    <main className="flex-1">
-                      <Dashboard />
-                    </main>
-                  </div>
-                </SidebarProvider>
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Settings />
+                </FinanceLayout>
               )
             } />
             
           <Route path="/business-dashboard" element={
             !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessDashboard />
           } />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/business-planning" element={<BusinessPlanning />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/revenue" element={<Revenue />} />
-          <Route path="/team" element={<Team />} />
-            <Route path="/team/profile" element={<TeamProfile />} />
-            <Route path="/team/chat" element={<EnhancedTeamChat />} />
-            <Route path="/messages" element={<Messages />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/crm" element={<CRM />} />
-          <Route path="/crm/:id" element={<CRMContactDetail />} />
-          <Route path="/payroll" element={<Payroll />} />
-          <Route path="/security" element={<Security />} />
-          <Route path="/business-ai-generator" element={<BusinessAIGenerator />} />
+          <Route path="/projects" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Projects /></BusinessLayout>
+          } />
+          <Route path="/tasks" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Tasks /></BusinessLayout>
+          } />
+          <Route path="/calendar" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Calendar /></BusinessLayout>
+          } />
+          <Route path="/business-planning" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><BusinessPlanning /></BusinessLayout>
+          } />
+          <Route path="/analytics" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Analytics /></BusinessLayout>
+          } />
+          <Route path="/revenue" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Revenue /></BusinessLayout>
+          } />
+          <Route path="/team" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Team /></BusinessLayout>
+          } />
+          <Route path="/team/profile" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><TeamProfile /></BusinessLayout>
+          } />
+          <Route path="/team/chat" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><EnhancedTeamChat /></BusinessLayout>
+          } />
+          <Route path="/messages" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Messages /></BusinessLayout>
+          } />
+          <Route path="/crm" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><CRM /></BusinessLayout>
+          } />
+          <Route path="/crm/:id" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><CRMContactDetail /></BusinessLayout>
+          } />
+          <Route path="/payroll" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Payroll /></BusinessLayout>
+          } />
+          <Route path="/security" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Security /></BusinessLayout>
+          } />
+          <Route path="/business-ai-generator" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><BusinessAIGenerator /></BusinessLayout>
+          } />
+          <Route path="/settings" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Settings /></BusinessLayout>
+          } />
           
           <Route path="/finance-ai-generator" element={
             !isAuthenticated ? <Navigate to="/login" replace /> : (
-              <SidebarProvider>
-                <div className="flex min-h-screen w-full">
-                  <main className="flex-1">
-                    <FinanceAIGenerator />
-                  </main>
-                </div>
-              </SidebarProvider>
+              <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                <FinanceAIGenerator />
+              </FinanceLayout>
             )
           } />
           
