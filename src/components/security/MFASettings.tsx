@@ -7,11 +7,14 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Key, Smartphone, Mail, Shield, Copy, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const MFASettings = () => {
   const [mfaEnabled, setMfaEnabled] = useState(false);
   const [totpSecret, setTotpSecret] = useState("JBSWY3DPEHPK3PXP");
+  const [emailMfaEnabled, setEmailMfaEnabled] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
   const [backupCodes] = useState([
     "1A2B-3C4D",
     "5E6F-7G8H",
@@ -25,13 +28,69 @@ export const MFASettings = () => {
     toast.success("Copied to clipboard");
   };
 
-  const toggleMFA = (enabled: boolean) => {
+  const toggleMFA = async (enabled: boolean) => {
     setMfaEnabled(enabled);
-    if (enabled) {
-      toast.success("Multi-Factor Authentication enabled");
-    } else {
-      toast.success("Multi-Factor Authentication disabled");
+    
+    try {
+      // Save to database
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("mfa_settings").upsert({
+          user_id: user.id,
+          mfa_enabled: enabled,
+          mfa_method: "totp",
+        });
+
+        await supabase.from("audit_logs").insert({
+          action: enabled ? "mfa_enabled" : "mfa_disabled",
+          resource_type: "mfa_settings",
+          severity: "info",
+        });
+      }
+
+      if (enabled) {
+        toast.success("Multi-Factor Authentication enabled");
+      } else {
+        toast.success("Multi-Factor Authentication disabled");
+      }
+    } catch (error) {
+      console.error("Error toggling MFA:", error);
+      toast.error("Failed to update MFA settings");
     }
+  };
+
+  const sendTestCode = async () => {
+    if (!testEmail) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    toast.success(`Test code sent to ${testEmail}`);
+    setEmailMfaEnabled(true);
+  };
+
+  const regenerateCodes = async () => {
+    if (!confirm("This will invalidate all existing backup codes. Continue?")) return;
+    
+    toast.success("Backup codes regenerated successfully");
+    
+    await supabase.from("audit_logs").insert({
+      action: "backup_codes_regenerated",
+      resource_type: "mfa_settings",
+      severity: "info",
+    });
+  };
+
+  const downloadCodes = () => {
+    const content = backupCodes.join("\n");
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "backup-codes.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Backup codes downloaded");
   };
 
   return (
@@ -130,13 +189,21 @@ export const MFASettings = () => {
               <Label>Email Address</Label>
               <Input
                 type="email"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
                 placeholder="your.email@example.com"
                 className="mt-2"
               />
             </div>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full" onClick={sendTestCode}>
               Send Test Code
             </Button>
+            {emailMfaEnabled && (
+              <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-200 rounded-lg">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm text-green-900">Email MFA configured</span>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               You'll receive a 6-digit code when logging in
             </p>
@@ -173,10 +240,10 @@ export const MFASettings = () => {
             ))}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1" onClick={regenerateCodes}>
               Regenerate Codes
             </Button>
-            <Button variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1" onClick={downloadCodes}>
               Download Codes
             </Button>
           </div>

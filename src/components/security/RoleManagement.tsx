@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Shield, Users } from "lucide-react";
+import { Plus, Shield, Users, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -89,6 +89,30 @@ export const RoleManagement = () => {
         ? prev.permissions.filter((p) => p !== permission)
         : [...prev.permissions, permission],
     }));
+  };
+
+  const deleteRole = async (id: string, userId: string) => {
+    if (!confirm("Are you sure you want to remove this role assignment?")) return;
+
+    try {
+      const { error } = await supabase.from("user_roles").delete().eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Role removed successfully");
+      fetchRoles();
+
+      await supabase.from("audit_logs").insert({
+        action: "role_removed",
+        resource_type: "user_roles",
+        resource_id: id,
+        severity: "warning",
+        details: { user_id: userId },
+      });
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      toast.error("Failed to remove role");
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -225,12 +249,13 @@ export const RoleManagement = () => {
                 <TableHead>Role</TableHead>
                 <TableHead>Permissions</TableHead>
                 <TableHead>Assigned</TableHead>
+                <TableHead className="w-20">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {roles.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                     No roles assigned yet
                   </TableCell>
                 </TableRow>
@@ -261,6 +286,15 @@ export const RoleManagement = () => {
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(role.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteRole(role.id, role.user_id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))

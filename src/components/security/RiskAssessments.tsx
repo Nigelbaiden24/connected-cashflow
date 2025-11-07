@@ -8,13 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, AlertTriangle, TrendingUp, TrendingDown, Trash2, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const RiskAssessments = () => {
   const [risks, setRisks] = useState<any[]>([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingRisk, setEditingRisk] = useState<any>(null);
   const [newRisk, setNewRisk] = useState({
     assessment_name: "",
     category: "",
@@ -22,6 +23,7 @@ export const RiskAssessments = () => {
     risk_level: "medium",
     impact_score: 5,
     likelihood_score: 5,
+    mitigation_status: "open",
   });
 
   useEffect(() => {
@@ -54,20 +56,100 @@ export const RiskAssessments = () => {
       if (error) throw error;
 
       toast.success("Risk assessment created");
-      setShowAddDialog(false);
-      setNewRisk({
-        assessment_name: "",
-        category: "",
-        description: "",
-        risk_level: "medium",
-        impact_score: 5,
-        likelihood_score: 5,
-      });
+      resetForm();
       fetchRisks();
+
+      await supabase.from("audit_logs").insert({
+        action: "risk_assessment_created",
+        resource_type: "cyber_risk_assessments",
+        severity: "info",
+        details: { name: newRisk.assessment_name, level: newRisk.risk_level },
+      });
     } catch (error) {
       console.error("Error adding risk:", error);
       toast.error("Failed to create risk assessment");
     }
+  };
+
+  const updateRisk = async () => {
+    if (!editingRisk || !newRisk.assessment_name || !newRisk.category) {
+      toast.error("Please fill required fields");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("cyber_risk_assessments")
+        .update(newRisk)
+        .eq("id", editingRisk.id);
+
+      if (error) throw error;
+
+      toast.success("Risk assessment updated");
+      resetForm();
+      fetchRisks();
+
+      await supabase.from("audit_logs").insert({
+        action: "risk_assessment_updated",
+        resource_type: "cyber_risk_assessments",
+        resource_id: editingRisk.id,
+        severity: "info",
+      });
+    } catch (error) {
+      console.error("Error updating risk:", error);
+      toast.error("Failed to update risk assessment");
+    }
+  };
+
+  const deleteRisk = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete the risk assessment "${name}"?`)) return;
+
+    try {
+      const { error } = await supabase.from("cyber_risk_assessments").delete().eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Risk assessment deleted");
+      fetchRisks();
+
+      await supabase.from("audit_logs").insert({
+        action: "risk_assessment_deleted",
+        resource_type: "cyber_risk_assessments",
+        resource_id: id,
+        severity: "warning",
+        details: { name },
+      });
+    } catch (error) {
+      console.error("Error deleting risk:", error);
+      toast.error("Failed to delete risk assessment");
+    }
+  };
+
+  const openEditDialog = (risk: any) => {
+    setEditingRisk(risk);
+    setNewRisk({
+      assessment_name: risk.assessment_name,
+      category: risk.category,
+      description: risk.description || "",
+      risk_level: risk.risk_level,
+      impact_score: risk.impact_score,
+      likelihood_score: risk.likelihood_score,
+      mitigation_status: risk.mitigation_status || "open",
+    });
+  };
+
+  const resetForm = () => {
+    setShowAddDialog(false);
+    setEditingRisk(null);
+    setNewRisk({
+      assessment_name: "",
+      category: "",
+      description: "",
+      risk_level: "medium",
+      impact_score: 5,
+      likelihood_score: 5,
+      mitigation_status: "open",
+    });
   };
 
   const getRiskColor = (level: string) => {
@@ -102,7 +184,10 @@ export const RiskAssessments = () => {
             Track and manage cybersecurity risks across your organization
           </p>
         </div>
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <Dialog open={showAddDialog || !!editingRisk} onOpenChange={(open) => {
+          if (!open) resetForm();
+          else setShowAddDialog(open);
+        }}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -111,7 +196,7 @@ export const RiskAssessments = () => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create Risk Assessment</DialogTitle>
+              <DialogTitle>{editingRisk ? "Edit Risk Assessment" : "Create Risk Assessment"}</DialogTitle>
               <DialogDescription>Add a new cybersecurity risk</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -198,7 +283,9 @@ export const RiskAssessments = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={addRisk}>Create Assessment</Button>
+              <Button onClick={editingRisk ? updateRisk : addRisk}>
+                {editingRisk ? "Update Assessment" : "Create Assessment"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -267,12 +354,13 @@ export const RiskAssessments = () => {
                 <TableHead>Impact</TableHead>
                 <TableHead>Likelihood</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {risks.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     No risk assessments found
                   </TableCell>
                 </TableRow>
@@ -307,6 +395,24 @@ export const RiskAssessments = () => {
                       >
                         {risk.mitigation_status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditDialog(risk)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteRisk(risk.id, risk.assessment_name)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
