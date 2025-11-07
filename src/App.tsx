@@ -242,14 +242,6 @@ const App = () => {
               )
             } />
             
-            <Route path="/crm/:id" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                  <CRMContactDetail />
-                </FinanceLayout>
-              )
-            } />
-            
             <Route path="/chat" element={<Chat />} />
             
             <Route path="/financial-planning/new" element={
@@ -264,14 +256,6 @@ const App = () => {
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <FinancialPlanDetail />
-                </FinanceLayout>
-              )
-            } />
-            
-            <Route path="/settings" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                  <Settings />
                 </FinanceLayout>
               )
             } />
