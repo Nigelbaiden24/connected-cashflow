@@ -10,10 +10,13 @@ import {
   Shield,
   Zap,
   Target,
-  Calendar
+  Calendar,
+  Sparkles,
+  Lock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import heroBackground from "@/assets/business-presentation-hero.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -87,76 +90,101 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-24 text-center">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="inline-block px-4 py-2 bg-primary/10 rounded-full mb-4">
-            <span className="text-sm font-semibold text-primary">Two Powerful Platforms, One Vision</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
-            Workflow Intelligence for{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-              Finance
-            </span>
-            {" "}and{" "}
-            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Business
-            </span>
-          </h1>
-          
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Enterprise-grade platforms powered by AI to transform how financial advisors and businesses operate
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Button size="lg" className="text-lg" onClick={() => navigate('/login')}>
-              Explore Finance Platform
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg" onClick={() => navigate('/business-login')}>
-              Explore Business Platform
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+      <section className="relative overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0">
+          <img 
+            src={heroBackground} 
+            alt="Business Presentation" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/95 via-background/90 to-green-900/95" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        </div>
+
+        <div className="relative container mx-auto px-6 py-32 text-center">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/20 to-green-500/20 backdrop-blur-sm rounded-full border border-blue-500/30 mb-4">
+              <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 to-green-400 bg-clip-text text-transparent">
+                ✨ AI-Powered Workflow Intelligence
+              </span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+              <span className="block mb-2">Transform Your Workflow with</span>
+              <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent animate-gradient">
+                FlowPulse Intelligence
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-blue-100 max-w-2xl mx-auto">
+              Enterprise platforms powered by AI for financial advisors and modern businesses
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
+              <Button 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/50"
+                onClick={() => navigate('/login')}
+              >
+                <Sparkles className="mr-2 h-5 w-5" />
+                Explore Finance Platform
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-6 border-2 border-green-500 hover:bg-green-500/10 backdrop-blur-sm"
+                onClick={() => navigate('/business-login')}
+              >
+                <Building2 className="mr-2 h-5 w-5" />
+                Explore Business Platform
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Platforms Showcase */}
-      <section className="container mx-auto px-6 py-16">
+      <section className="container mx-auto px-6 py-16 -mt-20 relative z-10">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Finance Platform */}
-          <Card className="relative overflow-hidden border-2 hover:border-blue-500/50 transition-all group">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden border-2 border-blue-500/30 hover:border-blue-500/60 transition-all group bg-gradient-to-br from-blue-950/50 to-background backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-blue-500/30 blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-cyan-500/20 blur-3xl opacity-0 group-hover:opacity-50 transition-opacity" />
             
             <CardHeader className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl">
-                  <TrendingUp className="h-8 w-8 text-white" />
+                <div className="p-4 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg shadow-blue-500/50">
+                  <TrendingUp className="h-10 w-10 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">FlowPulse Finance</CardTitle>
-                  <CardDescription>For Financial Advisors & Wealth Managers</CardDescription>
+                  <CardTitle className="text-3xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                    FlowPulse Finance
+                  </CardTitle>
+                  <CardDescription className="text-base">For Financial Advisors & Wealth Managers</CardDescription>
                 </div>
               </div>
             </CardHeader>
             
             <CardContent className="relative space-y-6">
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground leading-relaxed">
                 Complete financial advisory platform with portfolio management, client onboarding, compliance tools, and AI-powered insights.
               </p>
               
               <div className="grid grid-cols-2 gap-4">
                 {financeFeatures.map((feature, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <feature.icon className="h-5 w-5 text-blue-600" />
+                  <div key={idx} className="space-y-2 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-colors">
+                    <feature.icon className="h-6 w-6 text-blue-400" />
                     <h4 className="font-semibold text-sm">{feature.title}</h4>
                     <p className="text-xs text-muted-foreground">{feature.desc}</p>
                   </div>
                 ))}
               </div>
               
-              <Button className="w-full" onClick={() => navigate('/login')}>
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30" onClick={() => navigate('/login')}>
                 Access Finance Platform
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -164,38 +192,41 @@ const Index = () => {
           </Card>
 
           {/* Business Platform */}
-          <Card className="relative overflow-hidden border-2 hover:border-green-500/50 transition-all group">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-green-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Card className="relative overflow-hidden border-2 border-green-500/30 hover:border-green-500/60 transition-all group bg-gradient-to-br from-green-950/50 to-background backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-green-500/30 blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-emerald-500/20 blur-3xl opacity-0 group-hover:opacity-50 transition-opacity" />
             
             <CardHeader className="relative">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl">
-                  <Building2 className="h-8 w-8 text-white" />
+                <div className="p-4 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl shadow-lg shadow-green-500/50">
+                  <Building2 className="h-10 w-10 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl">FlowPulse Business</CardTitle>
-                  <CardDescription>For Modern Teams & Enterprises</CardDescription>
+                  <CardTitle className="text-3xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                    FlowPulse Business
+                  </CardTitle>
+                  <CardDescription className="text-base">For Modern Teams & Enterprises</CardDescription>
                 </div>
               </div>
             </CardHeader>
             
             <CardContent className="relative space-y-6">
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground leading-relaxed">
                 Comprehensive business management platform with project tracking, team collaboration, CRM, and advanced analytics.
               </p>
               
               <div className="grid grid-cols-2 gap-4">
                 {businessFeatures.map((feature, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <feature.icon className="h-5 w-5 text-green-600" />
+                  <div key={idx} className="space-y-2 p-3 rounded-lg bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 transition-colors">
+                    <feature.icon className="h-6 w-6 text-green-400" />
                     <h4 className="font-semibold text-sm">{feature.title}</h4>
                     <p className="text-xs text-muted-foreground">{feature.desc}</p>
                   </div>
                 ))}
               </div>
               
-              <Button className="w-full" onClick={() => navigate('/business-login')}>
+              <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30" onClick={() => navigate('/business-login')}>
                 Access Business Platform
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -205,11 +236,17 @@ const Index = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="bg-muted/30 py-16">
-        <div className="container mx-auto px-6">
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-background to-green-500/5" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-green-500/10 blur-3xl rounded-full" />
+        
+        <div className="relative container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Why Choose FlowPulse?</h2>
+              <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 bg-clip-text text-transparent">
+                Why Choose FlowPulse?
+              </h2>
               <p className="text-muted-foreground text-lg">
                 Enterprise features built for modern workflows
               </p>
@@ -217,8 +254,11 @@ const Index = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {benefits.map((benefit, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-4 bg-background rounded-lg border">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                <div 
+                  key={idx} 
+                  className="flex items-center gap-3 p-5 bg-background/80 backdrop-blur-sm rounded-lg border border-primary/20 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all group"
+                >
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="font-medium">{benefit}</span>
                 </div>
               ))}
@@ -229,20 +269,35 @@ const Index = () => {
 
       {/* CTA Section */}
       <section className="container mx-auto px-6 py-24">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl font-bold">Ready to Transform Your Workflow?</h2>
-          <p className="text-xl text-muted-foreground">
-            Join thousands of professionals using FlowPulse to streamline their operations
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/pricing')}>
-              View Pricing
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/about')}>
-              Learn More
-            </Button>
-          </div>
+        <div className="max-w-4xl mx-auto">
+          <Card className="relative overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-blue-950/30 via-background to-green-950/30">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-green-500/10" />
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 blur-3xl" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-500/20 blur-3xl" />
+            
+            <CardContent className="relative text-center space-y-8 py-16 px-8">
+              <div className="inline-block p-3 bg-gradient-to-r from-blue-600 to-green-600 rounded-full mb-4">
+                <Lock className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-4xl font-bold">Ready to Transform Your Workflow?</h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Join thousands of professionals using FlowPulse to streamline their operations
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  onClick={() => navigate('/pricing')}
+                >
+                  View Pricing
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => navigate('/about')}>
+                  Learn More
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 

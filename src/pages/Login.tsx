@@ -54,7 +54,12 @@ const Login = ({ onLogin }: LoginProps) => {
       {/* Left Side - Branding */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white">
         <div>
-          <img src={flowpulseLogo} alt="FlowPulse Finance" className="h-12 mb-8" />
+          <img 
+            src={flowpulseLogo} 
+            alt="FlowPulse Finance" 
+            className="h-12 mb-8 cursor-pointer hover:scale-105 transition-transform" 
+            onClick={() => window.location.href = '/'}
+          />
           <h1 className="text-4xl font-bold mb-4">Welcome to FlowPulse Finance</h1>
           <p className="text-xl text-blue-100 mb-8">
             Your intelligent financial advisory platform for wealth management excellence
@@ -102,7 +107,12 @@ const Login = ({ onLogin }: LoginProps) => {
       <div className="flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
           <div className="lg:hidden text-center mb-8">
-            <img src={flowpulseLogo} alt="FlowPulse Finance" className="h-10 mx-auto mb-4" />
+            <img 
+              src={flowpulseLogo} 
+              alt="FlowPulse Finance" 
+              className="h-10 mx-auto mb-4 cursor-pointer" 
+              onClick={() => window.location.href = '/'}
+            />
           </div>
           
           <div>
