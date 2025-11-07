@@ -1,12 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign, ArrowLeft, FileText, Calendar, UserPlus, PieChart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { CRMBoard } from "@/components/CRMBoard";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 const Dashboard = () => {
@@ -160,104 +158,93 @@ const Dashboard = () => {
         </Badge>
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="crm">CRM</TabsTrigger>
-        </TabsList>
+      <div>
+        {/* Metrics Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {metrics.map((metric) => (
+            <Card key={metric.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {metric.title}
+                </CardTitle>
+                <metric.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{metric.value}</div>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  {metric.trend === "up" ? (
+                    <TrendingUp className="mr-1 h-3 w-3 text-success" />
+                  ) : (
+                    <TrendingDown className="mr-1 h-3 w-3 text-success" />
+                  )}
+                  <span className="text-success">{metric.change}</span>
+                  <span className="ml-1">from last month</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          {/* Metrics Grid */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {metrics.map((metric) => (
-              <Card key={metric.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {metric.title}
-                  </CardTitle>
-                  <metric.icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metric.value}</div>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    {metric.trend === "up" ? (
-                      <TrendingUp className="mr-1 h-3 w-3 text-success" />
-                    ) : (
-                      <TrendingDown className="mr-1 h-3 w-3 text-success" />
-                    )}
-                    <span className="text-success">{metric.change}</span>
-                    <span className="ml-1">from last month</span>
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common tasks and operations</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {quickActions.map((action, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  className="h-auto flex-col items-start p-4 hover:bg-accent"
+                  onClick={() => navigate(action.path)}
+                >
+                  <action.icon className="h-6 w-6 mb-2 text-primary" />
+                  <div className="text-left">
+                    <div className="font-semibold">{action.title}</div>
+                    <div className="text-xs text-muted-foreground">{action.description}</div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks and operations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {quickActions.map((action, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outline"
-                    className="h-auto flex-col items-start p-4 hover:bg-accent"
-                    onClick={() => navigate(action.path)}
-                  >
-                    <action.icon className="h-6 w-6 mb-2 text-primary" />
-                    <div className="text-left">
-                      <div className="font-semibold">{action.title}</div>
-                      <div className="text-xs text-muted-foreground">{action.description}</div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Queries</CardTitle>
-              <CardDescription>
-                Latest advisor interactions with the AI assistant
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentQueries.map((query, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between border-b pb-4 last:border-0"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {query.query}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        by {query.advisor} • {query.time}
-                      </p>
-                    </div>
-                    <Badge
-                      variant={query.status === "resolved" ? "secondary" : "outline"}
-                    >
-                      {query.status}
-                    </Badge>
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Queries</CardTitle>
+            <CardDescription>
+              Latest advisor interactions with the AI assistant
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentQueries.map((query, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b pb-4 last:border-0"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {query.query}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      by {query.advisor} • {query.time}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="crm">
-          <CRMBoard />
-        </TabsContent>
-      </Tabs>
+                  <Badge
+                    variant={query.status === "resolved" ? "secondary" : "outline"}
+                  >
+                    {query.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
