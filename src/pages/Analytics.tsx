@@ -20,6 +20,12 @@ const Analytics = () => {
     { month: "Apr", revenue: 61000, expenses: 38000 },
     { month: "May", revenue: 55000, expenses: 36000 },
     { month: "Jun", revenue: 67000, expenses: 40000 },
+    { month: "Jul", revenue: 71000, expenses: 42000 },
+    { month: "Aug", revenue: 68000, expenses: 41000 },
+    { month: "Sep", revenue: 74000, expenses: 43000 },
+    { month: "Oct", revenue: 79000, expenses: 45000 },
+    { month: "Nov", revenue: 82000, expenses: 46000 },
+    { month: "Dec", revenue: 88000, expenses: 48000 },
   ]);
 
   const [customerData, setCustomerData] = useState([
@@ -29,6 +35,12 @@ const Analytics = () => {
     { month: "Apr", customers: 178 },
     { month: "May", customers: 195 },
     { month: "Jun", customers: 215 },
+    { month: "Jul", customers: 238 },
+    { month: "Aug", customers: 255 },
+    { month: "Sep", customers: 276 },
+    { month: "Oct", customers: 295 },
+    { month: "Nov", customers: 318 },
+    { month: "Dec", customers: 342 },
   ]);
 
   const [newRevenue, setNewRevenue] = useState({ month: "", revenue: "", expenses: "" });
