@@ -12,12 +12,12 @@ import { Users, DollarSign, TrendingUp, Calendar, Briefcase, Target, Filter, Dow
 
 // Practice management data
 const practiceMetrics = {
-  totalClients: 247,
-  assetsUnderManagement: 125600000,
-  monthlyRevenue: 89500,
-  growthRate: 12.3,
-  clientRetention: 94.7,
-  averageClientValue: 508502
+  totalClients: 289,
+  assetsUnderManagement: 142800000,
+  monthlyRevenue: 102300,
+  growthRate: 15.8,
+  clientRetention: 95.2,
+  averageClientValue: 494115
 };
 
 const clientGrowth = [
@@ -26,7 +26,13 @@ const clientGrowth = [
   { month: "Mar", newClients: 6, totalClients: 228 },
   { month: "Apr", newClients: 9, totalClients: 237 },
   { month: "May", newClients: 10, totalClients: 247 },
-  { month: "Jun", newClients: 0, totalClients: 247 }
+  { month: "Jun", newClients: 7, totalClients: 254 },
+  { month: "Jul", newClients: 11, totalClients: 265 },
+  { month: "Aug", newClients: 5, totalClients: 270 },
+  { month: "Sep", newClients: 8, totalClients: 278 },
+  { month: "Oct", newClients: 6, totalClients: 284 },
+  { month: "Nov", newClients: 5, totalClients: 289 },
+  { month: "Dec", newClients: 0, totalClients: 289 }
 ];
 
 const revenueData = [
@@ -35,44 +41,54 @@ const revenueData = [
   { month: "Mar", revenue: 79800, fees: 73600, commissions: 6200 },
   { month: "Apr", revenue: 86400, fees: 80100, commissions: 6300 },
   { month: "May", revenue: 89500, fees: 82800, commissions: 6700 },
-  { month: "Jun", revenue: 91200, fees: 84200, commissions: 7000 }
+  { month: "Jun", revenue: 91200, fees: 84200, commissions: 7000 },
+  { month: "Jul", revenue: 94800, fees: 87500, commissions: 7300 },
+  { month: "Aug", revenue: 88600, fees: 81800, commissions: 6800 },
+  { month: "Sep", revenue: 96200, fees: 88900, commissions: 7300 },
+  { month: "Oct", revenue: 99100, fees: 91400, commissions: 7700 },
+  { month: "Nov", revenue: 102300, fees: 94500, commissions: 7800 },
+  { month: "Dec", revenue: 105600, fees: 97300, commissions: 8300 }
 ];
 
 const clientSegmentation = [
-  { segment: "High Net Worth", value: 65, color: "#8884d8", clients: 42, aum: 78500000 },
-  { segment: "Mass Affluent", value: 25, color: "#82ca9d", clients: 89, aum: 32100000 },
-  { segment: "Emerging Wealth", value: 7, color: "#ffc658", clients: 78, aum: 8900000 },
-  { segment: "Retirement Focus", value: 3, color: "#ff7300", clients: 38, aum: 6100000 }
+  { segment: "High Net Worth", value: 62, color: "#8884d8", clients: 48, aum: 88500000 },
+  { segment: "Mass Affluent", value: 27, color: "#82ca9d", clients: 102, aum: 38600000 },
+  { segment: "Emerging Wealth", value: 8, color: "#ffc658", clients: 95, aum: 11400000 },
+  { segment: "Retirement Focus", value: 3, color: "#ff7300", clients: 44, aum: 4300000 }
 ];
 
 const upcomingTasks = [
-  { id: 1, client: "Robert Chen", task: "Quarterly Review", due: "2024-01-15", priority: "high", type: "meeting" },
-  { id: 2, client: "Sarah Williams", task: "Portfolio Rebalancing", due: "2024-01-16", priority: "medium", type: "action" },
-  { id: 3, client: "Michael Davis", task: "Tax Planning Discussion", due: "2024-01-18", priority: "high", type: "meeting" },
-  { id: 4, client: "Lisa Thompson", task: "Insurance Review", due: "2024-01-20", priority: "low", type: "review" },
-  { id: 5, client: "David Park", task: "Goal Assessment Update", due: "2024-01-22", priority: "medium", type: "action" }
+  { id: 1, client: "Robert Chen", task: "Annual Review Meeting", due: "2024-12-18", priority: "high", type: "meeting" },
+  { id: 2, client: "Sarah Williams", task: "Year-End Tax Planning", due: "2024-12-20", priority: "high", type: "action" },
+  { id: 3, client: "Michael Davis", task: "Portfolio Rebalancing", due: "2024-12-22", priority: "medium", type: "action" },
+  { id: 4, client: "Lisa Thompson", task: "2025 Goals Discussion", due: "2024-12-28", priority: "medium", type: "meeting" },
+  { id: 5, client: "David Park", task: "Q4 Performance Review", due: "2024-12-30", priority: "high", type: "review" },
+  { id: 6, client: "Emma Wilson", task: "Investment Strategy Update", due: "2025-01-05", priority: "medium", type: "meeting" },
+  { id: 7, client: "James Foster", task: "Estate Planning Review", due: "2025-01-08", priority: "high", type: "review" }
 ];
 
 const recentActivities = [
-  { id: 1, type: "client_meeting", client: "Jennifer Martinez", description: "Annual portfolio review completed", time: "2 hours ago" },
-  { id: 2, type: "new_client", client: "Thomas Anderson", description: "New client onboarding started", time: "5 hours ago" },
-  { id: 3, type: "trade_execution", client: "Susan Garcia", description: "Portfolio rebalancing executed", time: "1 day ago" },
-  { id: 4, type: "compliance", client: "All Clients", description: "Monthly compliance report generated", time: "2 days ago" },
-  { id: 5, type: "document_upload", client: "Mark Johnson", description: "Updated investment policy statement", time: "3 days ago" }
+  { id: 1, type: "client_meeting", client: "Jennifer Martinez", description: "Year-end portfolio review completed", time: "2 hours ago" },
+  { id: 2, type: "new_client", client: "Oliver Thompson", description: "New client onboarding completed - £2.1M AUM", time: "4 hours ago" },
+  { id: 3, type: "trade_execution", client: "Susan Garcia", description: "Year-end tax loss harvesting executed", time: "6 hours ago" },
+  { id: 4, type: "compliance", client: "All Clients", description: "Annual compliance audit completed", time: "1 day ago" },
+  { id: 5, type: "document_upload", client: "Mark Johnson", description: "2025 financial plan approved and signed", time: "1 day ago" },
+  { id: 6, type: "client_meeting", client: "Rachel Kumar", description: "Quarterly business review meeting held", time: "2 days ago" },
+  { id: 7, type: "trade_execution", client: "David Chen", description: "Portfolio rebalancing to target allocation", time: "3 days ago" }
 ];
 
 const performanceMetrics = [
-  { metric: "Client Satisfaction", value: 4.8, target: 4.5, unit: "/5", status: "excellent" },
-  { metric: "Response Time", value: 2.3, target: 4.0, unit: " hours", status: "excellent" },
-  { metric: "Meeting Completion", value: 96, target: 90, unit: "%", status: "good" },
-  { metric: "Referral Rate", value: 18, target: 15, unit: "%", status: "good" },
-  { metric: "Client Retention", value: 94.7, target: 92, unit: "%", status: "excellent" },
-  { metric: "Revenue Growth", value: 12.3, target: 10, unit: "%", status: "excellent" }
+  { metric: "Client Satisfaction", value: 4.9, target: 4.5, unit: "/5", status: "excellent" },
+  { metric: "Response Time", value: 2.1, target: 4.0, unit: " hours", status: "excellent" },
+  { metric: "Meeting Completion", value: 97, target: 90, unit: "%", status: "excellent" },
+  { metric: "Referral Rate", value: 22, target: 15, unit: "%", status: "excellent" },
+  { metric: "Client Retention", value: 95.2, target: 92, unit: "%", status: "excellent" },
+  { metric: "Revenue Growth", value: 15.8, target: 10, unit: "%", status: "excellent" }
 ];
 
 export default function PracticeManagement() {
   const navigate = useNavigate();
-  const [selectedTimeframe, setSelectedTimeframe] = useState("6months");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("12months");
   const [selectedSegment, setSelectedSegment] = useState("all");
   const [activities, setActivities] = useState(recentActivities);
 
@@ -208,7 +224,7 @@ export default function PracticeManagement() {
           <CardContent>
             <div className="text-2xl font-bold">{practiceMetrics.totalClients}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-success">+10 this month</span>
+              <span className="text-success">+79 this year</span>
             </p>
           </CardContent>
         </Card>
@@ -234,7 +250,7 @@ export default function PracticeManagement() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(practiceMetrics.monthlyRevenue)}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-success">+8.2% vs last month</span>
+              <span className="text-success">+34.5% YoY growth</span>
             </p>
           </CardContent>
         </Card>
@@ -379,16 +395,16 @@ export default function PracticeManagement() {
                 <div className="p-4 rounded-lg bg-background border">
                   <div className="text-sm text-muted-foreground">Average Client Value</div>
                   <div className="text-2xl font-bold">{formatCurrency(practiceMetrics.averageClientValue)}</div>
-                  <div className="text-sm text-success">+5.2% vs last quarter</div>
+                  <div className="text-sm text-success">+8.7% vs last year</div>
                 </div>
                 <div className="p-4 rounded-lg bg-background border">
                   <div className="text-sm text-muted-foreground">Client Acquisition Cost</div>
-                  <div className="text-2xl font-bold">$2,450</div>
+                  <div className="text-2xl font-bold">£2,280</div>
                   <div className="text-sm text-muted-foreground">Average cost per new client</div>
                 </div>
                 <div className="p-4 rounded-lg bg-background border">
                   <div className="text-sm text-muted-foreground">Lifetime Value</div>
-                  <div className="text-2xl font-bold">$156K</div>
+                  <div className="text-2xl font-bold">£168K</div>
                   <div className="text-sm text-muted-foreground">Projected client lifetime value</div>
                 </div>
               </div>
