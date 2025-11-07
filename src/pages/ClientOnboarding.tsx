@@ -13,11 +13,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { UserPlus, Calendar as CalendarIcon, FileText, Shield, Target, CheckCircle2, Clock, AlertCircle, ArrowLeft } from "lucide-react";
+import { UserPlus, Calendar as CalendarIcon, FileText, Shield, Target, CheckCircle2, Clock, AlertCircle, ArrowLeft, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { NewClientDialog } from "@/components/NewClientDialog";
 
 // Onboarding steps
 const onboardingSteps = [
@@ -80,6 +81,7 @@ export default function ClientOnboarding() {
   const [selectedClient, setSelectedClient] = useState<string>("");
   const [isNewClient, setIsNewClient] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [showNewClientDialog, setShowNewClientDialog] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -221,6 +223,14 @@ export default function ClientOnboarding() {
           </div>
         </div>
         <div className="flex gap-2 items-center">
+          <Button 
+            variant="default"
+            size="sm"
+            onClick={() => setShowNewClientDialog(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Client
+          </Button>
           <Select value={isNewClient ? "new" : selectedClient} onValueChange={(value) => {
             if (value === "new") {
               setIsNewClient(true);
@@ -639,6 +649,12 @@ export default function ClientOnboarding() {
           Next Step
         </Button>
       </div>
+
+      <NewClientDialog 
+        open={showNewClientDialog}
+        onOpenChange={setShowNewClientDialog}
+        onClientCreated={fetchClients}
+      />
     </div>
   );
 }

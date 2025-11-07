@@ -5,10 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, DollarSign, TrendingUp, Filter, Phone, Mail, ArrowLeft } from "lucide-react";
+import { Search, Users, DollarSign, TrendingUp, Filter, Phone, Mail, ArrowLeft, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { MeetingScheduler } from "@/components/MeetingScheduler";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Client {
   id: string;
@@ -30,6 +40,8 @@ const Clients = () => {
   const [loading, setLoading] = useState(true);
   const [schedulerOpen, setSchedulerOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
   useEffect(() => {
     fetchClients();
@@ -53,6 +65,55 @@ const Clients = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!clientToDelete) return;
+
+    try {
+      // Delete related records first (cascade delete)
+      const clientId = clientToDelete.id;
+
+      // Delete portfolio holdings
+      await supabase.from('portfolio_holdings').delete().eq('client_id', clientId);
+      
+      // Delete client goals
+      await supabase.from('client_goals').delete().eq('client_id', clientId);
+      
+      // Delete client documents
+      await supabase.from('client_documents').delete().eq('client_id', clientId);
+      
+      // Delete client meetings
+      await supabase.from('client_meetings').delete().eq('client_id', clientId);
+      
+      // Delete financial plans
+      await supabase.from('financial_plans').delete().eq('client_id', clientId);
+
+      // Finally, delete the client
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Client Deleted",
+        description: `${clientToDelete.name} and all related data have been removed.`,
+      });
+
+      fetchClients();
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setClientToDelete(null);
     }
   };
 
@@ -249,6 +310,16 @@ const Clients = () => {
                         >
                           Schedule Call
                         </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => {
+                            setClientToDelete(client);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -365,6 +436,18 @@ const Clients = () => {
                         >
                           Send Message
                         </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => {
+                            setClientToDelete(client);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Client
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -432,6 +515,31 @@ const Clients = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Client</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {clientToDelete?.name}? This will permanently remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Client profile and contact information</li>
+                <li>All portfolio holdings</li>
+                <li>Financial goals and plans</li>
+                <li>Meeting history</li>
+                <li>All documents</li>
+              </ul>
+              <strong className="block mt-2">This action cannot be undone.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteClient} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete Client
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {selectedClient && (
         <MeetingScheduler
