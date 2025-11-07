@@ -91,6 +91,8 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
   const handleSaasClick = (id: string) => {
     if (id === "pricing") {
       navigate("/pricing");
+    } else if (id === "business-dashboard") {
+      navigate("/business-login");
     } else {
       onNavigate(id);
     }

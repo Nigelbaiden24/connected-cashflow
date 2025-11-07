@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import Login from "./pages/Login";
+import LoginBusiness from "./pages/LoginBusiness";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
@@ -61,6 +62,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isBusinessAuthenticated, setIsBusinessAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
   const handleLogin = (email: string) => {
@@ -68,8 +70,18 @@ const App = () => {
     setUserEmail(email);
   };
 
+  const handleBusinessLogin = (email: string) => {
+    setIsBusinessAuthenticated(true);
+    setUserEmail(email);
+  };
+
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setUserEmail("");
+  };
+
+  const handleBusinessLogout = () => {
+    setIsBusinessAuthenticated(false);
     setUserEmail("");
   };
 
@@ -93,6 +105,9 @@ const App = () => {
             <Route path="/admin/jobs" element={<AdminJobs />} />
             <Route path="/login" element={
               isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
+            } />
+            <Route path="/business-login" element={
+              isBusinessAuthenticated ? <Navigate to="/business-dashboard" replace /> : <LoginBusiness onLogin={handleBusinessLogin} />
             } />
             
             {/* Protected routes with sidebar */}
@@ -373,7 +388,7 @@ const App = () => {
             } />
             
           <Route path="/business-dashboard" element={
-            !isAuthenticated ? <Navigate to="/login" replace /> : <BusinessDashboard />
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessDashboard />
           } />
           <Route path="/projects" element={<Projects />} />
           <Route path="/tasks" element={<Tasks />} />
