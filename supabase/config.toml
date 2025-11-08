@@ -3,6 +3,9 @@ project_id = "wlsmdcdfyudtvbnbqfmn"
 [functions.financial-chat]
 verify_jwt = false
 
+[functions.business-chat]
+verify_jwt = false
+
 [functions.generate-document]
 verify_jwt = false
 

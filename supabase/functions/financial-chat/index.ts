@@ -38,7 +38,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are Theodore, an expert financial advisor AI assistant for FlowPulse.io, a comprehensive wealth management platform. Your expertise includes:
+            content: `You are Theodore, an elite financial advisor AI assistant for FlowPulse.io, a comprehensive wealth management platform. Your expertise includes:
 
 **Core Competencies:**
 - Portfolio management and asset allocation strategies
@@ -86,9 +86,129 @@ Format your responses to be clear and actionable, with proper structure for read
           },
           ...messages,
         ],
-        temperature: 0.8,
+        temperature: 0.7,
         max_tokens: 2000,
         stream: stream,
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "get_market_data",
+              description: "Fetch real-time or historical market data for stocks, indices, currencies, or commodities. Use this to provide up-to-date market information.",
+              parameters: {
+                type: "object",
+                properties: {
+                  symbol: {
+                    type: "string",
+                    description: "The ticker symbol or market identifier (e.g., FTSE, AAPL, GBP/USD)"
+                  },
+                  data_type: {
+                    type: "string",
+                    enum: ["current_price", "historical", "fundamentals", "news"],
+                    description: "Type of market data to fetch"
+                  }
+                },
+                required: ["symbol", "data_type"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "analyze_portfolio",
+              description: "Analyze a portfolio's performance, risk metrics, asset allocation, and provide optimization recommendations",
+              parameters: {
+                type: "object",
+                properties: {
+                  holdings: {
+                    type: "string",
+                    description: "Portfolio holdings data in JSON format"
+                  },
+                  analysis_type: {
+                    type: "string",
+                    enum: ["risk_assessment", "performance", "allocation", "optimization", "tax_efficiency"],
+                    description: "Type of portfolio analysis to perform"
+                  }
+                },
+                required: ["holdings", "analysis_type"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "check_compliance",
+              description: "Check regulatory compliance requirements for financial activities, products, or advice",
+              parameters: {
+                type: "object",
+                properties: {
+                  activity: {
+                    type: "string",
+                    description: "The financial activity or product to check compliance for"
+                  },
+                  jurisdiction: {
+                    type: "string",
+                    enum: ["UK", "EU", "US"],
+                    description: "Regulatory jurisdiction",
+                    default: "UK"
+                  }
+                },
+                required: ["activity"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "web_search",
+              description: "Search the web for current financial news, market updates, regulatory changes, or any real-time information. Use this to provide up-to-date insights.",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: {
+                    type: "string",
+                    description: "The search query to find financial information"
+                  }
+                },
+                required: ["query"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "calculate_retirement_plan",
+              description: "Calculate retirement planning scenarios including required savings, projected income, and investment strategies",
+              parameters: {
+                type: "object",
+                properties: {
+                  current_age: {
+                    type: "number",
+                    description: "Current age of the client"
+                  },
+                  retirement_age: {
+                    type: "number",
+                    description: "Target retirement age"
+                  },
+                  current_savings: {
+                    type: "number",
+                    description: "Current retirement savings"
+                  },
+                  annual_income: {
+                    type: "number",
+                    description: "Current annual income"
+                  },
+                  desired_retirement_income: {
+                    type: "number",
+                    description: "Desired annual retirement income"
+                  }
+                },
+                required: ["current_age", "retirement_age"]
+              }
+            }
+          }
+        ],
+        tool_choice: "auto"
       }),
     });
 

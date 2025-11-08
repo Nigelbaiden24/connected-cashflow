@@ -16,6 +16,8 @@ import { MeetingBooker } from "@/components/MeetingBooker";
 import { FileManager } from "@/components/FileManager";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { useBusinessChat } from "@/hooks/useBusinessChat";
+import { useLocation } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -37,11 +39,19 @@ interface Message {
 
 const Chat = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isBusinessPlatform = location.pathname.includes('/business/');
+  
+  const defaultBotName = isBusinessPlatform ? 'Atlas' : 'Theodore';
+  const defaultMessage = isBusinessPlatform 
+    ? "Hello! I'm Atlas, your AI business strategist. I can help you with business planning, operations, analytics, strategy, and more. How can I drive your business forward today?"
+    : "Hello! I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?";
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       type: "assistant",
-      content: "Hello! I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?",
+      content: defaultMessage,
       timestamp: new Date(),
       category: "general",
     },
@@ -52,7 +62,7 @@ const Chat = () => {
     return localStorage.getItem('useStreaming') === 'true';
   });
   const [botName, setBotName] = useState(() => {
-    return localStorage.getItem('botName') || 'Theodore';
+    return localStorage.getItem('botName') || defaultBotName;
   });
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
@@ -60,7 +70,11 @@ const Chat = () => {
   const [showMeetingIntegration, setShowMeetingIntegration] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { streamChat, isStreaming } = useStreamingChat();
+  const { streamChat: streamFinanceChat, isStreaming: isFinanceStreaming } = useStreamingChat();
+  const { streamChat: streamBusinessChat, isStreaming: isBusinessStreaming } = useBusinessChat();
+  
+  const streamChat = isBusinessPlatform ? streamBusinessChat : streamFinanceChat;
+  const isStreaming = isBusinessPlatform ? isBusinessStreaming : isFinanceStreaming;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -200,7 +214,7 @@ const Chat = () => {
     }
   };
 
-  const quickActions = [
+  const financeQuickActions = [
     {
       label: "Market Update",
       icon: TrendingUp,
@@ -226,6 +240,35 @@ const Chat = () => {
       category: "general" as const,
     },
   ];
+
+  const businessQuickActions = [
+    {
+      label: "SWOT Analysis",
+      icon: Shield,
+      query: "Conduct a SWOT analysis for my business",
+      category: "general" as const,
+    },
+    {
+      label: "Market Research",
+      icon: Search,
+      query: "Help me research market trends and competitors in my industry",
+      category: "market" as const,
+    },
+    {
+      label: "Business Plan",
+      icon: FileText,
+      query: "Help me create a business plan for the next quarter",
+      category: "general" as const,
+    },
+    {
+      label: "KPI Analysis",
+      icon: TrendingUp,
+      query: "Analyze my business KPIs and suggest improvements",
+      category: "general" as const,
+    },
+  ];
+
+  const quickActions = isBusinessPlatform ? businessQuickActions : financeQuickActions;
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -321,7 +364,8 @@ const Chat = () => {
         });
       } else {
         // Non-streaming mode
-        const { data, error } = await supabase.functions.invoke('financial-chat', {
+        const functionName = isBusinessPlatform ? 'business-chat' : 'financial-chat';
+        const { data, error } = await supabase.functions.invoke(functionName, {
           body: { 
             messages: [...messages, userMessage].map(m => ({ 
               role: m.type === 'user' ? 'user' : 'assistant', 
