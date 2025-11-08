@@ -7,10 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowLeft, Sparkles, Building2, TrendingUp } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
 
   const calculatePrice = (monthlyPrice: number) => {
     if (isAnnual) {
@@ -27,11 +31,46 @@ const Pricing = () => {
     return monthlyPrice.toFixed(2);
   };
 
+  const handleCheckout = async (tier: typeof tiers[0], platform: 'finance' | 'business') => {
+    setLoading(`${platform}-${tier.name}`);
+    
+    try {
+      // You'll need to create these price IDs in your Stripe dashboard
+      // For now, using placeholder price IDs - replace with your actual Stripe price IDs
+      const priceId = tier.stripePriceId || `price_${tier.name.toLowerCase()}_${isAnnual ? 'annual' : 'monthly'}`;
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          priceId: priceId,
+          mode: 'subscription',
+          planName: tier.name,
+          platform: platform,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start checkout. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const tiers = [
     {
       name: "Basic",
       description: "Perfect for getting started",
       monthlyPrice: 39.99,
+      stripePriceId: isAnnual ? "price_basic_annual" : "price_basic_monthly", // Replace with your Stripe price IDs
       features: [
         "Core platform features",
         "Up to 5 team members",
@@ -47,6 +86,7 @@ const Pricing = () => {
       name: "Pro",
       description: "For growing teams",
       monthlyPrice: 72.99,
+      stripePriceId: isAnnual ? "price_pro_annual" : "price_pro_monthly", // Replace with your Stripe price IDs
       features: [
         "All Basic features",
         "Up to 20 team members",
@@ -65,6 +105,7 @@ const Pricing = () => {
       name: "Enterprise",
       description: "For large organizations",
       monthlyPrice: 104.99,
+      stripePriceId: isAnnual ? "price_enterprise_annual" : "price_enterprise_monthly", // Replace with your Stripe price IDs
       features: [
         "All Pro features",
         "Unlimited team members",
@@ -194,8 +235,10 @@ const Pricing = () => {
                     <Button
                       className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
                       size="lg"
+                      onClick={() => handleCheckout(tier, 'finance')}
+                      disabled={loading === `finance-${tier.name}`}
                     >
-                      Get Started
+                      {loading === `finance-${tier.name}` ? 'Loading...' : 'Get Started'}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -267,8 +310,10 @@ const Pricing = () => {
                       className="w-full text-white border-0 hover:opacity-90"
                       size="lg"
                       style={{ background: 'linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))' }}
+                      onClick={() => handleCheckout(tier, 'business')}
+                      disabled={loading === `business-${tier.name}`}
                     >
-                      Get Started
+                      {loading === `business-${tier.name}` ? 'Loading...' : 'Get Started'}
                     </Button>
                   </CardFooter>
                 </Card>
