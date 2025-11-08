@@ -1,17 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Session } from "@supabase/supabase-js";
 import { AppSidebar } from "@/components/AppSidebar";
 import { BusinessLayout } from "@/components/BusinessLayout";
 import { FinanceLayout } from "@/components/FinanceLayout";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
+import Login from "./pages/Login";
+import LoginBusiness from "./pages/LoginBusiness";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
@@ -61,34 +60,18 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
 
-  useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUserEmail(session?.user?.email || "");
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUserEmail(session?.user?.email || "");
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUserEmail("");
+  const handleLogin = (email: string) => {
+    setIsAuthenticated(true);
+    setUserEmail(email);
   };
 
-  const isAuthenticated = !!session;
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserEmail("");
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -97,19 +80,18 @@ const App = () => {
           <Toaster />
           <Sonner />
           <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            <Route path="/auth" element={
-              isAuthenticated ? <Navigate to="/dashboard" replace /> : <Auth />
-            } />
+          {/* Public routes */}
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login onLogin={handleLogin} />} />
+          <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
             
-            {/* Protected routes with sidebar */}
-            <Route path="/dashboard" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+          {/* Protected routes with sidebar */}
+          <Route path="/dashboard" element={
+            !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Dashboard />
                 </FinanceLayout>
@@ -117,7 +99,7 @@ const App = () => {
             } />
             
             <Route path="/theodore" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Chat />
                 </FinanceLayout>
@@ -126,7 +108,7 @@ const App = () => {
             
             
             <Route path="/market" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <MarketData />
                 </FinanceLayout>
@@ -134,7 +116,7 @@ const App = () => {
             } />
             
             <Route path="/compliance" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Compliance />
                 </FinanceLayout>
@@ -142,7 +124,7 @@ const App = () => {
             } />
             
             <Route path="/portfolio" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Portfolio />
                 </FinanceLayout>
@@ -150,7 +132,7 @@ const App = () => {
             } />
             
             <Route path="/financial-planning" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <FinancialPlanning />
                 </FinanceLayout>
@@ -158,7 +140,7 @@ const App = () => {
             } />
             
             <Route path="/goals" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <GoalPlanning />
                 </FinanceLayout>
@@ -166,7 +148,7 @@ const App = () => {
             } />
             
             <Route path="/investments" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <InvestmentAnalysis />
                 </FinanceLayout>
@@ -174,7 +156,7 @@ const App = () => {
             } />
             
             <Route path="/risk" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <RiskAssessment />
                 </FinanceLayout>
@@ -182,7 +164,7 @@ const App = () => {
             } />
             
             <Route path="/scenario" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <ScenarioAnalysis />
                 </FinanceLayout>
@@ -190,7 +172,7 @@ const App = () => {
             } />
             
             <Route path="/clients" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Clients />
                 </FinanceLayout>
@@ -198,7 +180,7 @@ const App = () => {
             } />
             
             <Route path="/clients/:id" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <ClientProfile />
                 </FinanceLayout>
@@ -206,7 +188,7 @@ const App = () => {
             } />
             
             <Route path="/onboarding" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <ClientOnboarding />
                 </FinanceLayout>
@@ -214,7 +196,7 @@ const App = () => {
             } />
             
             <Route path="/practice" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <PracticeManagement />
                 </FinanceLayout>
@@ -222,7 +204,7 @@ const App = () => {
             } />
             
             <Route path="/reports" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Reports />
                 </FinanceLayout>
@@ -230,7 +212,7 @@ const App = () => {
             } />
             
             <Route path="/finance-payroll" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <FinancePayroll />
                 </FinanceLayout>
@@ -238,7 +220,7 @@ const App = () => {
             } />
             
             <Route path="/finance-crm" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <CRM />
                 </FinanceLayout>
@@ -246,7 +228,7 @@ const App = () => {
             } />
             
             <Route path="/finance-crm/:id" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <CRMContactDetail />
                 </FinanceLayout>
@@ -256,7 +238,7 @@ const App = () => {
             <Route path="/chat" element={<Chat />} />
             
             <Route path="/financial-planning/new" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <CreateFinancialPlan />
                 </FinanceLayout>
@@ -264,7 +246,7 @@ const App = () => {
             } />
             
             <Route path="/financial-planning/:id" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <FinancialPlanDetail />
                 </FinanceLayout>
@@ -272,7 +254,7 @@ const App = () => {
             } />
             
             <Route path="/security" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Security />
                 </FinanceLayout>
@@ -280,7 +262,7 @@ const App = () => {
             } />
             
             <Route path="/automation-center" element={
-              !isAuthenticated ? <Navigate to="/auth" replace /> : (
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <AutomationCenter />
                 </FinanceLayout>
@@ -289,65 +271,65 @@ const App = () => {
             
           {/* Business Routes - All prefixed with /business */}
           <Route path="/business/dashboard" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessDashboard /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessDashboard /></BusinessLayout>
           } />
           <Route path="/business/projects" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Projects /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Projects /></BusinessLayout>
           } />
           <Route path="/business/tasks" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Tasks /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Tasks /></BusinessLayout>
           } />
           <Route path="/business/chat" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Chat /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Chat /></BusinessLayout>
           } />
           <Route path="/business/calendar" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Calendar /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Calendar /></BusinessLayout>
           } />
           <Route path="/business/planning" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessPlanning /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessPlanning /></BusinessLayout>
           } />
           <Route path="/business/analytics" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Analytics /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Analytics /></BusinessLayout>
           } />
           <Route path="/business/revenue" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Revenue /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Revenue /></BusinessLayout>
           } />
           <Route path="/business/team" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Team /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Team /></BusinessLayout>
           } />
           <Route path="/business/team/profile" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><TeamProfile /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><TeamProfile /></BusinessLayout>
           } />
           <Route path="/business/team/chat" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><EnhancedTeamChat /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><EnhancedTeamChat /></BusinessLayout>
           } />
           <Route path="/business/messages" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Messages /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Messages /></BusinessLayout>
           } />
           <Route path="/business/crm" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><CRM /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><CRM /></BusinessLayout>
           } />
           <Route path="/business/crm/:id" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><CRMContactDetail /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><CRMContactDetail /></BusinessLayout>
           } />
           <Route path="/business/payroll" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Payroll /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Payroll /></BusinessLayout>
           } />
           <Route path="/business/security" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Security /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Security /></BusinessLayout>
           } />
           <Route path="/business/ai-generator" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessAIGenerator /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessAIGenerator /></BusinessLayout>
           } />
           <Route path="/business/settings" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Settings /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Settings /></BusinessLayout>
           } />
           <Route path="/business/automation-center" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AutomationCenter /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AutomationCenter /></BusinessLayout>
           } />
           
           <Route path="/finance-ai-generator" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : (
+            !isAuthenticated ? <Navigate to="/login" replace /> : (
               <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                 <FinanceAIGenerator />
               </FinanceLayout>
@@ -355,7 +337,7 @@ const App = () => {
           } />
           
           <Route path="/document-editor" element={
-            !isAuthenticated ? <Navigate to="/auth" replace /> : (
+            !isAuthenticated ? <Navigate to="/login" replace /> : (
               <DocumentEditorPage />
             )
           } />
