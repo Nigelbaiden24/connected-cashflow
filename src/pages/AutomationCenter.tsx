@@ -78,110 +78,82 @@ const AutomationCenter = () => {
 
   const fetchAutomationData = async () => {
     try {
-      // Mock data for now - will be replaced with actual database queries
-      const mockAutomations: AutomationRule[] = [
-        {
-          id: '1',
-          rule_name: 'New Client Onboarding',
-          module: 'CRM',
-          enabled: true,
-          executions_today: 5,
-          success_rate: 100,
-          last_executed: new Date(),
-          status: 'active'
-        },
-        {
-          id: '2',
-          rule_name: 'Project Auto-Creation',
-          module: 'Projects',
-          enabled: true,
-          executions_today: 12,
-          success_rate: 98,
-          last_executed: new Date(),
-          status: 'active'
-        },
-        {
-          id: '3',
-          rule_name: 'Daily Dashboard Sync',
-          module: 'Dashboard',
-          enabled: true,
-          executions_today: 48,
-          success_rate: 100,
-          last_executed: new Date(),
-          status: 'active'
-        },
-        {
-          id: '4',
-          rule_name: 'Revenue Anomaly Detection',
-          module: 'Revenue',
-          enabled: true,
-          executions_today: 24,
-          success_rate: 95,
-          last_executed: new Date(),
-          status: 'active'
-        },
-        {
-          id: '5',
-          rule_name: 'Payroll Calculation',
-          module: 'Payroll',
-          enabled: false,
-          executions_today: 0,
-          success_rate: 100,
-          last_executed: new Date(Date.now() - 86400000),
-          status: 'paused'
-        },
-        {
-          id: '6',
-          rule_name: 'Security Compliance Check',
-          module: 'Security',
-          enabled: true,
-          executions_today: 1,
-          success_rate: 85,
-          last_executed: new Date(),
-          status: 'error'
-        }
-      ];
+      // Fetch automation rules
+      const { data: rules, error: rulesError } = await supabase
+        .from('automation_rules')
+        .select('*')
+        .order('priority', { ascending: false });
 
-      const mockExecutions: AutomationExecution[] = [
-        {
-          id: '1',
-          rule_name: 'New Client Onboarding',
-          status: 'success',
-          executed_at: new Date(Date.now() - 120000),
-          execution_time: 1245
-        },
-        {
-          id: '2',
-          rule_name: 'Daily Dashboard Sync',
-          status: 'success',
-          executed_at: new Date(Date.now() - 300000),
-          execution_time: 856
-        },
-        {
-          id: '3',
-          rule_name: 'Security Compliance Check',
-          status: 'failed',
-          executed_at: new Date(Date.now() - 720000),
-          execution_time: 2341,
-          error_message: 'Permission denied: Unable to access security logs'
-        },
-        {
-          id: '4',
-          rule_name: 'Project Milestone Alert',
-          status: 'success',
-          executed_at: new Date(Date.now() - 1080000),
-          execution_time: 567
-        }
-      ];
+      if (rulesError) throw rulesError;
 
-      setAutomations(mockAutomations);
-      setRecentExecutions(mockExecutions);
+      // Fetch recent executions
+      const { data: executions, error: executionsError } = await supabase
+        .from('automation_executions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (executionsError) throw executionsError;
+
+      // Transform data to match component interface
+      const transformedAutomations: AutomationRule[] = (rules || []).map(rule => ({
+        id: rule.id,
+        rule_name: rule.rule_name,
+        module: rule.module,
+        enabled: rule.enabled,
+        executions_today: 0, // Will be calculated from executions
+        success_rate: 100, // Will be calculated from executions
+        last_executed: new Date(),
+        status: rule.enabled ? 'active' : 'paused'
+      }));
+
+      const transformedExecutions: AutomationExecution[] = (executions || []).map(exec => ({
+        id: exec.id,
+        rule_name: rules?.find(r => r.id === exec.rule_id)?.rule_name || 'Unknown',
+        status: exec.status as 'success' | 'failed' | 'running',
+        executed_at: new Date(exec.created_at),
+        execution_time: exec.execution_time_ms || 0,
+        error_message: exec.error_message
+      }));
+
+      // Calculate executions today for each rule
+      const today = new Date().setHours(0, 0, 0, 0);
+      transformedAutomations.forEach(auto => {
+        const ruleExecutions = executions?.filter(e => 
+          e.rule_id === auto.id && 
+          new Date(e.created_at).getTime() >= today
+        ) || [];
+        
+        auto.executions_today = ruleExecutions.length;
+        
+        const successfulExecutions = ruleExecutions.filter(e => e.status === 'success').length;
+        auto.success_rate = ruleExecutions.length > 0 
+          ? Math.round((successfulExecutions / ruleExecutions.length) * 100) 
+          : 100;
+
+        const lastExec = ruleExecutions[0];
+        if (lastExec) {
+          auto.last_executed = new Date(lastExec.created_at);
+        }
+
+        // Determine status
+        if (!auto.enabled) {
+          auto.status = 'paused';
+        } else if (auto.success_rate < 90) {
+          auto.status = 'error';
+        } else {
+          auto.status = 'active';
+        }
+      });
+
+      setAutomations(transformedAutomations);
+      setRecentExecutions(transformedExecutions);
       
       setStats({
-        totalActive: mockAutomations.filter(a => a.enabled && a.status === 'active').length,
-        totalFailed: mockAutomations.filter(a => a.status === 'error').length,
+        totalActive: transformedAutomations.filter(a => a.enabled && a.status === 'active').length,
+        totalFailed: transformedAutomations.filter(a => a.status === 'error').length,
         uptime: 98.7,
-        paused: mockAutomations.filter(a => !a.enabled).length
+        paused: transformedAutomations.filter(a => !a.enabled).length
       });
     } catch (error) {
       console.error('Error fetching automation data:', error);
@@ -201,14 +173,55 @@ const AutomationCenter = () => {
 
     const newEnabled = !automation.enabled;
     
-    setAutomations(automations.map(a => 
-      a.id === id ? { ...a, enabled: newEnabled, status: newEnabled ? 'active' : 'paused' as const } : a
-    ));
+    try {
+      const { error } = await supabase
+        .from('automation_rules')
+        .update({ enabled: newEnabled })
+        .eq('id', id);
 
-    toast({
-      title: newEnabled ? "Automation Enabled" : "Automation Paused",
-      description: `${automation.rule_name} has been ${newEnabled ? 'enabled' : 'paused'}`
-    });
+      if (error) throw error;
+
+      setAutomations(automations.map(a => 
+        a.id === id ? { ...a, enabled: newEnabled, status: newEnabled ? 'active' : 'paused' as const } : a
+      ));
+
+      toast({
+        title: newEnabled ? "Automation Enabled" : "Automation Paused",
+        description: `${automation.rule_name} has been ${newEnabled ? 'enabled' : 'paused'}`
+      });
+    } catch (error) {
+      console.error('Error toggling automation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to toggle automation",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSeedAutomations = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('seed-automations');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Seeded ${data.rules_created} automation rules`
+      });
+
+      fetchAutomationData();
+    } catch (error) {
+      console.error('Error seeding automations:', error);
+      toast({
+        title: "Error",
+        description: "Failed to seed automations",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -296,10 +309,16 @@ const AutomationCenter = () => {
             <p className="text-muted-foreground">Monitor and manage all platform automations</p>
           </div>
         </div>
-        <Button className="gap-2">
-          <Settings className="h-4 w-4" />
-          Create Automation
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleSeedAutomations} className="gap-2">
+            <Zap className="h-4 w-4" />
+            Seed Automations
+          </Button>
+          <Button className="gap-2">
+            <Settings className="h-4 w-4" />
+            Create Automation
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
