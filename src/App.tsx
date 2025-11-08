@@ -268,6 +268,22 @@ const App = () => {
               )
             } />
             
+            <Route path="/security" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Security />
+                </FinanceLayout>
+              )
+            } />
+            
+            <Route path="/automation-center" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <AutomationCenter />
+                </FinanceLayout>
+              )
+            } />
+            
           {/* Business Routes - All prefixed with /business */}
           <Route path="/business/dashboard" element={
             !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><BusinessDashboard /></BusinessLayout>

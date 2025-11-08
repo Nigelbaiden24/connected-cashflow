@@ -47,6 +47,7 @@ import {
   History,
   FolderKanban,
   ClipboardList,
+  Zap,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -140,6 +141,16 @@ const practiceManagementItems = [
     title: "Reports",
     url: "/reports",
     icon: FileText,
+  },
+  {
+    title: "Security",
+    url: "/security",
+    icon: Shield,
+  },
+  {
+    title: "Automation Center",
+    url: "/automation-center",
+    icon: Activity,
   },
 ];
 
