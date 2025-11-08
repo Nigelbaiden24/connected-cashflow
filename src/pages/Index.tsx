@@ -399,8 +399,8 @@ const Index = () => {
       </section>
 
       {/* Platforms Showcase */}
-      <section className="container mx-auto px-6 pt-8 pb-16 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8">
+      <section className="w-full pt-8 pb-16 relative z-10">
+        <div className="grid lg:grid-cols-2">
           {/* Finance Platform */}
           <Card className="relative overflow-hidden border-2 border-blue-500/30 hover:border-blue-500/60 transition-all group bg-gradient-to-br from-blue-950/50 to-background backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
