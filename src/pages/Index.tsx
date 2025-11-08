@@ -399,7 +399,7 @@ const Index = () => {
       </section>
 
       {/* Platforms Showcase */}
-      <section className="container mx-auto px-6 py-16 -mt-20 relative z-10">
+      <section className="container mx-auto px-6 py-16 mt-0 relative z-10">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Finance Platform */}
           <Card className="relative overflow-hidden border-2 border-blue-500/30 hover:border-blue-500/60 transition-all group bg-gradient-to-br from-blue-950/50 to-background backdrop-blur-sm">
