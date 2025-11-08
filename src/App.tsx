@@ -53,6 +53,7 @@ import DocumentEditorPage from "./pages/DocumentEditorPage";
 
 import AboutUs from "./pages/AboutUs";
 import Pricing from "./pages/Pricing";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/subscription-success" element={<SubscriptionSuccess />} />
             <Route path="/login" element={
               isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />
             } />
