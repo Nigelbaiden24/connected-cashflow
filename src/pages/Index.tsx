@@ -31,6 +31,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
@@ -49,13 +50,49 @@ const Index = () => {
     message: ""
   });
 
+  // Validation schema for demo request
+  const demoRequestSchema = z.object({
+    name: z.string()
+      .trim()
+      .min(1, "Name is required")
+      .max(100, "Name must be less than 100 characters"),
+    email: z.string()
+      .trim()
+      .email("Invalid email address")
+      .max(255, "Email must be less than 255 characters"),
+    company: z.string()
+      .trim()
+      .max(200, "Company name must be less than 200 characters")
+      .optional(),
+    phone: z.string()
+      .trim()
+      .max(50, "Phone number must be less than 50 characters")
+      .optional(),
+    message: z.string()
+      .trim()
+      .max(1000, "Message must be less than 1000 characters")
+      .optional(),
+  });
+
   const handleDemoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      // Validate input
+      const validatedData = demoRequestSchema.parse(formData);
+      
+      // Prepare data for database insertion
+      const dataToInsert = {
+        name: validatedData.name,
+        email: validatedData.email,
+        company: validatedData.company || null,
+        phone: validatedData.phone || null,
+        message: validatedData.message || null,
+      };
+      
       const { error } = await supabase
         .from('demo_requests')
-        .insert([formData]);
+        .insert([dataToInsert]);
 
       if (error) throw error;
 
@@ -67,12 +104,19 @@ const Index = () => {
       setDemoDialogOpen(false);
       setFormData({ name: "", email: "", company: "", phone: "", message: "" });
     } catch (error) {
-      console.error('Error submitting demo request:', error);
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0]?.message || "Please check your input.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
