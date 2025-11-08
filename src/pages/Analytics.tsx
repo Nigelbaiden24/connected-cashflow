@@ -2,18 +2,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter, Plus, Eye, List } from "lucide-react";
+import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, ArrowLeft, Download, RefreshCw, Filter, Plus, Eye, List, Clock } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface UserActivity {
+  id: string;
+  action: string;
+  resource_type: string;
+  timestamp: string;
+  details?: any;
+}
 
 const Analytics = () => {
   const navigate = useNavigate();
   const contentRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState<UserActivity[]>([]);
+  const [totalClients, setTotalClients] = useState(0);
+  const [totalAUM, setTotalAUM] = useState(0);
+  const [recentClients, setRecentClients] = useState(0);
+  const [totalContacts, setTotalContacts] = useState(0);
   
   const [revenueData, setRevenueData] = useState([
     { month: "Jan", revenue: 45000, expenses: 32000 },
@@ -94,6 +110,61 @@ const Analytics = () => {
     return individualCustomers.reduce((sum, customer) => sum + customer.revenue, 0);
   }, [individualCustomers]);
 
+  useEffect(() => {
+    fetchLiveData();
+  }, []);
+
+  const fetchLiveData = async () => {
+    setLoading(true);
+    try {
+      // Fetch recent audit logs for user activities
+      const { data: auditData } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(10);
+
+      if (auditData) {
+        setActivities(auditData);
+      }
+
+      // Fetch clients data
+      const { data: clientsData } = await supabase
+        .from('clients')
+        .select('*');
+
+      if (clientsData) {
+        setTotalClients(clientsData.length);
+        const totalAumValue = clientsData.reduce((sum, client) => sum + (Number(client.aum) || 0), 0);
+        setTotalAUM(totalAumValue);
+
+        // Count recent clients (last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const recent = clientsData.filter(client => 
+          new Date(client.created_at) > thirtyDaysAgo
+        ).length;
+        setRecentClients(recent);
+      }
+
+      // Fetch CRM contacts
+      const { data: contactsData } = await supabase
+        .from('crm_contacts')
+        .select('*');
+
+      if (contactsData) {
+        setTotalContacts(contactsData.length);
+      }
+
+      toast.success("Live data loaded successfully");
+    } catch (error) {
+      console.error("Error fetching live data:", error);
+      toast.error("Failed to load live data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDownloadPDF = async () => {
     if (!contentRef.current) return;
 
@@ -117,8 +188,7 @@ const Analytics = () => {
   };
 
   const handleRefresh = () => {
-    toast.info("Refreshing analytics data...");
-    // In a real app, this would fetch fresh data
+    fetchLiveData();
   };
 
   const handleExport = () => {
@@ -216,60 +286,95 @@ const Analytics = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Total AUM</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£328K</div>
-            <p className="text-xs text-success flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3" />
-              12.5% from last period
+            <div className="text-2xl font-bold">{formatCurrency(totalAUM)}</div>
+            <p className="text-xs text-muted-foreground">
+              Assets Under Management
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,013</div>
+            <div className="text-2xl font-bold">{totalClients}</div>
             <p className="text-xs text-success flex items-center gap-1">
               <ArrowUpRight className="h-3 w-3" />
-              8.2% from last period
+              {recentClients} new this month
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">CRM Contacts</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3.24%</div>
-            <p className="text-xs text-destructive flex items-center gap-1">
-              <ArrowDownRight className="h-3 w-3" />
-              2.1% from last period
+            <div className="text-2xl font-bold">{totalContacts}</div>
+            <p className="text-xs text-muted-foreground">
+              Total contacts in CRM
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Transaction</CardTitle>
+            <CardTitle className="text-sm font-medium">Recent Activities</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£324</div>
-            <p className="text-xs text-success flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3" />
-              5.7% from last period
+            <div className="text-2xl font-bold">{activities.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Latest user actions
             </p>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Live User Activities
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading activities...</div>
+          ) : activities.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">No activities found</div>
+          ) : (
+            <div className="space-y-4">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-4 p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold">{activity.action}</span>
+                      <span className="text-sm text-muted-foreground">•</span>
+                      <span className="text-sm text-muted-foreground">{activity.resource_type}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {format(new Date(activity.timestamp), "PPpp")}
+                    </div>
+                    {activity.details && (
+                      <div className="text-xs text-muted-foreground mt-2">
+                        {JSON.stringify(activity.details)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
