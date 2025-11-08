@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 
@@ -37,14 +38,31 @@ const Index = () => {
     message: ""
   });
 
-  const handleDemoSubmit = (e: React.FormEvent) => {
+  const handleDemoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Demo Request Received!",
-      description: "Our team will contact you within 24 hours to schedule your demo.",
-    });
-    setDemoDialogOpen(false);
-    setFormData({ name: "", email: "", company: "", phone: "", message: "" });
+    
+    try {
+      const { error } = await supabase
+        .from('demo_requests')
+        .insert([formData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Demo Request Received!",
+        description: "Our team will contact you within 24 hours to schedule your demo.",
+      });
+      
+      setDemoDialogOpen(false);
+      setFormData({ name: "", email: "", company: "", phone: "", message: "" });
+    } catch (error) {
+      console.error('Error submitting demo request:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const financeFeatures = [

@@ -16,6 +16,12 @@ import {
   SidebarMenuSubButton,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -210,96 +216,157 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {businessToolsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
-                      <item.icon className="h-4 w-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <TooltipProvider>
+          <SidebarGroup>
+            {!isCollapsed && <SidebarGroupLabel>Workspace</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {businessToolsItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    {isCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton asChild>
+                            <NavLink to={item.url} className={getNavClassName(item.url)}>
+                              <item.icon className="h-4 w-4" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{item.title}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <SidebarMenuButton asChild>
+                        <NavLink to={item.url} className={getNavClassName(item.url)}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Business Management</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {businessManagementItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
-                      <item.icon className="h-4 w-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          <SidebarGroup>
+            {!isCollapsed && <SidebarGroupLabel>Business Management</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {businessManagementItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    {isCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton asChild>
+                            <NavLink to={item.url} className={getNavClassName(item.url)}>
+                              <item.icon className="h-4 w-4" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{item.title}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <SidebarMenuButton asChild>
+                        <NavLink to={item.url} className={getNavClassName(item.url)}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Operations</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {operationsItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
-                      <item.icon className="h-4 w-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-              
-              {/* Settings with submenu */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => setSettingsExpanded(!settingsExpanded)}
-                  className={getNavClassName("/business/settings")}
-                >
-                  <Settings className="h-4 w-4" />
-                  {!isCollapsed && (
+          <SidebarGroup>
+            {!isCollapsed && <SidebarGroupLabel>Operations</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {operationsItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    {isCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton asChild>
+                            <NavLink to={item.url} className={getNavClassName(item.url)}>
+                              <item.icon className="h-4 w-4" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{item.title}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <SidebarMenuButton asChild>
+                        <NavLink to={item.url} className={getNavClassName(item.url)}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+                
+                {/* Settings with submenu */}
+                <SidebarMenuItem>
+                  {isCollapsed ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          onClick={() => setSettingsExpanded(!settingsExpanded)}
+                          className={getNavClassName("/business/settings")}
+                        >
+                          <Settings className="h-4 w-4" />
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>Settings</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
                     <>
-                      <span>Settings</span>
-                      <ChevronRight
-                        className={`ml-auto h-4 w-4 transition-transform ${
-                          settingsExpanded ? "rotate-90" : ""
-                        }`}
-                      />
+                      <SidebarMenuButton
+                        onClick={() => setSettingsExpanded(!settingsExpanded)}
+                        className={getNavClassName("/business/settings")}
+                      >
+                        <Settings className="h-4 w-4" />
+                        <span>Settings</span>
+                        <ChevronRight
+                          className={`ml-auto h-4 w-4 transition-transform ${
+                            settingsExpanded ? "rotate-90" : ""
+                          }`}
+                        />
+                      </SidebarMenuButton>
+                      {settingsExpanded && (
+                        <SidebarMenuSub>
+                          {settingsSubItems.map((subItem) => (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton asChild>
+                                <NavLink
+                                  to={subItem.url}
+                                  className={getNavClassName(subItem.url)}
+                                >
+                                  <subItem.icon className="h-3 w-3" />
+                                  <span>{subItem.title}</span>
+                                </NavLink>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      )}
                     </>
                   )}
-                </SidebarMenuButton>
-                {settingsExpanded && !isCollapsed && (
-                  <SidebarMenuSub>
-                    {settingsSubItems.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
-                          <NavLink
-                            to={subItem.url}
-                            className={getNavClassName(subItem.url)}
-                          >
-                            <subItem.icon className="h-3 w-3" />
-                            <span>{subItem.title}</span>
-                          </NavLink>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </TooltipProvider>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
