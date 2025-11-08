@@ -35,6 +35,7 @@ import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
 import businessScreenshot from "@/assets/business-dashboard-screenshot.png";
+import globalFinance from "@/assets/global-finance-districts.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -375,8 +376,8 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
         </div>
 
-        <div className="relative container mx-auto px-6 py-32 text-center">
-          <div className="max-w-4xl mx-auto space-y-8">
+        <div className="relative container mx-auto px-6 py-24 text-center">
+          <div className="max-w-6xl mx-auto space-y-12">
             <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
               <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
                 ✨ AI-Powered Workflow Intelligence
@@ -393,6 +394,41 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Enterprise platforms powered by AI for financial advisors and modern businesses
             </p>
+
+            {/* Global Finance Districts Image */}
+            <div className="relative mt-16 mb-8">
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 backdrop-blur-sm bg-white/10 p-8">
+                <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-inner">
+                  <img 
+                    src={globalFinance} 
+                    alt="Global Finance Districts" 
+                    className="w-full h-auto rounded-xl shadow-lg"
+                  />
+                  <div className="mt-6 text-center">
+                    <p className="text-sm font-semibold text-gray-600 tracking-wide uppercase">
+                      Trusted by Financial Institutions & Businesses Worldwide
+                    </p>
+                    <div className="flex items-center justify-center gap-8 mt-4 text-gray-500">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-600">50+</p>
+                        <p className="text-xs">Countries</p>
+                      </div>
+                      <div className="w-px h-8 bg-gray-300" />
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">10K+</p>
+                        <p className="text-xs">Active Users</p>
+                      </div>
+                      <div className="w-px h-8 bg-gray-300" />
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-purple-600">$5B+</p>
+                        <p className="text-xs">Assets Managed</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
