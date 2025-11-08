@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Target, TrendingUp, Users, DollarSign, BarChart3, FileText, ArrowLeft, Plus, Edit, Trash2 } from "lucide-react";
+import { Target, TrendingUp, Users, DollarSign, BarChart3, FileText, ArrowLeft, Plus, Edit, Trash2, Download } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+
+interface StrategicDocument {
+  id: number;
+  name: string;
+  type: string;
+  lastModified: string;
+}
 
 const BusinessPlanning = () => {
   const navigate = useNavigate();
@@ -28,12 +35,22 @@ const BusinessPlanning = () => {
     { id: 3, name: "Digital Transformation", description: "Modernize core systems", progress: 75, deadline: "Q4 2024", status: "in-progress" },
   ]);
 
+  const [documents, setDocuments] = useState<StrategicDocument[]>([
+    { id: 1, name: "Business Plan 2024", type: "Business Plan", lastModified: "2024-01-15" },
+    { id: 2, name: "Market Analysis Report", type: "Market Research", lastModified: "2024-02-10" },
+    { id: 3, name: "Competitive Strategy", type: "Strategy Document", lastModified: "2024-03-05" },
+    { id: 4, name: "Growth Roadmap", type: "Roadmap", lastModified: "2024-01-20" },
+  ]);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [initiativeDialogOpen, setInitiativeDialogOpen] = useState(false);
   const [editInitiativeDialogOpen, setEditInitiativeDialogOpen] = useState(false);
+  const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
+  const [editDocumentDialogOpen, setEditDocumentDialogOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<typeof goals[0] | null>(null);
   const [selectedInitiative, setSelectedInitiative] = useState<typeof initiatives[0] | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<StrategicDocument | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -48,6 +65,11 @@ const BusinessPlanning = () => {
     progress: "0",
     deadline: "",
     status: "in-progress",
+  });
+
+  const [documentFormData, setDocumentFormData] = useState({
+    name: "",
+    type: "",
   });
 
   const handleSaveGoal = () => {
@@ -201,6 +223,75 @@ const BusinessPlanning = () => {
     setEditInitiativeDialogOpen(true);
   };
 
+  // Document handlers
+  const handleSaveDocument = () => {
+    if (!documentFormData.name || !documentFormData.type) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newDocument: StrategicDocument = {
+      id: documents.length > 0 ? Math.max(...documents.map(d => d.id)) + 1 : 1,
+      name: documentFormData.name,
+      type: documentFormData.type,
+      lastModified: new Date().toISOString().split('T')[0]
+    };
+    setDocuments([...documents, newDocument]);
+    toast({
+      title: "Success",
+      description: "Document created successfully",
+    });
+    setDocumentDialogOpen(false);
+    setDocumentFormData({ name: "", type: "" });
+  };
+
+  const handleUpdateDocument = () => {
+    if (!selectedDocument || !documentFormData.name || !documentFormData.type) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDocuments(documents.map(d => 
+      d.id === selectedDocument.id 
+        ? { ...d, name: documentFormData.name, type: documentFormData.type, lastModified: new Date().toISOString().split('T')[0] }
+        : d
+    ));
+    toast({
+      title: "Success",
+      description: "Document updated successfully",
+    });
+    setEditDocumentDialogOpen(false);
+    setSelectedDocument(null);
+    setDocumentFormData({ name: "", type: "" });
+  };
+
+  const handleDeleteDocument = (id: number) => {
+    setDocuments(documents.filter(d => d.id !== id));
+    toast({
+      title: "Success",
+      description: "Document deleted successfully",
+    });
+    setEditDocumentDialogOpen(false);
+    setSelectedDocument(null);
+  };
+
+  const handleEditDocument = (document: StrategicDocument) => {
+    setSelectedDocument(document);
+    setDocumentFormData({
+      name: document.name,
+      type: document.type,
+    });
+    setEditDocumentDialogOpen(true);
+  };
+
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -301,28 +392,54 @@ const BusinessPlanning = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Strategic Documents
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Strategic Documents
+              </CardTitle>
+              <Button size="sm" onClick={() => setDocumentDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Document
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <FileText className="h-4 w-4" />
-              Business Plan 2024
-            </Button>
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <FileText className="h-4 w-4" />
-              Market Analysis Report
-            </Button>
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <FileText className="h-4 w-4" />
-              Competitive Strategy
-            </Button>
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <FileText className="h-4 w-4" />
-              Growth Roadmap
-            </Button>
+            {documents.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent transition-colors group">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">{doc.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {doc.type} • {new Date(doc.lastModified).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button 
+                    size="icon" 
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      toast({
+                        title: "Download",
+                        description: "Document download feature coming soon!"
+                      });
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    size="icon" 
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => handleEditDocument(doc)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -628,6 +745,81 @@ const BusinessPlanning = () => {
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditInitiativeDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleUpdateInitiative}>Update Initiative</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Document Dialog */}
+      <Dialog open={documentDialogOpen} onOpenChange={setDocumentDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="document-name">Document Name *</Label>
+              <Input
+                id="document-name"
+                value={documentFormData.name}
+                onChange={(e) => setDocumentFormData({ ...documentFormData, name: e.target.value })}
+                placeholder="e.g., 2024 Business Plan"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="document-type">Document Type *</Label>
+              <Input
+                id="document-type"
+                value={documentFormData.type}
+                onChange={(e) => setDocumentFormData({ ...documentFormData, type: e.target.value })}
+                placeholder="e.g., Business Plan, Strategy Document"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDocumentDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveDocument}>Create Document</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Document Dialog */}
+      <Dialog open={editDocumentDialogOpen} onOpenChange={setEditDocumentDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Strategic Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-document-name">Document Name *</Label>
+              <Input
+                id="edit-document-name"
+                value={documentFormData.name}
+                onChange={(e) => setDocumentFormData({ ...documentFormData, name: e.target.value })}
+                placeholder="e.g., 2024 Business Plan"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-document-type">Document Type *</Label>
+              <Input
+                id="edit-document-type"
+                value={documentFormData.type}
+                onChange={(e) => setDocumentFormData({ ...documentFormData, type: e.target.value })}
+                placeholder="e.g., Business Plan, Strategy Document"
+              />
+            </div>
+          </div>
+          <div className="flex justify-between gap-2">
+            <Button 
+              variant="destructive" 
+              onClick={() => selectedDocument && handleDeleteDocument(selectedDocument.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditDocumentDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleUpdateDocument}>Update Document</Button>
             </div>
           </div>
         </DialogContent>

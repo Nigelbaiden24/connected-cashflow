@@ -392,6 +392,29 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Support Section */}
+      <section className="container mx-auto px-6 py-16">
+        <div className="max-w-2xl mx-auto text-center">
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+            <CardHeader>
+              <CardTitle className="text-2xl">Need Help?</CardTitle>
+              <CardDescription>Our support team is here to assist you</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                For support inquiries, please contact us at:
+              </p>
+              <p className="text-lg font-mono font-semibold text-foreground">
+                support@flowpulse.co.uk
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We typically respond within 24 hours during business days
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t bg-muted/30">
         <div className="container mx-auto px-6 py-8">
