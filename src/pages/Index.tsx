@@ -565,7 +565,7 @@ const Index = () => {
               <p className="text-muted-foreground">
                 For support inquiries, please contact us at:
               </p>
-              <p className="text-lg font-mono font-semibold text-foreground">
+              <p className="text-lg tracking-tight text-foreground">
                 support@flowpulse.co.uk
               </p>
               <p className="text-sm text-muted-foreground">
