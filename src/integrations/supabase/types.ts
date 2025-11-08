@@ -698,6 +698,7 @@ export type Database = {
           status: string | null
           time_horizon: number | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -721,6 +722,7 @@ export type Database = {
           status?: string | null
           time_horizon?: number | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -744,6 +746,7 @@ export type Database = {
           status?: string | null
           time_horizon?: number | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -874,6 +877,7 @@ export type Database = {
           status: string | null
           tags: string[] | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           company?: string | null
@@ -888,6 +892,7 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           company?: string | null
@@ -902,6 +907,7 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1033,6 +1039,7 @@ export type Database = {
           message: string | null
           name: string
           phone: string | null
+          user_id: string | null
         }
         Insert: {
           company?: string | null
@@ -1042,6 +1049,7 @@ export type Database = {
           message?: string | null
           name: string
           phone?: string | null
+          user_id?: string | null
         }
         Update: {
           company?: string | null
@@ -1051,6 +1059,7 @@ export type Database = {
           message?: string | null
           name?: string
           phone?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1061,6 +1070,7 @@ export type Database = {
           bank_name: string | null
           city: string | null
           created_at: string
+          created_by: string | null
           date_of_birth: string | null
           department: string | null
           email: string
@@ -1089,6 +1099,7 @@ export type Database = {
           bank_name?: string | null
           city?: string | null
           created_at?: string
+          created_by?: string | null
           date_of_birth?: string | null
           department?: string | null
           email: string
@@ -1117,6 +1128,7 @@ export type Database = {
           bank_name?: string | null
           city?: string | null
           created_at?: string
+          created_by?: string | null
           date_of_birth?: string | null
           department?: string | null
           email?: string
@@ -1579,6 +1591,7 @@ export type Database = {
           total_gross: number | null
           total_net: number | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -1593,6 +1606,7 @@ export type Database = {
           total_gross?: number | null
           total_net?: number | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -1607,6 +1621,7 @@ export type Database = {
           total_gross?: number | null
           total_net?: number | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

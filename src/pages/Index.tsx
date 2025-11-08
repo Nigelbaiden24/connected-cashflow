@@ -155,7 +155,7 @@ const Index = () => {
           
           <nav className="hidden md:flex items-center gap-8">
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/auth')}
               className="relative font-space-grotesk font-semibold text-lg group"
             >
               <span className="relative z-10">FlowPulse Finance</span>
@@ -164,7 +164,7 @@ const Index = () => {
             </button>
             
             <button 
-              onClick={() => navigate('/business-login')}
+              onClick={() => navigate('/auth')}
               className="relative font-space-grotesk font-semibold text-lg group"
             >
               <span className="relative z-10">FlowPulse Business</span>
@@ -244,7 +244,7 @@ const Index = () => {
 
                     <Button 
                       className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                      onClick={() => navigate('/login')}
+                      onClick={() => navigate('/auth')}
                     >
                       Explore Finance Platform
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -313,7 +313,7 @@ const Index = () => {
 
                     <Button 
                       className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                      onClick={() => navigate('/business-login')}
+                      onClick={() => navigate('/auth')}
                     >
                       Explore Business Platform
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -480,7 +480,7 @@ const Index = () => {
                 ))}
               </div>
               
-              <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30" onClick={() => navigate('/login')}>
+              <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30" onClick={() => navigate('/auth')}>
                 Access Finance Platform
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -522,7 +522,7 @@ const Index = () => {
                 ))}
               </div>
               
-              <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30" onClick={() => navigate('/business-login')}>
+              <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30" onClick={() => navigate('/auth')}>
                 Access Business Platform
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
