@@ -53,6 +53,314 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_dependencies: {
+        Row: {
+          condition_config: Json | null
+          created_at: string
+          dependency_type: string | null
+          depends_on_rule_id: string
+          id: string
+          rule_id: string
+        }
+        Insert: {
+          condition_config?: Json | null
+          created_at?: string
+          dependency_type?: string | null
+          depends_on_rule_id: string
+          id?: string
+          rule_id: string
+        }
+        Update: {
+          condition_config?: Json | null
+          created_at?: string
+          dependency_type?: string | null
+          depends_on_rule_id?: string
+          id?: string
+          rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_dependencies_depends_on_rule_id_fkey"
+            columns: ["depends_on_rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_dependencies_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_executions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          error_stack: string | null
+          execution_time_ms: number | null
+          id: string
+          result_data: Json | null
+          rule_id: string
+          started_at: string | null
+          status: string
+          trigger_data: Json | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          error_stack?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          result_data?: Json | null
+          rule_id: string
+          started_at?: string | null
+          status?: string
+          trigger_data?: Json | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          error_stack?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          result_data?: Json | null
+          rule_id?: string
+          started_at?: string | null
+          status?: string
+          trigger_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_logs: {
+        Row: {
+          created_at: string
+          execution_id: string | null
+          id: string
+          log_level: string
+          message: string
+          metadata: Json | null
+          rule_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          execution_id?: string | null
+          id?: string
+          log_level: string
+          message: string
+          metadata?: Json | null
+          rule_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          execution_id?: string | null
+          id?: string
+          log_level?: string
+          message?: string
+          metadata?: Json | null
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_logs_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "automation_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_notifications: {
+        Row: {
+          created_at: string
+          execution_id: string | null
+          id: string
+          message: string
+          notification_type: string
+          read_at: string | null
+          sent_at: string | null
+          status: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          execution_id?: string | null
+          id?: string
+          message: string
+          notification_type: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          execution_id?: string | null
+          id?: string
+          message?: string
+          notification_type?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_notifications_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "automation_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          enabled: boolean | null
+          id: string
+          module: string
+          priority: number | null
+          rule_name: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          module: string
+          priority?: number | null
+          rule_name: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          module?: string
+          priority?: number | null
+          rule_name?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      automation_schedules: {
+        Row: {
+          created_at: string
+          cron_expression: string
+          enabled: boolean | null
+          id: string
+          last_run_at: string | null
+          next_run_at: string | null
+          rule_id: string
+          timezone: string | null
+        }
+        Insert: {
+          created_at?: string
+          cron_expression: string
+          enabled?: boolean | null
+          id?: string
+          last_run_at?: string | null
+          next_run_at?: string | null
+          rule_id: string
+          timezone?: string | null
+        }
+        Update: {
+          created_at?: string
+          cron_expression?: string
+          enabled?: boolean | null
+          id?: string
+          last_run_at?: string | null
+          next_run_at?: string | null
+          rule_id?: string
+          timezone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_schedules_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_triggers: {
+        Row: {
+          condition_query: Json | null
+          created_at: string
+          event_source: string
+          event_type: string
+          id: string
+          rule_id: string
+        }
+        Insert: {
+          condition_query?: Json | null
+          created_at?: string
+          event_source: string
+          event_type: string
+          id?: string
+          rule_id: string
+        }
+        Update: {
+          condition_query?: Json | null
+          created_at?: string
+          event_source?: string
+          event_type?: string
+          id?: string
+          rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_triggers_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       benefits: {
         Row: {
           benefit_type: string
@@ -1852,6 +2160,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_next_cron_run: {
+        Args: { cron_expr: string; tz?: string }
+        Returns: string
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
