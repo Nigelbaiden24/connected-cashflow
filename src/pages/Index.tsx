@@ -376,7 +376,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
         </div>
 
-        <div className="relative container mx-auto px-6 py-24 text-center">
+        <div className="relative container mx-auto px-6 py-20 pb-12 text-center">
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
               <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
@@ -399,7 +399,7 @@ const Index = () => {
       </section>
 
       {/* Platforms Showcase */}
-      <section className="container mx-auto px-6 py-16 mt-0 relative z-10">
+      <section className="container mx-auto px-6 pt-8 pb-16 relative z-10">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Finance Platform */}
           <Card className="relative overflow-hidden border-2 border-blue-500/30 hover:border-blue-500/60 transition-all group bg-gradient-to-br from-blue-950/50 to-background backdrop-blur-sm">
