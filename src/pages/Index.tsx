@@ -394,41 +394,6 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Enterprise platforms powered by AI for financial advisors and modern businesses
             </p>
-
-            {/* Global Finance Districts Image */}
-            <div className="relative mt-16 mb-8">
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent z-10" />
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/20 backdrop-blur-sm bg-white/10 p-8">
-                <div className="bg-gradient-to-b from-white to-gray-50 rounded-2xl p-6 shadow-inner">
-                  <img 
-                    src={globalFinance} 
-                    alt="Global Finance Districts" 
-                    className="w-full h-auto rounded-xl shadow-lg"
-                  />
-                  <div className="mt-6 text-center">
-                    <p className="text-sm font-semibold text-gray-600 tracking-wide uppercase">
-                      Trusted by Financial Institutions & Businesses Worldwide
-                    </p>
-                    <div className="flex items-center justify-center gap-8 mt-4 text-gray-500">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-blue-600">50+</p>
-                        <p className="text-xs">Countries</p>
-                      </div>
-                      <div className="w-px h-8 bg-gray-300" />
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-green-600">10K+</p>
-                        <p className="text-xs">Active Users</p>
-                      </div>
-                      <div className="w-px h-8 bg-gray-300" />
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-purple-600">$5B+</p>
-                        <p className="text-xs">Assets Managed</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -608,6 +573,49 @@ const Index = () => {
               </p>
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      {/* Global Finance Districts Section */}
+      <section className="py-20 bg-gradient-to-b from-background to-muted/30">
+        <div className="container mx-auto px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Trusted Globally
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Powering financial institutions and businesses across the world
+              </p>
+            </div>
+            
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              <img 
+                src={globalFinance} 
+                alt="Global Finance Districts" 
+                className="w-full h-auto object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+                <div className="flex items-center justify-center gap-8 md:gap-16 text-white">
+                  <div className="text-center">
+                    <p className="text-3xl md:text-4xl font-bold drop-shadow-lg">50+</p>
+                    <p className="text-sm md:text-base drop-shadow-lg">Countries</p>
+                  </div>
+                  <div className="w-px h-12 bg-white/30" />
+                  <div className="text-center">
+                    <p className="text-3xl md:text-4xl font-bold drop-shadow-lg">10K+</p>
+                    <p className="text-sm md:text-base drop-shadow-lg">Active Users</p>
+                  </div>
+                  <div className="w-px h-12 bg-white/30" />
+                  <div className="text-center">
+                    <p className="text-3xl md:text-4xl font-bold drop-shadow-lg">$5B+</p>
+                    <p className="text-sm md:text-base drop-shadow-lg">Assets Managed</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
