@@ -17,14 +17,24 @@ import {
   Calendar,
   Sparkles,
   Lock,
-  Video
+  Video,
+  ChevronDown,
+  Laptop
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
+import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
+import businessScreenshot from "@/assets/business-dashboard-screenshot.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -99,23 +109,78 @@ const Index = () => {
           </div>
           
           <nav className="hidden md:flex items-center gap-8">
-            <button 
-              onClick={() => navigate('/login')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">FlowPulse Finance</span>
-              <span className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full transition-all duration-300" />
-            </button>
-            
-            <button 
-              onClick={() => navigate('/business-login')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">FlowPulse Business</span>
-              <span className="absolute inset-0 bg-green-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-400 to-emerald-400 group-hover:w-full transition-all duration-300" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative font-space-grotesk font-semibold text-lg group flex items-center gap-2">
+                  <span className="relative z-10">Platforms</span>
+                  <ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform" />
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 group-hover:w-full transition-all duration-300" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[600px] p-6 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl" align="start">
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Finance Platform */}
+                  <div 
+                    onClick={() => navigate('/login')}
+                    className="group cursor-pointer p-4 rounded-lg border-2 border-blue-500/30 hover:border-blue-500/60 bg-gradient-to-br from-blue-950/30 to-background hover:from-blue-950/50 transition-all space-y-3"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg">
+                        <TrendingUp className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="font-bold text-lg bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        FlowPulse Finance
+                      </h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Complete financial advisory platform with portfolio management, AI-powered insights, and compliance tools for wealth managers.
+                    </p>
+                    <div className="relative aspect-video rounded-md overflow-hidden border border-blue-500/30 group-hover:border-blue-500/60 transition-colors">
+                      <img 
+                        src={financeScreenshot} 
+                        alt="FlowPulse Finance Dashboard" 
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-blue-950/60 to-transparent" />
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-xs text-blue-400 font-semibold">For Financial Advisors</span>
+                      <ArrowRight className="h-4 w-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+
+                  {/* Business Platform */}
+                  <div 
+                    onClick={() => navigate('/business-login')}
+                    className="group cursor-pointer p-4 rounded-lg border-2 border-green-500/30 hover:border-green-500/60 bg-gradient-to-br from-green-950/30 to-background hover:from-green-950/50 transition-all space-y-3"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-gradient-to-br from-green-600 to-emerald-600 rounded-lg">
+                        <Building2 className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="font-bold text-lg bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                        FlowPulse Business
+                      </h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      All-in-one business management platform with project tracking, team collaboration, CRM, and advanced analytics for modern teams.
+                    </p>
+                    <div className="relative aspect-video rounded-md overflow-hidden border border-green-500/30 group-hover:border-green-500/60 transition-colors">
+                      <img 
+                        src={businessScreenshot} 
+                        alt="FlowPulse Business Dashboard" 
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-green-950/60 to-transparent" />
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-xs text-green-400 font-semibold">For Modern Businesses</span>
+                      <ArrowRight className="h-4 w-4 text-green-400 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             <button 
               onClick={() => navigate('/pricing')}

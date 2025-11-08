@@ -2,21 +2,63 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Briefcase, Award, Clock } from "lucide-react";
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, Briefcase, Award, Clock, Camera } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const TeamProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const member = location.state?.member;
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(member?.avatarUrl || null);
 
   if (!member) {
     navigate("/team");
     return null;
   }
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${member.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl);
+      toast.success("Profile picture updated successfully");
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error("Failed to upload profile picture");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -57,11 +99,36 @@ const TeamProfile = () => {
         <Card className="md:col-span-1">
           <CardContent className="pt-6 space-y-6">
             <div className="flex flex-col items-center text-center space-y-4">
-              <Avatar className="h-32 w-32">
-                <AvatarFallback className="text-4xl bg-primary text-primary-foreground">
-                  {getInitials(member.name)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative group">
+                <Avatar className="h-32 w-32 ring-4 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                  {avatarUrl && <AvatarImage src={avatarUrl} />}
+                  <AvatarFallback className="text-4xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
+                    {getInitials(member.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <label 
+                  htmlFor="profile-avatar"
+                  className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 rounded-full cursor-pointer transition-opacity"
+                >
+                  <Camera className="h-8 w-8 text-white" />
+                  <input
+                    id="profile-avatar"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleAvatarUpload(file);
+                    }}
+                    disabled={uploadingAvatar}
+                  />
+                </label>
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
+                    <div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" />
+                  </div>
+                )}
+              </div>
               <div>
                 <h2 className="text-2xl font-bold">{member.name}</h2>
                 <p className="text-muted-foreground">{member.role}</p>

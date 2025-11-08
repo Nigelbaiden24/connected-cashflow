@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Users, UserCheck, Clock, Mail, Phone, ArrowLeft, MessageSquare, Eye, Shield, BarChart3 } from "lucide-react";
+import { Plus, Users, UserCheck, Clock, Mail, Phone, ArrowLeft, MessageSquare, Eye, Shield, BarChart3, Upload, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Team = () => {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ const Team = () => {
       joinDate: "2023-01-15",
       permissions: ["view", "edit", "manage"],
       workload: 85,
+      avatarUrl: null as string | null,
     },
     {
       id: 2,
@@ -39,6 +41,7 @@ const Team = () => {
       joinDate: "2022-08-20",
       permissions: ["view", "edit"],
       workload: 72,
+      avatarUrl: null as string | null,
     },
     {
       id: 3,
@@ -51,6 +54,7 @@ const Team = () => {
       joinDate: "2023-03-10",
       permissions: ["view", "edit", "manage"],
       workload: 90,
+      avatarUrl: null as string | null,
     },
     {
       id: 4,
@@ -63,6 +67,7 @@ const Team = () => {
       joinDate: "2023-06-05",
       permissions: ["view"],
       workload: 65,
+      avatarUrl: null as string | null,
     },
   ]);
 
@@ -97,6 +102,51 @@ const Team = () => {
     email: "",
     phone: "",
   });
+  
+  const [uploadingAvatar, setUploadingAvatar] = useState<number | null>(null);
+
+  const handleAvatarUpload = async (memberId: number, file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setUploadingAvatar(memberId);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${memberId}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setTeamMembers(prev => prev.map(member => 
+        member.id === memberId 
+          ? { ...member, avatarUrl: publicUrl }
+          : member
+      ));
+
+      toast.success("Profile picture updated successfully");
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast.error("Failed to upload profile picture");
+    } finally {
+      setUploadingAvatar(null);
+    }
+  };
 
   const handleAddMember = () => {
     if (!newMember.name || !newMember.role || !newMember.department || !newMember.email) {
@@ -111,6 +161,7 @@ const Team = () => {
       joinDate: new Date().toISOString().split('T')[0],
       permissions: ["view"] as string[],
       workload: 0,
+      avatarUrl: null as string | null,
     };
 
     setTeamMembers([...teamMembers, member]);
@@ -276,11 +327,36 @@ const Team = () => {
               <Card key={member.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                        {getInitials(member.name)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative group">
+                      <Avatar className="h-16 w-16 ring-2 ring-primary/20 group-hover:ring-primary/40 transition-all">
+                        {member.avatarUrl && <AvatarImage src={member.avatarUrl} />}
+                        <AvatarFallback className="text-lg bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
+                          {getInitials(member.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <label 
+                        htmlFor={`avatar-${member.id}`}
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 rounded-full cursor-pointer transition-opacity"
+                      >
+                        <Camera className="h-6 w-6 text-white" />
+                        <input
+                          id={`avatar-${member.id}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleAvatarUpload(member.id, file);
+                          }}
+                          disabled={uploadingAvatar === member.id}
+                        />
+                      </label>
+                      {uploadingAvatar === member.id && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
+                          <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full" />
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="flex-1 space-y-3">
                       <div>
