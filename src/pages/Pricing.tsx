@@ -70,7 +70,7 @@ const Pricing = () => {
       name: "Basic",
       description: "Perfect for getting started",
       monthlyPrice: 39.99,
-      stripePriceId: isAnnual ? "price_basic_annual" : "price_basic_monthly", // Replace with your Stripe price IDs
+      stripePriceId: isAnnual ? "price_1SR1idKj5iDjtHZwymZ2NX9I" : "price_1SR1huKj5iDjtHZwSEDU4CHd",
       features: [
         "Core platform features",
         "Up to 5 team members",
@@ -86,7 +86,7 @@ const Pricing = () => {
       name: "Pro",
       description: "For growing teams",
       monthlyPrice: 72.99,
-      stripePriceId: isAnnual ? "price_pro_annual" : "price_pro_monthly", // Replace with your Stripe price IDs
+      stripePriceId: isAnnual ? "price_1SR1jDKj5iDjtHZwJ1OP209L" : "price_1SR1isKj5iDjtHZwiiP9YxA4",
       features: [
         "All Basic features",
         "Up to 20 team members",
@@ -105,7 +105,7 @@ const Pricing = () => {
       name: "Enterprise",
       description: "For large organizations",
       monthlyPrice: 104.99,
-      stripePriceId: isAnnual ? "price_enterprise_annual" : "price_enterprise_monthly", // Replace with your Stripe price IDs
+      stripePriceId: isAnnual ? "price_1SR1k7Kj5iDjtHZwTOYaYKXr" : "price_1SR1jjKj5iDjtHZw0NVFE780",
       features: [
         "All Pro features",
         "Unlimited team members",
