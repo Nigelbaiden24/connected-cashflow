@@ -41,6 +41,7 @@ import {
   Palette,
   UserCog,
   History,
+  Activity,
 } from "lucide-react";
 
 interface BusinessSidebarProps {
@@ -119,6 +120,11 @@ const operationsItems = [
     title: "Security",
     url: "/business/security",
     icon: Shield,
+  },
+  {
+    title: "Automation Center",
+    url: "/business/automation-center",
+    icon: Activity,
   },
 ];
 

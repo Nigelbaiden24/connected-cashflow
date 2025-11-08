@@ -50,6 +50,7 @@ import Settings from "./pages/Settings";
 import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
+import AutomationCenter from "./pages/AutomationCenter";
 
 import AboutUs from "./pages/AboutUs";
 import Pricing from "./pages/Pricing";
@@ -321,6 +322,9 @@ const App = () => {
           } />
           <Route path="/business/settings" element={
             !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><Settings /></BusinessLayout>
+          } />
+          <Route path="/business/automation-center" element={
+            !isBusinessAuthenticated ? <Navigate to="/business-login" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleBusinessLogout}><AutomationCenter /></BusinessLayout>
           } />
           
           <Route path="/finance-ai-generator" element={
