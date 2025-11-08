@@ -393,25 +393,6 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Enterprise platforms powered by AI for financial advisors and modern businesses
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-8">
-              <Button 
-                size="lg" 
-                className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-2xl shadow-blue-500/50 font-semibold"
-                onClick={() => navigate('/login')}
-              >
-                Explore Finance Platform
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button 
-                size="lg" 
-                className="text-lg px-8 py-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-2xl shadow-green-500/50 font-semibold"
-                onClick={() => navigate('/business-login')}
-              >
-                Explore Business Platform
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
           </div>
         </div>
       </section>
