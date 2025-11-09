@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Building2, Eye, EyeOff, Users, BarChart3, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface LoginBusinessProps {
@@ -43,19 +44,59 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
     }, 1500);
   };
 
-  const handleDemoLogin = () => {
+  const handleDemoLogin = async () => {
     setIsLoading(true);
     const demoEmail = "business@flowpulse.com";
+    const demoPassword = "demo123456";
     
-    setTimeout(() => {
+    try {
+      // Try to sign in with demo account
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: demoEmail,
+        password: demoPassword,
+      });
+
+      if (signInError) {
+        // If demo account doesn't exist, create it
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: demoEmail,
+          password: demoPassword,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: "Business Demo User",
+              platform: "business"
+            }
+          }
+        });
+
+        if (signUpError) throw signUpError;
+
+        // Now sign in
+        const { error: retrySignInError } = await supabase.auth.signInWithPassword({
+          email: demoEmail,
+          password: demoPassword,
+        });
+
+        if (retrySignInError) throw retrySignInError;
+      }
+
       toast({
         title: "Demo Login Successful",
         description: `Welcome to FlowPulse Business demo!`,
       });
       onLogin(demoEmail);
       navigate("/business/dashboard");
+    } catch (error: any) {
+      console.error("Demo login error:", error);
+      toast({
+        title: "Demo Login Error",
+        description: error.message || "Failed to login with demo account",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

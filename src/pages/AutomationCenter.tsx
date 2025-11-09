@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CreateAutomationDialog } from "@/components/automation/CreateAutomationDialog";
 
 interface AutomationRule {
   id: string;
@@ -49,6 +50,7 @@ const AutomationCenter = () => {
   const [loading, setLoading] = useState(true);
   const [automations, setAutomations] = useState<AutomationRule[]>([]);
   const [recentExecutions, setRecentExecutions] = useState<AutomationExecution[]>([]);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [stats, setStats] = useState({
     totalActive: 0,
     totalFailed: 0,
@@ -310,11 +312,11 @@ const AutomationCenter = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleSeedAutomations} className="gap-2">
+          <Button variant="outline" onClick={handleSeedAutomations} disabled={loading} className="gap-2">
             <Zap className="h-4 w-4" />
-            Seed Automations
+            {loading ? "Seeding..." : "Seed Automations"}
           </Button>
-          <Button className="gap-2">
+          <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
             <Settings className="h-4 w-4" />
             Create Automation
           </Button>
@@ -555,6 +557,12 @@ const AutomationCenter = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <CreateAutomationDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={fetchAutomationData}
+      />
     </div>
   );
 };
