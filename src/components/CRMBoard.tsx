@@ -134,9 +134,15 @@ export const CRMBoard = () => {
     }
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to add contacts");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("crm_contacts")
-        .insert([newContact])
+        .insert([{ ...newContact, user_id: user.id }])
         .select()
         .single();
 
@@ -173,6 +179,12 @@ export const CRMBoard = () => {
 
   const addEmptyRow = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to add contacts");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("crm_contacts")
         .insert([
@@ -180,6 +192,7 @@ export const CRMBoard = () => {
             name: "New Contact",
             status: "active",
             priority: "medium",
+            user_id: user.id,
           },
         ])
         .select()

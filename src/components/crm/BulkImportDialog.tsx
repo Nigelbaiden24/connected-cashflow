@@ -161,6 +161,17 @@ export function BulkImportDialog({ open, onOpenChange, onImportComplete }: BulkI
     const batchSize = 50; // Process in batches for better performance
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to import contacts.",
+          variant: "destructive",
+        });
+        setStep("mapping");
+        return;
+      }
+
       for (let i = 0; i < totalRows; i += batchSize) {
         const batch = parsedData.rows.slice(i, Math.min(i + batchSize, totalRows));
         const contactsToInsert = [];
@@ -186,6 +197,7 @@ export function BulkImportDialog({ open, onOpenChange, onImportComplete }: BulkI
             // Set defaults
             contact.status = contact.status || 'active';
             contact.priority = contact.priority || 'medium';
+            contact.user_id = user.id;
 
             contactsToInsert.push(contact);
           } catch (error) {
