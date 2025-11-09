@@ -41,12 +41,17 @@ const Login = ({ onLogin }: LoginProps) => {
   };
 
   const handleDemoLogin = () => {
-    setEmail("finance@flowpulse.com");
-    setPassword("finance2024");
-    toast({
-      title: "Demo Credentials Loaded",
-      description: "Click Sign In to continue with demo account",
-    });
+    setIsLoading(true);
+    const demoEmail = "finance@flowpulse.com";
+    
+    setTimeout(() => {
+      toast({
+        title: "Demo Login Successful",
+        description: `Welcome to FlowPulse Finance demo!`,
+      });
+      onLogin(demoEmail);
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -202,8 +207,9 @@ const Login = ({ onLogin }: LoginProps) => {
             variant="outline"
             className="w-full h-11"
             onClick={handleDemoLogin}
+            disabled={isLoading}
           >
-            Load Demo Credentials
+            {isLoading ? "Signing in..." : "Sign in with Demo Account"}
           </Button>
           
           <div className="bg-muted/50 p-4 rounded-lg border">

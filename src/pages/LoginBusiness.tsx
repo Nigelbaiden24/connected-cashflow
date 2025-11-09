@@ -41,12 +41,17 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
   };
 
   const handleDemoLogin = () => {
-    setEmail("business@flowpulse.com");
-    setPassword("business2024");
-    toast({
-      title: "Demo Credentials Loaded",
-      description: "Click Sign In to continue with demo account",
-    });
+    setIsLoading(true);
+    const demoEmail = "business@flowpulse.com";
+    
+    setTimeout(() => {
+      toast({
+        title: "Demo Login Successful",
+        description: `Welcome to FlowPulse Business demo!`,
+      });
+      onLogin(demoEmail);
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -208,9 +213,10 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
             variant="outline"
             className="w-full border-green-500/30 hover:bg-green-500/10"
             onClick={handleDemoLogin}
+            disabled={isLoading}
           >
             <Building2 className="h-4 w-4 mr-2 text-green-600" />
-            Try Demo Account
+            {isLoading ? "Signing in..." : "Sign in with Demo Account"}
           </Button>
 
           <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/20">
