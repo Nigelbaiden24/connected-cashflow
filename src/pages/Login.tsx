@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ interface LoginProps {
 }
 
 const Login = ({ onLogin }: LoginProps) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +31,7 @@ const Login = ({ onLogin }: LoginProps) => {
           description: `Welcome back! Logged in as ${email}`,
         });
         onLogin(email);
+        navigate("/dashboard");
       } else {
         toast({
           title: "Login Failed",
@@ -50,6 +53,7 @@ const Login = ({ onLogin }: LoginProps) => {
         description: `Welcome to FlowPulse Finance demo!`,
       });
       onLogin(demoEmail);
+      navigate("/dashboard");
       setIsLoading(false);
     }, 1000);
   };

@@ -408,7 +408,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-[600px] md:min-h-[700px]">
         {/* Background Image with Lighter Overlay */}
         <div className="absolute inset-0">
           <img 
@@ -420,7 +420,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
         </div>
 
-        <div className="relative container mx-auto px-6 py-20 pb-12 text-center">
+        <div className="relative container mx-auto px-6 py-32 md:py-40 pb-20 text-center">
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
               <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
