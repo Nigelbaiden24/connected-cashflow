@@ -51,6 +51,7 @@ import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
 import DocumentEditorPage from "./pages/DocumentEditorPage";
 import AutomationCenter from "./pages/AutomationCenter";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 import AboutUs from "./pages/AboutUs";
 import Pricing from "./pages/Pricing";
@@ -219,6 +220,14 @@ const App = () => {
               )
             } />
             
+            <Route path="/analytics" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <AnalyticsDashboard />
+                </FinanceLayout>
+              )
+            } />
+            
             <Route path="/finance-payroll" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
@@ -297,7 +306,7 @@ const App = () => {
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessPlanning /></BusinessLayout>
           } />
           <Route path="/business/analytics" element={
-            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Analytics /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AnalyticsDashboard /></BusinessLayout>
           } />
           <Route path="/business/revenue" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Revenue /></BusinessLayout>

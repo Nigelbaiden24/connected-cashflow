@@ -1,11 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Bell, Shield, Palette, Building, UserCog, History } from "lucide-react";
+import { User, Bell, Shield, Palette, Building, UserCog, History, Globe } from "lucide-react";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { ActivityLog } from "@/components/settings/ActivityLog";
+import { LanguageSettings } from "@/components/settings/LanguageSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -113,6 +114,10 @@ const Settings = () => {
             <Palette className="h-4 w-4" />
             Appearance
           </TabsTrigger>
+          <TabsTrigger value="language" className="gap-2">
+            <Globe className="h-4 w-4" />
+            Language
+          </TabsTrigger>
           <TabsTrigger value="account" className="gap-2">
             <UserCog className="h-4 w-4" />
             Account
@@ -203,6 +208,10 @@ const Settings = () => {
 
         <TabsContent value="appearance" className="space-y-4">
           <AppearanceSettings />
+        </TabsContent>
+
+        <TabsContent value="language" className="space-y-4">
+          <LanguageSettings />
         </TabsContent>
 
         <TabsContent value="account" className="space-y-4">

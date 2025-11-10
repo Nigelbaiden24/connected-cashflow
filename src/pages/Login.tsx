@@ -51,14 +51,14 @@ const Login = ({ onLogin }: LoginProps) => {
     
     try {
       // Try to sign in with demo account
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      let { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: demoEmail,
         password: demoPassword,
       });
 
       if (signInError) {
         // If demo account doesn't exist, create it
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: demoEmail,
           password: demoPassword,
           options: {
@@ -72,13 +72,30 @@ const Login = ({ onLogin }: LoginProps) => {
 
         if (signUpError) throw signUpError;
 
-        // Now sign in
-        const { error: retrySignInError } = await supabase.auth.signInWithPassword({
+        // Check if email confirmation is required
+        if (signUpData?.user && !signUpData?.session) {
+          toast({
+            title: "Email Confirmation Required",
+            description: "Please check your email to confirm your account, or disable email confirmation in Supabase settings.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Try to sign in again
+        const { data: retryData, error: retrySignInError } = await supabase.auth.signInWithPassword({
           email: demoEmail,
           password: demoPassword,
         });
 
         if (retrySignInError) throw retrySignInError;
+        data = retryData;
+      }
+
+      // Verify we have a valid session
+      if (!data?.session) {
+        throw new Error("No session created. Please check if email confirmation is enabled in Supabase.");
       }
 
       toast({
