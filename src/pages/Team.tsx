@@ -171,11 +171,11 @@ const Team = () => {
   };
 
   const handleViewProfile = (member: typeof teamMembers[0]) => {
-    navigate("/team/profile", { state: { member } });
+    navigate("/business/team/profile", { state: { member } });
   };
 
   const handleMessage = (member: typeof teamMembers[0]) => {
-    navigate("/team/chat", { state: { member } });
+    navigate("/business/team/chat", { state: { member } });
   };
 
   const getWorkloadColor = (workload: number) => {

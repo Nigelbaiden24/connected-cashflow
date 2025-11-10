@@ -68,6 +68,16 @@ const aiToolsItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "AI Chatbot",
+    url: "/theodore",
+    icon: MessageSquare,
+  },
+  {
+    title: "Calendar",
+    url: "/calendar",
+    icon: Calendar,
+  },
+  {
     title: "Document Generator",
     url: "/finance-ai-generator",
     icon: Sparkles,

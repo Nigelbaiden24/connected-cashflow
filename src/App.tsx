@@ -106,6 +106,14 @@ const App = () => {
               )
             } />
             
+            <Route path="/calendar" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Calendar />
+                </FinanceLayout>
+              )
+            } />
+            
             
             <Route path="/market" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
