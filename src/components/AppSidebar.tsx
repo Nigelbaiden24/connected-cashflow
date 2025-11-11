@@ -159,11 +159,6 @@ const practiceManagementItems = [
     icon: FileText,
   },
   {
-    title: "Analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
     title: "Security",
     url: "/security",
     icon: Shield,
