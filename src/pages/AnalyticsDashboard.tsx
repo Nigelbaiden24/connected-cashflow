@@ -34,6 +34,7 @@ interface ConnectedPlatform {
 export default function AnalyticsDashboard() {
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([
     { id: "ga", name: "Google Analytics", type: "analytics", icon: Globe, connected: false },
+    { id: "custom", name: "Custom Website Analytics", type: "analytics", icon: BarChart3, connected: false },
     { id: "fb", name: "Facebook Ads", type: "ads", icon: Facebook, connected: false },
     { id: "ig", name: "Instagram", type: "social", icon: Instagram, connected: false },
     { id: "li", name: "LinkedIn Analytics", type: "analytics", icon: Linkedin, connected: false },

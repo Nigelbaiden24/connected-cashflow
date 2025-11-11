@@ -28,6 +28,16 @@ const LANGUAGES = [
   { code: "fi", name: "Finnish", nativeName: "Suomi" },
   { code: "no", name: "Norwegian", nativeName: "Norsk" },
   { code: "cs", name: "Czech", nativeName: "Čeština" },
+  { code: "tw", name: "Twi (Ghanaian)", nativeName: "Twi" },
+  { code: "yo", name: "Yoruba", nativeName: "Yorùbá" },
+  { code: "ig", name: "Igbo", nativeName: "Igbo" },
+  { code: "ha", name: "Hausa", nativeName: "Hausa" },
+  { code: "sw", name: "Swahili", nativeName: "Kiswahili" },
+  { code: "zu", name: "Zulu", nativeName: "isiZulu" },
+  { code: "xh", name: "Xhosa", nativeName: "isiXhosa" },
+  { code: "am", name: "Amharic", nativeName: "አማርኛ" },
+  { code: "so", name: "Somali", nativeName: "Soomaali" },
+  { code: "af", name: "Afrikaans", nativeName: "Afrikaans" },
 ];
 
 export function LanguageSettings() {
