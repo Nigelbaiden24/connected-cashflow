@@ -135,51 +135,11 @@ const operationsItems = [
   },
 ];
 
-const settingsSubItems = [
-  {
-    title: "Profile",
-    url: "/business/settings?tab=profile",
-    icon: User,
-  },
-  {
-    title: "Security",
-    url: "/business/settings?tab=security",
-    icon: Shield,
-  },
-  {
-    title: "Notifications",
-    url: "/business/settings?tab=notifications",
-    icon: Bell,
-  },
-  {
-    title: "Appearance",
-    url: "/business/settings?tab=appearance",
-    icon: Palette,
-  },
-  {
-    title: "Language",
-    url: "/business/settings?tab=language",
-    icon: Globe,
-  },
-  {
-    title: "Account",
-    url: "/business/settings?tab=account",
-    icon: UserCog,
-  },
-  {
-    title: "Activity",
-    url: "/business/settings?tab=activity",
-    icon: History,
-  },
-];
 
 export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
-  const [settingsExpanded, setSettingsExpanded] = useState(
-    location.pathname === "/business/settings"
-  );
 
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
@@ -319,16 +279,15 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                   </SidebarMenuItem>
                 ))}
                 
-                {/* Settings with submenu */}
+                {/* Settings */}
                 <SidebarMenuItem>
                   {isCollapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          onClick={() => setSettingsExpanded(!settingsExpanded)}
-                          className={getNavClassName("/business/settings")}
-                        >
-                          <Settings className="h-4 w-4" />
+                        <SidebarMenuButton asChild>
+                          <NavLink to="/business/settings" className={getNavClassName("/business/settings")}>
+                            <Settings className="h-4 w-4" />
+                          </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -336,37 +295,12 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </TooltipContent>
                     </Tooltip>
                   ) : (
-                    <>
-                      <SidebarMenuButton
-                        onClick={() => setSettingsExpanded(!settingsExpanded)}
-                        className={getNavClassName("/business/settings")}
-                      >
+                    <SidebarMenuButton asChild>
+                      <NavLink to="/business/settings" className={getNavClassName("/business/settings")}>
                         <Settings className="h-4 w-4" />
                         <span>Settings</span>
-                        <ChevronRight
-                          className={`ml-auto h-4 w-4 transition-transform ${
-                            settingsExpanded ? "rotate-90" : ""
-                          }`}
-                        />
-                      </SidebarMenuButton>
-                      {settingsExpanded && (
-                        <SidebarMenuSub>
-                          {settingsSubItems.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild>
-                                <NavLink
-                                  to={subItem.url}
-                                  className={getNavClassName(subItem.url)}
-                                >
-                                  <subItem.icon className="h-3 w-3" />
-                                  <span>{subItem.title}</span>
-                                </NavLink>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      )}
-                    </>
+                      </NavLink>
+                    </SidebarMenuButton>
                   )}
                 </SidebarMenuItem>
               </SidebarMenu>
