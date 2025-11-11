@@ -286,6 +286,14 @@ const App = () => {
               )
             } />
             
+            <Route path="/settings" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Settings />
+                </FinanceLayout>
+              )
+            } />
+            
           {/* Business Routes - All prefixed with /business */}
           <Route path="/business/dashboard" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessDashboard /></BusinessLayout>
