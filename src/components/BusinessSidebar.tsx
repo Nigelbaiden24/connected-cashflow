@@ -48,6 +48,7 @@ import {
   UserCog,
   History,
   Activity,
+  Globe,
 } from "lucide-react";
 
 interface BusinessSidebarProps {
@@ -154,6 +155,11 @@ const settingsSubItems = [
     title: "Appearance",
     url: "/business/settings?tab=appearance",
     icon: Palette,
+  },
+  {
+    title: "Language",
+    url: "/business/settings?tab=language",
+    icon: Globe,
   },
   {
     title: "Account",

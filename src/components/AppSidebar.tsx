@@ -54,6 +54,7 @@ import {
   FolderKanban,
   ClipboardList,
   Zap,
+  Globe,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -190,6 +191,11 @@ const settingsSubItems = [
     title: "Appearance",
     url: "/settings?tab=appearance",
     icon: Palette,
+  },
+  {
+    title: "Language",
+    url: "/settings?tab=language",
+    icon: Globe,
   },
   {
     title: "Account",
