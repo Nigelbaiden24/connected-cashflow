@@ -244,9 +244,9 @@ const Index = () => {
 
                     <Button 
                       className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                      onClick={() => navigate('/login')}
+                      onClick={() => navigate('/finance-features')}
                     >
-                      Explore Finance Platform
+                      Learn More About Finance
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -313,9 +313,9 @@ const Index = () => {
 
                     <Button 
                       className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                      onClick={() => navigate('/login-business')}
+                      onClick={() => navigate('/business-features')}
                     >
-                      Explore Business Platform
+                      Learn More About Business
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>

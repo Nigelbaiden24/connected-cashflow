@@ -11,6 +11,8 @@ import { FinanceLayout } from "@/components/FinanceLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoginBusiness from "./pages/LoginBusiness";
+import FinanceFeatures from "./pages/FinanceFeatures";
+import BusinessFeatures from "./pages/BusinessFeatures";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
@@ -85,6 +87,8 @@ const App = () => {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
+          <Route path="/finance-features" element={<FinanceFeatures />} />
+          <Route path="/business-features" element={<BusinessFeatures />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />

@@ -275,10 +275,16 @@ const FinanceAIGenerator = () => {
     if (!previewRef.current) return;
 
     const opt = {
-      margin: 10,
+      margin: 5,
       filename: `${selectedTemplate}-${Date.now()}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: { scale: 2 },
+      image: { type: 'jpeg' as const, quality: 1 },
+      html2canvas: { 
+        scale: 3,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        imageTimeout: 0
+      },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
     };
 

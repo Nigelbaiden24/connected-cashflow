@@ -315,26 +315,26 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                   </SidebarMenuItem>
                 ))}
                 
-                {/* Settings */}
+                {/* Languages */}
                 <SidebarMenuItem>
                   {isCollapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <SidebarMenuButton asChild>
                           <NavLink to="/settings" className={getNavClassName("/settings")}>
-                            <Settings className="h-4 w-4" />
+                            <Globe className="h-4 w-4" />
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <p>Settings</p>
+                        <p>Languages</p>
                       </TooltipContent>
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
                       <NavLink to="/settings" className={getNavClassName("/settings")}>
-                        <Settings className="h-4 w-4" />
-                        <span>Settings</span>
+                        <Globe className="h-4 w-4" />
+                        <span>Languages</span>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
