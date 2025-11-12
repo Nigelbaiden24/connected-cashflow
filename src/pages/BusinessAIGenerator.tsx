@@ -327,6 +327,21 @@ const BusinessAIGenerator = () => {
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">Document Generator</h1>
               </div>
+              {/* Mobile Preview Toggle */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="lg:hidden"
+                onClick={() => {
+                  const preview = document.getElementById('live-preview');
+                  if (preview) {
+                    preview.classList.toggle('hidden');
+                    preview.classList.toggle('block');
+                  }
+                }}
+              >
+                Toggle Preview
+              </Button>
               {template && (
                 <div className="flex gap-2 items-center">
                   <div className="flex gap-1 items-center border-r pr-2">
@@ -650,9 +665,17 @@ const BusinessAIGenerator = () => {
                           )}
                         </div>
                         {field.type === 'image' ? (
-                          <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                          <div className="w-full aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden border-2 border-border">
                             {formData[field.id] ? (
-                              <img src={formData[field.id]} alt={field.id} className="w-full h-full object-cover" />
+                              <img 
+                                src={formData[field.id]} 
+                                alt={field.id} 
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                  console.error('Image failed to load:', formData[field.id]);
+                                  e.currentTarget.src = '';
+                                }}
+                              />
                             ) : (
                               <div className="text-center text-muted-foreground">
                                 <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
@@ -715,7 +738,7 @@ const BusinessAIGenerator = () => {
               </div>
 
               {/* Right Column - Live Preview */}
-              <div className="overflow-y-auto max-h-[calc(100vh-120px)]">
+              <div id="live-preview" className="overflow-y-auto max-h-[calc(100vh-120px)] w-full hidden lg:block">
                 <Card className="h-full">
                   <CardHeader>
                     <CardTitle>Live Preview</CardTitle>
