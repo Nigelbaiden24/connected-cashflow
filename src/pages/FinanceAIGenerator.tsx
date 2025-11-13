@@ -738,13 +738,13 @@ const FinanceAIGenerator = () => {
               </div>
 
               {/* Right Column - Live Preview */}
-              <div id="live-preview" className="overflow-y-auto max-h-[calc(100vh-120px)] w-full hidden lg:block">
-                <Card className="h-full">
-                  <CardHeader>
+              <div id="live-preview" className="w-full hidden lg:block">
+                <Card className="max-h-[calc(100vh-120px)]">
+                   <CardHeader>
                     <CardTitle>Live Preview</CardTitle>
                     <CardDescription>See your document as you type</CardDescription>
                   </CardHeader>
-                   <CardContent>
+                   <CardContent className="overflow-visible">
                     <div className="space-y-4">
                       {pages.map((page) => (
                         <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
