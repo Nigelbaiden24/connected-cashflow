@@ -461,7 +461,7 @@ const BusinessAIGenerator = () => {
               </div>
             </main>
           ) : (
-            <div className="flex-1 grid grid-cols-2 gap-6 p-6">
+            <div className="flex-1 flex flex-col lg:grid lg:grid-cols-2 gap-6 p-6 w-full">
               {/* Left Column - Input Fields */}
               <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)]">
                 <Card>
@@ -750,7 +750,7 @@ const BusinessAIGenerator = () => {
                         <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
                           <div 
                             ref={page === currentPage ? previewRef : null}
-                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative overflow-hidden"
+                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative"
                             style={{ backgroundColor, position: 'relative' }}
                           >
                             {logoUrl && (
