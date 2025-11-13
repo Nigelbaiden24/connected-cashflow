@@ -28,7 +28,13 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: messages,
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional business document writer. Generate clear, professional content suitable for business documents. Keep responses concise and well-structured. Avoid markdown formatting - return plain, clean text that can be directly inserted into documents. Use proper paragraphs and natural formatting without special characters like # or *."
+          },
+          ...messages
+        ],
         stream: false,
       }),
     });
