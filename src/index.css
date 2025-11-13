@@ -257,3 +257,96 @@ All colors MUST be HSL.
     animation: gradient 3s ease infinite;
   }
 }
+
+/* Markdown prose styles for chat messages */
+.prose {
+  color: hsl(var(--foreground));
+  max-width: none;
+}
+
+.prose h2 {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.prose h3 {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+  color: hsl(var(--foreground));
+}
+
+.prose p {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.6;
+}
+
+.prose ul,
+.prose ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.prose li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.prose strong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  text-align: left;
+}
+
+.prose th {
+  background-color: hsl(var(--muted));
+  font-weight: 600;
+}
+
+.prose blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 0.75rem;
+  font-style: italic;
+  margin: 0.5rem 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.prose code {
+  background-color: hsl(var(--muted));
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: monospace;
+}
+
+.prose-invert h2,
+.prose-invert h3,
+.prose-invert strong,
+.prose-invert p,
+.prose-invert li {
+  color: hsl(var(--primary-foreground));
+}
+
+.prose-invert blockquote {
+  border-left-color: hsl(var(--primary-foreground));
+  color: hsl(var(--primary-foreground) / 0.8);
+}

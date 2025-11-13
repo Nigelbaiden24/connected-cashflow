@@ -18,6 +18,8 @@ import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useBusinessChat } from "@/hooks/useBusinessChat";
 import { useLocation } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Sheet,
   SheetContent,
@@ -674,7 +676,31 @@ const Chat = () => {
                   {message.timestamp.toLocaleTimeString()}
                 </span>
               </div>
-              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+              <div className="text-sm">
+                {message.type === "assistant" ? (
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        h2: ({node, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 text-foreground" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-sm font-semibold mt-2 mb-1 text-foreground" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1 my-2 text-foreground" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1 my-2 text-foreground" {...props} />,
+                        p: ({node, ...props}) => <p className="my-1 text-foreground leading-relaxed" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-semibold text-foreground" {...props} />,
+                        table: ({node, ...props}) => <div className="overflow-x-auto my-2"><table className="border-collapse border border-border w-full" {...props} /></div>,
+                        th: ({node, ...props}) => <th className="border border-border p-2 bg-muted font-semibold text-left text-foreground" {...props} />,
+                        td: ({node, ...props}) => <td className="border border-border p-2 text-foreground" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-3 italic my-2 text-muted-foreground" {...props} />,
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                )}
+              </div>
               {message.type === "assistant" && (
                 <div className="mt-2">
                   <TextToSpeech text={message.content} />

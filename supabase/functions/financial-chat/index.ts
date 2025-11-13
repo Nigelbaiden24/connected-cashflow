@@ -70,8 +70,10 @@ serve(async (req) => {
 - Include relevant data points, percentages, and figures
 - Be concise but comprehensive
 - Reference regulatory requirements where relevant
-- Structure responses with clear headings and bullet points
+- ALWAYS use markdown formatting with ## headings, **bold**, bullet points, and tables
 - Use examples to illustrate complex concepts
+- Keep paragraphs short (2-3 sentences max)
+- Use numbered lists for sequential recommendations
 
 **Key UK Financial Context:**
 - ISA allowances (£20,000 annual limit), pension contributions, capital gains tax
@@ -82,7 +84,16 @@ serve(async (req) => {
 
 When analyzing portfolios or markets, provide specific insights with relevant metrics. When discussing compliance, reference UK regulations and FCA guidance. Always prioritize client suitability and risk-appropriate advice. Flag regulatory considerations and compliance requirements in your responses.
 
-Format your responses to be clear and actionable, with proper structure for readability.`
+**Formatting Requirements:**
+- Use ## for section headings
+- Use **bold** for key terms and important points
+- Use bullet points (-) for lists
+- Use numbered lists (1., 2., 3.) for sequential steps or recommendations
+- Use tables (|) when comparing options or showing data
+- Keep each paragraph to 2-3 sentences maximum
+- Use > for important notes or disclaimers
+
+Format ALL responses with proper markdown structure for maximum readability.`
           },
           ...messages,
         ],
