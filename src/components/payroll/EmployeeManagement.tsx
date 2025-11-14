@@ -320,7 +320,7 @@ export const EmployeeManagement = () => {
                   <TableHead>Department</TableHead>
                   <TableHead>Position</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Pay Rate</TableHead>
+                  <TableHead>Pay Rate (£)</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>

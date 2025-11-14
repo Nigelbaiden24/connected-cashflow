@@ -245,8 +245,8 @@ export const PayrollRuns = () => {
                 <TableHead>Run Date</TableHead>
                 <TableHead>Pay Period</TableHead>
                 <TableHead>Payment Date</TableHead>
-                <TableHead>Gross Pay</TableHead>
-                <TableHead>Net Pay</TableHead>
+                <TableHead>Gross Pay (£)</TableHead>
+                <TableHead>Net Pay (£)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>

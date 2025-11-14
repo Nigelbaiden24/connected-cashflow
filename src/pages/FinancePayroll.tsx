@@ -125,12 +125,12 @@ export default function FinancePayroll() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Tax Withholding
+                PAYE & NI Deductions
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">£{stats.taxWithholding.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">Total taxes & deductions</p>
+              <p className="text-xs text-muted-foreground mt-1">Total deductions</p>
             </CardContent>
           </Card>
         </div>

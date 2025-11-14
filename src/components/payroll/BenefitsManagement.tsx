@@ -213,7 +213,7 @@ export const BenefitsManagement = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Employee Contribution ($/month)</Label>
+                  <Label>Employee Contribution (£/month)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -224,7 +224,7 @@ export const BenefitsManagement = () => {
                   />
                 </div>
                 <div>
-                  <Label>Employer Contribution ($/month)</Label>
+                  <Label>Employer Contribution (£/month)</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -265,8 +265,8 @@ export const BenefitsManagement = () => {
                 <TableHead>Benefit Type</TableHead>
                 <TableHead>Provider</TableHead>
                 <TableHead>Plan</TableHead>
-                <TableHead>Employee Cost</TableHead>
-                <TableHead>Employer Cost</TableHead>
+                <TableHead>Employee Cost (£)</TableHead>
+                <TableHead>Employer Cost (£)</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
@@ -290,8 +290,8 @@ export const BenefitsManagement = () => {
                     </TableCell>
                     <TableCell>{benefit.provider}</TableCell>
                     <TableCell>{benefit.plan_name || "-"}</TableCell>
-                    <TableCell>${benefit.employee_contribution.toFixed(2)}</TableCell>
-                    <TableCell>${benefit.employer_contribution.toFixed(2)}</TableCell>
+                    <TableCell>£{benefit.employee_contribution.toFixed(2)}</TableCell>
+                    <TableCell>£{benefit.employer_contribution.toFixed(2)}</TableCell>
                     <TableCell>
                       {new Date(benefit.coverage_start_date).toLocaleDateString()}
                     </TableCell>
