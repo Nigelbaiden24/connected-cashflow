@@ -307,7 +307,7 @@ const BusinessAIGenerator = () => {
   const editableFields = template?.sections.filter(s => s.editable) || [];
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
