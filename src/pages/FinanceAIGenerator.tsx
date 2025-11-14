@@ -307,7 +307,7 @@ const FinanceAIGenerator = () => {
   const editableFields = template?.sections.filter(s => s.editable) || [];
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full">
         <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
         
