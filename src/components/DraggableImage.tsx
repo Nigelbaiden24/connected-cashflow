@@ -124,7 +124,7 @@ export function DraggableImage({
         <img
           src={src}
           alt="Document"
-          className="w-full h-full object-contain border-2 border-dashed border-primary/50 rounded"
+          className="w-full h-full object-contain"
           draggable={false}
         />
 
