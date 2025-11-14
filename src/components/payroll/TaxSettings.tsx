@@ -99,23 +99,23 @@ export const TaxSettings = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold">Tax Configuration</h3>
+        <h3 className="text-lg font-semibold">UK Payroll Tax Configuration</h3>
         <p className="text-sm text-muted-foreground">
-          Configure federal, state, and local tax rates for automatic payroll calculations
+          Configure PAYE, National Insurance, and other UK-specific tax rates for automatic payroll calculations
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Federal Taxes</CardTitle>
+            <CardTitle>PAYE Taxes</CardTitle>
             <CardDescription>
-              Federal income tax and social insurance rates
+              PAYE income tax and National Insurance rates
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Federal Income Tax Rate (%)</Label>
+              <Label>PAYE Income Tax Rate (%)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -132,7 +132,7 @@ export const TaxSettings = () => {
               </p>
             </div>
             <div>
-              <Label>Social Security Rate (%)</Label>
+              <Label>National Insurance Rate (%)</Label>
               <Input
                 type="number"
                 step="0.001"
@@ -145,11 +145,11 @@ export const TaxSettings = () => {
                 }
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Standard: 6.2%
+                Standard: 12% (Employee and Employer combined)
               </p>
             </div>
             <div>
-              <Label>Medicare Rate (%)</Label>
+              <Label>Workplace Pension Contribution Rate (%)</Label>
               <Input
                 type="number"
                 step="0.001"
@@ -162,7 +162,7 @@ export const TaxSettings = () => {
                 }
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Standard: 1.45%
+                Standard: 8% (3% employee, 5% employer minimum)
               </p>
             </div>
           </CardContent>
@@ -170,8 +170,8 @@ export const TaxSettings = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>State & Local Taxes</CardTitle>
-            <CardDescription>State-specific tax rates and unemployment</CardDescription>
+            <CardTitle>Additional UK Deductions</CardTitle>
+            <CardDescription>UK-specific payroll deductions and levies</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -193,17 +193,17 @@ export const TaxSettings = () => {
               </Select>
             </div>
             <div>
-              <Label>State</Label>
+              <Label>Region</Label>
               <Input
                 value={taxSettings.state}
                 onChange={(e) =>
                   setTaxSettings({ ...taxSettings, state: e.target.value })
                 }
-                placeholder="e.g., California"
+                placeholder="e.g., England, Scotland, Wales"
               />
             </div>
             <div>
-              <Label>State Income Tax Rate (%)</Label>
+              <Label>Student Loan Deduction Rate (%)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -216,11 +216,11 @@ export const TaxSettings = () => {
                 }
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Varies by state (0% - 13%)
+                Plan 1: 9%, Plan 2: 9%, Plan 4: 9% (varies by plan)
               </p>
             </div>
             <div>
-              <Label>Unemployment Insurance Rate (%)</Label>
+              <Label>Apprenticeship Levy Rate (%)</Label>
               <Input
                 type="number"
                 step="0.001"
@@ -233,7 +233,7 @@ export const TaxSettings = () => {
                 }
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Typically 0.6% - 6%
+                Standard: 0.5% of annual payroll over £3 million
               </p>
             </div>
           </CardContent>
@@ -244,31 +244,31 @@ export const TaxSettings = () => {
         <CardHeader>
           <CardTitle>Tax Calculation Preview</CardTitle>
           <CardDescription>
-            See how these rates apply to a sample $5,000 monthly salary
+            See how these rates apply to a sample £5,000 monthly salary
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-muted p-4 rounded-lg">
               <div className="text-sm text-muted-foreground">Gross Pay</div>
-              <div className="text-2xl font-bold">$5,000</div>
+              <div className="text-2xl font-bold">£5,000</div>
             </div>
             <div className="bg-muted p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground">Federal Tax</div>
+              <div className="text-sm text-muted-foreground">PAYE Tax</div>
               <div className="text-2xl font-bold text-destructive">
-                -${(5000 * taxSettings.federal_rate).toFixed(0)}
+                -£{(5000 * taxSettings.federal_rate).toFixed(0)}
               </div>
             </div>
             <div className="bg-muted p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground">State Tax</div>
+              <div className="text-sm text-muted-foreground">Student Loan</div>
               <div className="text-2xl font-bold text-destructive">
-                -${(5000 * taxSettings.state_rate).toFixed(0)}
+                -£{(5000 * taxSettings.state_rate).toFixed(0)}
               </div>
             </div>
             <div className="bg-muted p-4 rounded-lg">
-              <div className="text-sm text-muted-foreground">FICA</div>
+              <div className="text-sm text-muted-foreground">NI + Pension</div>
               <div className="text-2xl font-bold text-destructive">
-                -$
+                -£
                 {(
                   5000 *
                   (taxSettings.social_security_rate + taxSettings.medicare_rate)
@@ -280,10 +280,10 @@ export const TaxSettings = () => {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">Net Pay</div>
-                <div className="text-xs text-muted-foreground">Take-home after taxes</div>
+                <div className="text-xs text-muted-foreground">Take-home after deductions</div>
               </div>
               <div className="text-3xl font-bold">
-                $
+                £
                 {(
                   5000 -
                   5000 * taxSettings.federal_rate -

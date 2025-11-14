@@ -135,11 +135,11 @@ export default function Payroll() {
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Tax Withholding</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">PAYE & NI Deductions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">£{stats.taxWithholding.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">Total taxes</p>
+              <p className="text-xs text-muted-foreground mt-1">Total deductions</p>
             </CardContent>
               </Card>
             </div>

@@ -152,7 +152,7 @@ const Revenue = () => {
           </div>
         </div>
         <Button className="gap-2" onClick={() => setDialogOpen(true)}>
-          <DollarSign className="h-4 w-4" />
+          <span className="text-lg font-semibold">£</span>
           Add Transaction
         </Button>
       </div>
