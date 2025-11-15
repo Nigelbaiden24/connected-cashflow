@@ -311,7 +311,7 @@ const FinanceAIGenerator = () => {
       <div className="flex min-h-screen w-full">
         <AppSidebar userEmail={userEmail} onLogout={handleLogout} />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
@@ -461,9 +461,9 @@ const FinanceAIGenerator = () => {
               </div>
             </main>
           ) : (
-            <div className="flex-1 flex flex-col lg:grid lg:grid-cols-2 gap-6 p-6 w-full">
+            <div className="flex-1 flex flex-col lg:grid lg:grid-cols-2 gap-6 p-6">
               {/* Left Column - Input Fields */}
-              <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)] w-full">
+              <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)]">
                 <Card>
                   <CardHeader>
                     <CardTitle>{template.name}</CardTitle>
