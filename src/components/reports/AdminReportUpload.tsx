@@ -33,12 +33,18 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
   ];
 
   const businessReportTypes = [
-    "Industry Benchmarking",
+    "Benchmarking",
     "Market Trends",
-    "Competitive Analysis",
-    "Industry Outlook",
-    "Performance Metrics",
-    "Best Practices"
+    "Competitor Intelligence",
+    "Economic Outlook",
+    "Technology & Innovation",
+    "Customer Insights",
+    "Sales & Marketing Intelligence",
+    "Operational Efficiency",
+    "Workforce & Talent",
+    "ESG & Sustainability",
+    "Sector Spotlight",
+    "Executive Briefings"
   ];
 
   const reportTypes = platform === "finance" ? financeReportTypes : businessReportTypes;

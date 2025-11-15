@@ -115,6 +115,11 @@ const businessManagementItems = [
     url: "/business/team",
     icon: UserPlus,
   },
+  {
+    title: "Reports",
+    url: "/business/reports",
+    icon: FileText,
+  },
 ];
 
 const operationsItems = [
