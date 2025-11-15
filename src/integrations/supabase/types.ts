@@ -1778,6 +1778,48 @@ export type Database = {
           },
         ]
       }
+      reports: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_path: string
+          id: string
+          platform: string
+          published_date: string | null
+          report_type: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_path: string
+          id?: string
+          platform: string
+          published_date?: string | null
+          report_type: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_path?: string
+          id?: string
+          platform?: string
+          published_date?: string | null
+          report_type?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       secure_vault: {
         Row: {
           access_count: number | null
@@ -2040,6 +2082,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_report_access: {
+        Row: {
+          granted_at: string | null
+          id: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string | null
+          id?: string
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string | null
+          id?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_report_access_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
