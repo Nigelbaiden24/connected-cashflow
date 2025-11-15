@@ -112,8 +112,8 @@ export default function BusinessReports() {
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
           <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by type" />
+            <SelectTrigger className="w-[280px]">
+              <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Reports</SelectItem>
