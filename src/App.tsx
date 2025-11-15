@@ -29,6 +29,7 @@ import ScenarioAnalysis from "./pages/ScenarioAnalysis";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import PracticeManagement from "./pages/PracticeManagement";
 import Reports from "./pages/Reports";
+import BusinessReports from "./pages/BusinessReports";
 import Security from "./pages/Security";
 import CRMContactDetail from "./pages/CRMContactDetail";
 import Payroll from "./pages/Payroll";
@@ -319,6 +320,9 @@ const App = () => {
           } />
           <Route path="/business/analytics" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AnalyticsDashboard /></BusinessLayout>
+          } />
+          <Route path="/business/reports" element={
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessReports /></BusinessLayout>
           } />
           <Route path="/business/revenue" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Revenue /></BusinessLayout>

@@ -20,7 +20,7 @@ interface Report {
   created_at: string;
 }
 
-export default function Reports() {
+export default function BusinessReports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -51,7 +51,7 @@ export default function Reports() {
       const { data, error } = await supabase
         .from('reports')
         .select('*')
-        .eq('platform', 'finance')
+        .eq('platform', 'business')
         .order('published_date', { ascending: false });
 
       if (error) throw error;
@@ -98,13 +98,13 @@ export default function Reports() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Investment Research & Reports</h1>
+          <h1 className="text-3xl font-bold">Industry Reports & Analysis</h1>
           <p className="text-muted-foreground mt-1">
-            Professional analysis and insights from industry experts
+            Benchmarking data, market trends, and competitive intelligence
           </p>
         </div>
         <div className="flex gap-2">
-          {isAdmin && <AdminReportUpload platform="finance" onUploadSuccess={fetchReports} />}
+          {isAdmin && <AdminReportUpload platform="business" onUploadSuccess={fetchReports} />}
         </div>
       </div>
 
@@ -146,7 +146,7 @@ export default function Reports() {
             <FileText className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Reports Available</h3>
             <p className="text-muted-foreground text-center max-w-md">
-              Research reports and analysis will appear here once they are published.
+              Industry reports and benchmarking analysis will appear here once they are published.
             </p>
           </CardContent>
         </Card>
