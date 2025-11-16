@@ -172,6 +172,15 @@ const Index = () => {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-400 to-emerald-400 group-hover:w-full transition-all duration-300" />
             </button>
             
+            <button 
+              onClick={() => navigate('/login-investor')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">FlowPulse Investor</span>
+              <span className="absolute inset-0 bg-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-fuchsia-400 group-hover:w-full transition-all duration-300" />
+            </button>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative font-space-grotesk font-semibold text-lg group flex items-center gap-2">
