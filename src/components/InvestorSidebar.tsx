@@ -34,6 +34,11 @@ interface InvestorSidebarProps {
 
 const investorItems = [
   { 
+    title: "Dashboard", 
+    url: "/investor/dashboard", 
+    icon: BarChart3,
+  },
+  { 
     title: "Research Reports", 
     url: "/investor/research", 
     icon: FileText,

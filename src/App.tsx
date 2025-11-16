@@ -17,6 +17,13 @@ import FinanceFeatures from "./pages/FinanceFeatures";
 import BusinessFeatures from "./pages/BusinessFeatures";
 import Dashboard from "./pages/Dashboard";
 import InvestorDashboard from "./pages/InvestorDashboard";
+import ResearchReports from "./pages/investor/ResearchReports";
+import AnalysisReports from "./pages/investor/AnalysisReports";
+import MarketCommentary from "./pages/investor/MarketCommentary";
+import ModelPortfolios from "./pages/investor/ModelPortfolios";
+import SignalsAlerts from "./pages/investor/SignalsAlerts";
+import Newsletters from "./pages/investor/Newsletters";
+import BenchmarkingTrends from "./pages/investor/BenchmarkingTrends";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -384,25 +391,25 @@ const App = () => {
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
           } />
           <Route path="/investor/research" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ResearchReports /></InvestorLayout>
           } />
           <Route path="/investor/analysis" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><AnalysisReports /></InvestorLayout>
           } />
           <Route path="/investor/commentary" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><MarketCommentary /></InvestorLayout>
           } />
           <Route path="/investor/portfolios" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ModelPortfolios /></InvestorLayout>
           } />
           <Route path="/investor/alerts" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><SignalsAlerts /></InvestorLayout>
           } />
           <Route path="/investor/newsletters" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Newsletters /></InvestorLayout>
           } />
           <Route path="/investor/trends" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><BenchmarkingTrends /></InvestorLayout>
           } />
             
             <Route path="*" element={<NotFound />} />
