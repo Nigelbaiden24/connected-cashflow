@@ -14,25 +14,31 @@ const InvestorDashboard = () => {
       title: "International Stocks",
       icon: Globe,
       description: "Global equity opportunities across emerging and developed markets",
-      color: "text-purple-600"
+      color: "text-primary"
     },
     { 
       title: "Cryptocurrency",
       icon: Coins,
       description: "Digital asset analysis and investment strategies",
-      color: "text-purple-600"
+      color: "text-primary"
     },
     { 
       title: "Property & Land",
       icon: Building,
       description: "International real estate and land investment opportunities",
-      color: "text-purple-600"
+      color: "text-primary"
     },
     { 
       title: "Private Equity",
       icon: BarChart3,
       description: "Exclusive access to businesses and private market deals",
-      color: "text-purple-600"
+      color: "text-primary"
+    },
+    { 
+      title: "Precious Metals & Gemstones",
+      icon: TrendingUp,
+      description: "Gold, silver, diamonds and precious gem investment opportunities",
+      color: "text-primary"
     },
   ];
 
@@ -75,10 +81,10 @@ const InvestorDashboard = () => {
           {assetClasses.map((asset) => {
             const Icon = asset.icon;
             return (
-              <Card key={asset.title} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card key={asset.title} className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
+                    <div className="p-2 bg-primary/10 rounded-lg">
                       <Icon className={`h-6 w-6 ${asset.color}`} />
                     </div>
                     <CardTitle>{asset.title}</CardTitle>
@@ -104,21 +110,21 @@ const InvestorDashboard = () => {
                 <h4 className="font-semibold">Q4 2024 Global Markets Outlook</h4>
                 <p className="text-sm text-muted-foreground">Published 2 hours ago</p>
               </div>
-              <TrendingUp className="h-5 w-5 text-purple-600" />
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
               <div>
                 <h4 className="font-semibold">Cryptocurrency Market Analysis</h4>
                 <p className="text-sm text-muted-foreground">Published 5 hours ago</p>
               </div>
-              <Coins className="h-5 w-5 text-purple-600" />
+              <Coins className="h-5 w-5 text-primary" />
             </div>
             <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
               <div>
                 <h4 className="font-semibold">Emerging Markets Property Report</h4>
                 <p className="text-sm text-muted-foreground">Published yesterday</p>
               </div>
-              <Building className="h-5 w-5 text-purple-600" />
+              <Building className="h-5 w-5 text-primary" />
             </div>
           </div>
         </CardContent>

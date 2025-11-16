@@ -155,25 +155,25 @@ All colors MUST be HSL.
 
   /* Investor Platform Purple Theme */
   .investor-theme {
-    --primary: 270 80% 60%; /* Professional purple */
+    --primary: 270 75% 55%; /* Professional purple */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 270 70% 68%; /* Lighter purple */
+    --secondary: 280 70% 65%; /* Lighter purple */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 270 75% 65%;
+    --accent: 270 75% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --ring: 270 80% 60%;
+    --ring: 270 75% 55%;
 
-    --sidebar-background: 270 80% 60%; /* Professional purple sidebar */
+    --sidebar-background: 270 75% 45%; /* Darker purple sidebar */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 270 70% 68%; /* Lighter purple */
+    --sidebar-primary: 270 75% 55%; /* Purple */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 75% 65%;
+    --sidebar-accent: 270 75% 60%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 270 80% 50%;
-    --sidebar-ring: 270 80% 60%;
+    --sidebar-border: 270 75% 35%;
+    --sidebar-ring: 270 75% 45%;
   }
 
   .dark .business-theme {
