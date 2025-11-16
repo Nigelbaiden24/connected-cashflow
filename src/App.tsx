@@ -8,12 +8,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppSidebar } from "@/components/AppSidebar";
 import { BusinessLayout } from "@/components/BusinessLayout";
 import { FinanceLayout } from "@/components/FinanceLayout";
+import { InvestorLayout } from "@/components/InvestorLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoginBusiness from "./pages/LoginBusiness";
+import LoginInvestor from "./pages/LoginInvestor";
 import FinanceFeatures from "./pages/FinanceFeatures";
 import BusinessFeatures from "./pages/BusinessFeatures";
 import Dashboard from "./pages/Dashboard";
+import InvestorDashboard from "./pages/InvestorDashboard";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -88,6 +91,7 @@ const App = () => {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
+          <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
           <Route path="/finance-features" element={<FinanceFeatures />} />
           <Route path="/business-features" element={<BusinessFeatures />} />
           <Route path="/about" element={<AboutUs />} />
@@ -373,6 +377,32 @@ const App = () => {
             !isAuthenticated ? <Navigate to="/login" replace /> : (
               <DocumentEditorPage />
             )
+          } />
+          
+          {/* Investor Routes - All prefixed with /investor */}
+          <Route path="/investor/dashboard" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/research" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/analysis" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/commentary" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/portfolios" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/alerts" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/newsletters" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
+          } />
+          <Route path="/investor/trends" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
           } />
             
             <Route path="*" element={<NotFound />} />
