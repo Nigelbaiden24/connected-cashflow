@@ -338,6 +338,7 @@ const FinanceAIGenerator = () => {
                 onShapeSizeChange={handleShapeSizeChange}
                 onShapeRemove={handleShapeRemove}
                 onShapeColorChange={handleShapeColorChange}
+                currentPageId={currentPageId}
               />
             </div>
           )}
