@@ -61,10 +61,32 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
 
       if (error) throw error;
 
-      toast({
-        title: "Success!",
-        description: `Client ${formData.firstName} ${formData.lastName} has been added successfully.`,
-      });
+      // Trigger onboarding automation
+      try {
+        const { error: automationError } = await supabase.functions.invoke('client-onboarding', {
+          body: { client_id: data[0].id }
+        });
+        
+        if (automationError) {
+          console.error('Onboarding automation error:', automationError);
+          // Don't fail the whole process if automation fails
+          toast({
+            title: "Client Added",
+            description: `${formData.firstName} ${formData.lastName} has been added. Note: Some automated setup steps may need manual completion.`,
+          });
+        } else {
+          toast({
+            title: "Success!",
+            description: `Client ${formData.firstName} ${formData.lastName} has been added successfully with automated onboarding complete.`,
+          });
+        }
+      } catch (automationError) {
+        console.error('Automation invocation error:', automationError);
+        toast({
+          title: "Client Added",
+          description: `${formData.firstName} ${formData.lastName} has been added successfully.`,
+        });
+      }
 
       // Reset form
       setFormData({
