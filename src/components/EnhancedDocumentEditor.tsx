@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { HeaderSection } from "@/hooks/useDocumentSections";
+import { DraggableImage } from "@/components/DraggableImage";
 
 interface EnhancedDocumentEditorProps {
   sections: HeaderSection[];
@@ -39,6 +40,9 @@ interface EnhancedDocumentEditorProps {
   backgroundColor?: string;
   logoUrl?: string;
   uploadedImages?: Array<{ id: string; url: string; x: number; y: number; width: number; height: number }>;
+  onImagePositionChange?: (id: string, x: number, y: number) => void;
+  onImageSizeChange?: (id: string, width: number, height: number) => void;
+  onImageRemove?: (id: string) => void;
 }
 
 function SortableSection({
@@ -104,13 +108,13 @@ function SortableSection({
       style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative group mb-6 p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all cursor-move bg-background/50"
+      className="relative group mb-6 p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all bg-background/50"
     >
       <div className="flex items-start gap-2">
         <div
           {...attributes}
           {...listeners}
-          className="flex-shrink-0 mt-1 cursor-grab active:cursor-grabbing"
+          className="flex-shrink-0 mt-1 cursor-grab active:cursor-grabbing touch-none"
         >
           <GripVertical className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
         </div>
@@ -162,6 +166,9 @@ export function EnhancedDocumentEditor({
   backgroundColor = "#ffffff",
   logoUrl,
   uploadedImages = [],
+  onImagePositionChange,
+  onImageSizeChange,
+  onImageRemove,
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -302,18 +309,17 @@ export function EnhancedDocumentEditor({
       </Button>
 
       {uploadedImages.map((img) => (
-        <img
+        <DraggableImage
           key={img.id}
+          id={img.id}
           src={img.url}
-          alt="Uploaded"
-          style={{
-            position: "absolute",
-            left: img.x,
-            top: img.y,
-            width: img.width,
-            height: img.height,
-          }}
-          className="pointer-events-none"
+          x={img.x}
+          y={img.y}
+          width={img.width}
+          height={img.height}
+          onPositionChange={(id, x, y) => onImagePositionChange?.(id, x, y)}
+          onSizeChange={(id, width, height) => onImageSizeChange?.(id, width, height)}
+          onRemove={(id) => onImageRemove?.(id)}
         />
       ))}
 
