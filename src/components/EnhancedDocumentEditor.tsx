@@ -1,275 +1,408 @@
 import { useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { GripVertical, Edit2, Trash2, Plus, Wand2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Download, Save, Eye, Edit3, Palette, Type, Image as ImageIcon,
-  AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline,
-  Plus, Trash2, Move, Shapes, Circle, Square, ChevronUp, ChevronDown
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { DocumentTemplate, AIContent } from "@/types/template";
-import { TemplateRenderer } from "./TemplateRenderer";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { HeaderSection } from "@/hooks/useDocumentSections";
 
 interface EnhancedDocumentEditorProps {
-  template: DocumentTemplate;
-  aiContent?: AIContent;
-  onSave?: (data: AIContent) => void;
+  sections: HeaderSection[];
+  onSectionsChange: (sections: HeaderSection[]) => void;
+  onContentChange: (sectionId: string, content: string) => void;
+  backgroundColor?: string;
+  logoUrl?: string;
+  uploadedImages?: Array<{ id: string; url: string; x: number; y: number; width: number; height: number }>;
 }
 
-export function EnhancedDocumentEditor({ template, aiContent, onSave }: EnhancedDocumentEditorProps) {
-  const { toast } = useToast();
-  const [content, setContent] = useState<AIContent>(aiContent || {});
-  const [editMode, setEditMode] = useState(true);
-  const [activeTab, setActiveTab] = useState("edit");
-  const [selectedColor, setSelectedColor] = useState("#000000");
-  const [fontSize, setFontSize] = useState("16");
-  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+function SortableSection({
+  section,
+  onEdit,
+  onDelete,
+  onGenerateContent,
+  isFirst,
+}: {
+  section: HeaderSection;
+  onEdit: () => void;
+  onDelete: () => void;
+  onGenerateContent: () => void;
+  isFirst: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: section.id,
+  });
 
-  const handleSectionEdit = (sectionId: string, newContent: string) => {
-    setContent(prev => ({
-      ...prev,
-      [sectionId]: newContent
-    }));
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleSave = () => {
-    onSave?.(content);
-    toast({
-      title: "Saved",
-      description: "Document saved successfully",
-    });
-  };
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleExport = () => {
-    toast({
-      title: "Exporting",
-      description: "Preparing your document for download...",
-    });
+  const renderContent = () => {
+    if (section.type === "heading" || section.type === "subheading") {
+      return (
+        <h2 className="text-2xl font-bold text-primary mb-4">
+          {section.content || section.title}
+        </h2>
+      );
+    }
+    if (section.type === "body") {
+      return (
+        <div className="prose max-w-none">
+          <p className="text-foreground/80 whitespace-pre-wrap">
+            {section.content || section.placeholder || "Add content..."}
+          </p>
+        </div>
+      );
+    }
+    if (section.type === "list") {
+      const items = section.content ? section.content.split("\n").filter(Boolean) : [];
+      return (
+        <ul className="list-disc list-inside space-y-2">
+          {items.map((item, idx) => (
+            <li key={idx} className="text-foreground/80">
+              {item.replace(/^[-•]\s*/, "")}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+    return null;
   };
-
-  const colorPresets = [
-    "#000000", "#374151", "#7c3aed", "#3b82f6", "#059669", 
-    "#f59e0b", "#ef4444", "#ec4899", "#ffffff"
-  ];
 
   return (
-    <div className="flex h-full">
-      {/* Enhanced Sidebar */}
-      <div className="w-80 border-r bg-background">
-        <ScrollArea className="h-full">
-          <div className="p-4 border-b">
-            <h3 className="font-semibold text-lg mb-2">{template.name}</h3>
-            <p className="text-sm text-muted-foreground">{template.description}</p>
-          </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative group mb-6 p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all cursor-move bg-background/50"
+    >
+      <div className="flex items-start gap-2">
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex-shrink-0 mt-1 cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+        </div>
+        
+        <div className="flex-1 min-w-0">{renderContent()}</div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-3 m-2">
-              <TabsTrigger value="edit">
-                <Edit3 className="h-4 w-4 mr-1" />
-                Edit
-              </TabsTrigger>
-              <TabsTrigger value="design">
-                <Palette className="h-4 w-4 mr-1" />
-                Design
-              </TabsTrigger>
-              <TabsTrigger value="insert">
-                <Plus className="h-4 w-4 mr-1" />
-                Insert
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="edit" className="p-4 space-y-4">
-              <Card className="p-4 space-y-3">
-                <h4 className="font-medium text-sm flex items-center gap-2">
-                  <Type className="h-4 w-4" />
-                  Text Formatting
-                </h4>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Underline className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <AlignLeft className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <AlignCenter className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <AlignRight className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">Font Size</Label>
-                  <Input 
-                    type="number" 
-                    value={fontSize}
-                    onChange={(e) => setFontSize(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-              </Card>
-
-              <Card className="p-4 space-y-3">
-                <h4 className="font-medium text-sm flex items-center gap-2">
-                  <Move className="h-4 w-4" />
-                  Layers
-                </h4>
-                <ScrollArea className="h-48">
-                  {template.sections.filter(s => s.editable).map((section, idx) => (
-                    <div 
-                      key={section.id}
-                      className={`flex items-center justify-between p-2 mb-1 rounded cursor-pointer hover:bg-muted ${selectedSection === section.id ? 'bg-muted' : ''}`}
-                      onClick={() => setSelectedSection(section.id)}
-                    >
-                      <span className="text-xs font-medium truncate">{section.id}</span>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <ChevronUp className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <ChevronDown className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </ScrollArea>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="design" className="p-4 space-y-4">
-              <Card className="p-4 space-y-3">
-                <h4 className="font-medium text-sm flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  Color Picker
-                </h4>
-                <div className="space-y-2">
-                  <Input 
-                    type="color" 
-                    value={selectedColor}
-                    onChange={(e) => setSelectedColor(e.target.value)}
-                    className="w-full h-12"
-                  />
-                  <div className="grid grid-cols-5 gap-2">
-                    {colorPresets.map((color) => (
-                      <button
-                        key={color}
-                        className="w-full h-10 rounded border-2 hover:scale-110 transition-transform"
-                        style={{ backgroundColor: color, borderColor: selectedColor === color ? '#3b82f6' : '#e5e7eb' }}
-                        onClick={() => setSelectedColor(color)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-4 space-y-3">
-                <h4 className="font-medium text-sm">Template Colors</h4>
-                {Object.entries(template.styles).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
-                    <div 
-                      className="w-8 h-8 rounded border flex-shrink-0"
-                      style={{ backgroundColor: value }}
-                    />
-                    <div className="flex-1">
-                      <p className="text-xs font-medium capitalize">{key.replace('Color', '')}</p>
-                      <p className="text-xs text-muted-foreground">{value}</p>
-                    </div>
-                  </div>
-                ))}
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="insert" className="p-4 space-y-4">
-              <Card className="p-4 space-y-3">
-                <h4 className="font-medium text-sm flex items-center gap-2">
-                  <Shapes className="h-4 w-4" />
-                  Elements
-                </h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" className="flex flex-col h-20">
-                    <Type className="h-6 w-6 mb-1" />
-                    <span className="text-xs">Text Box</span>
-                  </Button>
-                  <Button variant="outline" className="flex flex-col h-20">
-                    <ImageIcon className="h-6 w-6 mb-1" />
-                    <span className="text-xs">Image</span>
-                  </Button>
-                  <Button variant="outline" className="flex flex-col h-20">
-                    <Square className="h-6 w-6 mb-1" />
-                    <span className="text-xs">Rectangle</span>
-                  </Button>
-                  <Button variant="outline" className="flex flex-col h-20">
-                    <Circle className="h-6 w-6 mb-1" />
-                    <span className="text-xs">Circle</span>
-                  </Button>
-                </div>
-              </Card>
-
-              <Card className="p-4 space-y-3">
-                <h4 className="font-medium text-sm flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4" />
-                  Upload Image
-                </h4>
-                <Button variant="outline" className="w-full">
-                  Choose File
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Supports JPG, PNG, SVG up to 10MB
-                </p>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </ScrollArea>
-      </div>
-
-      {/* Main Editor Area */}
-      <div className="flex-1 flex flex-col">
-        <div className="border-b bg-background p-4 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-2">
+        {isHovered && (
+          <div className="flex-shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
-              variant={editMode ? "default" : "outline"}
               size="sm"
-              onClick={() => setEditMode(!editMode)}
+              variant="ghost"
+              onClick={onGenerateContent}
+              className="h-8 w-8 p-0"
+              title="Generate with AI"
             >
-              {editMode ? <Edit3 className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
-              {editMode ? "Edit Mode" : "Preview"}
+              <Wand2 className="h-4 w-4" />
             </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onEdit}
+              className="h-8 w-8 p-0"
+              title="Edit section"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+            {!isFirst && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onDelete}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                title="Delete section"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
-          
-          <div className="flex gap-2">
-            <Button onClick={handleSave} size="sm">
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </Button>
-            <Button variant="outline" onClick={handleExport} size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export PDF
-            </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function EnhancedDocumentEditor({
+  sections,
+  onSectionsChange,
+  onContentChange,
+  backgroundColor = "#ffffff",
+  logoUrl,
+  uploadedImages = [],
+}: EnhancedDocumentEditorProps) {
+  const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState("");
+  const [newSectionContent, setNewSectionContent] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = sections.findIndex((s) => s.id === active.id);
+      const newIndex = sections.findIndex((s) => s.id === over.id);
+      const newSections = arrayMove(sections, oldIndex, newIndex);
+      onSectionsChange(newSections);
+      toast({
+        title: "Section moved",
+        description: "Document structure updated",
+      });
+    }
+  };
+
+  const handleEditSection = (section: HeaderSection) => {
+    setEditingSection(section);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingSection) {
+      onContentChange(editingSection.id, editingSection.content);
+      setEditingSection(null);
+      toast({
+        title: "Section updated",
+        description: "Changes saved successfully",
+      });
+    }
+  };
+
+  const handleDeleteSection = (sectionId: string) => {
+    const newSections = sections.filter((s) => s.id !== sectionId);
+    onSectionsChange(newSections);
+    toast({
+      title: "Section deleted",
+      description: "Section removed from document",
+    });
+  };
+
+  const handleAddSection = () => {
+    const newSection: HeaderSection = {
+      id: `custom-${Date.now()}`,
+      title: newSectionTitle,
+      content: newSectionContent,
+      type: "body",
+      editable: true,
+      placeholder: "Enter content...",
+      order: sections.length,
+      isCustom: true,
+    };
+    onSectionsChange([...sections, newSection]);
+    setIsAddDialogOpen(false);
+    setNewSectionTitle("");
+    setNewSectionContent("");
+    toast({
+      title: "Section added",
+      description: "New section created successfully",
+    });
+  };
+
+  const handleGenerateContent = async (section: HeaderSection) => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("financial-chat", {
+        body: {
+          message: `Generate professional content for a document section titled "${section.title}". Provide detailed, well-structured content suitable for a financial or business document.`,
+        },
+      });
+
+      if (error) throw error;
+
+      const generatedContent = data.response || "";
+      onContentChange(section.id, generatedContent);
+      toast({
+        title: "Content generated",
+        description: "AI has generated content for this section",
+      });
+    } catch (error) {
+      console.error("Error generating content:", error);
+      toast({
+        title: "Generation failed",
+        description: "Could not generate content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div
+      className="w-full h-full overflow-auto p-8 relative"
+      style={{ backgroundColor }}
+    >
+      {logoUrl && (
+        <div className="mb-8">
+          <img src={logoUrl} alt="Logo" className="h-16 object-contain" />
+        </div>
+      )}
+
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+          {sections.map((section, index) => (
+            <SortableSection
+              key={section.id}
+              section={section}
+              onEdit={() => handleEditSection(section)}
+              onDelete={() => handleDeleteSection(section.id)}
+              onGenerateContent={() => handleGenerateContent(section)}
+              isFirst={index === 0}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+
+      <Button
+        onClick={() => setIsAddDialogOpen(true)}
+        className="mt-6"
+        variant="outline"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Add Custom Section
+      </Button>
+
+      {uploadedImages.map((img) => (
+        <img
+          key={img.id}
+          src={img.url}
+          alt="Uploaded"
+          style={{
+            position: "absolute",
+            left: img.x,
+            top: img.y,
+            width: img.width,
+            height: img.height,
+          }}
+          className="pointer-events-none"
+        />
+      ))}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingSection} onOpenChange={() => setEditingSection(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Section</DialogTitle>
+            <DialogDescription>Modify the section content</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Title</Label>
+              <Input
+                value={editingSection?.title || ""}
+                onChange={(e) =>
+                  setEditingSection((prev) =>
+                    prev ? { ...prev, title: e.target.value } : null
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Label>Content</Label>
+              <Textarea
+                value={editingSection?.content || ""}
+                onChange={(e) =>
+                  setEditingSection((prev) =>
+                    prev ? { ...prev, content: e.target.value } : null
+                  )
+                }
+                rows={10}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditingSection(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit}>Save Changes</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Custom Section</DialogTitle>
+            <DialogDescription>Create a new section in your document</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Section Title</Label>
+              <Input
+                value={newSectionTitle}
+                onChange={(e) => setNewSectionTitle(e.target.value)}
+                placeholder="e.g., Risk Analysis"
+              />
+            </div>
+            <div>
+              <Label>Content</Label>
+              <Textarea
+                value={newSectionContent}
+                onChange={(e) => setNewSectionContent(e.target.value)}
+                placeholder="Enter section content..."
+                rows={6}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddSection} disabled={!newSectionTitle}>
+                Add Section
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {isGenerating && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="text-center">
+            <Wand2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+            <p className="text-sm text-muted-foreground">Generating content with AI...</p>
           </div>
         </div>
-
-        <ScrollArea className="flex-1 bg-muted p-8">
-          <TemplateRenderer
-            template={template}
-            aiContent={content}
-            editMode={editMode}
-            onSectionEdit={handleSectionEdit}
-          />
-        </ScrollArea>
-      </div>
+      )}
     </div>
   );
 }

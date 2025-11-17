@@ -8,6 +8,9 @@ export interface HeaderSection {
   isCustom?: boolean;
   type?: string;
   className?: string;
+  editable?: boolean;
+  placeholder?: string;
+  defaultContent?: string;
 }
 
 export function useDocumentSections(templateSections: any[] = []) {
@@ -16,7 +19,7 @@ export function useDocumentSections(templateSections: any[] = []) {
   useEffect(() => {
     // Convert template sections to HeaderSection format
     const initialSections = templateSections
-      .filter(s => s.editable && (s.type === "heading" || s.type === "subheading" || s.type === "body"))
+      .filter(s => s.editable)
       .map((section, index) => ({
         id: section.id,
         title: section.id.replace(/-/g, " ").replace(/_/g, " ").split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
@@ -25,6 +28,9 @@ export function useDocumentSections(templateSections: any[] = []) {
         isCustom: false,
         type: section.type,
         className: section.className,
+        editable: section.editable,
+        placeholder: section.placeholder || "",
+        defaultContent: section.defaultContent,
       }));
     
     setSections(initialSections);
