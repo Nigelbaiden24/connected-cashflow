@@ -1,12 +1,13 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, Calendar, Filter } from "lucide-react";
+import { Download, FileText, Calendar, Filter, TrendingUp, BarChart3, Shield, Globe, Briefcase, Target, Activity } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 interface Report {
   id: string;
@@ -94,6 +95,66 @@ export default function Reports() {
 
   const reportTypes = [...new Set(reports.map(r => r.report_type))];
 
+  // Category mapping for Morningstar-style organization
+  const reportCategories = {
+    "Market Commentary": {
+      icon: TrendingUp,
+      color: "from-blue-600 to-cyan-600",
+      types: ["Market Commentary", "Market Update", "Market Analysis"]
+    },
+    "Research & Analysis": {
+      icon: BarChart3,
+      color: "from-purple-600 to-fuchsia-600",
+      types: ["Research Report", "Investment Analysis", "Industry Report", "Whitepaper"]
+    },
+    "Sector & Industry": {
+      icon: Globe,
+      color: "from-green-600 to-emerald-600",
+      types: ["Sector Analysis", "Industry Report", "Sector Flows"]
+    },
+    "Portfolio & Performance": {
+      icon: Target,
+      color: "from-orange-600 to-red-600",
+      types: ["Portfolio Summary", "Performance Report", "Annual Report"]
+    },
+    "Risk & Compliance": {
+      icon: Shield,
+      color: "from-red-600 to-pink-600",
+      types: ["Risk Assessment", "Compliance Report", "Regulatory Update"]
+    },
+    "Strategic Planning": {
+      icon: Briefcase,
+      color: "from-indigo-600 to-purple-600",
+      types: ["Strategic Analysis", "Business Plan", "M&A Report", "Cross-Border M&A"]
+    }
+  };
+
+  // Group reports by category
+  const groupedReports: Record<string, Report[]> = {};
+  
+  filteredReports.forEach(report => {
+    let assigned = false;
+    
+    for (const [category, config] of Object.entries(reportCategories)) {
+      if (config.types.some(type => report.report_type.toLowerCase().includes(type.toLowerCase()))) {
+        if (!groupedReports[category]) {
+          groupedReports[category] = [];
+        }
+        groupedReports[category].push(report);
+        assigned = true;
+        break;
+      }
+    }
+    
+    // If not assigned to any category, put in "Other Reports"
+    if (!assigned) {
+      if (!groupedReports["Other Reports"]) {
+        groupedReports["Other Reports"] = [];
+      }
+      groupedReports["Other Reports"].push(report);
+    }
+  });
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -151,45 +212,73 @@ export default function Reports() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredReports.map((report) => (
-            <Card key={report.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-              <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                <FileText className="h-20 w-20 text-primary/40" />
-                <Badge className="absolute top-4 right-4">{report.report_type}</Badge>
-              </div>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-                      {report.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {new Date(report.published_date).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </div>
+        <div className="space-y-12">
+          {Object.entries(groupedReports).map(([category, categoryReports]) => {
+            const categoryConfig = reportCategories[category as keyof typeof reportCategories];
+            const IconComponent = categoryConfig?.icon || Activity;
+            const colorClass = categoryConfig?.color || "from-gray-600 to-slate-600";
+            
+            return (
+              <div key={category} className="space-y-6">
+                {/* Category Header */}
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 bg-gradient-to-br ${colorClass} rounded-xl shadow-lg`}>
+                    <IconComponent className="h-6 w-6 text-white" />
                   </div>
-                  {report.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {report.description}
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold">{category}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {categoryReports.length} report{categoryReports.length !== 1 ? 's' : ''} available
                     </p>
-                  )}
-                  <Button 
-                    onClick={() => downloadReport(report)} 
-                    className="w-full gap-2"
-                    variant="outline"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download PDF
-                  </Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                
+                <Separator />
+                
+                {/* Reports Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {categoryReports.map((report) => (
+                    <Card key={report.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/50">
+                      <div className={`relative h-48 bg-gradient-to-br ${colorClass} opacity-10 flex items-center justify-center`}>
+                        <FileText className="h-20 w-20 text-foreground opacity-20" />
+                        <Badge className="absolute top-4 right-4">{report.report_type}</Badge>
+                      </div>
+                      <CardContent className="p-6">
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                              {report.title}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                              <Calendar className="h-3.5 w-3.5" />
+                              {new Date(report.published_date).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                              })}
+                            </div>
+                          </div>
+                          {report.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-3">
+                              {report.description}
+                            </p>
+                          )}
+                          <Button 
+                            onClick={() => downloadReport(report)} 
+                            className="w-full gap-2"
+                            variant="outline"
+                          >
+                            <Download className="h-4 w-4" />
+                            Download PDF
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
