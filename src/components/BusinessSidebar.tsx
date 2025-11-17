@@ -91,11 +91,6 @@ const businessToolsItems = [
 
 const businessManagementItems = [
   {
-    title: "Business Planning",
-    url: "/business/planning",
-    icon: Target,
-  },
-  {
     title: "Analytics",
     url: "/business/analytics",
     icon: BarChart3,
@@ -114,11 +109,6 @@ const businessManagementItems = [
     title: "Team Management",
     url: "/business/team",
     icon: UserPlus,
-  },
-  {
-    title: "Reports",
-    url: "/business/reports",
-    icon: FileText,
   },
 ];
 

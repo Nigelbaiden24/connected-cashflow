@@ -11,7 +11,7 @@ interface InvestorLayoutProps {
 export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full investor-theme">
         <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
