@@ -18,7 +18,7 @@ import {
   BookOpen,
   Eye
 } from "lucide-react";
-import investorScreenshot from "@/assets/investor-dashboard-screenshot.png";
+import investorScreenshot from "@/assets/investor-dashboard-real.png";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 const InvestorFeatures = () => {
