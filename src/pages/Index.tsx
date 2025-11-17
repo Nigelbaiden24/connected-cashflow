@@ -403,6 +403,14 @@ const Index = () => {
             </DropdownMenu>
             
             <button 
+              onClick={() => navigate('/opportunities')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">Opportunities</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-purple-500 group-hover:w-full transition-all duration-300" />
+            </button>
+            
+            <button 
               onClick={() => navigate('/pricing')}
               className="relative font-space-grotesk font-semibold text-lg group"
             >
