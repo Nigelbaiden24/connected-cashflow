@@ -173,14 +173,30 @@ const Index = () => {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-400 to-emerald-400 group-hover:w-full transition-all duration-300" />
             </button>
             
-            <button 
-              onClick={() => navigate('/login-investor')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">FlowPulse Investor</span>
-              <span className="absolute inset-0 bg-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-fuchsia-400 group-hover:w-full transition-all duration-300" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative font-space-grotesk font-semibold text-lg group flex items-center gap-2">
+                  <span className="relative z-10">FlowPulse Investor</span>
+                  <ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform" />
+                  <span className="absolute inset-0 bg-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-fuchsia-400 group-hover:w-full transition-all duration-300" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl z-[100]" align="center">
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
+                  onClick={() => navigate('/login-investor')}
+                >
+                  Platform Login
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
+                  onClick={() => navigate('/opportunities')}
+                >
+                  Opportunities
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -401,14 +417,6 @@ const Index = () => {
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
-            
-            <button 
-              onClick={() => navigate('/opportunities')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">Opportunities</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-purple-500 group-hover:w-full transition-all duration-300" />
-            </button>
             
             <button 
               onClick={() => navigate('/pricing')}
