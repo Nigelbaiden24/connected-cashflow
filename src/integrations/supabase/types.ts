@@ -564,6 +564,59 @@ export type Database = {
         }
         Relationships: []
       }
+      client_compliance_documents: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          document_name: string
+          document_type: string
+          expiry_date: string | null
+          file_path: string | null
+          id: string
+          notes: string | null
+          signed_date: string | null
+          status: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          document_name: string
+          document_type: string
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          signed_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          document_name?: string
+          document_type?: string
+          expiry_date?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          signed_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_compliance_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_documents: {
         Row: {
           client_id: string
@@ -795,6 +848,207 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_audit_trail: {
+        Row: {
+          action: string
+          changes: Json | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      compliance_case_comments: {
+        Row: {
+          case_id: string | null
+          comment: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          case_id?: string | null
+          comment: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          case_id?: string | null
+          comment?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_case_comments_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_cases: {
+        Row: {
+          ai_suggestions: Json | null
+          assigned_to: string | null
+          case_number: string
+          check_id: string | null
+          client_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          priority: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          rule_id: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_suggestions?: Json | null
+          assigned_to?: string | null
+          case_number: string
+          check_id?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          priority?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          rule_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_suggestions?: Json | null
+          assigned_to?: string | null
+          case_number?: string
+          check_id?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          priority?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          rule_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_cases_check_id_fkey"
+            columns: ["check_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_checks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_cases_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_cases_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_checks: {
+        Row: {
+          check_date: string | null
+          checked_by: string | null
+          client_id: string | null
+          created_at: string | null
+          findings: Json | null
+          id: string
+          metadata: Json | null
+          risk_score: number | null
+          rule_id: string | null
+          status: string
+        }
+        Insert: {
+          check_date?: string | null
+          checked_by?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          findings?: Json | null
+          id?: string
+          metadata?: Json | null
+          risk_score?: number | null
+          rule_id?: string | null
+          status: string
+        }
+        Update: {
+          check_date?: string | null
+          checked_by?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          findings?: Json | null
+          id?: string
+          metadata?: Json | null
+          risk_score?: number | null
+          rule_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_checks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_checks_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compliance_documents: {
         Row: {
           created_at: string
@@ -841,6 +1095,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      compliance_rules: {
+        Row: {
+          auto_check: boolean | null
+          check_frequency: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          enabled: boolean | null
+          id: string
+          rule_config: Json | null
+          rule_name: string
+          rule_type: string
+          severity: string
+          threshold_config: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_check?: boolean | null
+          check_frequency?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          rule_config?: Json | null
+          rule_name: string
+          rule_type: string
+          severity?: string
+          threshold_config?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_check?: boolean | null
+          check_frequency?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          enabled?: boolean | null
+          id?: string
+          rule_config?: Json | null
+          rule_name?: string
+          rule_type?: string
+          severity?: string
+          threshold_config?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       conversations: {
         Row: {
