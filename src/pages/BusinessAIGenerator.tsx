@@ -39,6 +39,11 @@ const BusinessAIGenerator = () => {
   
   const template = businessTemplates.find(t => t.id === selectedTemplate);
   const { sections, setSections, updateSectionContent } = useDocumentSections(template?.sections || []);
+  
+  // Filter sections, shapes, and images by current page
+  const currentPageSections = sections.filter(s => (s as any).pageId === currentPageId || (!(s as any).pageId && currentPageId === 'page-1'));
+  const currentPageShapes = shapes.filter(s => (s as any).pageId === currentPageId || (!(s as any).pageId && currentPageId === 'page-1'));
+  const currentPageImages = uploadedImages.filter(img => (img as any).pageId === currentPageId || (!(img as any).pageId && currentPageId === 'page-1'));
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
