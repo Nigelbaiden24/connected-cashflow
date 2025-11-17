@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2, Download } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2, Download, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,10 +30,67 @@ const Calendar = () => {
     type: "meeting",
     description: "",
   });
+  const [integratedEvents, setIntegratedEvents] = useState<any[]>([]);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [outlookConnected, setOutlookConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
     fetchMeetings();
+    checkCalendarConnections();
+    fetchIntegratedEvents();
+
+    // Listen for OAuth callback messages
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'google-calendar-connected') {
+        setGoogleConnected(true);
+        fetchIntegratedEvents();
+        toast({
+          title: "Success",
+          description: `Google Calendar connected: ${event.data.email}`,
+        });
+      } else if (event.data?.type === 'outlook-calendar-connected') {
+        setOutlookConnected(true);
+        fetchIntegratedEvents();
+        toast({
+          title: "Success",
+          description: `Outlook Calendar connected: ${event.data.email}`,
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  const checkCalendarConnections = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("calendar_connections")
+      .select("provider")
+      .eq("user_id", user.id)
+      .eq("is_active", true);
+
+    if (data) {
+      setGoogleConnected(data.some(c => c.provider === 'google'));
+      setOutlookConnected(data.some(c => c.provider === 'outlook'));
+    }
+  };
+
+  const fetchIntegratedEvents = async () => {
+    const { data, error } = await supabase.functions.invoke('fetch-calendar-events');
+
+    if (error) {
+      console.error('Error fetching integrated events:', error);
+      return;
+    }
+
+    if (data?.events) {
+      setIntegratedEvents(data.events);
+    }
+  };
 
   const fetchMeetings = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -58,8 +115,53 @@ const Calendar = () => {
         date: format(new Date(meeting.meeting_date), "yyyy-MM-dd"),
         type: meeting.meeting_type || "meeting",
         description: meeting.notes || "",
+        provider: 'local',
       }));
       setEvents(formattedEvents);
+    }
+  };
+
+  const handleConnectGoogle = async () => {
+    setIsConnecting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('google-calendar-auth');
+
+      if (error || !data?.authUrl) {
+        throw new Error('Failed to get authorization URL');
+      }
+
+      window.open(data.authUrl, 'google-calendar-auth', 'width=600,height=700');
+    } catch (error) {
+      console.error('Error connecting Google Calendar:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect Google Calendar. Please ensure API credentials are configured.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleConnectOutlook = async () => {
+    setIsConnecting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('outlook-calendar-auth');
+
+      if (error || !data?.authUrl) {
+        throw new Error('Failed to get authorization URL');
+      }
+
+      window.open(data.authUrl, 'outlook-calendar-auth', 'width=600,height=700');
+    } catch (error) {
+      console.error('Error connecting Outlook Calendar:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect Outlook Calendar. Please ensure API credentials are configured.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -240,7 +342,10 @@ const Calendar = () => {
     ...daysInMonth
   ];
 
-  const getEventColor = (type: string) => {
+  const getEventColor = (type: string, provider?: string) => {
+    if (provider === 'google') return "bg-blue-100 text-blue-800 border-blue-200";
+    if (provider === 'outlook') return "bg-orange-100 text-orange-800 border-orange-200";
+    
     switch (type) {
       case "meeting":
         return "bg-primary text-primary-foreground";
@@ -252,6 +357,8 @@ const Calendar = () => {
         return "bg-muted text-muted-foreground";
     }
   };
+
+  const allEvents = [...events, ...integratedEvents];
 
   return (
     <div className="flex-1 p-6 space-y-6">
@@ -288,28 +395,34 @@ const Calendar = () => {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-2"
-                    onClick={() => toast({
-                      title: "Coming Soon",
-                      description: "Google Calendar integration will be available soon",
-                    })}
-                  >
-                    <CalendarIcon className="h-4 w-4" />
-                    Connect Google Calendar
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-2"
-                    onClick={() => toast({
-                      title: "Coming Soon",
-                      description: "Outlook Calendar integration will be available soon",
-                    })}
-                  >
-                    <CalendarIcon className="h-4 w-4" />
-                    Connect Outlook Calendar
-                  </Button>
+                  <div className="p-4 border rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">Google Calendar</h4>
+                      {googleConnected && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                    </div>
+                    <Button 
+                      variant={googleConnected ? "secondary" : "outline"} 
+                      className="w-full"
+                      onClick={handleConnectGoogle}
+                      disabled={isConnecting || googleConnected}
+                    >
+                      {googleConnected ? "Connected" : "Connect Google Calendar"}
+                    </Button>
+                  </div>
+                  <div className="p-4 border rounded-lg space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">Outlook Calendar</h4>
+                      {outlookConnected && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                    </div>
+                    <Button 
+                      variant={outlookConnected ? "secondary" : "outline"} 
+                      className="w-full"
+                      onClick={handleConnectOutlook}
+                      disabled={isConnecting || outlookConnected}
+                    >
+                      {outlookConnected ? "Connected" : "Connect Outlook Calendar"}
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Once connected, your meetings will automatically sync across all platforms.
@@ -422,7 +535,10 @@ const Calendar = () => {
                   return <div key={`empty-${i}`} className="aspect-square p-2" />;
                 }
                 
-                const hasEvent = events.some(e => isSameDay(new Date(e.date), day));
+                const hasEvent = allEvents.some(e => {
+                  const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+                  return isSameDay(eventDate, day);
+                });
                 const isToday = isSameDay(day, new Date());
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 
@@ -449,27 +565,56 @@ const Calendar = () => {
             <CardTitle>Upcoming Events</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {events.map((event) => (
-              <div key={event.id} className="space-y-2 pb-4 border-b last:border-0">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <h4 className="font-medium">{event.title}</h4>
-                    <p className="text-sm text-muted-foreground">{event.time}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(event.date), 'PPP')}
-                    </p>
+            {allEvents
+              .filter((event) => {
+                const eventDate = event.provider === 'local' ? new Date(event.date) : new Date(event.start);
+                return eventDate >= new Date();
+              })
+              .sort((a, b) => {
+                const dateA = a.provider === 'local' ? new Date(a.date) : new Date(a.start);
+                const dateB = b.provider === 'local' ? new Date(b.date) : new Date(b.start);
+                return dateA.getTime() - dateB.getTime();
+              })
+              .slice(0, 10)
+              .map((event) => {
+                const isLocal = event.provider === 'local';
+                const eventDate = isLocal ? new Date(event.date) : new Date(event.start);
+                const eventTime = isLocal ? event.time : format(new Date(event.start), "HH:mm");
+                
+                return (
+                  <div key={event.id} className="space-y-2 pb-4 border-b last:border-0">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 flex-1">
+                        <h4 className="font-medium">{event.title}</h4>
+                        <p className="text-sm text-muted-foreground">{eventTime}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(eventDate, 'PPP')}
+                        </p>
+                        {event.location && (
+                          <p className="text-xs text-muted-foreground">
+                            📍 {event.location}
+                          </p>
+                        )}
+                        {event.email && (
+                          <p className="text-xs text-muted-foreground">
+                            {event.email}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getEventColor(event.type, event.provider)}>
+                          {event.provider === 'google' ? 'Google' : event.provider === 'outlook' ? 'Outlook' : event.type}
+                        </Badge>
+                        {isLocal && (
+                          <Button variant="ghost" size="icon" onClick={() => handleEditEvent(event)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getEventColor(event.type)}>
-                      {event.type}
-                    </Badge>
-                    <Button variant="ghost" size="icon" onClick={() => handleEditEvent(event)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
           </CardContent>
         </Card>
       </div>
