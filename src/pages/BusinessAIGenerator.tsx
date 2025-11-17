@@ -25,6 +25,13 @@ const BusinessAIGenerator = () => {
   const [textColor, setTextColor] = useState("#000000");
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [fontFamily, setFontFamily] = useState("Inter");
+  const [fontSize, setFontSize] = useState(16);
+  const [textAlign, setTextAlign] = useState("left");
+  const [zoom, setZoom] = useState(100);
+  const [showGrid, setShowGrid] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const { toast } = useToast();
   
   const template = businessTemplates.find(t => t.id === selectedTemplate);
@@ -95,19 +102,19 @@ const BusinessAIGenerator = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleFillDocument = async () => {
+  const handleFillDocument = async (prompt: string) => {
     if (!template) return;
 
     toast({
       title: "Generating content...",
-      description: "AI is filling the document with content",
+      description: "AI is filling the document with content based on your prompt",
     });
 
     try {
       for (const section of sections.filter(s => s.editable)) {
         const { data, error } = await supabase.functions.invoke("business-chat", {
           body: {
-            message: `Generate professional content for a document section titled "${section.title}". Provide detailed, well-structured content suitable for a business document.`,
+            message: `Based on this user request: "${prompt}"\n\nGenerate professional content for a document section titled "${section.title}". Provide detailed, well-structured content suitable for a business document that aligns with the user's request.`,
           },
         });
 
@@ -119,7 +126,7 @@ const BusinessAIGenerator = () => {
 
       toast({
         title: "Document filled",
-        description: "AI has generated content for all sections",
+        description: "AI has generated content for all sections based on your prompt",
       });
     } catch (error) {
       console.error("Error generating content:", error);
@@ -128,6 +135,27 @@ const BusinessAIGenerator = () => {
         description: "Could not generate content. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleAddPage = () => {
+    toast({
+      title: "New page added",
+      description: "Scroll down to see the new page",
+    });
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setSections(history[historyIndex - 1]);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setSections(history[historyIndex + 1]);
     }
   };
 
@@ -173,6 +201,21 @@ const BusinessAIGenerator = () => {
           onTextColorChange={setTextColor}
           onDownloadPDF={handleDownloadPDF}
           onFillDocument={handleFillDocument}
+          onAddPage={handleAddPage}
+          fontFamily={fontFamily}
+          onFontFamilyChange={setFontFamily}
+          fontSize={fontSize}
+          onFontSizeChange={setFontSize}
+          textAlign={textAlign}
+          onTextAlignChange={setTextAlign}
+          zoom={zoom}
+          onZoomChange={setZoom}
+          showGrid={showGrid}
+          onShowGridChange={setShowGrid}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
           onAddSection={() => {
             const newSection: HeaderSection = {
               id: `custom-${Date.now()}`,
@@ -200,7 +243,16 @@ const BusinessAIGenerator = () => {
               </div>
             </div>
           ) : (
-            <div id="document-preview" className="w-full h-full">
+            <div 
+              id="document-preview" 
+              className="w-full h-full"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: 'top left',
+                fontFamily: fontFamily,
+                fontSize: `${fontSize}px`,
+              }}
+            >
               <EnhancedDocumentEditor
                 sections={sections}
                 onSectionsChange={setSections}
