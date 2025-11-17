@@ -14,6 +14,9 @@ import html2pdf from "html2pdf.js";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DocumentImageUpload } from "@/components/DocumentImageUpload";
 import { DraggableImage } from "@/components/DraggableImage";
+import { DraggableHeaderManager } from "@/components/DraggableHeaderManager";
+import { useDocumentSections } from "@/hooks/useDocumentSections";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UploadedImage {
   id: string;
@@ -44,6 +47,9 @@ const FinanceAIGenerator = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  
+  const template = documentTemplates.find(t => t.id === selectedTemplate);
+  const { sections, setSections, updateSectionContent, getSectionContent } = useDocumentSections(template?.sections || []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -123,6 +129,7 @@ const FinanceAIGenerator = () => {
 
   const handleFieldChange = (fieldId: string, value: string) => {
     setFormData(prev => ({ ...prev, [fieldId]: value }));
+    updateSectionContent(fieldId, value);
   };
 
   const handleAIAssist = async (fieldId: string, customPrompt?: string) => {
@@ -301,7 +308,6 @@ const FinanceAIGenerator = () => {
     }
   };
 
-  const template = documentTemplates.find(t => t.id === selectedTemplate);
   const editableFields = template?.sections.filter(s => s.editable) || [];
 
   return (
@@ -501,17 +507,17 @@ const FinanceAIGenerator = () => {
                               className="hidden"
                             />
                             <Button
-                              size="sm"
                               variant="outline"
+                              size="sm"
                               onClick={() => logoInputRef.current?.click()}
                             >
                               <Upload className="h-4 w-4 mr-2" />
-                              {logoUrl ? "Change Logo" : "Upload Logo"}
+                              Upload Logo
                             </Button>
                             {logoUrl && (
                               <Button
-                                size="sm"
                                 variant="ghost"
+                                size="sm"
                                 onClick={() => setLogoUrl("")}
                               >
                                 Remove
@@ -535,7 +541,15 @@ const FinanceAIGenerator = () => {
                       />
                     </div>
 
-                    {editableFields.map((field) => (
+                    {/* Editing Modes */}
+                    <Tabs defaultValue="fields" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="fields">Field Editor</TabsTrigger>
+                        <TabsTrigger value="headers">Header Manager</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="fields" className="space-y-6 mt-6">
+                        {editableFields.map((field) => (
                       <div key={field.id} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 flex-1">
@@ -726,6 +740,24 @@ const FinanceAIGenerator = () => {
                         )}
                       </div>
                     ))}
+                  </TabsContent>
+                  
+                  <TabsContent value="headers" className="space-y-6 mt-6">
+                    <DraggableHeaderManager
+                      sections={sections}
+                      onSectionsChange={(newSections) => {
+                        setSections(newSections);
+                        // Update formData to match new section order and content
+                        newSections.forEach(section => {
+                          if (section.content) {
+                            handleFieldChange(section.id, section.content);
+                          }
+                        });
+                      }}
+                      documentType={template.name}
+                    />
+                  </TabsContent>
+                </Tabs>
                   </CardContent>
                 </Card>
               </div>
