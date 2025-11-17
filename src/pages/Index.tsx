@@ -36,6 +36,7 @@ import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
 import businessScreenshot from "@/assets/business-dashboard-screenshot.png";
+import investorScreenshot from "@/assets/investor-dashboard-screenshot.png";
 import globalFinance from "@/assets/global-finance-districts.jpg";
 
 const Index = () => {
@@ -189,8 +190,8 @@ const Index = () => {
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 group-hover:w-full transition-all duration-300" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[900px] p-8 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl" align="center">
-                <div className="grid grid-cols-2 gap-8">
+              <DropdownMenuContent className="w-[1200px] p-8 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl" align="center">
+                <div className="grid grid-cols-3 gap-6">
                   {/* Finance Platform Features */}
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 mb-4">
@@ -325,6 +326,75 @@ const Index = () => {
                       onClick={() => navigate('/business-features')}
                     >
                       Learn More About Business
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Investor Platform Features */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl shadow-lg">
+                        <TrendingUp className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                          FlowPulse Investor
+                        </h3>
+                        <p className="text-sm text-muted-foreground">Global Investment Portal</p>
+                      </div>
+                    </div>
+                    
+                    {/* Laptop Mockup */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-xl group-hover:blur-2xl transition-all" />
+                      <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-t-xl border-2 border-purple-500/30 p-2 pb-0">
+                        <div className="bg-black rounded-t-lg overflow-hidden">
+                          <img 
+                            src={investorScreenshot} 
+                            alt="Investor Platform" 
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      </div>
+                      <div className="h-3 bg-gradient-to-b from-slate-800 to-slate-700 rounded-b-lg border-x-2 border-b-2 border-purple-500/30" />
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+                        <BarChart3 className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Global Markets Access</h4>
+                          <p className="text-xs text-muted-foreground">International stocks, crypto, real estate, and alternative investments</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+                        <Sparkles className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">AI Investment Analyst</h4>
+                          <p className="text-xs text-muted-foreground">Intelligent insights, predictions, and personalized recommendations</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+                        <Shield className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Research & Analysis</h4>
+                          <p className="text-xs text-muted-foreground">Exclusive reports, market commentary, and investment intelligence</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+                        <Target className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1">Learning Hub</h4>
+                          <p className="text-xs text-muted-foreground">Educational resources, courses, and certifications for investors</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button 
+                      className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                      onClick={() => navigate('/investor-features')}
+                    >
+                      Learn More About Investor
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>

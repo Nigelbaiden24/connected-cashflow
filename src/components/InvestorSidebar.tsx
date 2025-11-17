@@ -7,7 +7,14 @@ import {
   Bell,
   Mail,
   LineChart,
-  LogOut
+  LogOut,
+  Search,
+  Brain,
+  GraduationCap,
+  Database,
+  Calculator,
+  Shield,
+  Eye
 } from "lucide-react";
 import {
   Sidebar,
@@ -72,6 +79,41 @@ const investorItems = [
     title: "Benchmarking & Trends", 
     url: "/investor/trends", 
     icon: LineChart,
+  },
+  { 
+    title: "Screeners & Discovery", 
+    url: "/investor/screeners", 
+    icon: Search,
+  },
+  { 
+    title: "AI Analyst", 
+    url: "/investor/ai-analyst", 
+    icon: Brain,
+  },
+  { 
+    title: "Learning Hub", 
+    url: "/investor/learning", 
+    icon: GraduationCap,
+  },
+  { 
+    title: "Market Data Hub", 
+    url: "/investor/market-data", 
+    icon: Database,
+  },
+  { 
+    title: "Tools & Calculators", 
+    url: "/investor/tools", 
+    icon: Calculator,
+  },
+  { 
+    title: "Risk & Compliance", 
+    url: "/investor/risk-compliance", 
+    icon: Shield,
+  },
+  { 
+    title: "Watchlists", 
+    url: "/investor/watchlists", 
+    icon: Eye,
   },
 ];
 
