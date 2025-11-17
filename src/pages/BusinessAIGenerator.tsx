@@ -45,6 +45,23 @@ const BusinessAIGenerator = () => {
   const currentPageShapes = shapes.filter(s => (s as any).pageId === currentPageId || (!(s as any).pageId && currentPageId === 'page-1'));
   const currentPageImages = uploadedImages.filter(img => (img as any).pageId === currentPageId || (!(img as any).pageId && currentPageId === 'page-1'));
 
+  // Save state to history
+  const saveToHistory = () => {
+    const currentState = {
+      sections,
+      shapes,
+      uploadedImages,
+      backgroundColor,
+      textColor,
+      pages,
+      currentPageId,
+    };
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(currentState);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -70,12 +87,14 @@ const BusinessAIGenerator = () => {
     setUploadedImages(images =>
       images.map(img => img.id === id ? { ...img, x, y } : img)
     );
+    saveToHistory();
   };
 
   const handleImageSizeChange = (id: string, width: number, height: number) => {
     setUploadedImages(images =>
       images.map(img => img.id === id ? { ...img, width, height } : img)
     );
+    saveToHistory();
   };
 
   const handleImageRemove = (id: string) => {
@@ -204,15 +223,29 @@ const BusinessAIGenerator = () => {
 
   const handleUndo = () => {
     if (historyIndex > 0) {
+      const prevState = history[historyIndex - 1];
+      setSections(prevState.sections);
+      setShapes(prevState.shapes);
+      setUploadedImages(prevState.uploadedImages);
+      setBackgroundColor(prevState.backgroundColor);
+      setTextColor(prevState.textColor);
+      setPages(prevState.pages);
+      setCurrentPageId(prevState.currentPageId);
       setHistoryIndex(historyIndex - 1);
-      setSections(history[historyIndex - 1]);
     }
   };
 
   const handleRedo = () => {
     if (historyIndex < history.length - 1) {
+      const nextState = history[historyIndex + 1];
+      setSections(nextState.sections);
+      setShapes(nextState.shapes);
+      setUploadedImages(nextState.uploadedImages);
+      setBackgroundColor(nextState.backgroundColor);
+      setTextColor(nextState.textColor);
+      setPages(nextState.pages);
+      setCurrentPageId(nextState.currentPageId);
       setHistoryIndex(historyIndex + 1);
-      setSections(history[historyIndex + 1]);
     }
   };
 
@@ -325,9 +358,16 @@ const BusinessAIGenerator = () => {
             >
               <EnhancedDocumentEditor
                 sections={currentPageSections}
-                onSectionsChange={setSections}
-                onContentChange={updateSectionContent}
+                onSectionsChange={(newSections) => {
+                  setSections(newSections);
+                  saveToHistory();
+                }}
+                onContentChange={(id, content) => {
+                  updateSectionContent(id, content);
+                  saveToHistory();
+                }}
                 backgroundColor={backgroundColor}
+                textColor={textColor}
                 logoUrl={logoUrl}
                 uploadedImages={currentPageImages}
                 onImagePositionChange={handleImagePositionChange}
