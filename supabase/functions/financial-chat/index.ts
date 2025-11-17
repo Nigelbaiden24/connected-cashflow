@@ -11,7 +11,8 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, stream = false } = await req.json();
+    const body = await req.json();
+    const { messages, message, stream = false } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -25,7 +26,24 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing financial chat request with", messages.length, "messages", stream ? "(streaming)" : "(non-streaming)");
+    // Handle both message (string) and messages (array) formats
+    let chatMessages;
+    if (messages && Array.isArray(messages)) {
+      chatMessages = messages;
+    } else if (message && typeof message === "string") {
+      chatMessages = [{ role: "user", content: message }];
+    } else {
+      console.error("Invalid request: neither messages nor message provided");
+      return new Response(
+        JSON.stringify({ error: "Invalid request format" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log("Processing financial chat request with", chatMessages.length, "messages", stream ? "(streaming)" : "(non-streaming)");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -95,7 +113,7 @@ When analyzing portfolios or markets, provide specific insights with relevant me
 
 Format ALL responses with proper markdown structure for maximum readability.`
           },
-          ...messages,
+          ...chatMessages,
         ],
         temperature: 0.7,
         max_tokens: 2000,

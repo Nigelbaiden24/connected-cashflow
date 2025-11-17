@@ -139,6 +139,21 @@ const FinanceAIGenerator = () => {
   };
 
   const handleAddPage = () => {
+    const newSection: HeaderSection = {
+      id: `page-${Date.now()}`,
+      title: "New Page",
+      content: "",
+      type: "body",
+      editable: true,
+      placeholder: "Enter content for new page...",
+      order: sections.length,
+      x: 50,
+      y: sections.length > 0 ? Math.max(...sections.map(s => s.y + s.height)) + 50 : 50,
+      width: 700,
+      height: 200,
+      isCustom: true,
+    };
+    setSections([...sections, newSection]);
     toast({
       title: "New page added",
       description: "Scroll down to see the new page",
