@@ -14,9 +14,8 @@ import html2pdf from "html2pdf.js";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DocumentImageUpload } from "@/components/DocumentImageUpload";
 import { DraggableImage } from "@/components/DraggableImage";
-import { DraggableHeaderManager } from "@/components/DraggableHeaderManager";
+import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { useDocumentSections } from "@/hooks/useDocumentSections";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface UploadedImage {
   id: string;
@@ -50,6 +49,10 @@ const FinanceAIGenerator = () => {
   
   const template = documentTemplates.find(t => t.id === selectedTemplate);
   const { sections, setSections, updateSectionContent, getSectionContent } = useDocumentSections(template?.sections || []);
+  
+  const handleSectionsReorder = (newSections: typeof sections) => {
+    setSections(newSections);
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -541,15 +544,9 @@ const FinanceAIGenerator = () => {
                       />
                     </div>
 
-                    {/* Editing Modes */}
-                    <Tabs defaultValue="fields" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="fields">Field Editor</TabsTrigger>
-                        <TabsTrigger value="headers">Header Manager</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="fields" className="space-y-6 mt-6">
-                        {editableFields.map((field) => (
+                    {/* Field Editor */}
+                    <div className="space-y-6 mt-6">
+                      {editableFields.map((field) => (
                       <div key={field.id} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 flex-1">
@@ -739,74 +736,32 @@ const FinanceAIGenerator = () => {
                           </div>
                         )}
                       </div>
-                    ))}
-                  </TabsContent>
-                  
-                  <TabsContent value="headers" className="space-y-6 mt-6">
-                    <DraggableHeaderManager
-                      sections={sections}
-                      onSectionsChange={(newSections) => {
-                        setSections(newSections);
-                        // Update formData to match new section order and content
-                        newSections.forEach(section => {
-                          if (section.content) {
-                            handleFieldChange(section.id, section.content);
-                          }
-                        });
-                      }}
-                      documentType={template.name}
-                    />
-                  </TabsContent>
-                </Tabs>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Right Column - Live Preview */}
+              {/* Right Column - Interactive Preview */}
               <div id="live-preview" className="w-full hidden lg:block">
-                <Card className="max-h-[calc(100vh-120px)]">
-                   <CardHeader>
-                    <CardTitle>Live Preview</CardTitle>
-                    <CardDescription>See your document as you type</CardDescription>
+                <Card className="max-h-[calc(100vh-120px)] overflow-hidden">
+                  <CardHeader>
+                    <CardTitle>Interactive Document Editor</CardTitle>
+                    <CardDescription>Drag sections to reorder, click to edit</CardDescription>
                   </CardHeader>
-                   <CardContent className="overflow-visible">
-                    <div className="space-y-4">
-                      {pages.map((page) => (
-                        <div key={page} className={page === currentPage ? 'block' : 'hidden'}>
-                          <div 
-                            ref={page === currentPage ? previewRef : null}
-                            className="p-8 rounded-lg shadow-sm min-h-[297mm] relative"
-                            style={{ backgroundColor, position: 'relative' }}
-                          >
-                            {logoUrl && (
-                              <div className="mb-6 flex justify-start">
-                                <img src={logoUrl} alt="Company Logo" className="h-16 object-contain" />
-                              </div>
-                            )}
-                            <div dangerouslySetInnerHTML={{
-                              __html: renderTemplateToHtml(template, formData, textColors)
-                            }} />
-                            
-                            {/* Draggable Images */}
-                            {uploadedImages.map((image) => (
-                              <DraggableImage
-                                key={image.id}
-                                id={image.id}
-                                src={image.url}
-                                x={image.x}
-                                y={image.y}
-                                width={image.width}
-                                height={image.height}
-                                onPositionChange={handleImagePositionChange}
-                                onSizeChange={handleImageSizeChange}
-                                onRemove={handleRemoveImage}
-                              />
-                             ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                   </CardContent>
+                  <CardContent className="h-[calc(100vh-200px)] overflow-auto p-0">
+                    <EnhancedDocumentEditor
+                      sections={sections}
+                      onSectionsChange={handleSectionsReorder}
+                      onContentChange={(sectionId, content) => {
+                        updateSectionContent(sectionId, content);
+                        handleFieldChange(sectionId, content);
+                      }}
+                      backgroundColor={backgroundColor}
+                      logoUrl={logoUrl}
+                      uploadedImages={uploadedImages}
+                    />
+                  </CardContent>
                 </Card>
               </div>
             </div>
