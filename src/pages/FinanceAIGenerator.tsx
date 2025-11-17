@@ -205,6 +205,12 @@ const FinanceAIGenerator = () => {
     setShapes(shapes.filter(shape => shape.id !== id));
   };
 
+  const handleShapeColorChange = (id: string, color: string) => {
+    setShapes(shapes.map(shape => 
+      shape.id === id ? { ...shape, color } : shape
+    ));
+  };
+
   const handleUndo = () => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
@@ -336,6 +342,7 @@ const FinanceAIGenerator = () => {
                 onShapePositionChange={handleShapePositionChange}
                 onShapeSizeChange={handleShapeSizeChange}
                 onShapeRemove={handleShapeRemove}
+                onShapeColorChange={handleShapeColorChange}
               />
             </div>
           )}

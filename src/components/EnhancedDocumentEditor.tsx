@@ -32,6 +32,7 @@ interface EnhancedDocumentEditorProps {
   onShapePositionChange?: (id: string, x: number, y: number) => void;
   onShapeSizeChange?: (id: string, width: number, height: number) => void;
   onShapeRemove?: (id: string) => void;
+  onShapeColorChange?: (id: string, color: string) => void;
 }
 
 export function EnhancedDocumentEditor({
@@ -48,6 +49,7 @@ export function EnhancedDocumentEditor({
   onShapePositionChange,
   onShapeSizeChange,
   onShapeRemove,
+  onShapeColorChange,
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -218,6 +220,7 @@ export function EnhancedDocumentEditor({
           onPositionChange={(id, x, y) => onShapePositionChange?.(id, x, y)}
           onSizeChange={(id, width, height) => onShapeSizeChange?.(id, width, height)}
           onRemove={(id) => onShapeRemove?.(id)}
+          onColorChange={(id, color) => onShapeColorChange?.(id, color)}
         />
       ))}
 

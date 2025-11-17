@@ -184,12 +184,14 @@ export function DocumentEditorToolbar({
         <Separator orientation="vertical" className="h-6" />
 
         {/* Page Actions */}
-        <Button variant="outline" size="sm" onClick={onAddPage}>
-          <FilePlus className="h-4 w-4 mr-2" />
-          Add Page
-        </Button>
+        {selectedTemplate && (
+          <>
+            <Button variant="outline" size="sm" onClick={onAddPage}>
+              <FilePlus className="h-4 w-4 mr-2" />
+              Add Page
+            </Button>
 
-        <Button variant="outline" size="sm" onClick={onAddSection}>
+            <Button variant="outline" size="sm" onClick={onAddSection}>
           <Plus className="h-4 w-4 mr-2" />
           Add Section
         </Button>
@@ -263,9 +265,22 @@ export function DocumentEditorToolbar({
                 </svg>
                 <span className="text-xs">Diamond</span>
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('line')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M5 19 L19 5" strokeWidth="2" />
+                </svg>
+                <span className="text-xs">Line</span>
+              </Button>
             </div>
           </PopoverContent>
         </Popover>
+          </>
+        )}
 
         <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
           <DialogTrigger asChild>
