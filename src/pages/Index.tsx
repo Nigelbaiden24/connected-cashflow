@@ -657,7 +657,7 @@ const Index = () => {
 
       {/* Platforms Showcase */}
       <section className="w-full pt-8 pb-16 relative z-10">
-        <div className="grid lg:grid-cols-2">
+        <div className="grid lg:grid-cols-2 gap-0">
           {/* Finance Platform */}
           <Card className="relative overflow-hidden border-2 border-blue-500/30 hover:border-blue-500/60 transition-all group bg-gradient-to-br from-blue-950/50 to-background backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -737,6 +737,63 @@ const Index = () => {
               
               <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30" onClick={() => navigate('/login-business')}>
                 Access Business Platform
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Investor Platform - Full Width Below */}
+        <div className="mt-0">
+          <Card className="relative overflow-hidden border-2 border-purple-500/30 hover:border-purple-500/60 transition-all group bg-gradient-to-br from-purple-950/50 to-background backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-fuchsia-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -top-20 -right-20 w-60 h-60 bg-purple-500/30 blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-fuchsia-500/20 blur-3xl opacity-0 group-hover:opacity-50 transition-opacity" />
+            
+            <CardHeader className="relative">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-4 bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-xl shadow-lg shadow-purple-500/50">
+                  <TrendingUp className="h-10 w-10 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-3xl bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+                    FlowPulse Investor
+                  </CardTitle>
+                  <CardDescription className="text-base">Global Investment Portal</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="relative space-y-6">
+              <p className="text-muted-foreground leading-relaxed">
+                Comprehensive investment management platform with real-time market data, portfolio analytics, and global investment opportunities.
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/10 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-purple-400" />
+                  <h4 className="font-semibold text-sm">Market Analysis</h4>
+                  <p className="text-xs text-muted-foreground">Real-time insights</p>
+                </div>
+                <div className="space-y-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/10 transition-colors">
+                  <TrendingUp className="h-6 w-6 text-purple-400" />
+                  <h4 className="font-semibold text-sm">Portfolio Tracking</h4>
+                  <p className="text-xs text-muted-foreground">Global investments</p>
+                </div>
+                <div className="space-y-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/10 transition-colors">
+                  <Shield className="h-6 w-6 text-purple-400" />
+                  <h4 className="font-semibold text-sm">Risk Management</h4>
+                  <p className="text-xs text-muted-foreground">Advanced tools</p>
+                </div>
+                <div className="space-y-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/10 transition-colors">
+                  <Sparkles className="h-6 w-6 text-purple-400" />
+                  <h4 className="font-semibold text-sm">AI Insights</h4>
+                  <p className="text-xs text-muted-foreground">Smart recommendations</p>
+                </div>
+              </div>
+              
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 shadow-lg shadow-purple-500/30" onClick={() => navigate('/login-investor')}>
+                Access Investor Platform
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>
