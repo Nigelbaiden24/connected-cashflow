@@ -31,6 +31,7 @@ import MarketDataHub from "./pages/investor/MarketDataHub";
 import ToolsCalculators from "./pages/investor/ToolsCalculators";
 import RiskCompliance from "./pages/investor/RiskCompliance";
 import Watchlists from "./pages/investor/Watchlists";
+import Languages from "./pages/investor/Languages";
 import InvestorFeatures from "./pages/InvestorFeatures";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
@@ -444,6 +445,9 @@ const App = () => {
           } />
           <Route path="/investor/watchlists" element={
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Watchlists /></InvestorLayout>
+          } />
+          <Route path="/investor/languages" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Languages /></InvestorLayout>
           } />
           
           <Route path="/investor-features" element={<InvestorFeatures />} />
