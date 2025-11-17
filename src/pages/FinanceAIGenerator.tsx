@@ -760,6 +760,9 @@ const FinanceAIGenerator = () => {
                       backgroundColor={backgroundColor}
                       logoUrl={logoUrl}
                       uploadedImages={uploadedImages}
+                      onImagePositionChange={handleImagePositionChange}
+                      onImageSizeChange={handleImageSizeChange}
+                      onImageRemove={handleRemoveImage}
                     />
                   </CardContent>
                 </Card>
