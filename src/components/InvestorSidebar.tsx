@@ -14,7 +14,8 @@ import {
   Database,
   Calculator,
   Shield,
-  Eye
+  Eye,
+  Languages
 } from "lucide-react";
 import {
   Sidebar,
@@ -114,6 +115,11 @@ const investorItems = [
     title: "Watchlists", 
     url: "/investor/watchlists", 
     icon: Eye,
+  },
+  { 
+    title: "Languages", 
+    url: "/investor/languages", 
+    icon: Languages,
   },
 ];
 
