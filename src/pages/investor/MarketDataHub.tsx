@@ -1,17 +1,55 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, Activity, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TrendingUp, TrendingDown, Activity, Globe, Zap, ThermometerSun } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function MarketDataHub() {
   const { toast } = useToast();
 
-  const marketData = [
-    { name: "S&P 500", value: "4,783.45", change: "+1.2%", trend: "up" },
-    { name: "NASDAQ", value: "15,095.14", change: "+0.8%", trend: "up" },
-    { name: "Bitcoin", value: "$43,250", change: "-2.3%", trend: "down" },
-    { name: "Gold", value: "$2,045/oz", change: "+0.5%", trend: "up" },
+  const majorIndices = [
+    { name: "S&P 500", value: "4,783.45", change: "+1.2%", changeValue: 56.78, trend: "up" },
+    { name: "NASDAQ", value: "15,095.14", change: "+0.8%", changeValue: 118.32, trend: "up" },
+    { name: "FTSE 100", value: "7,623.45", change: "+0.3%", changeValue: 22.15, trend: "up" },
+    { name: "DAX", value: "16,852.30", change: "-0.4%", changeValue: -67.20, trend: "down" },
+    { name: "Nikkei 225", value: "33,464.17", change: "+1.5%", changeValue: 495.23, trend: "up" },
+    { name: "Hang Seng", value: "16,830.30", change: "-0.9%", changeValue: -153.45, trend: "down" },
+  ];
+
+  const commodities = [
+    { name: "Gold", value: "$2,045.50", change: "+0.5%", unit: "/oz" },
+    { name: "Silver", value: "$24.15", change: "+1.2%", unit: "/oz" },
+    { name: "Crude Oil (WTI)", value: "$78.45", change: "-1.3%", unit: "/bbl" },
+    { name: "Brent Crude", value: "$82.30", change: "-1.1%", unit: "/bbl" },
+    { name: "Natural Gas", value: "$2.85", change: "+2.4%", unit: "/MMBtu" },
+    { name: "Copper", value: "$3.82", change: "+0.8%", unit: "/lb" },
+  ];
+
+  const forexPairs = [
+    { pair: "EUR/USD", rate: "1.0845", change: "+0.15%", bid: "1.0843", ask: "1.0847" },
+    { pair: "GBP/USD", rate: "1.2634", change: "+0.22%", bid: "1.2632", ask: "1.2636" },
+    { pair: "USD/JPY", rate: "149.85", change: "-0.18%", bid: "149.83", ask: "149.87" },
+    { pair: "USD/CHF", rate: "0.8756", change: "-0.12%", bid: "0.8754", ask: "0.8758" },
+    { pair: "AUD/USD", rate: "0.6589", change: "+0.31%", bid: "0.6587", ask: "0.6591" },
+    { pair: "USD/CAD", rate: "1.3542", change: "-0.09%", bid: "1.3540", ask: "1.3544" },
+  ];
+
+  const volatilityIndices = [
+    { name: "VIX (S&P 500)", value: "13.45", change: "-2.3%", level: "Low" },
+    { name: "VXN (NASDAQ)", value: "15.78", change: "-1.8%", level: "Low" },
+    { name: "VFTSE (FTSE 100)", value: "11.23", change: "+0.5%", level: "Low" },
+    { name: "VDAX (DAX)", value: "14.56", change: "+1.2%", level: "Low" },
+  ];
+
+  const marketSentiment = [
+    { market: "US Equities", rating: "Bullish", score: 72, color: "text-green-600" },
+    { market: "European Equities", rating: "Neutral", score: 55, color: "text-yellow-600" },
+    { market: "Asian Equities", rating: "Bullish", score: 68, color: "text-green-600" },
+    { market: "Commodities", rating: "Neutral", score: 52, color: "text-yellow-600" },
+    { market: "Cryptocurrencies", rating: "Bearish", score: 38, color: "text-red-600" },
+    { market: "Fixed Income", rating: "Neutral", score: 50, color: "text-yellow-600" },
   ];
 
   return (
@@ -23,72 +61,54 @@ export default function MarketDataHub() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {marketData.map((market) => (
-          <Card key={market.name}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{market.name}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{market.value}</div>
-              <div className={`flex items-center gap-1 text-sm ${market.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                {market.trend === "up" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                {market.change}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Tabs defaultValue="stocks" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="stocks">Stocks</TabsTrigger>
-          <TabsTrigger value="crypto">Crypto</TabsTrigger>
+      <Tabs defaultValue="indices" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="indices">Indices</TabsTrigger>
           <TabsTrigger value="commodities">Commodities</TabsTrigger>
-          <TabsTrigger value="forex">Forex</TabsTrigger>
+          <TabsTrigger value="forex">FX</TabsTrigger>
+          <TabsTrigger value="global">Global</TabsTrigger>
+          <TabsTrigger value="volatility">Volatility</TabsTrigger>
+          <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="stocks" className="space-y-4">
+        <TabsContent value="indices" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Global Stock Markets</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Major Market Indices
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">US Markets</p>
-                    <p className="text-sm text-muted-foreground">NYSE, NASDAQ</p>
-                  </div>
-                  <Button size="sm" variant="outline">View</Button>
-                </div>
-                <div className="flex justify-between items-center p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">European Markets</p>
-                    <p className="text-sm text-muted-foreground">LSE, Euronext</p>
-                  </div>
-                  <Button size="sm" variant="outline">View</Button>
-                </div>
-                <div className="flex justify-between items-center p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Asian Markets</p>
-                    <p className="text-sm text-muted-foreground">Tokyo, Shanghai, Hong Kong</p>
-                  </div>
-                  <Button size="sm" variant="outline">View</Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="crypto" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cryptocurrency Markets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Real-time cryptocurrency prices, market caps, and trading volumes.</p>
-              <Button className="mt-4">View Crypto Data</Button>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Index</TableHead>
+                    <TableHead className="text-right">Value</TableHead>
+                    <TableHead className="text-right">Change</TableHead>
+                    <TableHead className="text-right">Change %</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {majorIndices.map((index) => (
+                    <TableRow key={index.name}>
+                      <TableCell className="font-medium">{index.name}</TableCell>
+                      <TableCell className="text-right">{index.value}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={index.trend === "up" ? "text-green-600" : "text-red-600"}>
+                          {index.changeValue > 0 ? "+" : ""}{index.changeValue}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className={`flex items-center justify-end gap-1 ${index.trend === "up" ? "text-green-600" : "text-red-600"}`}>
+                          {index.trend === "up" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                          {index.change}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
@@ -96,11 +116,30 @@ export default function MarketDataHub() {
         <TabsContent value="commodities" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Commodities & Precious Metals</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <ThermometerSun className="h-5 w-5" />
+                Commodities & Precious Metals
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Track prices for gold, silver, oil, and other commodities.</p>
-              <Button className="mt-4">View Commodities</Button>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {commodities.map((commodity) => (
+                  <Card key={commodity.name}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">{commodity.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{commodity.value}</div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">{commodity.unit}</span>
+                        <span className={`text-sm font-medium ${commodity.change.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+                          {commodity.change}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -108,11 +147,183 @@ export default function MarketDataHub() {
         <TabsContent value="forex" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Foreign Exchange Markets</CardTitle>
+              <CardTitle>Foreign Exchange Rates</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Live forex rates and currency exchange data.</p>
-              <Button className="mt-4">View Forex Rates</Button>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Pair</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Bid</TableHead>
+                    <TableHead className="text-right">Ask</TableHead>
+                    <TableHead className="text-right">Change %</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {forexPairs.map((pair) => (
+                    <TableRow key={pair.pair}>
+                      <TableCell className="font-medium">{pair.pair}</TableCell>
+                      <TableCell className="text-right">{pair.rate}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{pair.bid}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{pair.ask}</TableCell>
+                      <TableCell className="text-right">
+                        <span className={pair.change.startsWith("+") ? "text-green-600" : "text-red-600"}>
+                          {pair.change}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="global" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Global Markets Overview
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-3">Americas</h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {majorIndices.slice(0, 2).map((index) => (
+                    <div key={index.name} className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{index.name}</p>
+                        <p className="text-sm text-muted-foreground">{index.value}</p>
+                      </div>
+                      <Badge variant={index.trend === "up" ? "default" : "destructive"}>
+                        {index.change}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3">Europe</h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {majorIndices.slice(2, 4).map((index) => (
+                    <div key={index.name} className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{index.name}</p>
+                        <p className="text-sm text-muted-foreground">{index.value}</p>
+                      </div>
+                      <Badge variant={index.trend === "up" ? "default" : "destructive"}>
+                        {index.change}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3">Asia-Pacific</h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {majorIndices.slice(4).map((index) => (
+                    <div key={index.name} className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium">{index.name}</p>
+                        <p className="text-sm text-muted-foreground">{index.value}</p>
+                      </div>
+                      <Badge variant={index.trend === "up" ? "default" : "destructive"}>
+                        {index.change}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="volatility" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                Volatility Indices
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {volatilityIndices.map((index) => (
+                  <div key={index.name} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{index.name}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-2xl font-bold">{index.value}</span>
+                        <Badge variant="outline">{index.level} Volatility</Badge>
+                      </div>
+                    </div>
+                    <div className={`text-right ${index.change.startsWith("+") ? "text-green-600" : "text-red-600"}`}>
+                      <div className="flex items-center gap-1">
+                        {index.change.startsWith("+") ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                        {index.change}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 p-4 bg-muted rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Volatility indices measure expected market volatility. Lower values indicate calmer markets, 
+                  while higher values suggest increased uncertainty and price swings.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="sentiment" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Market Sentiment Ratings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {marketSentiment.map((item) => (
+                  <div key={item.market} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{item.market}</p>
+                        <p className={`text-sm font-semibold ${item.color}`}>{item.rating}</p>
+                      </div>
+                      <Badge variant={
+                        item.rating === "Bullish" ? "default" : 
+                        item.rating === "Bearish" ? "destructive" : 
+                        "secondary"
+                      }>
+                        Score: {item.score}
+                      </Badge>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          item.rating === "Bullish" ? "bg-green-600" : 
+                          item.rating === "Bearish" ? "bg-red-600" : 
+                          "bg-yellow-600"
+                        }`}
+                        style={{ width: `${item.score}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 p-4 bg-muted rounded-lg space-y-2">
+                <p className="text-sm font-medium">Sentiment Scale:</p>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• <span className="text-green-600 font-medium">Bullish</span>: 65-100 (Strong positive sentiment)</li>
+                  <li>• <span className="text-yellow-600 font-medium">Neutral</span>: 45-64 (Mixed sentiment)</li>
+                  <li>• <span className="text-red-600 font-medium">Bearish</span>: 0-44 (Negative sentiment)</li>
+                </ul>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
