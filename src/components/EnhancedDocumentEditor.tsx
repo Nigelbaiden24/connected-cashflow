@@ -33,6 +33,7 @@ interface EnhancedDocumentEditorProps {
   onShapeSizeChange?: (id: string, width: number, height: number) => void;
   onShapeRemove?: (id: string) => void;
   onShapeColorChange?: (id: string, color: string) => void;
+  currentPageId?: string;
 }
 
 export function EnhancedDocumentEditor({
@@ -50,6 +51,7 @@ export function EnhancedDocumentEditor({
   onShapeSizeChange,
   onShapeRemove,
   onShapeColorChange,
+  currentPageId = "page-1",
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -110,7 +112,8 @@ export function EnhancedDocumentEditor({
       width: 600,
       height: 100,
       isCustom: true,
-    };
+      pageId: currentPageId,
+    } as any;
     onSectionsChange([...sections, newSection]);
     setIsAddDialogOpen(false);
     setNewSectionTitle("");
