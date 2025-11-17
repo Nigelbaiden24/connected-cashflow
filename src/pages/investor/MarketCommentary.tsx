@@ -47,10 +47,6 @@ const MarketCommentary = () => {
     setAiQuery("");
   };
 
-  const handleUpload = () => {
-    toast.success("Commentary upload ready");
-  };
-
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment) {
       case "positive":
@@ -71,10 +67,6 @@ const MarketCommentary = () => {
             Expert insights and AI-powered analysis on current market conditions
           </p>
         </div>
-        <Button onClick={handleUpload} variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Commentary
-        </Button>
       </div>
 
       {/* AI Chat Interface */}

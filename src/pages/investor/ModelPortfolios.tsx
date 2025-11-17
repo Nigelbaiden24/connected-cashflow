@@ -48,10 +48,6 @@ const ModelPortfolios = () => {
     },
   ];
 
-  const handleUpload = () => {
-    toast.success("Portfolio upload ready");
-  };
-
   return (
     <div className="p-6 space-y-6 investor-theme">
       <div className="flex justify-between items-center">
@@ -61,10 +57,6 @@ const ModelPortfolios = () => {
             Professionally managed portfolio strategies for different risk profiles
           </p>
         </div>
-        <Button onClick={handleUpload} variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Portfolio
-        </Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -57,14 +57,9 @@ export default function Opportunities() {
               <img src={flowpulseLogo} alt="FlowPulse" className="h-8 w-8" />
               <span className="text-xl font-bold">FlowPulse Investor</span>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                Home
-              </Button>
-              <Button onClick={() => navigate("/login-investor")}>
-                Sign In
-              </Button>
-            </div>
+            <Button variant="ghost" onClick={() => navigate("/")}>
+              Home
+            </Button>
           </div>
         </div>
       </header>
