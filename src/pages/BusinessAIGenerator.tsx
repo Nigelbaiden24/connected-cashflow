@@ -32,6 +32,7 @@ const BusinessAIGenerator = () => {
   const [showGrid, setShowGrid] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [shapes, setShapes] = useState<Array<{ id: string; type: string; x: number; y: number; width: number; height: number; color: string }>>([]);
   const { toast } = useToast();
   
   const template = businessTemplates.find(t => t.id === selectedTemplate);
@@ -139,25 +140,69 @@ const BusinessAIGenerator = () => {
   };
 
   const handleAddPage = () => {
+    const maxY = sections.length > 0 
+      ? Math.max(...sections.map(s => (s.y || 0) + (s.height || 100))) 
+      : 0;
+    
     const newSection: HeaderSection = {
       id: `page-${Date.now()}`,
       title: "New Page",
-      content: "",
+      content: "Click to edit this page content...",
       type: "body",
       editable: true,
       placeholder: "Enter content for new page...",
       order: sections.length,
       x: 50,
-      y: sections.length > 0 ? Math.max(...sections.map(s => s.y + s.height)) + 50 : 50,
+      y: maxY + 100,
       width: 700,
-      height: 200,
+      height: 300,
       isCustom: true,
     };
+    
     setSections([...sections, newSection]);
+    
     toast({
       title: "New page added",
       description: "Scroll down to see the new page",
     });
+  };
+
+  const handleAddShape = (shapeType: string) => {
+    const maxY = sections.length > 0 
+      ? Math.max(...sections.map(s => (s.y || 0) + (s.height || 100))) 
+      : 0;
+    
+    const newShape = {
+      id: `shape-${Date.now()}`,
+      type: shapeType,
+      x: 100,
+      y: Math.min(maxY + 50, 200),
+      width: 150,
+      height: 150,
+      color: textColor,
+    };
+    
+    setShapes([...shapes, newShape]);
+    toast({
+      title: "Shape added",
+      description: "You can drag and resize the shape",
+    });
+  };
+
+  const handleShapePositionChange = (id: string, x: number, y: number) => {
+    setShapes(shapes.map(shape => 
+      shape.id === id ? { ...shape, x, y } : shape
+    ));
+  };
+
+  const handleShapeSizeChange = (id: string, width: number, height: number) => {
+    setShapes(shapes.map(shape => 
+      shape.id === id ? { ...shape, width, height } : shape
+    ));
+  };
+
+  const handleShapeRemove = (id: string) => {
+    setShapes(shapes.filter(shape => shape.id !== id));
   };
 
   const handleUndo = () => {
@@ -232,22 +277,31 @@ const BusinessAIGenerator = () => {
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
           onAddSection={() => {
+            const maxY = sections.length > 0 
+              ? Math.max(...sections.map(s => (s.y || 0) + (s.height || 100))) 
+              : 0;
+            
             const newSection: HeaderSection = {
               id: `custom-${Date.now()}`,
               title: "New Section",
-              content: "",
+              content: "Click to edit this section...",
               type: "body",
               editable: true,
               placeholder: "Enter content...",
               order: sections.length,
               x: 50,
-              y: sections.length > 0 ? Math.max(...sections.map(s => s.y + s.height)) + 20 : 50,
+              y: maxY + 50,
               width: 600,
-              height: 100,
+              height: 150,
               isCustom: true,
             };
             setSections([...sections, newSection]);
+            toast({
+              title: "Section added",
+              description: "New section created at the bottom",
+            });
           }}
+          onAddShape={handleAddShape}
         />
 
         <div className="flex-1 overflow-auto">
@@ -278,6 +332,10 @@ const BusinessAIGenerator = () => {
                 onImagePositionChange={handleImagePositionChange}
                 onImageSizeChange={handleImageSizeChange}
                 onImageRemove={handleImageRemove}
+                shapes={shapes}
+                onShapePositionChange={handleShapePositionChange}
+                onShapeSizeChange={handleShapeSizeChange}
+                onShapeRemove={handleShapeRemove}
               />
             </div>
           )}

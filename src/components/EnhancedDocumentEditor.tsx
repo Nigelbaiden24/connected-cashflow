@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { HeaderSection } from "@/hooks/useDocumentSections";
 import { DraggableImage } from "@/components/DraggableImage";
 import { DraggableSection } from "@/components/DraggableSection";
+import { DraggableShape } from "@/components/DraggableShape";
 
 interface EnhancedDocumentEditorProps {
   sections: HeaderSection[];
@@ -27,6 +28,10 @@ interface EnhancedDocumentEditorProps {
   onImagePositionChange?: (id: string, x: number, y: number) => void;
   onImageSizeChange?: (id: string, width: number, height: number) => void;
   onImageRemove?: (id: string) => void;
+  shapes?: Array<{ id: string; type: string; x: number; y: number; width: number; height: number; color: string }>;
+  onShapePositionChange?: (id: string, x: number, y: number) => void;
+  onShapeSizeChange?: (id: string, width: number, height: number) => void;
+  onShapeRemove?: (id: string) => void;
 }
 
 export function EnhancedDocumentEditor({
@@ -39,6 +44,10 @@ export function EnhancedDocumentEditor({
   onImagePositionChange,
   onImageSizeChange,
   onImageRemove,
+  shapes = [],
+  onShapePositionChange,
+  onShapeSizeChange,
+  onShapeRemove,
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -192,6 +201,23 @@ export function EnhancedDocumentEditor({
           onPositionChange={(id, x, y) => onImagePositionChange?.(id, x, y)}
           onSizeChange={(id, width, height) => onImageSizeChange?.(id, width, height)}
           onRemove={(id) => onImageRemove?.(id)}
+        />
+      ))}
+
+      {/* Draggable Shapes */}
+      {shapes.map((shape) => (
+        <DraggableShape
+          key={shape.id}
+          id={shape.id}
+          type={shape.type}
+          x={shape.x}
+          y={shape.y}
+          width={shape.width}
+          height={shape.height}
+          color={shape.color}
+          onPositionChange={(id, x, y) => onShapePositionChange?.(id, x, y)}
+          onSizeChange={(id, width, height) => onShapeSizeChange?.(id, width, height)}
+          onRemove={(id) => onShapeRemove?.(id)}
         />
       ))}
 
