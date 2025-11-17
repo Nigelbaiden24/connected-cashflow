@@ -9,42 +9,87 @@ const ModelPortfolios = () => {
   const portfolios = [
     {
       id: "1",
-      name: "Aggressive Growth",
-      riskLevel: "High",
-      expectedReturn: "12-15%",
+      name: "AI & Automation",
+      theme: "Technology Innovation",
+      expectedReturn: "15-20%",
       allocation: {
-        stocks: 80,
-        crypto: 10,
-        alternatives: 10
+        "AI Companies": 40,
+        "Robotics": 30,
+        "Cloud Infrastructure": 20,
+        "Semiconductors": 10
       },
-      performance: "+18.5%",
-      color: "text-red-600"
+      performance: "+24.3%",
+      holdings: 25
     },
     {
       id: "2",
-      name: "Balanced Growth",
-      riskLevel: "Medium",
-      expectedReturn: "8-12%",
+      name: "Cybersecurity",
+      theme: "Digital Security",
+      expectedReturn: "12-16%",
       allocation: {
-        stocks: 60,
-        bonds: 20,
-        alternatives: 20
+        "Security Software": 45,
+        "Network Security": 30,
+        "Cloud Security": 15,
+        "Identity Management": 10
       },
-      performance: "+12.3%",
-      color: "text-yellow-600"
+      performance: "+19.7%",
+      holdings: 18
     },
     {
       id: "3",
-      name: "Conservative Income",
-      riskLevel: "Low",
-      expectedReturn: "5-8%",
+      name: "Renewable Energy",
+      theme: "Sustainable Future",
+      expectedReturn: "10-14%",
       allocation: {
-        bonds: 60,
-        stocks: 30,
-        cash: 10
+        "Solar Power": 35,
+        "Wind Energy": 30,
+        "Energy Storage": 20,
+        "EV Infrastructure": 15
       },
-      performance: "+6.8%",
-      color: "text-green-600"
+      performance: "+16.2%",
+      holdings: 22
+    },
+    {
+      id: "4",
+      name: "Consumer Staples Stability",
+      theme: "Defensive Growth",
+      expectedReturn: "6-9%",
+      allocation: {
+        "Food & Beverage": 40,
+        "Household Products": 30,
+        "Personal Care": 20,
+        "Retail": 10
+      },
+      performance: "+8.5%",
+      holdings: 30
+    },
+    {
+      id: "5",
+      name: "High-Cash-Flow Businesses",
+      theme: "Cash Generation",
+      expectedReturn: "9-12%",
+      allocation: {
+        "Infrastructure": 30,
+        "Utilities": 25,
+        "REITs": 25,
+        "Telecoms": 20
+      },
+      performance: "+11.4%",
+      holdings: 28
+    },
+    {
+      id: "6",
+      name: "Dividend Strength Portfolio",
+      theme: "Income Focus",
+      expectedReturn: "7-10%",
+      allocation: {
+        "Dividend Aristocrats": 50,
+        "High Yield Stocks": 25,
+        "Dividend Growth": 15,
+        "Preferred Stocks": 10
+      },
+      performance: "+9.8%",
+      holdings: 35
     },
   ];
 
@@ -54,7 +99,7 @@ const ModelPortfolios = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Model Portfolios</h1>
           <p className="text-muted-foreground mt-2">
-            Professionally managed portfolio strategies for different risk profiles
+            Thematic investment strategies for modern investors
           </p>
         </div>
       </div>
@@ -65,11 +110,11 @@ const ModelPortfolios = () => {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <Briefcase className="h-8 w-8 text-primary" />
-                <Badge variant="secondary">{portfolio.riskLevel} Risk</Badge>
+                <Badge variant="secondary">{portfolio.theme}</Badge>
               </div>
               <CardTitle className="mt-4">{portfolio.name}</CardTitle>
               <CardDescription>
-                Target Return: {portfolio.expectedReturn}
+                Target Return: {portfolio.expectedReturn} • {portfolio.holdings} Holdings
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
