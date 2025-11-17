@@ -23,6 +23,7 @@ interface EnhancedDocumentEditorProps {
   onSectionsChange: (sections: HeaderSection[]) => void;
   onContentChange: (sectionId: string, content: string) => void;
   backgroundColor?: string;
+  textColor?: string;
   logoUrl?: string;
   uploadedImages?: Array<{ id: string; url: string; x: number; y: number; width: number; height: number }>;
   onImagePositionChange?: (id: string, x: number, y: number) => void;
@@ -41,6 +42,7 @@ export function EnhancedDocumentEditor({
   onSectionsChange,
   onContentChange,
   backgroundColor = "#ffffff",
+  textColor = "#000000",
   logoUrl,
   uploadedImages = [],
   onImagePositionChange,
@@ -177,6 +179,7 @@ export function EnhancedDocumentEditor({
           width={section.width}
           height={section.height}
           isFirst={index === 0}
+          textColor={textColor}
           onPositionChange={handleSectionPositionChange}
           onSizeChange={handleSectionSizeChange}
           onEdit={() => handleEditSection(section)}

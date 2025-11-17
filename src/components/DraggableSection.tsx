@@ -13,6 +13,7 @@ interface DraggableSectionProps {
   width: number;
   height: number;
   isFirst: boolean;
+  textColor?: string;
   onPositionChange: (id: string, x: number, y: number) => void;
   onSizeChange: (id: string, width: number, height: number) => void;
   onEdit: () => void;
@@ -31,6 +32,7 @@ export function DraggableSection({
   width,
   height,
   isFirst,
+  textColor = "#000000",
   onPositionChange,
   onSizeChange,
   onEdit,
@@ -117,7 +119,7 @@ export function DraggableSection({
   const renderContent = () => {
     if (type === "heading" || type === "subheading") {
       return (
-        <h2 className="text-2xl font-bold text-primary mb-4">
+        <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>
           {content || title}
         </h2>
       );
@@ -125,7 +127,7 @@ export function DraggableSection({
     if (type === "body") {
       return (
         <div className="prose max-w-none">
-          <p className="text-foreground/80 whitespace-pre-wrap">
+          <p className="whitespace-pre-wrap" style={{ color: textColor }}>
             {content || placeholder || "Add content..."}
           </p>
         </div>
