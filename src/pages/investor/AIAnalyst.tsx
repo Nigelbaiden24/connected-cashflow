@@ -1,33 +1,122 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Brain, TrendingUp, AlertCircle, Sparkles } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Brain, TrendingUp, FileText, MessageSquare, Target, DollarSign, Sparkles, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useAIAnalyst } from "@/hooks/useAIAnalyst";
+import { useToast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 
 export default function AIAnalyst() {
   const [query, setQuery] = useState("");
+  const [company, setCompany] = useState("");
+  const [response, setResponse] = useState("");
+  const [analysisType, setAnalysisType] = useState("company-qa");
+  const { toast } = useToast();
 
-  const aiCapabilities = [
+  const { analyzeWithAI, isLoading } = useAIAnalyst({
+    onDelta: (text) => {
+      setResponse((prev) => prev + text);
+    },
+    onDone: () => {
+      toast({
+        title: "Analysis Complete",
+        description: "AI analysis has been generated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAnalyze = async () => {
+    if (!query.trim() && analysisType === "company-qa") {
+      toast({
+        title: "Input Required",
+        description: "Please enter a question or topic to analyze",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResponse("");
+    await analyzeWithAI(query, analysisType, company);
+  };
+
+  const quickPrompts = {
+    "company-qa": [
+      "What are the key growth drivers?",
+      "Analyze the competitive landscape",
+      "What are the major risks?",
+      "Explain the business model",
+    ],
+    trends: [
+      "What are the emerging market trends?",
+      "Analyze sector performance YTD",
+      "Identify momentum stocks",
+      "Explain recent market volatility",
+    ],
+    "research-summary": ["Generate full research report"],
+    "qa-filings": [
+      "Summarize latest earnings call",
+      "Explain recent SEC filing",
+      "What did management say about guidance?",
+      "Analyze cash flow trends",
+    ],
+    swot: ["Generate SWOT analysis"],
+    valuation: ["Analyze current valuation"],
+  };
+
+  const analysisCategories = [
     {
-      title: "Portfolio Analysis",
-      description: "Get AI-powered insights on your portfolio composition and risk factors",
+      id: "company-qa",
+      title: "Ask About Companies",
+      description: "Get detailed answers about any company",
+      icon: MessageSquare,
+      color: "text-blue-500",
+    },
+    {
+      id: "trends",
+      title: "Trend Breakdowns",
+      description: "Analyze market and sector trends",
       icon: TrendingUp,
+      color: "text-green-500",
     },
     {
-      title: "Market Predictions",
-      description: "Access machine learning models for trend analysis and forecasting",
+      id: "research-summary",
+      title: "Research Summaries",
+      description: "AI-generated comprehensive reports",
+      icon: FileText,
+      color: "text-purple-500",
+    },
+    {
+      id: "qa-filings",
+      title: "Filings & Earnings Q&A",
+      description: "Ask about SEC filings and earnings",
       icon: Brain,
+      color: "text-orange-500",
     },
     {
-      title: "Risk Assessment",
-      description: "Identify potential risks and vulnerabilities in your investment strategy",
-      icon: AlertCircle,
+      id: "swot",
+      title: "SWOT Analysis",
+      description: "Generate strategic analysis",
+      icon: Target,
+      color: "text-red-500",
     },
     {
-      title: "Smart Recommendations",
-      description: "Receive personalized investment recommendations based on your goals",
-      icon: Sparkles,
+      id: "valuation",
+      title: "Valuation Commentary",
+      description: "Get valuation insights and metrics",
+      icon: DollarSign,
+      color: "text-yellow-500",
     },
   ];
 
@@ -35,73 +124,138 @@ export default function AIAnalyst() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">AI Analyst</h1>
-        <p className="text-muted-foreground mt-2">Your intelligent investment assistant powered by advanced AI</p>
+        <p className="text-muted-foreground mt-2">
+          Your intelligent investment research assistant powered by advanced AI
+        </p>
       </div>
 
-      <Card className="border-primary/50 bg-primary/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
-            Ask the AI Analyst
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            placeholder="Ask about market trends, portfolio analysis, investment opportunities, or any financial question..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="min-h-[120px]"
-          />
-          <div className="flex gap-2">
-            <Button className="flex-1">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Analyze
-            </Button>
-            <Button variant="outline" onClick={() => setQuery("")}>Clear</Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs value={analysisType} onValueChange={setAnalysisType} className="space-y-6">
+        <TabsList className="grid grid-cols-3 lg:grid-cols-6 w-full">
+          {analysisCategories.map((category) => (
+            <TabsTrigger key={category.id} value={category.id} className="flex items-center gap-2">
+              <category.icon className={`h-4 w-4 ${category.color}`} />
+              <span className="hidden lg:inline">{category.title.split(" ")[0]}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">AI Capabilities</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {aiCapabilities.map((capability) => (
-            <Card key={capability.title}>
+        {analysisCategories.map((category) => (
+          <TabsContent key={category.id} value={category.id} className="space-y-4">
+            <Card className="border-primary/50 bg-primary/5">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <capability.icon className="h-5 w-5 text-primary" />
-                  {capability.title}
+                <CardTitle className="flex items-center gap-2">
+                  <category.icon className={`h-5 w-5 ${category.color}`} />
+                  {category.title}
                 </CardTitle>
+                <p className="text-sm text-muted-foreground">{category.description}</p>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{capability.description}</p>
-                <Button variant="outline" className="w-full mt-4" size="sm">Try Now</Button>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Company/Ticker (Optional)</Label>
+                  <Input
+                    placeholder="e.g., AAPL, Microsoft, Tesla"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                  />
+                </div>
+
+                {category.id !== "research-summary" &&
+                  category.id !== "swot" &&
+                  category.id !== "valuation" && (
+                    <div className="space-y-2">
+                      <Label>Your Question</Label>
+                      <Textarea
+                        placeholder={`Ask about ${category.title.toLowerCase()}...`}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                  )}
+
+                <div className="space-y-2">
+                  <Label className="text-sm text-muted-foreground">Quick Prompts</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {quickPrompts[category.id as keyof typeof quickPrompts]?.map((prompt, idx) => (
+                      <Badge
+                        key={idx}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-primary/10"
+                        onClick={() => setQuery(prompt)}
+                      >
+                        {prompt}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1"
+                    onClick={handleAnalyze}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Analysis
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setQuery("");
+                      setCompany("");
+                      setResponse("");
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      </div>
+
+            {response && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-primary" />
+                    AI Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown>{response}</ReactMarkdown>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent AI Insights</CardTitle>
+          <CardTitle>AI Analyst Capabilities</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {[
-            { insight: "Tech sector showing strong momentum", confidence: "High", date: "2 hours ago" },
-            { insight: "Emerging markets presenting opportunities", confidence: "Medium", date: "5 hours ago" },
-            { insight: "Crypto market volatility increasing", confidence: "High", date: "1 day ago" },
-          ].map((item, index) => (
-            <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex-1">
-                <p className="font-medium">{item.insight}</p>
-                <p className="text-sm text-muted-foreground">{item.date}</p>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {analysisCategories.map((capability) => (
+              <div key={capability.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                <capability.icon className={`h-5 w-5 mt-0.5 ${capability.color}`} />
+                <div>
+                  <p className="font-medium text-sm">{capability.title}</p>
+                  <p className="text-xs text-muted-foreground">{capability.description}</p>
+                </div>
               </div>
-              <Badge variant={item.confidence === "High" ? "default" : "secondary"}>
-                {item.confidence} Confidence
-              </Badge>
-            </div>
-          ))}
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
