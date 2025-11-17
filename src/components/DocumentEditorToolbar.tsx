@@ -15,6 +15,19 @@ import {
   Palette,
   Sparkles,
   Plus,
+  FilePlus,
+  Bold,
+  Italic,
+  Underline,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Undo,
+  Redo,
+  ZoomIn,
+  ZoomOut,
+  Grid3x3,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +37,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group";
 
 interface DocumentEditorToolbarProps {
   templates: any[];
@@ -36,8 +62,23 @@ interface DocumentEditorToolbarProps {
   textColor: string;
   onTextColorChange: (color: string) => void;
   onDownloadPDF: () => void;
-  onFillDocument: () => void;
+  onFillDocument: (prompt: string) => void;
   onAddSection: () => void;
+  onAddPage: () => void;
+  fontFamily: string;
+  onFontFamilyChange: (font: string) => void;
+  fontSize: number;
+  onFontSizeChange: (size: number) => void;
+  textAlign: string;
+  onTextAlignChange: (align: string) => void;
+  zoom: number;
+  onZoomChange: (zoom: number) => void;
+  showGrid: boolean;
+  onShowGridChange: (show: boolean) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export function DocumentEditorToolbar({
@@ -53,9 +94,26 @@ export function DocumentEditorToolbar({
   onDownloadPDF,
   onFillDocument,
   onAddSection,
+  onAddPage,
+  fontFamily,
+  onFontFamilyChange,
+  fontSize,
+  onFontSizeChange,
+  textAlign,
+  onTextAlignChange,
+  zoom,
+  onZoomChange,
+  showGrid,
+  onShowGridChange,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }: DocumentEditorToolbarProps) {
   const [imageUploadKey, setImageUploadKey] = useState(0);
   const [logoUploadKey, setLogoUploadKey] = useState(0);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -73,14 +131,38 @@ export function DocumentEditorToolbar({
     }
   };
 
+  const handleAiFillSubmit = () => {
+    if (aiPrompt.trim()) {
+      onFillDocument(aiPrompt);
+      setIsAiDialogOpen(false);
+      setAiPrompt("");
+    }
+  };
+
+  const fonts = [
+    "Inter",
+    "Arial",
+    "Times New Roman",
+    "Courier New",
+    "Georgia",
+    "Verdana",
+    "Helvetica",
+    "Playfair Display",
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Montserrat",
+  ];
+
+  const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
+
   return (
     <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="flex items-center gap-2 p-3 flex-wrap">
+      <div className="flex items-center gap-2 p-2 flex-wrap">
         {/* Template Selection */}
         <div className="flex items-center gap-2">
-          <Label className="text-xs text-muted-foreground">Template:</Label>
           <Select value={selectedTemplate || undefined} onValueChange={onTemplateSelect}>
-            <SelectTrigger className="w-[200px] h-9">
+            <SelectTrigger className="w-[180px] h-9">
               <SelectValue placeholder="Select template" />
             </SelectTrigger>
             <SelectContent>
@@ -95,15 +177,99 @@ export function DocumentEditorToolbar({
 
         <Separator orientation="vertical" className="h-6" />
 
-        {/* Content Actions */}
+        {/* Page Actions */}
+        <Button variant="outline" size="sm" onClick={onAddPage}>
+          <FilePlus className="h-4 w-4 mr-2" />
+          Add Page
+        </Button>
+
         <Button variant="outline" size="sm" onClick={onAddSection}>
           <Plus className="h-4 w-4 mr-2" />
           Add Section
         </Button>
 
-        <Button variant="outline" size="sm" onClick={onFillDocument}>
-          <Sparkles className="h-4 w-4 mr-2" />
-          AI Fill Document
+        <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Fill
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>AI Fill Document</DialogTitle>
+              <DialogDescription>
+                Describe what content you'd like the AI to generate for your document
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              placeholder="E.g., Create a comprehensive business plan for a tech startup focusing on AI-powered solutions..."
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              className="min-h-[120px]"
+            />
+            <Button onClick={handleAiFillSubmit} disabled={!aiPrompt.trim()}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate Content
+            </Button>
+          </DialogContent>
+        </Dialog>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Font Controls */}
+        <Select value={fontFamily} onValueChange={onFontFamilyChange}>
+          <SelectTrigger className="w-[140px] h-9">
+            <SelectValue placeholder="Font" />
+          </SelectTrigger>
+          <SelectContent>
+            {fonts.map((font) => (
+              <SelectItem key={font} value={font} style={{ fontFamily: font }}>
+                {font}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={fontSize.toString()} onValueChange={(val) => onFontSizeChange(Number(val))}>
+          <SelectTrigger className="w-[80px] h-9">
+            <SelectValue placeholder="Size" />
+          </SelectTrigger>
+          <SelectContent>
+            {fontSizes.map((size) => (
+              <SelectItem key={size} value={size.toString()}>
+                {size}px
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Text Alignment */}
+        <ToggleGroup type="single" value={textAlign} onValueChange={onTextAlignChange}>
+          <ToggleGroupItem value="left" aria-label="Align left" size="sm">
+            <AlignLeft className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="center" aria-label="Align center" size="sm">
+            <AlignCenter className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="right" aria-label="Align right" size="sm">
+            <AlignRight className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="justify" aria-label="Justify" size="sm">
+            <AlignJustify className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Undo/Redo */}
+        <Button variant="outline" size="sm" onClick={onUndo} disabled={!canUndo}>
+          <Undo className="h-4 w-4" />
+        </Button>
+        <Button variant="outline" size="sm" onClick={onRedo} disabled={!canRedo}>
+          <Redo className="h-4 w-4" />
         </Button>
 
         <Separator orientation="vertical" className="h-6" />
@@ -143,6 +309,27 @@ export function DocumentEditorToolbar({
             </label>
           </Button>
         </div>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" onClick={() => onZoomChange(Math.max(25, zoom - 25))}>
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <span className="text-xs text-muted-foreground w-12 text-center">{zoom}%</span>
+          <Button variant="outline" size="sm" onClick={() => onZoomChange(Math.min(200, zoom + 25))}>
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <Button
+          variant={showGrid ? "default" : "outline"}
+          size="sm"
+          onClick={() => onShowGridChange(!showGrid)}
+        >
+          <Grid3x3 className="h-4 w-4" />
+        </Button>
 
         <Separator orientation="vertical" className="h-6" />
 
