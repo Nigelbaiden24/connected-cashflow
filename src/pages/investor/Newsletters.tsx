@@ -35,10 +35,6 @@ const Newsletters = () => {
     },
   ]);
 
-  const handleUpload = () => {
-    toast.success("Newsletter upload ready");
-  };
-
   const handleSubscribe = () => {
     toast.success("Subscription preferences updated");
   };
@@ -52,10 +48,6 @@ const Newsletters = () => {
             Stay informed with curated market insights and investment opportunities
           </p>
         </div>
-        <Button onClick={handleUpload} variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Newsletter
-        </Button>
       </div>
 
       {/* Subscribe Section */}

@@ -13,13 +13,6 @@ export default function RiskCompliance() {
     { label: "Risk Alerts", value: "3 Active", status: "Attention", color: "red" },
   ];
 
-  const handleUpload = () => {
-    toast({
-      title: "Upload Compliance Documents",
-      description: "Admin feature to manage compliance documentation",
-    });
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -27,10 +20,6 @@ export default function RiskCompliance() {
           <h1 className="text-3xl font-bold">Risk & Compliance Hub</h1>
           <p className="text-muted-foreground mt-2">Monitor risk exposure and maintain regulatory compliance</p>
         </div>
-        <Button onClick={handleUpload}>
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Documents
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

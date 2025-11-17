@@ -36,10 +36,6 @@ const AnalysisReports = () => {
     },
   ]);
 
-  const handleUpload = () => {
-    toast.success("Analysis report upload ready");
-  };
-
   const handleAIAnalysis = () => {
     toast.info("Generating AI-powered analysis...");
   };
@@ -64,16 +60,10 @@ const AnalysisReports = () => {
             Technical, fundamental, and quantitative analysis across all asset classes
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleAIAnalysis} className="bg-primary hover:bg-primary/90">
-            <Sparkles className="h-4 w-4 mr-2" />
-            AI Analysis
-          </Button>
-          <Button onClick={handleUpload} variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Analysis
-          </Button>
-        </div>
+        <Button onClick={handleAIAnalysis} className="bg-primary hover:bg-primary/90">
+          <Sparkles className="h-4 w-4 mr-2" />
+          AI Analysis
+        </Button>
       </div>
 
       <Tabs defaultValue="all" className="w-full">

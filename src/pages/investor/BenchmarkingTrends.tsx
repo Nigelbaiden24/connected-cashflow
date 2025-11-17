@@ -36,10 +36,6 @@ const BenchmarkingTrends = () => {
     },
   ];
 
-  const handleUpload = () => {
-    toast.success("Benchmark data upload ready");
-  };
-
   return (
     <div className="p-6 space-y-6 investor-theme">
       <div className="flex justify-between items-center">
@@ -49,10 +45,6 @@ const BenchmarkingTrends = () => {
             Track performance against major indices and identify emerging trends
           </p>
         </div>
-        <Button onClick={handleUpload} variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Data
-        </Button>
       </div>
 
       <Tabs defaultValue="benchmarks" className="w-full">

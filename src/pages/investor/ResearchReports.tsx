@@ -35,10 +35,6 @@ const ResearchReports = () => {
     },
   ]);
 
-  const handleUpload = () => {
-    toast.success("Report upload functionality ready for integration");
-  };
-
   const handleAIInsights = () => {
     toast.info("AI-powered insights feature coming soon");
   };
@@ -52,16 +48,10 @@ const ResearchReports = () => {
             In-depth research and analysis on global investment opportunities
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleAIInsights} className="bg-primary hover:bg-primary/90">
-            <Sparkles className="h-4 w-4 mr-2" />
-            AI Insights
-          </Button>
-          <Button onClick={handleUpload} variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Report
-          </Button>
-        </div>
+        <Button onClick={handleAIInsights} className="bg-primary hover:bg-primary/90">
+          <Sparkles className="h-4 w-4 mr-2" />
+          AI Insights
+        </Button>
       </div>
 
       {/* Search and Filter */}

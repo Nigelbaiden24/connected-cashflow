@@ -14,13 +14,6 @@ export default function MarketDataHub() {
     { name: "Gold", value: "$2,045/oz", change: "+0.5%", trend: "up" },
   ];
 
-  const handleUpload = () => {
-    toast({
-      title: "Upload Market Data",
-      description: "Admin feature to update market data feeds",
-    });
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -28,10 +21,6 @@ export default function MarketDataHub() {
           <h1 className="text-3xl font-bold">Market Data Hub</h1>
           <p className="text-muted-foreground mt-2">Real-time market data and analytics</p>
         </div>
-        <Button onClick={handleUpload}>
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Data
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

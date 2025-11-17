@@ -15,13 +15,6 @@ export default function LearningHub() {
     { title: "Precious Metals Trading", level: "Beginner", duration: "2 weeks", lessons: 8 },
   ];
 
-  const handleUpload = () => {
-    toast({
-      title: "Upload Educational Content",
-      description: "Admin feature to upload courses and materials",
-    });
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -29,10 +22,6 @@ export default function LearningHub() {
           <h1 className="text-3xl font-bold">Learning Hub</h1>
           <p className="text-muted-foreground mt-2">Expand your investment knowledge with expert content</p>
         </div>
-        <Button onClick={handleUpload}>
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Content
-        </Button>
       </div>
 
       <Tabs defaultValue="courses" className="space-y-6">

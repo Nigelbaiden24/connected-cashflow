@@ -46,10 +46,6 @@ const SignalsAlerts = () => {
     sms: false
   });
 
-  const handleUpload = () => {
-    toast.success("Alert configuration upload ready");
-  };
-
   const handleAISignals = () => {
     toast.info("Generating AI-powered signals...");
   };
@@ -85,16 +81,10 @@ const SignalsAlerts = () => {
             Real-time trading signals and market alerts powered by AI
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleAISignals} className="bg-primary hover:bg-primary/90">
-            <Sparkles className="h-4 w-4 mr-2" />
-            AI Signals
-          </Button>
-          <Button onClick={handleUpload} variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Config
-          </Button>
-        </div>
+        <Button onClick={handleAISignals} className="bg-primary hover:bg-primary/90">
+          <Sparkles className="h-4 w-4 mr-2" />
+          AI Signals
+        </Button>
       </div>
 
       {/* Notification Settings */}
