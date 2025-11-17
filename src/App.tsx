@@ -24,6 +24,14 @@ import ModelPortfolios from "./pages/investor/ModelPortfolios";
 import SignalsAlerts from "./pages/investor/SignalsAlerts";
 import Newsletters from "./pages/investor/Newsletters";
 import BenchmarkingTrends from "./pages/investor/BenchmarkingTrends";
+import ScreenersDiscovery from "./pages/investor/ScreenersDiscovery";
+import AIAnalyst from "./pages/investor/AIAnalyst";
+import LearningHub from "./pages/investor/LearningHub";
+import MarketDataHub from "./pages/investor/MarketDataHub";
+import ToolsCalculators from "./pages/investor/ToolsCalculators";
+import RiskCompliance from "./pages/investor/RiskCompliance";
+import Watchlists from "./pages/investor/Watchlists";
+import InvestorFeatures from "./pages/InvestorFeatures";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -411,6 +419,29 @@ const App = () => {
           <Route path="/investor/trends" element={
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><BenchmarkingTrends /></InvestorLayout>
           } />
+          <Route path="/investor/screeners" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ScreenersDiscovery /></InvestorLayout>
+          } />
+          <Route path="/investor/ai-analyst" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><AIAnalyst /></InvestorLayout>
+          } />
+          <Route path="/investor/learning" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><LearningHub /></InvestorLayout>
+          } />
+          <Route path="/investor/market-data" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><MarketDataHub /></InvestorLayout>
+          } />
+          <Route path="/investor/tools" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ToolsCalculators /></InvestorLayout>
+          } />
+          <Route path="/investor/risk-compliance" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><RiskCompliance /></InvestorLayout>
+          } />
+          <Route path="/investor/watchlists" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Watchlists /></InvestorLayout>
+          } />
+          
+          <Route path="/investor-features" element={<InvestorFeatures />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
