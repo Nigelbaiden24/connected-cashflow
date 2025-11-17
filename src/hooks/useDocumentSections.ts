@@ -5,6 +5,10 @@ export interface HeaderSection {
   title: string;
   content: string;
   order: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
   isCustom?: boolean;
   type?: string;
   className?: string;
@@ -17,7 +21,7 @@ export function useDocumentSections(templateSections: any[] = []) {
   const [sections, setSections] = useState<HeaderSection[]>([]);
 
   useEffect(() => {
-    // Convert template sections to HeaderSection format
+    // Convert template sections to HeaderSection format with initial positioning
     const initialSections = templateSections
       .filter(s => s.editable)
       .map((section, index) => ({
@@ -25,6 +29,10 @@ export function useDocumentSections(templateSections: any[] = []) {
         title: section.id.replace(/-/g, " ").replace(/_/g, " ").split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
         content: section.defaultContent || "",
         order: index,
+        x: 50,
+        y: 50 + (index * 150), // Stack sections vertically with spacing
+        width: 600,
+        height: 100,
         isCustom: false,
         type: section.type,
         className: section.className,
