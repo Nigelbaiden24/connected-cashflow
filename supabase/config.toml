@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.seed-automations]
 verify_jwt = true
+
+[functions.ai-analyst]
+verify_jwt = false
