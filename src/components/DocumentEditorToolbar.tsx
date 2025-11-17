@@ -84,6 +84,9 @@ interface DocumentEditorToolbarProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  pages: Array<{ id: string; name: string }>;
+  currentPageId: string;
+  onPageChange: (pageId: string) => void;
 }
 
 export function DocumentEditorToolbar({
@@ -115,6 +118,9 @@ export function DocumentEditorToolbar({
   onRedo,
   canUndo,
   canRedo,
+  pages,
+  currentPageId,
+  onPageChange,
 }: DocumentEditorToolbarProps) {
   const [imageUploadKey, setImageUploadKey] = useState(0);
   const [logoUploadKey, setLogoUploadKey] = useState(0);
@@ -186,6 +192,19 @@ export function DocumentEditorToolbar({
         {/* Page Actions */}
         {selectedTemplate && (
           <>
+            <Select value={currentPageId} onValueChange={onPageChange}>
+              <SelectTrigger className="w-[120px] h-9 bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-background border border-border z-50">
+                {pages.map((page) => (
+                  <SelectItem key={page.id} value={page.id}>
+                    {page.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Button variant="outline" size="sm" onClick={onAddPage}>
               <FilePlus className="h-4 w-4 mr-2" />
               Add Page

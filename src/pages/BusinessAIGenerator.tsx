@@ -33,6 +33,8 @@ const BusinessAIGenerator = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [shapes, setShapes] = useState<Array<{ id: string; type: string; x: number; y: number; width: number; height: number; color: string }>>([]);
+  const [pages, setPages] = useState<Array<{ id: string; name: string }>>([{ id: 'page-1', name: 'Page 1' }]);
+  const [currentPageId, setCurrentPageId] = useState('page-1');
   const { toast } = useToast();
   
   const template = businessTemplates.find(t => t.id === selectedTemplate);
@@ -86,13 +88,14 @@ const BusinessAIGenerator = () => {
   const handleImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const newImage: UploadedImage = {
+      const newImage: any = {
         id: `img-${Date.now()}`,
         url: reader.result as string,
         x: 100,
         y: 200,
         width: 200,
         height: 150,
+        pageId: currentPageId,
       };
       setUploadedImages(prev => [...prev, newImage]);
       toast({
@@ -140,47 +143,30 @@ const BusinessAIGenerator = () => {
   };
 
   const handleAddPage = () => {
-    const maxY = sections.length > 0 
-      ? Math.max(...sections.map(s => (s.y || 0) + (s.height || 100))) 
-      : 0;
+    const newPageNumber = pages.length + 1;
+    const newPageId = `page-${newPageNumber}`;
+    const newPageName = `Page ${newPageNumber}`;
     
-    const newSection: HeaderSection = {
-      id: `page-${Date.now()}`,
-      title: "New Page",
-      content: "Click to edit this page content...",
-      type: "body",
-      editable: true,
-      placeholder: "Enter content for new page...",
-      order: sections.length,
-      x: 50,
-      y: maxY + 100,
-      width: 700,
-      height: 300,
-      isCustom: true,
-    };
-    
-    setSections([...sections, newSection]);
+    setPages([...pages, { id: newPageId, name: newPageName }]);
+    setCurrentPageId(newPageId);
     
     toast({
       title: "New page added",
-      description: "Scroll down to see the new page",
+      description: `${newPageName} created and activated`,
     });
   };
 
   const handleAddShape = (shapeType: string) => {
-    const maxY = sections.length > 0 
-      ? Math.max(...sections.map(s => (s.y || 0) + (s.height || 100))) 
-      : 0;
-    
     const newShape = {
       id: `shape-${Date.now()}`,
       type: shapeType,
       x: 100,
-      y: Math.min(maxY + 50, 200),
+      y: 150,
       width: 150,
       height: 150,
       color: textColor,
-    };
+      pageId: currentPageId,
+    } as any;
     
     setShapes([...shapes, newShape]);
     toast({
@@ -283,11 +269,11 @@ const BusinessAIGenerator = () => {
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
           onAddSection={() => {
-            const maxY = sections.length > 0 
-              ? Math.max(...sections.map(s => (s.y || 0) + (s.height || 100))) 
+            const maxY = currentPageSections.length > 0 
+              ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100))) 
               : 0;
             
-            const newSection: HeaderSection = {
+            const newSection: any = {
               id: `custom-${Date.now()}`,
               title: "New Section",
               content: "Click to edit this section...",
@@ -300,14 +286,18 @@ const BusinessAIGenerator = () => {
               width: 600,
               height: 150,
               isCustom: true,
+              pageId: currentPageId,
             };
             setSections([...sections, newSection]);
             toast({
               title: "Section added",
-              description: "New section created at the bottom",
+              description: "New section created on current page",
             });
           }}
           onAddShape={handleAddShape}
+          pages={pages}
+          currentPageId={currentPageId}
+          onPageChange={setCurrentPageId}
         />
 
         <div className="flex-1 overflow-auto">
@@ -329,16 +319,16 @@ const BusinessAIGenerator = () => {
               }}
             >
               <EnhancedDocumentEditor
-                sections={sections}
+                sections={currentPageSections}
                 onSectionsChange={setSections}
                 onContentChange={updateSectionContent}
                 backgroundColor={backgroundColor}
                 logoUrl={logoUrl}
-                uploadedImages={uploadedImages}
+                uploadedImages={currentPageImages}
                 onImagePositionChange={handleImagePositionChange}
                 onImageSizeChange={handleImageSizeChange}
                 onImageRemove={handleImageRemove}
-                shapes={shapes}
+                shapes={currentPageShapes}
                 onShapePositionChange={handleShapePositionChange}
                 onShapeSizeChange={handleShapeSizeChange}
                 onShapeRemove={handleShapeRemove}
