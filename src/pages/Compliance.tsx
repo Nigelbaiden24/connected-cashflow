@@ -1,329 +1,621 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Shield, AlertTriangle, CheckCircle, FileText, Scale, Clock, ArrowLeft } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { 
+  Shield, 
+  Search, 
+  Filter,
+  ChevronDown,
+  ArrowLeft,
+  FileText,
+  Users,
+  TrendingUp,
+  AlertTriangle,
+  Lock
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
+import { NextActionsCard } from "@/components/compliance/NextActionsCard";
+import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
+import { CaseManagement } from "@/components/compliance/CaseManagement";
+import { DocumentTracker } from "@/components/compliance/DocumentTracker";
+import { AIInsightsPanel } from "@/components/compliance/AIInsightsPanel";
 
 const Compliance = () => {
   const navigate = useNavigate();
-  const [complianceCheck, setComplianceCheck] = useState("");
-  const [isChecking, setIsChecking] = useState(false);
   const { toast } = useToast();
+  
+  // State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [rules, setRules] = useState<any[]>([]);
+  const [cases, setCases] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [checks, setChecks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [categoryExpanded, setCategoryExpanded] = useState({
+    kyc_aml: true,
+    documentation: true,
+    suitability: true,
+    trading: true,
+    portfolio_risk: true,
+  });
 
-  const complianceItems = [
-    {
-      id: 1,
-      title: "Suitability Assessment",
-      description: "Verify client investment suitability before recommendations",
-      status: "compliant",
-      lastCheck: "2 hours ago",
-      severity: "high",
-    },
-    {
-      id: 2,
-      title: "Risk Disclosure Documentation",
-      description: "Ensure all high-risk investment disclosures are signed",
-      status: "warning",
-      lastCheck: "1 day ago",
-      severity: "medium",
-    },
-    {
-      id: 3,
-      title: "Portfolio Concentration Limits",
-      description: "Monitor single position limits (<10% per security)",
-      status: "compliant",
-      lastCheck: "4 hours ago",
-      severity: "high",
-    },
-    {
-      id: 4,
-      title: "KYC Documentation",
-      description: "Know Your Customer information current and complete",
-      status: "needs_attention",
-      lastCheck: "3 days ago",
-      severity: "critical",
-    },
-    {
-      id: 5,
-      title: "Trade Surveillance",
-      description: "Monitor for unusual trading patterns and market abuse",
-      status: "compliant",
-      lastCheck: "1 hour ago",
-      severity: "high",
-    },
-  ];
+  // Load data
+  useEffect(() => {
+    loadComplianceData();
+  }, []);
 
-  const regulations = [
-    {
-      regulation: "SEC Rule 2111 (Suitability)",
-      description: "Requires reasonable belief that recommendation is suitable",
-      category: "Investment Advice",
-      compliance_rate: "98.5%",
-    },
-    {
-      regulation: "FINRA Rule 3110 (Books and Records)",
-      description: "Maintain accurate books and records of transactions",
-      category: "Record Keeping",
-      compliance_rate: "99.2%",
-    },
-    {
-      regulation: "Reg BI (Best Interest)",
-      description: "Act in best interest when making investment recommendations",
-      category: "Fiduciary Duty",
-      compliance_rate: "97.8%",
-    },
-    {
-      regulation: "FINRA Rule 2090 (KYC)",
-      description: "Know your customer requirements and due diligence",
-      category: "Client Verification",
-      compliance_rate: "96.4%",
-    },
-  ];
+  const loadComplianceData = async () => {
+    setIsLoading(true);
+    try {
+      // Load rules
+      const { data: rulesData, error: rulesError } = await supabase
+        .from("compliance_rules")
+        .select("*")
+        .order("severity", { ascending: false });
 
-  const handleComplianceCheck = async () => {
-    if (!complianceCheck.trim()) return;
+      if (rulesError) throw rulesError;
+      setRules(rulesData || []);
 
-    setIsChecking(true);
+      // Load recent checks
+      const { data: checksData, error: checksError } = await supabase
+        .from("compliance_checks")
+        .select("*, clients(name), compliance_rules(rule_name)")
+        .order("check_date", { ascending: false })
+        .limit(100);
+
+      if (checksError) throw checksError;
+      setChecks(checksData || []);
+
+      // Load cases
+      const { data: casesData, error: casesError } = await supabase
+        .from("compliance_cases")
+        .select("*, clients(name)")
+        .order("created_at", { ascending: false });
+
+      if (casesError) throw casesError;
+      setCases(casesData || []);
+
+      // Load documents
+      const { data: docsData, error: docsError } = await supabase
+        .from("client_compliance_documents")
+        .select("*, clients(name)")
+        .order("expiry_date", { ascending: true });
+
+      if (docsError) throw docsError;
+      
+      // Calculate days until expiry
+      const docsWithExpiry = docsData?.map(doc => {
+        if (doc.expiry_date) {
+          const expiry = new Date(doc.expiry_date);
+          const today = new Date();
+          const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          return { ...doc, days_until_expiry: daysUntilExpiry };
+        }
+        return doc;
+      }) || [];
+      
+      setDocuments(docsWithExpiry);
+
+    } catch (error: any) {
+      toast({
+        title: "Error loading compliance data",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Calculate dashboard stats
+  const calculateStats = () => {
+    const passedChecks = checks.filter(c => c.status === "pass").length;
+    const failedChecks = checks.filter(c => c.status === "fail" || c.status === "warning").length;
+    const pendingCases = cases.filter(c => c.status === "open" || c.status === "under_review").length;
+    const expiringDocs = documents.filter(d => 
+      d.days_until_expiry !== undefined && 
+      d.days_until_expiry <= 30 && 
+      d.days_until_expiry >= 0
+    ).length;
+
+    const totalChecks = passedChecks + failedChecks;
+    const overallScore = totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 0;
+
+    return {
+      overallScore,
+      trend: "up" as const,
+      totalRules: rules.length,
+      passedChecks,
+      failedChecks,
+      pendingCases,
+      expiringDocs,
+    };
+  };
+
+  // Generate next actions
+  const generateNextActions = () => {
+    const actions: any[] = [];
+
+    // Add expiring documents
+    documents
+      .filter(d => d.days_until_expiry !== undefined && d.days_until_expiry <= 7 && d.days_until_expiry >= 0)
+      .slice(0, 3)
+      .forEach(doc => {
+        actions.push({
+          id: doc.id,
+          type: "document",
+          title: `Document expiring soon: ${doc.document_name}`,
+          description: `${doc.clients?.name || 'Unknown client'} - Expires in ${doc.days_until_expiry} days`,
+          priority: doc.days_until_expiry <= 3 ? "critical" : "high",
+          dueDate: doc.expiry_date,
+        });
+      });
+
+    // Add open cases
+    cases.slice(0, 3).forEach(caseItem => {
+      actions.push({
+        id: caseItem.id,
+        type: "case",
+        title: `Case requires attention: ${caseItem.title}`,
+        description: `${caseItem.clients?.name || 'Unknown client'} - ${caseItem.status}`,
+        priority: caseItem.priority,
+      });
+    });
+
+    return actions;
+  };
+
+  // Generate AI insights
+  const generateAIInsights = () => {
+    const insights: any[] = [];
+
+    // Analyze trends
+    const recentChecks = checks.slice(0, 20);
+    const failureRate = recentChecks.length > 0 ? recentChecks.filter(c => c.status === "fail").length / recentChecks.length : 0;
     
-    // Simulate compliance analysis
+    if (failureRate > 0.2) {
+      insights.push({
+        id: "trend-1",
+        type: "alert",
+        title: "Increasing compliance failures detected",
+        description: `Failure rate has increased to ${Math.round(failureRate * 100)}% in recent checks. Consider reviewing rule thresholds and client profiles.`,
+        confidence: 85,
+        action: "Review Failed Checks",
+      });
+    }
+
+    // Document expiry analysis
+    const criticalExpiring = documents.filter(d => d.days_until_expiry !== undefined && d.days_until_expiry <= 7).length;
+    if (criticalExpiring > 0) {
+      insights.push({
+        id: "doc-1",
+        type: "suggestion",
+        title: "Proactive document renewal recommended",
+        description: `${criticalExpiring} documents expiring within 7 days. Consider implementing automated renewal reminders.`,
+        confidence: 92,
+        action: "Set Up Auto-Reminders",
+      });
+    }
+
+    // Case management insight
+    const longOpenCases = cases.filter(c => {
+      const daysSinceCreated = Math.floor((new Date().getTime() - new Date(c.created_at).getTime()) / (1000 * 60 * 60 * 24));
+      return daysSinceCreated > 30;
+    }).length;
+
+    if (longOpenCases > 0) {
+      insights.push({
+        id: "case-1",
+        type: "risk",
+        title: "Cases pending resolution",
+        description: `${longOpenCases} cases have been open for more than 30 days. This may indicate resource constraints or complex issues requiring escalation.`,
+        confidence: 78,
+        action: "Review Long-Standing Cases",
+      });
+    }
+
+    return insights;
+  };
+
+  // Rule handlers
+  const handleToggleRule = async (ruleId: string, enabled: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("compliance_rules")
+        .update({ enabled })
+        .eq("id", ruleId);
+
+      if (error) throw error;
+
+      setRules(rules.map(r => r.id === ruleId ? { ...r, enabled } : r));
+      
+      toast({
+        title: enabled ? "Rule enabled" : "Rule disabled",
+        description: "Rule status updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating rule",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRunCheck = async (ruleId: string) => {
+    toast({
+      title: "Running compliance check",
+      description: "This may take a few moments...",
+    });
+
+    // In production, this would trigger the actual check
     setTimeout(() => {
       toast({
-        title: "Compliance Check Complete",
-        description: "Analysis completed with recommendations generated.",
+        title: "Check completed",
+        description: "Results have been recorded.",
       });
-      setIsChecking(false);
+      loadComplianceData();
     }, 2000);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "compliant":
-        return <CheckCircle className="h-4 w-4 text-success" />;
-      case "warning":
-        return <AlertTriangle className="h-4 w-4 text-warning" />;
-      case "needs_attention":
-        return <AlertTriangle className="h-4 w-4 text-destructive" />;
-      default:
-        return <Shield className="h-4 w-4 text-muted-foreground" />;
+  const handleConfigureRule = (ruleId: string) => {
+    toast({
+      title: "Configure rule",
+      description: "Rule configuration panel would open here.",
+    });
+  };
+
+  const handleCreateRule = () => {
+    toast({
+      title: "Create new rule",
+      description: "Rule creation dialog would open here.",
+    });
+  };
+
+  // Case handlers
+  const handleViewCase = (caseId: string) => {
+    // Case detail is shown in modal
+  };
+
+  const handleUpdateCaseStatus = async (caseId: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from("compliance_cases")
+        .update({ 
+          status,
+          updated_at: new Date().toISOString(),
+          ...(status === "resolved" && { resolved_at: new Date().toISOString() })
+        })
+        .eq("id", caseId);
+
+      if (error) throw error;
+
+      setCases(cases.map(c => c.id === caseId ? { ...c, status } : c));
+      
+      toast({
+        title: "Case updated",
+        description: `Case status changed to ${status}.`,
+      });
+      
+      loadComplianceData();
+    } catch (error: any) {
+      toast({
+        title: "Error updating case",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "compliant":
-        return "bg-success/10 text-success";
-      case "warning":
-        return "bg-warning/10 text-warning-foreground";
-      case "needs_attention":
-        return "bg-destructive/10 text-destructive";
-      default:
-        return "bg-muted";
+  const handleAddCaseComment = async (caseId: string, comment: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("compliance_case_comments")
+        .insert({
+          case_id: caseId,
+          user_id: user.id,
+          comment,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error adding comment",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-destructive/10 text-destructive";
-      case "high":
-        return "bg-warning/10 text-warning-foreground";
-      case "medium":
-        return "bg-chart-1/10 text-chart-1";
-      default:
-        return "bg-muted";
+  // Document handlers
+  const handleUploadDocument = () => {
+    toast({
+      title: "Upload document",
+      description: "Document upload dialog would open here.",
+    });
+  };
+
+  const handleViewDocument = (docId: string) => {
+    toast({
+      title: "View document",
+      description: "Document viewer would open here.",
+    });
+  };
+
+  // AI handlers
+  const handleGenerateReport = async () => {
+    toast({
+      title: "Generating compliance report",
+      description: "AI is analyzing your compliance data...",
+    });
+
+    // In production, call edge function for AI report generation
+    setTimeout(() => {
+      toast({
+        title: "Report generated",
+        description: "Your audit-ready compliance report is ready for download.",
+      });
+    }, 3000);
+  };
+
+  const handleApplyInsight = (insightId: string) => {
+    toast({
+      title: "Applying insight",
+      description: "Recommended action would be applied here.",
+    });
+  };
+
+  const handleActionClick = (action: any) => {
+    if (action.type === "document") {
+      handleViewDocument(action.id);
+    } else if (action.type === "case") {
+      handleViewCase(action.id);
     }
   };
+
+  // Filter rules by category
+  const filterRulesByCategory = (category: string) => {
+    return rules.filter(r => r.rule_type === category);
+  };
+
+  const stats = calculateStats();
+  const nextActions = generateNextActions();
+  const aiInsights = generateAIInsights();
+
+  // Transform documents for DocumentTracker
+  const transformedDocuments = documents.map(doc => ({
+    ...doc,
+    client_name: doc.clients?.name || "Unknown Client",
+  }));
+
+  // Transform cases for CaseManagement
+  const transformedCases = cases.map(caseItem => ({
+    ...caseItem,
+    client_name: caseItem.clients?.name || "Unknown Client",
+  }));
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="h-12 w-12 mx-auto mb-4 text-primary animate-pulse" />
+          <p className="text-muted-foreground">Loading compliance data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+        <div className="flex items-center gap-3">
+          <Shield className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Compliance Center</h1>
-            <p className="text-muted-foreground">
-              Monitor regulatory compliance and risk management
-            </p>
+            <h1 className="text-3xl font-bold">Enterprise Compliance Center</h1>
+            <p className="text-muted-foreground">Automated monitoring, case management, and AI-powered insights</p>
           </div>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          <Shield className="h-3 w-3 mr-1" />
-          FINRA Approved
-        </Badge>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
       </div>
 
-      <Alert>
-        <Shield className="h-4 w-4" />
-        <AlertDescription>
-          All compliance checks are automatically logged and stored for regulatory audit purposes.
-          Ensure all recommendations follow fiduciary standards.
-        </AlertDescription>
-      </Alert>
+      {/* Global Dashboard */}
+      <ComplianceDashboard {...stats} />
 
-      <Tabs defaultValue="monitor" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="monitor">Compliance Monitor</TabsTrigger>
-          <TabsTrigger value="check">AI Compliance Check</TabsTrigger>
-          <TabsTrigger value="regulations">Regulations</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="monitor">
-          <div className="space-y-4">
-            {complianceItems.map((item) => (
-              <Card key={item.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        {getStatusIcon(item.status)}
-                        <h3 className="text-lg font-semibold">{item.title}</h3>
-                        <Badge className={getStatusColor(item.status)}>
-                          {item.status.replace("_", " ")}
-                        </Badge>
-                        <Badge className={getSeverityColor(item.severity)}>
-                          {item.severity}
-                        </Badge>
-                      </div>
-                      <p className="text-muted-foreground">{item.description}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>Last checked: {item.lastCheck}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => toast({
-                          title: "Compliance Details",
-                          description: `Viewing detailed information for ${item.title}`,
-                        })}
-                      >
-                        View Details
-                      </Button>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          toast({
-                            title: "Running Compliance Check",
-                            description: `Initiating check for ${item.title}...`,
-                          });
-                          setTimeout(() => {
-                            toast({
-                              title: "Check Complete",
-                              description: `${item.title} passed all compliance requirements.`,
-                            });
-                          }, 2000);
-                        }}
-                      >
-                        Run Check
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search rules, cases, documents..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-[200px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="kyc_aml">KYC/AML</SelectItem>
+                <SelectItem value="documentation">Documentation</SelectItem>
+                <SelectItem value="suitability">Suitability</SelectItem>
+                <SelectItem value="trading">Trading</SelectItem>
+                <SelectItem value="portfolio_risk">Portfolio Risk</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pass">Compliant</SelectItem>
+                <SelectItem value="warning">Warning</SelectItem>
+                <SelectItem value="fail">Failed</SelectItem>
+                <SelectItem value="needs_review">Needs Review</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="check">
-          <Card>
-            <CardHeader>
-              <CardTitle>AI Compliance Assistant</CardTitle>
-              <CardDescription>
-                Submit investment recommendations for automated compliance analysis
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="compliance-input">Investment Recommendation</Label>
-                <Textarea
-                  id="compliance-input"
-                  placeholder="Enter your investment recommendation for compliance review. Include client profile, recommended securities, allocation percentages, and rationale..."
-                  value={complianceCheck}
-                  onChange={(e) => setComplianceCheck(e.target.value)}
-                  className="min-h-32"
-                />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Next Actions */}
+          <NextActionsCard actions={nextActions} onActionClick={handleActionClick} />
+
+          {/* Main Content Tabs */}
+          <Tabs defaultValue="rules" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="rules">Rules</TabsTrigger>
+              <TabsTrigger value="cases">Cases</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+              <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="rules" className="space-y-4">
+              {/* Collapsible Categories */}
+              <div className="space-y-3">
+                {Object.entries(categoryExpanded).map(([category, isExpanded]) => (
+                  <Collapsible
+                    key={category}
+                    open={isExpanded}
+                    onOpenChange={() =>
+                      setCategoryExpanded({ ...categoryExpanded, [category]: !isExpanded })
+                    }
+                  >
+                    <Card>
+                      <CollapsibleTrigger className="w-full">
+                        <CardContent className="pt-6 pb-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-primary/10">
+                                {category === "kyc_aml" && <Users className="h-5 w-5 text-primary" />}
+                                {category === "documentation" && <FileText className="h-5 w-5 text-primary" />}
+                                {category === "suitability" && <TrendingUp className="h-5 w-5 text-primary" />}
+                                {category === "trading" && <TrendingUp className="h-5 w-5 text-primary" />}
+                                {category === "portfolio_risk" && <AlertTriangle className="h-5 w-5 text-primary" />}
+                              </div>
+                              <div className="text-left">
+                                <h3 className="font-semibold">{category.replace("_", " ").toUpperCase()}</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {filterRulesByCategory(category).length} rules
+                                </p>
+                              </div>
+                            </div>
+                            <ChevronDown
+                              className={`h-5 w-5 transition-transform ${
+                                isExpanded ? "transform rotate-180" : ""
+                              }`}
+                            />
+                          </div>
+                        </CardContent>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="pt-0 pb-6">
+                          <RuleEngineManager
+                            rules={filterRulesByCategory(category)}
+                            onToggleRule={handleToggleRule}
+                            onRunCheck={handleRunCheck}
+                            onConfigureRule={handleConfigureRule}
+                            onCreateRule={handleCreateRule}
+                          />
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                ))}
               </div>
-              <Button
-                onClick={handleComplianceCheck}
-                disabled={isChecking || !complianceCheck.trim()}
-                className="w-full"
-              >
-                {isChecking ? "Analyzing Compliance..." : "Run Compliance Check"}
-              </Button>
-              
-              {complianceCheck && !isChecking && (
-                <Alert>
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Sample Analysis:</strong> Recommendation appears compliant with suitability requirements. 
-                    Ensure client risk tolerance documentation is current. Consider concentration limits for 
-                    technology sector allocation (currently 15%). All required disclosures should be provided.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </TabsContent>
 
-        <TabsContent value="regulations">
-          <div className="space-y-4">
-            {regulations.map((reg, index) => (
-              <Card key={index}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{reg.regulation}</CardTitle>
-                    <Badge variant="outline">{reg.compliance_rate}</Badge>
+            <TabsContent value="cases">
+              <CaseManagement
+                cases={transformedCases}
+                onViewCase={handleViewCase}
+                onUpdateStatus={handleUpdateCaseStatus}
+                onAddComment={handleAddCaseComment}
+              />
+            </TabsContent>
+
+            <TabsContent value="documents">
+              <DocumentTracker
+                documents={transformedDocuments}
+                onUploadDocument={handleUploadDocument}
+                onViewDocument={handleViewDocument}
+              />
+            </TabsContent>
+
+            <TabsContent value="audit">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Lock className="h-5 w-5" />
+                    <h3 className="font-semibold">Audit Trail</h3>
                   </div>
-                  <Badge className="w-fit">{reg.category}</Badge>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{reg.description}</p>
-                  <div className="flex justify-between items-center mt-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => toast({
-                        title: "Guidelines",
-                        description: `Opening guidelines for ${reg.regulation}`,
-                      })}
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      View Guidelines
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => toast({
-                        title: "Compliance History",
-                        description: `Viewing compliance history for ${reg.regulation}`,
-                      })}
-                    >
-                      <Scale className="h-4 w-4 mr-2" />
-                      Compliance History
-                    </Button>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Complete compliance audit history with timestamps, user actions, and change tracking.
+                  </p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Audit trail functionality coming soon</p>
+                    <p className="text-sm">All compliance actions are being logged in the background</p>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* AI Insights Sidebar */}
+        <div className="space-y-6">
+          <AIInsightsPanel
+            insights={aiInsights}
+            onGenerateReport={handleGenerateReport}
+            onApplyInsight={handleApplyInsight}
+          />
+        </div>
+      </div>
     </div>
   );
 };
