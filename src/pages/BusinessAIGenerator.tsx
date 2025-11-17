@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ArrowLeft, Sparkles, Download, FileText, Upload, Image as ImageIcon, Wand2, Plus, Trash2, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BusinessSidebar } from "@/components/BusinessSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
 import { businessTemplates } from "@/data/businessTemplates";
 import { renderTemplateToHtml } from "@/lib/templateRenderer";
@@ -307,23 +305,18 @@ const BusinessAIGenerator = () => {
   const editableFields = template?.sections.filter(s => s.editable) || [];
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="flex min-h-screen w-full business-theme">
-        <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
-        
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex h-16 items-center gap-4 px-6">
-              <SidebarTrigger />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/business-dashboard")}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
+    <div className="flex-1 flex flex-col min-w-0">
+      <header className="border-b bg-background">
+        <div className="flex h-16 items-center gap-4 px-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/business-dashboard")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">Document Generator</h1>
               </div>
@@ -787,8 +780,6 @@ const BusinessAIGenerator = () => {
             </div>
           )}
         </div>
-      </div>
-    </SidebarProvider>
   );
 };
 
