@@ -32,6 +32,8 @@ import ToolsCalculators from "./pages/investor/ToolsCalculators";
 import RiskCompliance from "./pages/investor/RiskCompliance";
 import Watchlists from "./pages/investor/Watchlists";
 import InvestorFeatures from "./pages/InvestorFeatures";
+import Opportunities from "./pages/Opportunities";
+import OpportunityDetail from "./pages/OpportunityDetail";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -109,6 +111,9 @@ const App = () => {
           <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
           <Route path="/finance-features" element={<FinanceFeatures />} />
           <Route path="/business-features" element={<BusinessFeatures />} />
+          <Route path="/investor-features" element={<InvestorFeatures />} />
+          <Route path="/opportunities" element={<Opportunities />} />
+          <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />

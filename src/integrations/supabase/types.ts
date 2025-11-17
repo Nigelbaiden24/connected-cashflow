@@ -1511,6 +1511,101 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunities: {
+        Row: {
+          business_description: string | null
+          business_highlights: string[] | null
+          created_at: string
+          financial_summary: string | null
+          id: string
+          image_url: string | null
+          industry: string
+          industry_overview: string | null
+          location: string
+          ref_number: string
+          short_description: string
+          status: string | null
+          team_overview: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          business_description?: string | null
+          business_highlights?: string[] | null
+          created_at?: string
+          financial_summary?: string | null
+          id?: string
+          image_url?: string | null
+          industry: string
+          industry_overview?: string | null
+          location: string
+          ref_number: string
+          short_description: string
+          status?: string | null
+          team_overview?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          business_description?: string | null
+          business_highlights?: string[] | null
+          created_at?: string
+          financial_summary?: string | null
+          id?: string
+          image_url?: string | null
+          industry?: string
+          industry_overview?: string | null
+          location?: string
+          ref_number?: string
+          short_description?: string
+          status?: string | null
+          team_overview?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      opportunity_inquiries: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          opportunity_id: string
+          phone: string | null
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          opportunity_id: string
+          phone?: string | null
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          opportunity_id?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_inquiries_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payroll_items: {
         Row: {
           created_at: string
