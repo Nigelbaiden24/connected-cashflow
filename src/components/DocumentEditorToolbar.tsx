@@ -28,6 +28,10 @@ import {
   ZoomIn,
   ZoomOut,
   Grid3x3,
+  Shapes,
+  Square,
+  Circle,
+  Triangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +69,7 @@ interface DocumentEditorToolbarProps {
   onFillDocument: (prompt: string) => void;
   onAddSection: () => void;
   onAddPage: () => void;
+  onAddShape: (shapeType: string) => void;
   fontFamily: string;
   onFontFamilyChange: (font: string) => void;
   fontSize: number;
@@ -95,6 +100,7 @@ export function DocumentEditorToolbar({
   onFillDocument,
   onAddSection,
   onAddPage,
+  onAddShape,
   fontFamily,
   onFontFamilyChange,
   fontSize,
@@ -187,6 +193,79 @@ export function DocumentEditorToolbar({
           <Plus className="h-4 w-4 mr-2" />
           Add Section
         </Button>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Shapes className="h-4 w-4 mr-2" />
+              Shapes
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56">
+            <div className="grid grid-cols-3 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('rectangle')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Square className="h-6 w-6" />
+                <span className="text-xs">Rectangle</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('circle')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Circle className="h-6 w-6" />
+                <span className="text-xs">Circle</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('triangle')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <Triangle className="h-6 w-6" />
+                <span className="text-xs">Triangle</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('star')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
+                </svg>
+                <span className="text-xs">Star</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('arrow')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" />
+                </svg>
+                <span className="text-xs">Arrow</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onAddShape('diamond')}
+                className="flex flex-col items-center gap-1 h-auto py-2"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M12 2 L22 12 L12 22 L2 12 Z" strokeWidth="2" />
+                </svg>
+                <span className="text-xs">Diamond</span>
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
           <DialogTrigger asChild>
