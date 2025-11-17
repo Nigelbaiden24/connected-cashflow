@@ -202,7 +202,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar className={isCollapsed ? "w-16" : "w-64"} collapsible="icon">
+    <Sidebar className={isCollapsed ? "w-20" : "w-64"} collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-4 py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
