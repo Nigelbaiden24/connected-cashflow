@@ -19,7 +19,8 @@ import {
   Lock,
   Video,
   ChevronDown,
-  Laptop
+  Laptop,
+  Menu
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,6 +28,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +50,7 @@ import globalFinance from "@/assets/global-finance-districts.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -153,6 +163,114 @@ const Index = () => {
             <img src={flowpulseLogo} alt="FlowPulse" className="h-10" />
             <span className="font-bold text-xl">FlowPulse</span>
           </div>
+
+          {/* Mobile Menu */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
+                  FlowPulse
+                </SheetTitle>
+              </SheetHeader>
+              <Separator className="my-4" />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground">FlowPulse Finance</h3>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/login");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Platform Login
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/finance-features");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Features
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground">FlowPulse Business</h3>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/login-business");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Platform Login
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/business-features");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Features
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground">FlowPulse Investor</h3>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/login-investor");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Platform Login
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/opportunities");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Opportunities
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    navigate("/about");
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  About Us
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
           
           <nav className="hidden md:flex items-center gap-8">
             <button 
