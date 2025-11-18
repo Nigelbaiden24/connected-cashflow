@@ -7,8 +7,6 @@ import { FinanceLayout } from "@/components/FinanceLayout";
 import { useDocumentSections, HeaderSection } from "@/hooks/useDocumentSections";
 import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import html2pdf from "html2pdf.js";
 
 interface UploadedImage {
@@ -354,17 +352,6 @@ Create a logical, well-structured document. Use professional colors. Split conte
   return (
     <FinanceLayout userEmail="finance@flowpulse.io" onLogout={handleLogout}>
       <div className="bg-background flex flex-col h-full">
-        <div className="p-4 border-b bg-background z-10 relative">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/finance')}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
-        </div>
         <DocumentEditorToolbar
           templates={documentTemplates}
           selectedTemplate={selectedTemplate}
