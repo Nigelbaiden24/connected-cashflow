@@ -199,9 +199,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 w-full`}>
+                          <item.icon className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
+                          <span className="flex-1 truncate min-w-0">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -232,9 +232,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 w-full`}>
+                          <item.icon className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
+                          <span className="flex-1 truncate min-w-0">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -265,9 +265,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 w-full`}>
+                          <item.icon className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
+                          <span className="flex-1 truncate min-w-0">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -291,9 +291,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
-                      <NavLink to="/business/settings" className={`${getNavClassName("/business/settings")} flex items-center gap-3`}>
-                        <Globe className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Languages</span>
+                      <NavLink to="/business/settings" className={`${getNavClassName("/business/settings")} flex items-center gap-3 w-full`}>
+                        <Globe className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
+                        <span className="flex-1 truncate min-w-0">Languages</span>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
