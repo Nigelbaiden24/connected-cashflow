@@ -172,15 +172,15 @@ const InvestorDashboard = () => {
                 key={index} 
                 className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg hover:border-primary/40 transition-all duration-300"
               >
-                <CardContent className="pt-6 min-h-[180px]">
-                  <div className="flex flex-col gap-3 h-full">
-                    <div className="flex items-center gap-3">
+                <CardContent className="pt-6 max-h-[240px] overflow-y-auto">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3 sticky top-0 bg-gradient-to-br from-primary/5 to-primary/10 pb-2">
                       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                         <span className="text-lg font-bold text-primary">{index + 1}</span>
                       </div>
                       <div className="h-px flex-1 bg-primary/20"></div>
                     </div>
-                    <p className="text-sm leading-relaxed flex-1">{insight.replace(/^\d+\.\s*/, '')}</p>
+                    <p className="text-sm leading-relaxed">{insight.replace(/^\d+\.\s*/, '')}</p>
                   </div>
                 </CardContent>
               </Card>
