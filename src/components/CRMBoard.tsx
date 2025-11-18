@@ -26,7 +26,11 @@ interface CRMTable {
   compactView?: boolean;
 }
 
-export const CRMBoard = () => {
+interface CRMBoardProps {
+  initialStage?: string | null;
+}
+
+export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const navigate = useNavigate();
   const [contacts, setContacts] = useState<any[]>([]);
   const [customColumns, setCustomColumns] = useState<any[]>([]);
@@ -36,7 +40,7 @@ export const CRMBoard = () => {
   const [showColumnManager, setShowColumnManager] = useState(false);
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>(initialStage || "all");
   const [searchQuery, setSearchQuery] = useState("");
   const [compactView, setCompactView] = useState(false);
   const [newContact, setNewContact] = useState({
