@@ -9,6 +9,7 @@ import { Check, ArrowLeft, Sparkles, Building2, TrendingUp } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -31,19 +32,20 @@ const Pricing = () => {
     return monthlyPrice.toFixed(2);
   };
 
-  const handleCheckout = async (tier: typeof tiers[0], platform: 'finance' | 'business') => {
-    setLoading(`${platform}-${tier.name}`);
+  const handleCheckout = async (
+    priceId: string,
+    mode: 'subscription' | 'payment',
+    planName: string,
+    platform: 'finance' | 'business' | 'investor'
+  ) => {
+    setLoading(`${platform}-${planName}`);
     
     try {
-      // You'll need to create these price IDs in your Stripe dashboard
-      // For now, using placeholder price IDs - replace with your actual Stripe price IDs
-      const priceId = tier.stripePriceId || `price_${tier.name.toLowerCase()}_${isAnnual ? 'annual' : 'monthly'}`;
-      
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           priceId: priceId,
-          mode: 'subscription',
-          planName: tier.name,
+          mode: mode,
+          planName: planName,
           platform: platform,
         },
       });
@@ -70,7 +72,10 @@ const Pricing = () => {
       name: "Basic",
       description: "Perfect for getting started",
       monthlyPrice: 39.99,
+      investorPrice: 12.99,
       stripePriceId: isAnnual ? "price_1SR1idKj5iDjtHZwymZ2NX9I" : "price_1SR1huKj5iDjtHZwSEDU4CHd",
+      investorMonthlyPriceId: "price_basic_investor_monthly",
+      investorAnnualPriceId: "price_basic_investor_annual",
       features: [
         "Core platform features",
         "Up to 5 team members",
@@ -86,7 +91,10 @@ const Pricing = () => {
       name: "Pro",
       description: "For growing teams",
       monthlyPrice: 72.99,
+      investorPrice: 23.99,
       stripePriceId: isAnnual ? "price_1SR1jDKj5iDjtHZwJ1OP209L" : "price_1SR1isKj5iDjtHZwiiP9YxA4",
+      investorMonthlyPriceId: "price_pro_investor_monthly",
+      investorAnnualPriceId: "price_pro_investor_annual",
       features: [
         "All Basic features",
         "Up to 20 team members",
@@ -105,7 +113,10 @@ const Pricing = () => {
       name: "Enterprise",
       description: "For large organizations",
       monthlyPrice: 104.99,
+      investorPrice: 41.99,
       stripePriceId: isAnnual ? "price_1SR1k7Kj5iDjtHZwTOYaYKXr" : "price_1SR1jjKj5iDjtHZw0NVFE780",
+      investorMonthlyPriceId: "price_enterprise_investor_monthly",
+      investorAnnualPriceId: "price_enterprise_investor_annual",
       features: [
         "All Pro features",
         "Unlimited team members",
@@ -235,7 +246,12 @@ const Pricing = () => {
                     <Button
                       className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
                       size="lg"
-                      onClick={() => handleCheckout(tier, 'finance')}
+                      onClick={() => handleCheckout(
+                        tier.stripePriceId,
+                        'subscription',
+                        tier.name,
+                        'finance'
+                      )}
                       disabled={loading === `finance-${tier.name}`}
                     >
                       {loading === `finance-${tier.name}` ? 'Loading...' : 'Get Started'}
@@ -310,7 +326,12 @@ const Pricing = () => {
                       className="w-full text-white border-0 hover:opacity-90"
                       size="lg"
                       style={{ background: 'linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))' }}
-                      onClick={() => handleCheckout(tier, 'business')}
+                      onClick={() => handleCheckout(
+                        tier.stripePriceId,
+                        'subscription',
+                        tier.name,
+                        'business'
+                      )}
                       disabled={loading === `business-${tier.name}`}
                     >
                       {loading === `business-${tier.name}` ? 'Loading...' : 'Get Started'}
@@ -361,13 +382,13 @@ const Pricing = () => {
                         variant={tier.name === "Pro" ? "default" : "outline"}
                         onClick={() => handleCheckout(
                           isAnnual ? tier.investorAnnualPriceId : tier.investorMonthlyPriceId,
-                          isAnnual ? 'subscription' : 'subscription',
+                          'subscription',
                           tier.name,
                           'investor'
                         )}
-                        disabled={loading}
+                        disabled={loading === `investor-${tier.name}`}
                       >
-                        {loading ? "Processing..." : "Get Started"}
+                        {loading === `investor-${tier.name}` ? "Processing..." : "Get Started"}
                       </Button>
 
                       <div className="space-y-3 pt-4 border-t">
