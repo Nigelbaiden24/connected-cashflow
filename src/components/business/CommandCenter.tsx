@@ -157,19 +157,39 @@ export function CommandCenter() {
         </DialogContent>
       </Dialog>
 
-      <Button size="sm" variant="outline" className="gap-2">
+      <Button 
+        size="sm" 
+        variant="outline" 
+        className="gap-2"
+        onClick={() => toast({ title: "Team assignment", description: "Opening team member selector..." })}
+      >
         <Users className="h-4 w-4" />
         Assign Member
       </Button>
-      <Button size="sm" variant="outline" className="gap-2">
+      <Button 
+        size="sm" 
+        variant="outline" 
+        className="gap-2"
+        onClick={() => toast({ title: "Document upload", description: "Opening document uploader..." })}
+      >
         <Upload className="h-4 w-4" />
         Upload Document
       </Button>
-      <Button size="sm" variant="outline" className="gap-2">
+      <Button 
+        size="sm" 
+        variant="outline" 
+        className="gap-2"
+        onClick={() => toast({ title: "Automation", description: "Triggering automation workflow..." })}
+      >
         <Zap className="h-4 w-4" />
         Trigger Automation
       </Button>
-      <Button size="sm" variant="outline" className="gap-2">
+      <Button 
+        size="sm" 
+        variant="outline" 
+        className="gap-2"
+        onClick={() => toast({ title: "Workflow", description: "Adding new workflow..." })}
+      >
         <FileText className="h-4 w-4" />
         Add Workflow
       </Button>
