@@ -1,31 +1,61 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChart3 } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChart3, RefreshCw, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAIAnalyst } from "@/hooks/useAIAnalyst";
+import { toast } from "sonner";
 
 const InvestorDashboard = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [aiInsightsText, setAiInsightsText] = useState("");
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
-  const aiInsights = [
-    {
-      title: "Tech Sector Momentum",
-      insight: "AI and semiconductor stocks showing strong momentum. Consider increasing allocation to tech-focused ETFs.",
-      confidence: 87,
-      category: "Opportunity"
+  const { analyzeWithAI, isLoading } = useAIAnalyst({
+    onDelta: (text) => setAiInsightsText(prev => prev + text),
+    onDone: () => {
+      setLastRefreshed(new Date());
+      toast.success("AI insights refreshed");
     },
-    {
-      title: "Interest Rate Impact",
-      insight: "Federal Reserve policy signals potential rate cuts in Q2 2025. Bond yields may compress.",
-      confidence: 82,
-      category: "Risk"
-    },
-    {
-      title: "Emerging Markets",
-      insight: "Asian markets outperforming expectations. Vietnam and Indonesia showing strong GDP growth.",
-      confidence: 79,
-      category: "Opportunity"
+    onError: (error) => {
+      toast.error(error);
+      setAiInsightsText("");
     }
-  ];
+  });
+
+  const fetchDailyInsights = async () => {
+    setAiInsightsText("");
+    await analyzeWithAI(
+      "Provide 3-5 key investment insights for today including market opportunities, risks, and sector analysis. Keep each insight concise and actionable.",
+      "trends"
+    );
+  };
+
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const lastFetch = localStorage.getItem('lastInsightsFetch');
+    
+    if (lastFetch !== today) {
+      fetchDailyInsights();
+      localStorage.setItem('lastInsightsFetch', today);
+    } else {
+      const cachedInsights = localStorage.getItem('cachedInsights');
+      const cachedTime = localStorage.getItem('cachedInsightsTime');
+      if (cachedInsights && cachedTime) {
+        setAiInsightsText(cachedInsights);
+        setLastRefreshed(new Date(cachedTime));
+      } else {
+        fetchDailyInsights();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (aiInsightsText && lastRefreshed) {
+      localStorage.setItem('cachedInsights', aiInsightsText);
+      localStorage.setItem('cachedInsightsTime', lastRefreshed.toISOString());
+    }
+  }, [aiInsightsText, lastRefreshed]);
 
   const macroOverview = [
     { metric: "US GDP Growth", value: "2.4%", change: "+0.3%", positive: true },
@@ -85,27 +115,47 @@ const InvestorDashboard = () => {
       {/* AI Insights of the Day */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>AI Insights of the Day</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <CardTitle>AI Insights of the Day</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              {lastRefreshed && (
+                <span className="text-xs text-muted-foreground">
+                  Last updated: {lastRefreshed.toLocaleTimeString()}
+                </span>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchDailyInsights}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
-          <CardDescription>Data-driven market intelligence powered by AI</CardDescription>
+          <CardDescription>Real-time intelligence powered by advanced AI</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {aiInsights.map((insight, index) => (
-              <div key={index} className="p-4 rounded-lg border bg-card">
-                <div className="flex items-start justify-between mb-2">
-                  <Badge variant={insight.category === "Opportunity" ? "default" : "secondary"}>
-                    {insight.category}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">{insight.confidence}% confidence</span>
-                </div>
-                <h4 className="font-semibold mb-2">{insight.title}</h4>
-                <p className="text-sm text-muted-foreground">{insight.insight}</p>
-              </div>
-            ))}
-          </div>
+          {isLoading && !aiInsightsText ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : aiInsightsText ? (
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+              {aiInsightsText}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">
+              Click refresh to get today's AI insights
+            </p>
+          )}
         </CardContent>
       </Card>
 

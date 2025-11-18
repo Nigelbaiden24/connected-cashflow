@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Sparkles, TrendingUp } from "lucide-react";
+import { Search, Sparkles, TrendingUp, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { useAIAnalyst } from "@/hooks/useAIAnalyst";
+import { toast } from "sonner";
 
 export function AIDiscoveryScreener() {
   const [aiFilters, setAiFilters] = useState({
@@ -18,6 +20,9 @@ export function AIDiscoveryScreener() {
     positiveEarnings: false,
     lowPE: false,
   });
+  
+  const [aiResponse, setAiResponse] = useState("");
+  const [discoveries, setDiscoveries] = useState<any[]>([]);
 
   const mockAIDiscoveries = [
     { 
@@ -67,8 +72,37 @@ export function AIDiscoveryScreener() {
     },
   ];
 
+  const { analyzeWithAI, isLoading } = useAIAnalyst({
+    onDelta: (text) => setAiResponse(prev => prev + text),
+    onDone: () => {
+      toast.success("AI discovery complete");
+    },
+    onError: (error) => {
+      toast.error(error);
+      setAiResponse("");
+    }
+  });
+
   const toggleFilter = (key: keyof typeof aiFilters) => {
     setAiFilters(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+  
+  const handleDiscoverWithAI = async () => {
+    const activeFilters = Object.entries(aiFilters)
+      .filter(([_, value]) => value)
+      .map(([key]) => key);
+    
+    if (activeFilters.length === 0) {
+      toast.error("Please select at least one filter");
+      return;
+    }
+    
+    setAiResponse("");
+    setDiscoveries(mockAIDiscoveries);
+    
+    const query = `Find investment opportunities that match these criteria: ${activeFilters.join(", ")}. Provide detailed analysis of why these stocks are good candidates based on the selected filters.`;
+    
+    await analyzeWithAI(query, "company-qa");
   };
 
   return (
@@ -147,26 +181,60 @@ export function AIDiscoveryScreener() {
               <Label htmlFor="lowPE" className="cursor-pointer">Low P/E (&lt; 25)</Label>
             </div>
           </div>
-          <div className="mt-6 flex gap-2">
-            <Button className="bg-primary">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Discover with AI
+          <div className="flex gap-2">
+            <Button 
+              className="flex-1 bg-primary hover:bg-primary/90"
+              onClick={handleDiscoverWithAI}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Discover with AI
+                </>
+              )}
             </Button>
-            <Button variant="outline" onClick={() => setAiFilters({
-              lowDebt: false,
-              strongMargins: false,
-              consistentGrowth: false,
-              highROE: false,
-              undervalued: false,
-              insiderBuying: false,
-              positiveEarnings: false,
-              lowPE: false,
-            })}>
+            <Button 
+              variant="outline" 
+              className="flex-1"
+              onClick={() => setAiFilters({
+                lowDebt: false,
+                strongMargins: false,
+                consistentGrowth: false,
+                highROE: false,
+                undervalued: false,
+                insiderBuying: false,
+                positiveEarnings: false,
+                lowPE: false,
+              })}
+            >
               Reset Filters
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Analysis Response */}
+      {aiResponse && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+              {aiResponse}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

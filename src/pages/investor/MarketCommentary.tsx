@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, MessageSquare, Upload, Send, TrendingUp } from "lucide-react";
+import { Sparkles, MessageSquare, Upload, Send, TrendingUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 
 const MarketCommentary = () => {
   const [aiQuery, setAiQuery] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
   const [commentaries] = useState([
     {
       id: "1",
@@ -38,12 +40,25 @@ const MarketCommentary = () => {
     },
   ]);
 
-  const handleAIQuery = () => {
+  const { analyzeWithAI, isLoading } = useAIAnalyst({
+    onDelta: (text) => setAiResponse(prev => prev + text),
+    onDone: () => {
+      toast.success("Analysis complete");
+    },
+    onError: (error) => {
+      toast.error(error);
+      setAiResponse("");
+    }
+  });
+
+  const handleAIQuery = async () => {
     if (!aiQuery.trim()) {
       toast.error("Please enter a question");
       return;
     }
-    toast.info("AI is analyzing your question...");
+    
+    setAiResponse("");
+    await analyzeWithAI(aiQuery, "trends");
     setAiQuery("");
   };
 
@@ -92,12 +107,39 @@ const MarketCommentary = () => {
           <Button 
             onClick={handleAIQuery} 
             className="mt-4 w-full bg-primary hover:bg-primary/90"
+            disabled={isLoading}
           >
-            <Send className="h-4 w-4 mr-2" />
-            Ask AI Assistant
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Ask AI Assistant
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>
+
+      {/* AI Response */}
+      {aiResponse && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Market Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+              {aiResponse}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Commentary Feed */}
       <div className="space-y-4">
