@@ -25,7 +25,7 @@ export function QuickLinks() {
       title: "Create Risk Profile",
       icon: PieChart,
       description: "Assess client risk tolerance",
-      path: "/risk-assessment",
+      path: "/risk",
       color: "bg-orange-500"
     },
     {
@@ -46,7 +46,7 @@ export function QuickLinks() {
       title: "Market Analysis",
       icon: TrendingUp,
       description: "View market data and trends",
-      path: "/market-data",
+      path: "/market",
       color: "bg-yellow-500"
     }
   ];
@@ -67,7 +67,7 @@ export function QuickLinks() {
               <Button
                 key={link.title}
                 variant="outline"
-                className="h-auto flex-col gap-2 p-4 hover:bg-accent"
+                className="h-auto flex-col gap-2 p-4 hover:bg-accent hover:shadow-md transition-all duration-200 active:scale-95"
                 onClick={() => navigate(link.path)}
               >
                 <div className={`p-3 rounded-full ${link.color} bg-opacity-10`}>
