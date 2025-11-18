@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BusinessSidebar } from "@/components/BusinessSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Settings, Home, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,8 +47,7 @@ export default function BusinessDashboard() {
         <div className="flex-1 flex flex-col w-full">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
-              <SidebarTrigger />
-              <img 
+              <img
                 src={flowpulseLogo} 
                 alt="The Flowpulse Group" 
                 className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
