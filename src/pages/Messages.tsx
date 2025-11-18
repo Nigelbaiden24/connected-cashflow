@@ -107,7 +107,7 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6 ml-64">
       <div className="mb-4">
         <Button
           variant="ghost"

@@ -271,7 +271,7 @@ export default function GoalPlanning() {
   // If no client is selected, show client selection
   if (!selectedClient) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 ml-64">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button
@@ -323,7 +323,7 @@ export default function GoalPlanning() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 ml-64">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">

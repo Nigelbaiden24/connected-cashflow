@@ -185,7 +185,7 @@ const Team = () => {
   };
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-6 space-y-6 ml-64">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Team Management</h1>
