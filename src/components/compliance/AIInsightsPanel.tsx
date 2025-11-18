@@ -70,23 +70,25 @@ export function AIInsightsPanel({
             insights.map((insight) => (
               <div
                 key={insight.id}
-                className="p-3 rounded-lg border bg-card/50 hover:bg-card transition-colors"
+                className="p-3 rounded-lg border bg-card/50 hover:bg-card transition-colors flex flex-col gap-2 max-h-64"
               >
                 <div className="flex items-start gap-2.5">
                   <div className="mt-0.5 shrink-0">{getInsightIcon(insight.type)}</div>
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex flex-col gap-1.5">
-                      <h4 className="font-medium text-sm leading-tight">{insight.title}</h4>
-                      <Badge 
-                        variant="outline" 
+                      <h4 className="font-medium text-sm leading-tight break-words">
+                        {insight.title}
+                      </h4>
+                      <Badge
+                        variant="outline"
                         className={`${getConfidenceColor(insight.confidence)} w-fit text-xs`}
                       >
                         {insight.confidence}% confidence
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                    <div className="text-xs text-muted-foreground leading-relaxed break-words whitespace-pre-wrap overflow-y-auto pr-1 max-h-32">
                       {insight.description}
-                    </p>
+                    </div>
                     {insight.action && (
                       <Button
                         size="sm"
