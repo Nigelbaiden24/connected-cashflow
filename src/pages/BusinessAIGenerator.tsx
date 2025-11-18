@@ -7,6 +7,8 @@ import { BusinessLayout } from "@/components/BusinessLayout";
 import { useDocumentSections, HeaderSection } from "@/hooks/useDocumentSections";
 import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import html2pdf from "html2pdf.js";
 
 interface UploadedImage {
@@ -352,6 +354,17 @@ Create a logical, well-structured document. Use professional colors. Split conte
   return (
     <BusinessLayout userEmail="business@flowpulse.io" onLogout={handleLogout}>
       <div className="bg-background flex flex-col h-full">
+        <div className="p-4 border-b">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/business/dashboard')}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </div>
         <DocumentEditorToolbar
           templates={businessTemplates}
           selectedTemplate={selectedTemplate}
