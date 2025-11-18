@@ -423,7 +423,7 @@ export default function PracticeManagement() {
                 <BarChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                  <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}K`} />
                   <Tooltip formatter={(value) => formatCurrency(value as number)} />
                   <Bar dataKey="fees" stackId="a" fill="hsl(var(--primary))" name="Management Fees" />
                   <Bar dataKey="commissions" stackId="a" fill="hsl(var(--muted-foreground))" name="Commissions" />
