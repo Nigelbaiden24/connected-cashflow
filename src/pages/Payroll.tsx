@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BusinessSidebar } from "@/components/BusinessSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { EmployeeManagement } from "@/components/payroll/EmployeeManagement";
 import { PayrollRuns } from "@/components/payroll/PayrollRuns";
 import { BenefitsManagement } from "@/components/payroll/BenefitsManagement";
@@ -80,10 +80,9 @@ export default function Payroll() {
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
-        <div className="flex-1">
+        <div className="flex-1 ml-64">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
-              <SidebarTrigger />
               <Button
                 variant="ghost"
                 size="sm"
@@ -103,7 +102,7 @@ export default function Payroll() {
             </div>
           </header>
 
-          <main className="flex-1 space-y-6 p-6 ml-64">
+          <main className="flex-1 space-y-6 p-6">
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
