@@ -55,7 +55,7 @@ import Security from "./pages/Security";
 import CRMContactDetail from "./pages/CRMContactDetail";
 import Payroll from "./pages/Payroll";
 import FinancePayroll from "./pages/FinancePayroll";
-import FinancialPlanning from "./pages/FinancialPlanning";
+import FinancialPlanning from "./pages/FinancialPlanningEnhanced";
 import FinancialPlanDetail from "./pages/FinancialPlanDetail";
 import CreateFinancialPlan from "./pages/CreateFinancialPlan";
 import BusinessDashboard from "./pages/BusinessDashboard";
