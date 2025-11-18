@@ -2379,6 +2379,33 @@ export type Database = {
           },
         ]
       }
+      investment_watchlists: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           candidate_email: string
@@ -3582,6 +3609,45 @@ export type Database = {
           },
         ]
       }
+      user_portfolio: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          purchase_date: string
+          purchase_price: number
+          quantity: number
+          symbol: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          purchase_date: string
+          purchase_price: number
+          quantity?: number
+          symbol: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          purchase_date?: string
+          purchase_price?: number
+          quantity?: number
+          symbol?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
@@ -3817,6 +3883,41 @@ export type Database = {
           visa_sponsorship?: boolean | null
         }
         Relationships: []
+      }
+      watchlist_items: {
+        Row: {
+          added_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          symbol: string
+          watchlist_id: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          symbol: string
+          watchlist_id?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          symbol?: string
+          watchlist_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_items_watchlist_id_fkey"
+            columns: ["watchlist_id"]
+            isOneToOne: false
+            referencedRelation: "investment_watchlists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workload_items: {
         Row: {
