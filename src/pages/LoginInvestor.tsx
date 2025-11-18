@@ -121,7 +121,7 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
       {/* Left Side - Branding with Purple Theme */}
       <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 p-12 flex flex-col justify-between text-white">
         <div>
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center gap-3 mb-8 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")}>
             <img src={flowpulseLogo} alt="FlowPulse Logo" className="h-10 w-10" />
             <span className="text-2xl font-bold">FlowPulse Investor</span>
           </div>
