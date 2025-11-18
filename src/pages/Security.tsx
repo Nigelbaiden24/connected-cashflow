@@ -16,7 +16,7 @@ const Security = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-6 space-y-6 ml-64">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Shield className="h-8 w-8 text-primary" />
