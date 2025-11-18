@@ -103,7 +103,7 @@ export default function Payroll() {
             </div>
           </header>
 
-          <main className="flex-1 space-y-6 p-6">
+          <main className="flex-1 space-y-6 p-6 ml-64">
             {/* Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
