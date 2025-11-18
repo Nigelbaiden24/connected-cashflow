@@ -14,6 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
+      advisor_activity: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      advisor_alerts: {
+        Row: {
+          action_url: string | null
+          alert_type: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          severity: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          action_url?: string | null
+          alert_type: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          severity?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          action_url?: string | null
+          alert_type?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          severity?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      advisor_goals: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          goal_type: string
+          id: string
+          period_end: string
+          period_start: string
+          status: string | null
+          target_value: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          goal_type: string
+          id?: string
+          period_end: string
+          period_start: string
+          status?: string | null
+          target_value: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          goal_type?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          status?: string | null
+          target_value?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      advisor_tasks: {
+        Row: {
+          client_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          task_type: string
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          task_type: string
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          task_type?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advisory_revenues: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          period_end: string
+          period_start: string
+          revenue_type: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          revenue_type: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          revenue_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisory_revenues_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -766,6 +971,88 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "client_meetings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_pipeline: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          stage: string
+          stage_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          stage: string
+          stage_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          stage?: string
+          stage_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_pipeline_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_risk_assessments: {
+        Row: {
+          assessment_date: string | null
+          client_id: string | null
+          created_at: string | null
+          factors: Json | null
+          id: string
+          notes: string | null
+          risk_level: string
+          risk_score: number
+          updated_at: string | null
+        }
+        Insert: {
+          assessment_date?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          factors?: Json | null
+          id?: string
+          notes?: string | null
+          risk_level: string
+          risk_score: number
+          updated_at?: string | null
+        }
+        Update: {
+          assessment_date?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          factors?: Json | null
+          id?: string
+          notes?: string | null
+          risk_level?: string
+          risk_score?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_risk_assessments_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
@@ -2443,6 +2730,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      portfolio_watchlist: {
+        Row: {
+          affected_clients: number | null
+          asset_name: string
+          created_at: string | null
+          current_price: number | null
+          daily_change: number | null
+          daily_change_percent: number | null
+          id: string
+          last_updated: string | null
+          symbol: string
+          user_id: string | null
+        }
+        Insert: {
+          affected_clients?: number | null
+          asset_name: string
+          created_at?: string | null
+          current_price?: number | null
+          daily_change?: number | null
+          daily_change_percent?: number | null
+          id?: string
+          last_updated?: string | null
+          symbol: string
+          user_id?: string | null
+        }
+        Update: {
+          affected_clients?: number | null
+          asset_name?: string
+          created_at?: string | null
+          current_price?: number | null
+          daily_change?: number | null
+          daily_change_percent?: number | null
+          id?: string
+          last_updated?: string | null
+          symbol?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       projects: {
         Row: {
