@@ -15,6 +15,9 @@ import { DynamicAlerts } from "@/components/dashboard/DynamicAlerts";
 import { ComplianceHealth } from "@/components/dashboard/ComplianceHealth";
 import { ActivityOverview } from "@/components/dashboard/ActivityOverview";
 import { AISummaryPanel } from "@/components/dashboard/AISummaryPanel";
+import { QuickLinks } from "@/components/dashboard/QuickLinks";
+import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
+import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -167,8 +170,11 @@ const Dashboard = () => {
         </Badge>
       </div>
 
-      <div>
-        {/* Metrics Grid */}
+      <div className="space-y-6">
+        {/* AI Summary Panel - Top Banner */}
+        <AISummaryPanel />
+
+        {/* Key Metrics Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric) => (
             <Card key={metric.title}>
@@ -184,9 +190,11 @@ const Dashboard = () => {
                   {metric.trend === "up" ? (
                     <TrendingUp className="mr-1 h-3 w-3 text-success" />
                   ) : (
-                    <TrendingDown className="mr-1 h-3 w-3 text-success" />
+                    <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
                   )}
-                  <span className="text-success">{metric.change}</span>
+                  <span className={metric.trend === "up" ? "text-success" : "text-destructive"}>
+                    {metric.change}
+                  </span>
                   <span className="ml-1">from last month</span>
                 </div>
               </CardContent>
@@ -194,36 +202,45 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common tasks and operations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {quickActions.map((action, idx) => (
-                <Button
-                  key={idx}
-                  variant="outline"
-                  className="h-auto flex-col items-start p-4 hover:bg-accent"
-                  onClick={() => navigate(action.path)}
-                >
-                  <action.icon className="h-6 w-6 mb-2 text-primary" />
-                  <div className="text-left">
-                    <div className="font-semibold">{action.title}</div>
-                    <div className="text-xs text-muted-foreground">{action.description}</div>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Risk & Compliance Row */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ClientRiskRadar />
+          <ComplianceHealth />
+        </div>
 
-        {/* Recent Activity */}
+        {/* Pipeline Overview */}
+        <PipelineOverview />
+
+        {/* Revenue & Goals Row */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <AdvisoryRevenues />
+          </div>
+          <AdvisorGoals />
+        </div>
+
+        {/* Tasks & Alerts Row */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <AdvisorTasks />
+          <DynamicAlerts />
+        </div>
+
+        {/* Watchlist & Calendar Row */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <PortfolioWatchlist />
+          <CalendarSnapshot />
+        </div>
+
+        {/* Activity Overview */}
+        <ActivityOverview />
+
+        {/* Quick Links Panel */}
+        <QuickLinks />
+
+        {/* Recent Queries - Collapsible */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Queries</CardTitle>
+            <CardTitle>Recent AI Queries</CardTitle>
             <CardDescription>
               Latest advisor interactions with the AI assistant
             </CardDescription>
@@ -244,7 +261,9 @@ const Dashboard = () => {
                     </p>
                   </div>
                   <Badge
-                    variant={query.status === "resolved" ? "secondary" : "outline"}
+                    variant={
+                      query.status === "resolved" ? "default" : "secondary"
+                    }
                   >
                     {query.status}
                   </Badge>
