@@ -354,7 +354,7 @@ Create a logical, well-structured document. Use professional colors. Split conte
   return (
     <FinanceLayout userEmail="finance@flowpulse.io" onLogout={handleLogout}>
       <div className="bg-background flex flex-col h-full">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b bg-background z-10 relative">
           <Button
             variant="outline"
             size="sm"
