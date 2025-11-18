@@ -2067,6 +2067,82 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_alerts: {
+        Row: {
+          alert_type: string
+          condition_config: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_triggered: string | null
+          plan_id: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          condition_config: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered?: string | null
+          plan_id?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          condition_config?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered?: string | null
+          plan_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_alerts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_comments: {
+        Row: {
+          comment: string
+          created_at: string | null
+          id: string
+          plan_id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment: string
+          created_at?: string | null
+          id?: string
+          plan_id: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string
+          created_at?: string | null
+          id?: string
+          plan_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_comments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_milestones: {
         Row: {
           achievement_date: string | null
@@ -2160,6 +2236,154 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "plan_recommendations_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_saved_views: {
+        Row: {
+          created_at: string | null
+          filter_config: Json
+          id: string
+          is_default: boolean | null
+          updated_at: string | null
+          user_id: string
+          view_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          filter_config: Json
+          id?: string
+          is_default?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          view_name: string
+        }
+        Update: {
+          created_at?: string | null
+          filter_config?: Json
+          id?: string
+          is_default?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          view_name?: string
+        }
+        Relationships: []
+      }
+      plan_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          plan_id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          plan_id: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          plan_id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_tasks_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_system: boolean | null
+          template_data: Json
+          template_name: string
+          template_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_system?: boolean | null
+          template_data: Json
+          template_name: string
+          template_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_system?: boolean | null
+          template_data?: Json
+          template_name?: string
+          template_type?: string
+        }
+        Relationships: []
+      }
+      plan_versions: {
+        Row: {
+          change_notes: string | null
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          plan_data: Json
+          plan_id: string
+          version_number: number
+        }
+        Insert: {
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          plan_data: Json
+          plan_id: string
+          version_number: number
+        }
+        Update: {
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          plan_data?: Json
+          plan_id?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_versions_plan_id_fkey"
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "financial_plans"
