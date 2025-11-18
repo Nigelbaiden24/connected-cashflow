@@ -175,14 +175,14 @@ const Pricing = () => {
         </div>
 
         <Tabs defaultValue="finance" className="mb-12">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-            <TabsTrigger value="finance" className="text-lg">
+          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-3 mb-8 h-auto">
+            <TabsTrigger value="finance" className="text-base md:text-lg py-3 px-4">
               FlowPulse Finance
             </TabsTrigger>
-            <TabsTrigger value="business" className="text-lg">
+            <TabsTrigger value="business" className="text-base md:text-lg py-3 px-4">
               FlowPulse Business
             </TabsTrigger>
-            <TabsTrigger value="investor" className="text-lg">
+            <TabsTrigger value="investor" className="text-base md:text-lg py-3 px-4">
               FlowPulse Investor
             </TabsTrigger>
           </TabsList>
