@@ -84,6 +84,21 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
     setLoading(true);
 
     try {
+      // Check if user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast({
+          title: "Authentication Error",
+          description: "You must be logged in to add team members. Please log in and try again.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('Authenticated user:', user.id);
+
       // Get the selected role's permissions
       const selectedRole = roles.find(r => r.id === formData.role_id);
       
@@ -95,8 +110,8 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
         last_name: formData.last_name,
         email: formData.email,
         phone: formData.phone || null,
-        department: formData.department,
-        role_title: formData.role_title,
+        department: formData.department || 'General',
+        role_title: formData.role_title || selectedRole?.role_name || 'Team Member',
         join_date: formData.join_date,
         status: formData.status,
         permissions: selectedRole?.permissions_schema || {},
@@ -109,11 +124,19 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
         memberData.role_id = formData.role_id;
       }
 
-      const { error } = await supabase
-        .from('team_members')
-        .insert([memberData]);
+      console.log('Attempting to insert team member:', memberData);
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('team_members')
+        .insert([memberData])
+        .select();
+
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Successfully inserted:', data);
 
       toast({
         title: "Success",
@@ -139,7 +162,7 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
       console.error('Error adding team member:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to add team member",
+        description: error.message || "Failed to add team member. Please check the console for details.",
         variant: "destructive"
       });
     } finally {
