@@ -163,14 +163,14 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
   return (
     <Sidebar className={isCollapsed ? "w-16" : "w-64"} collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
-        <div className="flex items-center gap-2 px-4 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <div className={`flex items-center gap-2 px-4 py-2 ${isCollapsed ? 'justify-center px-0' : ''}`}>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground flex-shrink-0">
             <Briefcase className="h-4 w-4" />
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">FlowPulse</span>
-              <span className="text-xs text-sidebar-foreground/70">Business Platform</span>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-semibold truncate">FlowPulse</span>
+              <span className="text-xs text-sidebar-foreground/70 truncate">Business Platform</span>
             </div>
           )}
         </div>
@@ -187,9 +187,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild>
+                          <SidebarMenuButton asChild className="justify-center">
                             <NavLink to={item.url} className={getNavClassName(item.url)}>
-                              <item.icon className="h-4 w-4" />
+                              <item.icon className="h-4 w-4 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
@@ -199,9 +199,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={getNavClassName(item.url)}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -220,9 +220,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild>
+                          <SidebarMenuButton asChild className="justify-center">
                             <NavLink to={item.url} className={getNavClassName(item.url)}>
-                              <item.icon className="h-4 w-4" />
+                              <item.icon className="h-4 w-4 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
@@ -232,9 +232,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={getNavClassName(item.url)}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -253,9 +253,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild>
+                          <SidebarMenuButton asChild className="justify-center">
                             <NavLink to={item.url} className={getNavClassName(item.url)}>
-                              <item.icon className="h-4 w-4" />
+                              <item.icon className="h-4 w-4 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
@@ -265,9 +265,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={getNavClassName(item.url)}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{item.title}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -279,9 +279,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                   {isCollapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild>
+                        <SidebarMenuButton asChild className="justify-center">
                           <NavLink to="/business/settings" className={getNavClassName("/business/settings")}>
-                            <Globe className="h-4 w-4" />
+                            <Globe className="h-4 w-4 flex-shrink-0" />
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
@@ -291,9 +291,9 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
-                      <NavLink to="/business/settings" className={getNavClassName("/business/settings")}>
-                        <Globe className="h-4 w-4" />
-                        <span>Languages</span>
+                      <NavLink to="/business/settings" className={`${getNavClassName("/business/settings")} flex items-center gap-3`}>
+                        <Globe className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Languages</span>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
@@ -305,27 +305,27 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <div className="p-4 space-y-3">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
+        <div className={`p-4 space-y-3 ${isCollapsed ? 'px-2' : ''}`}>
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+            <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                 {getUserInitials(userEmail)}
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
-              <div className="flex flex-col min-w-0">
+              <div className="flex flex-col min-w-0 overflow-hidden">
                 <span className="text-sm font-medium truncate">{userEmail}</span>
-                <span className="text-xs text-sidebar-foreground/70">Business User</span>
+                <span className="text-xs text-sidebar-foreground/70 truncate">Business User</span>
               </div>
             )}
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start"
+            className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
             onClick={onLogout}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4 flex-shrink-0" />
             {!isCollapsed && <span className="ml-2">Sign Out</span>}
           </Button>
         </div>
