@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BusinessLayout } from "@/components/BusinessLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +62,6 @@ interface Project {
 export default function Projects() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [userEmail, setUserEmail] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +85,6 @@ export default function Projects() {
   });
 
   useEffect(() => {
-    checkAuth();
     fetchProjects();
   }, []);
 
@@ -98,15 +95,6 @@ export default function Projects() {
   useEffect(() => {
     calculateStats();
   }, [projects]);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/business-login");
-      return;
-    }
-    setUserEmail(user.email || "");
-  };
 
   const fetchProjects = async () => {
     try {
@@ -238,21 +226,18 @@ export default function Projects() {
 
   if (loading) {
     return (
-      <BusinessLayout userEmail={userEmail} onLogout={handleLogout}>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading projects...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading projects...</p>
         </div>
-      </BusinessLayout>
+      </div>
     );
   }
 
   return (
-    <BusinessLayout userEmail={userEmail} onLogout={handleLogout}>
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/business-dashboard")}>
               <ArrowLeft className="h-5 w-5" />
@@ -273,7 +258,7 @@ export default function Projects() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -332,10 +317,10 @@ export default function Projects() {
                 <TrendingUp className="h-8 w-8 text-warning" />
               </div>
             </CardContent>
-          </Card>
-        </div>
+        </Card>
+      </div>
 
-        <Card>
+      <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="flex-1 relative">
@@ -389,12 +374,12 @@ export default function Projects() {
                   <List className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {filteredProjects.length === 0 ? (
-          <Card>
+      {filteredProjects.length === 0 ? (
+        <Card>
             <CardContent className="py-12 text-center">
               <FolderKanban className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No projects found</h3>
@@ -408,11 +393,11 @@ export default function Projects() {
                   <Plus className="h-4 w-4 mr-2" />
                   Create Project
                 </Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className={viewMode === "grid" 
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className={viewMode === "grid"
             ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" 
             : "space-y-4"
           }>
@@ -511,37 +496,36 @@ export default function Projects() {
           </div>
         )}
 
-        <AddProjectDialog
-          open={addDialogOpen}
-          onOpenChange={setAddDialogOpen}
-          onSuccess={fetchProjects}
-        />
+      <AddProjectDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        onSuccess={fetchProjects}
+      />
 
-        {selectedProject && (
-          <>
-            <EditProjectDialog
-              open={editDialogOpen}
-              onOpenChange={setEditDialogOpen}
-              project={selectedProject}
-              onSuccess={fetchProjects}
-            />
+      {selectedProject && (
+        <>
+          <EditProjectDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            project={selectedProject}
+            onSuccess={fetchProjects}
+          />
 
-            <DeleteProjectDialog
-              open={deleteDialogOpen}
-              onOpenChange={setDeleteDialogOpen}
-              project={selectedProject}
-              onSuccess={fetchProjects}
-            />
+          <DeleteProjectDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            project={selectedProject}
+            onSuccess={fetchProjects}
+          />
 
-            <UpdateProgressDialog
-              open={progressDialogOpen}
-              onOpenChange={setProgressDialogOpen}
-              project={selectedProject}
-              onSuccess={fetchProjects}
-            />
-          </>
-        )}
-      </div>
-    </BusinessLayout>
+          <UpdateProgressDialog
+            open={progressDialogOpen}
+            onOpenChange={setProgressDialogOpen}
+            project={selectedProject}
+            onSuccess={fetchProjects}
+          />
+        </>
+      )}
+    </div>
   );
 }
