@@ -35,63 +35,42 @@ export function SmartRecommendations() {
       const tasks = tasksRes.data || [];
       const projects = projectsRes.data || [];
       const workflows = workflowsRes.data || [];
-      
-      const recs: Recommendation[] = [];
 
-      // Check for unassigned tasks
-      const unassignedTasks = tasks.filter(t => !t.assigned_to && t.status !== 'completed');
-      if (unassignedTasks.length > 0) {
-        recs.push({
-          id: '1',
-          type: 'warning',
-          title: `${unassignedTasks.length} tasks have no assignee`,
-          description: 'Would you like to auto-distribute them based on workload?',
-          actionLabel: 'Auto-Assign'
-        });
-      }
-
-      // Check for at-risk projects
-      const atRiskProjects = projects.filter(p => p.health_status === 'at-risk' || p.health_status === 'behind');
-      if (atRiskProjects.length > 0) {
-        recs.push({
-          id: '2',
-          type: 'warning',
-          title: `${atRiskProjects.length} projects are running behind`,
-          description: 'Based on current task velocity, consider adjusting timelines or resources',
-          actionLabel: 'View Projects'
-        });
-      }
-
-      // Check for inactive workflows
-      const inactiveWorkflows = workflows.filter(w => {
-        if (!w.last_run_at) return true;
-        const daysSinceRun = (Date.now() - new Date(w.last_run_at).getTime()) / (1000 * 60 * 60 * 24);
-        return daysSinceRun > 12;
+      // Call AI function for smart recommendations
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('business-recommendations', {
+        body: { tasks, projects, workflows }
       });
-      
-      if (inactiveWorkflows.length > 0) {
-        recs.push({
-          id: '3',
-          type: 'suggestion',
-          title: `${inactiveWorkflows.length} workflows haven't run recently`,
-          description: 'These automations may need review or deactivation',
-          actionLabel: 'Review Workflows'
-        });
-      }
 
-      // Success message if everything is good
-      if (recs.length === 0) {
-        recs.push({
-          id: '4',
+      if (aiError) {
+        console.error('AI recommendations error:', aiError);
+        // Fallback to basic recommendations
+        setRecommendations([{
+          id: '1',
+          type: 'suggestion',
+          title: 'AI recommendations temporarily unavailable',
+          description: 'Using basic analysis mode. AI-powered insights will return shortly.',
+        }]);
+      } else if (aiData?.recommendations) {
+        setRecommendations(aiData.recommendations.map((rec: any, idx: number) => ({
+          ...rec,
+          id: `ai-${idx}`
+        })));
+      } else {
+        setRecommendations([{
+          id: '1',
           type: 'success',
           title: 'All systems running smoothly',
-          description: 'Your projects and workflows are on track. Keep up the great work!'
-        });
+          description: 'Your business operations are on track!'
+        }]);
       }
-
-      setRecommendations(recs);
     } catch (error) {
       console.error('Error generating recommendations:', error);
+      setRecommendations([{
+        id: 'error',
+        type: 'warning',
+        title: 'Unable to generate recommendations',
+        description: 'Please try refreshing the page.'
+      }]);
     } finally {
       setLoading(false);
     }
@@ -114,39 +93,40 @@ export function SmartRecommendations() {
   };
 
   return (
-    <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-white">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Lightbulb className="h-5 w-5 text-purple-600" />
+    <Card className="h-fit">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Lightbulb className="h-5 w-5 text-primary" />
           AI Smart Recommendations
         </CardTitle>
-        <CardDescription>AI-powered insights based on your workload</CardDescription>
+        <CardDescription className="text-xs">Intelligent insights powered by AI analytics</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-2">
         {loading ? (
-          <div className="text-sm text-muted-foreground">Analyzing workspace...</div>
+          <div className="text-center py-6 text-sm text-muted-foreground">
+            <Lightbulb className="h-8 w-8 mx-auto mb-2 animate-pulse text-primary" />
+            Analyzing your business data with AI...
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="max-h-96 overflow-y-auto pr-1 space-y-2">
             {recommendations.map((rec) => {
               const Icon = getIcon(rec.type);
-              
               return (
-                <div key={rec.id} className="flex items-start gap-3 p-4 rounded-lg border bg-background">
-                  <Icon className={`h-5 w-5 mt-0.5 ${
-                    rec.type === 'warning' ? 'text-destructive' : 
-                    rec.type === 'success' ? 'text-green-600' : 
-                    'text-primary'
-                  }`} />
-                  <div className="flex-1 space-y-2">
-                    <div>
-                      <p className="font-medium text-sm">{rec.title}</p>
-                      <p className="text-xs text-muted-foreground">{rec.description}</p>
+                <div
+                  key={rec.id}
+                  className="p-3 rounded-lg border bg-card/50 hover:bg-card transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <Icon className="h-4 w-4 mt-0.5 shrink-0 flex-shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h4 className="font-medium text-sm leading-tight break-words">{rec.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed break-words">{rec.description}</p>
+                      {rec.actionLabel && (
+                        <Badge variant={getVariant(rec.type)} className="text-xs mt-1">
+                          {rec.actionLabel}
+                        </Badge>
+                      )}
                     </div>
-                    {rec.actionLabel && (
-                      <Button size="sm" variant={getVariant(rec.type)}>
-                        {rec.actionLabel}
-                      </Button>
-                    )}
                   </div>
                 </div>
               );
