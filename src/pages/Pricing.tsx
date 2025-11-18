@@ -74,8 +74,8 @@ const Pricing = () => {
       monthlyPrice: 39.99,
       investorPrice: 12.99,
       stripePriceId: isAnnual ? "price_1SR1idKj5iDjtHZwymZ2NX9I" : "price_1SR1huKj5iDjtHZwSEDU4CHd",
-      investorMonthlyPriceId: "price_basic_investor_monthly",
-      investorAnnualPriceId: "price_basic_investor_annual",
+      investorMonthlyPriceId: "price_1SUqctKj5iDjtHZwuD0Mcje2",
+      investorAnnualPriceId: "price_1SUqdqKj5iDjtHZwIiFIu18E",
       features: [
         "Core platform features",
         "Up to 5 team members",
@@ -93,8 +93,8 @@ const Pricing = () => {
       monthlyPrice: 72.99,
       investorPrice: 23.99,
       stripePriceId: isAnnual ? "price_1SR1jDKj5iDjtHZwJ1OP209L" : "price_1SR1isKj5iDjtHZwiiP9YxA4",
-      investorMonthlyPriceId: "price_pro_investor_monthly",
-      investorAnnualPriceId: "price_pro_investor_annual",
+      investorMonthlyPriceId: "price_1SUqe4Kj5iDjtHZwbkK9UcFX",
+      investorAnnualPriceId: "price_1SUqeIKj5iDjtHZwMcZB6MDH",
       features: [
         "All Basic features",
         "Up to 20 team members",
@@ -115,8 +115,8 @@ const Pricing = () => {
       monthlyPrice: 104.99,
       investorPrice: 41.99,
       stripePriceId: isAnnual ? "price_1SR1k7Kj5iDjtHZwTOYaYKXr" : "price_1SR1jjKj5iDjtHZw0NVFE780",
-      investorMonthlyPriceId: "price_enterprise_investor_monthly",
-      investorAnnualPriceId: "price_enterprise_investor_annual",
+      investorMonthlyPriceId: "price_1SUqeZKj5iDjtHZwA31i890b",
+      investorAnnualPriceId: "price_1SUqfBKj5iDjtHZwM5PtAONO",
       features: [
         "All Pro features",
         "Unlimited team members",
