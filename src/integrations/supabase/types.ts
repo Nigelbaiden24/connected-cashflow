@@ -2444,6 +2444,72 @@ export type Database = {
           },
         ]
       }
+      projects: {
+        Row: {
+          assigned_to: string[] | null
+          attachments: Json | null
+          budget: number | null
+          completed_date: string | null
+          created_at: string | null
+          deadline: string
+          description: string | null
+          id: string
+          milestones: Json | null
+          notes: string | null
+          priority: string
+          progress: number
+          project_name: string
+          start_date: string | null
+          status: string
+          tags: string[] | null
+          team_size: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string[] | null
+          attachments?: Json | null
+          budget?: number | null
+          completed_date?: string | null
+          created_at?: string | null
+          deadline: string
+          description?: string | null
+          id?: string
+          milestones?: Json | null
+          notes?: string | null
+          priority?: string
+          progress?: number
+          project_name: string
+          start_date?: string | null
+          status?: string
+          tags?: string[] | null
+          team_size?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string[] | null
+          attachments?: Json | null
+          budget?: number | null
+          completed_date?: string | null
+          created_at?: string | null
+          deadline?: string
+          description?: string | null
+          id?: string
+          milestones?: Json | null
+          notes?: string | null
+          priority?: string
+          progress?: number
+          project_name?: string
+          start_date?: string | null
+          status?: string
+          tags?: string[] | null
+          team_size?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string | null
