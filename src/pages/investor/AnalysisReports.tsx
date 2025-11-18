@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Download, Upload, Search, TrendingUp, Sparkles } from "lucide-react";
+import { BarChart3, Download, Upload, Search, TrendingUp, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 
 const AnalysisReports = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
   const [reports] = useState([
     {
       id: "1",
@@ -36,8 +38,23 @@ const AnalysisReports = () => {
     },
   ]);
 
-  const handleAIAnalysis = () => {
-    toast.info("Generating AI-powered analysis...");
+  const { analyzeWithAI, isLoading } = useAIAnalyst({
+    onDelta: (text) => setAiResponse(prev => prev + text),
+    onDone: () => {
+      toast.success("AI analysis complete");
+    },
+    onError: (error) => {
+      toast.error(error);
+      setAiResponse("");
+    }
+  });
+
+  const handleAIAnalysis = async () => {
+    setAiResponse("");
+    await analyzeWithAI(
+      "Provide a comprehensive market analysis covering current trends, key sectors, and investment opportunities for today's market conditions.",
+      "research-summary"
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -60,11 +77,41 @@ const AnalysisReports = () => {
             Technical, fundamental, and quantitative analysis across all asset classes
           </p>
         </div>
-        <Button onClick={handleAIAnalysis} className="bg-primary hover:bg-primary/90">
-          <Sparkles className="h-4 w-4 mr-2" />
-          AI Analysis
+        <Button 
+          onClick={handleAIAnalysis} 
+          className="bg-primary hover:bg-primary/90"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Analysis
+            </>
+          )}
         </Button>
       </div>
+
+      {/* AI Response */}
+      {aiResponse && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              AI Market Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+              {aiResponse}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="all" className="w-full">
         <TabsList>
