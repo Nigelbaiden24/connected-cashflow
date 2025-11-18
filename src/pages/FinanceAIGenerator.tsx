@@ -350,7 +350,7 @@ Create a logical, well-structured document. Use professional colors. Split conte
   };
 
   return (
-    <FinanceLayout userEmail="finance@flowpulse.io" onLogout={handleLogout}>
+    <FinanceLayout userEmail="finance@flowpulse.io" onLogout={handleLogout} hideHeader={true}>
       <div className="bg-background flex flex-col h-full">
         <DocumentEditorToolbar
           templates={documentTemplates}
