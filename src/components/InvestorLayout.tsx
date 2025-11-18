@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { InvestorSidebar } from "./InvestorSidebar";
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
+import { SidebarProvider } from "./ui/sidebar";
 
 interface InvestorLayoutProps {
   children: ReactNode;
@@ -13,12 +13,7 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
     <SidebarProvider>
       <div className="flex min-h-screen w-full investor-theme">
         <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex h-14 items-center gap-4 px-4">
-              <SidebarTrigger />
-            </div>
-          </header>
+        <div className="flex-1 flex flex-col ml-64">
           <main className="flex-1">
             {children}
           </main>
