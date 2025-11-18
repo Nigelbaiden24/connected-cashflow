@@ -6,6 +6,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import { ClientRiskRadar } from "@/components/dashboard/ClientRiskRadar";
+import { PipelineOverview } from "@/components/dashboard/PipelineOverview";
+import { AdvisorTasks } from "@/components/dashboard/AdvisorTasks";
+import { AdvisoryRevenues } from "@/components/dashboard/AdvisoryRevenues";
+import { PortfolioWatchlist } from "@/components/dashboard/PortfolioWatchlist";
+import { DynamicAlerts } from "@/components/dashboard/DynamicAlerts";
+import { ComplianceHealth } from "@/components/dashboard/ComplianceHealth";
+import { ActivityOverview } from "@/components/dashboard/ActivityOverview";
+import { AISummaryPanel } from "@/components/dashboard/AISummaryPanel";
 
 const Dashboard = () => {
   const navigate = useNavigate();
