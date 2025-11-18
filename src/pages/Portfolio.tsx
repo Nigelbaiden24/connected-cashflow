@@ -218,18 +218,39 @@ export default function Portfolio() {
             </Button>
             <Button 
               size="sm"
-              onClick={() => {
+              disabled={!selectedClient || loading}
+              onClick={async () => {
+                if (!selectedClient) {
+                  toast({
+                    title: "No Client Selected",
+                    description: "Please select a client first.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                
+                setLoading(true);
                 toast({
                   title: "Syncing Data",
                   description: "Updating portfolio data from market sources...",
                 });
-                setTimeout(() => {
-                  fetchClientPortfolio(selectedClient);
+                
+                try {
+                  await fetchClientPortfolio(selectedClient);
                   toast({
                     title: "Sync Complete",
                     description: "Portfolio data updated successfully.",
                   });
-                }, 1500);
+                } catch (error) {
+                  console.error('Sync error:', error);
+                  toast({
+                    title: "Sync Failed",
+                    description: "Failed to update portfolio data.",
+                    variant: "destructive",
+                  });
+                } finally {
+                  setLoading(false);
+                }
               }}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
