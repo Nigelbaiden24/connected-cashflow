@@ -81,9 +81,9 @@ export const documentTemplates: DocumentTemplate[] = [
     }
   },
   {
-    id: "invoice",
-    name: "Invoice",
-    category: "Business",
+    id: "finance-invoice",
+    name: "Finance Invoice",
+    category: "Finance",
     description: "Professional invoice template for billing and payments",
     thumbnail: "/thumbnails/business-proposal-thumb.png",
     sections: [
