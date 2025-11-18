@@ -2486,6 +2486,33 @@ export type Database = {
         }
         Relationships: []
       }
+      roles: {
+        Row: {
+          created_at: string | null
+          department: string
+          id: string
+          permissions_schema: Json
+          role_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department: string
+          id?: string
+          permissions_schema?: Json
+          role_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: string
+          id?: string
+          permissions_schema?: Json
+          role_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       secure_vault: {
         Row: {
           access_count: number | null
@@ -2647,6 +2674,74 @@ export type Database = {
           year?: number
         }
         Relationships: []
+      }
+      team_members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          department: string
+          email: string
+          first_name: string
+          id: string
+          join_date: string
+          last_name: string
+          permissions: Json | null
+          phone: string | null
+          role_id: string | null
+          role_title: string
+          status: string
+          updated_at: string | null
+          user_id: string | null
+          utilization_score: number | null
+          workload_score: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          department: string
+          email: string
+          first_name: string
+          id?: string
+          join_date?: string
+          last_name: string
+          permissions?: Json | null
+          phone?: string | null
+          role_id?: string | null
+          role_title: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+          utilization_score?: number | null
+          workload_score?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          department?: string
+          email?: string
+          first_name?: string
+          id?: string
+          join_date?: string
+          last_name?: string
+          permissions?: Json | null
+          phone?: string | null
+          role_id?: string | null
+          role_title?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string | null
+          utilization_score?: number | null
+          workload_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_role"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_off_requests: {
         Row: {
@@ -2936,6 +3031,53 @@ export type Database = {
           visa_sponsorship?: boolean | null
         }
         Relationships: []
+      }
+      workload_items: {
+        Row: {
+          created_at: string | null
+          due_date: string | null
+          hours_estimated: number | null
+          hours_logged: number | null
+          id: string
+          member_id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          due_date?: string | null
+          hours_estimated?: number | null
+          hours_logged?: number | null
+          id?: string
+          member_id: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          due_date?: string | null
+          hours_estimated?: number | null
+          hours_logged?: number | null
+          id?: string
+          member_id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workload_items_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

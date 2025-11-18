@@ -66,6 +66,7 @@ import BusinessPlanning from "./pages/BusinessPlanning";
 import Analytics from "./pages/Analytics";
 import Revenue from "./pages/Revenue";
 import Team from "./pages/Team";
+import TeamManagement from "./pages/TeamManagement";
 import TeamProfile from "./pages/TeamProfile";
 import TeamChat from "./pages/TeamChat";
 import EnhancedTeamChat from "./components/EnhancedTeamChat";
@@ -353,7 +354,7 @@ const App = () => {
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Revenue /></BusinessLayout>
           } />
           <Route path="/business/team" element={
-            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Team /></BusinessLayout>
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <TeamManagement />
           } />
           <Route path="/business/team/profile" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><TeamProfile /></BusinessLayout>
