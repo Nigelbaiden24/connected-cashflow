@@ -619,6 +619,400 @@ export type Database = {
           },
         ]
       }
+      business_activity_feed: {
+        Row: {
+          activity_type: string
+          actor_id: string | null
+          created_at: string | null
+          description: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          actor_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          actor_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      business_dashboard_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          theme_config: Json | null
+          updated_at: string | null
+          user_id: string
+          widget_config: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          theme_config?: Json | null
+          updated_at?: string | null
+          user_id: string
+          widget_config?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          theme_config?: Json | null
+          updated_at?: string | null
+          user_id?: string
+          widget_config?: Json | null
+        }
+        Relationships: []
+      }
+      business_documents: {
+        Row: {
+          created_at: string | null
+          document_name: string
+          document_type: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          project_id: string | null
+          requires_signature: boolean | null
+          signed_at: string | null
+          status: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          document_name: string
+          document_type?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          project_id?: string | null
+          requires_signature?: boolean | null
+          signed_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          document_name?: string
+          document_type?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          project_id?: string | null
+          requires_signature?: boolean | null
+          signed_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_documents_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "business_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          notification_type: string
+          severity: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type: string
+          severity?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type?: string
+          severity?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      business_projects: {
+        Row: {
+          actual_cost: number | null
+          assigned_team_members: string[] | null
+          budget: number | null
+          completion_percentage: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          health_status: string | null
+          id: string
+          priority: string | null
+          project_name: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actual_cost?: number | null
+          assigned_team_members?: string[] | null
+          budget?: number | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          health_status?: string | null
+          id?: string
+          priority?: string | null
+          project_name: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actual_cost?: number | null
+          assigned_team_members?: string[] | null
+          budget?: number | null
+          completion_percentage?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          health_status?: string | null
+          id?: string
+          priority?: string | null
+          project_name?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      business_tasks: {
+        Row: {
+          actual_hours: number | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          estimated_hours: number | null
+          id: string
+          priority: string | null
+          project_id: string | null
+          sla_target_hours: number | null
+          status: string | null
+          tags: string[] | null
+          task_name: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          priority?: string | null
+          project_id?: string | null
+          sla_target_hours?: number | null
+          status?: string | null
+          tags?: string[] | null
+          task_name: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actual_hours?: number | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          estimated_hours?: number | null
+          id?: string
+          priority?: string | null
+          project_id?: string | null
+          sla_target_hours?: number | null
+          status?: string | null
+          tags?: string[] | null
+          task_name?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "business_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_time_tracking: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_minutes: number | null
+          end_time: string | null
+          id: string
+          project_id: string | null
+          start_time: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          project_id?: string | null
+          start_time: string
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          project_id?: string | null
+          start_time?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_time_tracking_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "business_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_time_tracking_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "business_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_workflows: {
+        Row: {
+          action_config: Json | null
+          created_at: string | null
+          description: string | null
+          execution_count: number | null
+          failure_count: number | null
+          id: string
+          last_run_at: string | null
+          status: string | null
+          success_count: number | null
+          time_saved_minutes: number | null
+          trigger_config: Json | null
+          trigger_type: string | null
+          updated_at: string | null
+          user_id: string | null
+          workflow_name: string
+        }
+        Insert: {
+          action_config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          failure_count?: number | null
+          id?: string
+          last_run_at?: string | null
+          status?: string | null
+          success_count?: number | null
+          time_saved_minutes?: number | null
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          workflow_name: string
+        }
+        Update: {
+          action_config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          failure_count?: number | null
+          id?: string
+          last_run_at?: string | null
+          status?: string | null
+          success_count?: number | null
+          time_saved_minutes?: number | null
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          workflow_name?: string
+        }
+        Relationships: []
+      }
       calendar_connections: {
         Row: {
           access_token: string
