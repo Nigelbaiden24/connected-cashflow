@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import {
   AlertTriangle,
   Lock
 } from "lucide-react";
+import html2pdf from "html2pdf.js";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
@@ -36,6 +37,8 @@ import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
 import { CaseManagement } from "@/components/compliance/CaseManagement";
 import { DocumentTracker } from "@/components/compliance/DocumentTracker";
 import { AIInsightsPanel } from "@/components/compliance/AIInsightsPanel";
+import { UploadDocumentDialog } from "@/components/compliance/UploadDocumentDialog";
+import { CreateRuleDialog } from "@/components/compliance/CreateRuleDialog";
 
 const Compliance = () => {
   const navigate = useNavigate();
@@ -49,7 +52,13 @@ const Compliance = () => {
   const [cases, setCases] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
   const [checks, setChecks] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [createRuleDialogOpen, setCreateRuleDialogOpen] = useState(false);
+  const [aiInsights, setAiInsights] = useState<any[]>([]);
+  const insightsRef = useRef<HTMLDivElement>(null);
   const [categoryExpanded, setCategoryExpanded] = useState({
     kyc_aml: true,
     documentation: true,
@@ -66,6 +75,15 @@ const Compliance = () => {
   const loadComplianceData = async () => {
     setIsLoading(true);
     try {
+      // Load clients
+      const { data: clientsData, error: clientsError } = await supabase
+        .from("clients")
+        .select("*")
+        .order("name", { ascending: true });
+
+      if (clientsError) throw clientsError;
+      setClients(clientsData || []);
+
       // Load rules
       const { data: rulesData, error: rulesError } = await supabase
         .from("compliance_rules")
@@ -114,6 +132,9 @@ const Compliance = () => {
       }) || [];
       
       setDocuments(docsWithExpiry);
+
+      // Load AI insights
+      await loadAIInsights(rulesData || [], checksData || [], casesData || [], docsWithExpiry);
 
     } catch (error: any) {
       toast({
@@ -285,10 +306,7 @@ const Compliance = () => {
   };
 
   const handleCreateRule = () => {
-    toast({
-      title: "Create new rule",
-      description: "Rule creation dialog would open here.",
-    });
+    setCreateRuleDialogOpen(true);
   };
 
   // Case handlers
@@ -354,12 +372,39 @@ const Compliance = () => {
     }
   };
 
+  // Load AI insights
+  const loadAIInsights = async (rulesData: any[], checksData: any[], casesData: any[], docsData: any[]) => {
+    setIsLoadingInsights(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('compliance-insights', {
+        body: {
+          rules: rulesData,
+          checks: checksData,
+          cases: casesData,
+          documents: docsData,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data && data.insights) {
+        setAiInsights(data.insights.map((insight: any, index: number) => ({
+          id: `ai-${index}`,
+          ...insight
+        })));
+      }
+    } catch (error: any) {
+      console.error('AI insights error:', error);
+      // Fallback to static insights if AI fails
+      setAiInsights(generateAIInsights());
+    } finally {
+      setIsLoadingInsights(false);
+    }
+  };
+
   // Document handlers
   const handleUploadDocument = () => {
-    toast({
-      title: "Upload document",
-      description: "Document upload dialog would open here.",
-    });
+    setUploadDialogOpen(true);
   };
 
   const handleViewDocument = (docId: string) => {
@@ -371,18 +416,42 @@ const Compliance = () => {
 
   // AI handlers
   const handleGenerateReport = async () => {
+    if (!insightsRef.current || aiInsights.length === 0) {
+      toast({
+        title: "No insights available",
+        description: "Generate AI insights first by loading compliance data",
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
-      title: "Generating compliance report",
-      description: "AI is analyzing your compliance data...",
+      title: "Generating PDF report",
+      description: "Creating compliance insights report...",
     });
 
-    // In production, call edge function for AI report generation
-    setTimeout(() => {
+    const options = {
+      margin: 10,
+      filename: `compliance-insights-${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+    };
+
+    try {
+      await html2pdf().set(options).from(insightsRef.current).save();
       toast({
         title: "Report generated",
-        description: "Your audit-ready compliance report is ready for download.",
+        description: "AI compliance insights report downloaded successfully",
       });
-    }, 3000);
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF report",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleApplyInsight = (insightId: string) => {
@@ -407,7 +476,6 @@ const Compliance = () => {
 
   const stats = calculateStats();
   const nextActions = generateNextActions();
-  const aiInsights = generateAIInsights();
 
   // Transform documents for DocumentTracker
   const transformedDocuments = documents.map(doc => ({
@@ -609,13 +677,29 @@ const Compliance = () => {
 
         {/* AI Insights Sidebar */}
         <div className="space-y-6">
-          <AIInsightsPanel
-            insights={aiInsights}
-            onGenerateReport={handleGenerateReport}
-            onApplyInsight={handleApplyInsight}
-          />
+          <div ref={insightsRef}>
+            <AIInsightsPanel
+              insights={aiInsights}
+              onGenerateReport={handleGenerateReport}
+              onApplyInsight={handleApplyInsight}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Dialogs */}
+      <UploadDocumentDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        clients={clients}
+        onSuccess={loadComplianceData}
+      />
+      
+      <CreateRuleDialog
+        open={createRuleDialogOpen}
+        onOpenChange={setCreateRuleDialogOpen}
+        onSuccess={loadComplianceData}
+      />
     </div>
   );
 };
