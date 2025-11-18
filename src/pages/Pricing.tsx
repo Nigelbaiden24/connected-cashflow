@@ -319,8 +319,71 @@ const Pricing = () => {
                 </Card>
               ))}
             </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+
+            <TabsContent value="investor" className="mt-8">
+              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                {tiers.map((tier) => (
+                  <Card 
+                    key={tier.name}
+                    className={cn(
+                      "relative overflow-hidden transition-all duration-300 hover:shadow-xl",
+                      tier.name === "Pro" && "border-primary shadow-lg scale-105"
+                    )}
+                  >
+                    {tier.name === "Pro" && (
+                      <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold">
+                        POPULAR
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                      <CardDescription className="text-base">{tier.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-2">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-4xl font-bold">
+                            £{isAnnual ? calculateMonthlyEquivalent(tier.investorPrice) : tier.investorPrice}
+                          </span>
+                          <span className="text-muted-foreground">/month</span>
+                        </div>
+                        {isAnnual && (
+                          <p className="text-sm text-muted-foreground">
+                            £{calculatePrice(tier.investorPrice)} billed annually (save 17%)
+                          </p>
+                        )}
+                      </div>
+
+                      <Button 
+                        className="w-full" 
+                        size="lg"
+                        variant={tier.name === "Pro" ? "default" : "outline"}
+                        onClick={() => handleCheckout(
+                          isAnnual ? tier.investorAnnualPriceId : tier.investorMonthlyPriceId,
+                          isAnnual ? 'subscription' : 'subscription',
+                          tier.name,
+                          'investor'
+                        )}
+                        disabled={loading}
+                      >
+                        {loading ? "Processing..." : "Get Started"}
+                      </Button>
+
+                      <div className="space-y-3 pt-4 border-t">
+                        {tier.features.map((feature, index) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                            <span className="text-sm">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
 
         <div className="mt-16 text-center">
           <Card className="max-w-4xl mx-auto bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
