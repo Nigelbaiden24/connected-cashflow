@@ -47,3 +47,6 @@ verify_jwt = true
 
 [functions.investment-insights]
 verify_jwt = true
+
+[functions.scenario-simulation]
+verify_jwt = true

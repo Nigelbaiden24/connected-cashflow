@@ -245,6 +245,59 @@ export default function ScenarioAnalysis() {
     return "text-destructive";
   };
 
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationResults, setSimulationResults] = useState<any>(null);
+
+  const handleRunSimulation = async () => {
+    if (!selectedClient) {
+      toast({
+        title: "Client Required",
+        description: "Please select a client before running simulation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const client = clients.find(c => c.id === selectedClient);
+    if (!client) return;
+
+    setIsSimulating(true);
+    toast({
+      title: "Running Elite Simulation",
+      description: "Executing advanced Monte Carlo simulation with 10,000 iterations...",
+    });
+
+    try {
+      const { data, error } = await supabase.functions.invoke('scenario-simulation', {
+        body: {
+          simulationType: 'monte-carlo',
+          initialAmount: client.aum || 100000,
+          monthlyContribution: 2500,
+          years: 30,
+          expectedReturn: 0.07,
+          volatility: 0.15,
+        }
+      });
+
+      if (error) throw error;
+
+      setSimulationResults(data);
+      toast({
+        title: "Simulation Complete",
+        description: `Analysis completed with ${data.successRate.toFixed(1)}% success rate.`,
+      });
+    } catch (error) {
+      console.error('Simulation error:', error);
+      toast({
+        title: "Simulation Failed",
+        description: "Unable to complete simulation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
   const handleGenerateReport = async () => {
     if (!contentRef.current) return;
 
@@ -306,21 +359,11 @@ export default function ScenarioAnalysis() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => {
-              toast({
-                title: "Running Simulation",
-                description: "Executing Monte Carlo simulation with 10,000 iterations...",
-              });
-              setTimeout(() => {
-                toast({
-                  title: "Simulation Complete",
-                  description: "Analysis completed with 87% success rate.",
-                });
-              }, 2000);
-            }}
+            onClick={handleRunSimulation}
+            disabled={isSimulating || !selectedClient}
           >
             <Calculator className="h-4 w-4 mr-2" />
-            Run Simulation
+            {isSimulating ? "Running..." : "Run Simulation"}
           </Button>
           <Button size="sm" onClick={handleGenerateReport}>
             <Download className="h-4 w-4 mr-2" />
