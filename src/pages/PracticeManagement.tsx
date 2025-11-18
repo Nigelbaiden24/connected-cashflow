@@ -207,7 +207,7 @@ export default function PracticeManagement() {
             <Download className="h-4 w-4 mr-2" />
             Export Report
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => navigate('/calendar')}>
             <Calendar className="h-4 w-4 mr-2" />
             Schedule Review
           </Button>
