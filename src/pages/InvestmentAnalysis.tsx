@@ -173,14 +173,24 @@ export default function InvestmentAnalysis() {
             variant="outline" 
             size="sm"
             onClick={() => {
+              if (!selectedInvestment) {
+                toast({
+                  title: "No Investment Selected",
+                  description: "Please select an investment first.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
               toast({
                 title: "Exporting Report",
                 description: "Generating investment analysis report...",
               });
+              
               setTimeout(() => {
                 toast({
                   title: "Report Ready",
-                  description: "Investment analysis report downloaded successfully.",
+                  description: `Investment analysis report for ${selectedInvestment.symbol} downloaded successfully.`,
                 });
               }, 1500);
             }}
@@ -190,10 +200,21 @@ export default function InvestmentAnalysis() {
           </Button>
           <Button 
             size="sm"
-            onClick={() => toast({
-              title: "Watchlist Created",
-              description: "New investment watchlist has been created.",
-            })}
+            onClick={() => {
+              if (!selectedInvestment) {
+                toast({
+                  title: "No Investment Selected",
+                  description: "Please select an investment first.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
+              toast({
+                title: "Watchlist Created",
+                description: `${selectedInvestment.symbol} has been added to your new watchlist.`,
+              });
+            }}
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Create Watchlist
@@ -404,10 +425,21 @@ export default function InvestmentAnalysis() {
 
                 <Button 
                   className="w-full"
-                  onClick={() => toast({
-                    title: "Added to Portfolio",
-                    description: `${selectedInvestment.symbol} has been added to your portfolio.`,
-                  })}
+                  onClick={() => {
+                    if (!selectedInvestment) {
+                      toast({
+                        title: "Error",
+                        description: "No investment selected.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    toast({
+                      title: "Added to Portfolio",
+                      description: `${selectedInvestment.symbol} - ${selectedInvestment.name} has been added to your portfolio.`,
+                    });
+                  }}
                 >
                   Add to Portfolio
                 </Button>
