@@ -13,10 +13,17 @@ interface AddTeamMemberDialogProps {
   onSuccess: () => void;
 }
 
+const DEFAULT_ROLES = [
+  { id: 'admin', role_name: 'Admin', department: 'Administration', permissions_schema: { can_manage_roles: true, can_edit_team_members: true, can_view_finance: true, can_view_workload: true, can_access_sensitive_tabs: true } },
+  { id: 'manager', role_name: 'Manager', department: 'Management', permissions_schema: { can_manage_roles: false, can_edit_team_members: true, can_view_finance: true, can_view_workload: true, can_access_sensitive_tabs: true } },
+  { id: 'hr', role_name: 'HR', department: 'Human Resources', permissions_schema: { can_manage_roles: true, can_edit_team_members: true, can_view_finance: false, can_view_workload: true, can_access_sensitive_tabs: true } },
+  { id: 'finance', role_name: 'Finance', department: 'Finance', permissions_schema: { can_manage_roles: false, can_edit_team_members: false, can_view_finance: true, can_view_workload: true, can_access_sensitive_tabs: true } }
+];
+
 export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMemberDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [roles, setRoles] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>(DEFAULT_ROLES);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -44,20 +51,20 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
       
       if (error) {
         console.error('Error fetching roles:', error);
-        toast({
-          title: "Warning",
-          description: "Could not load role templates",
-          variant: "destructive"
-        });
+        // Keep using DEFAULT_ROLES as fallback
         return;
       }
       
-      if (data) {
+      if (data && data.length > 0) {
         setRoles(data);
-        console.log('Loaded roles:', data.length);
+        console.log('Loaded roles from database:', data.length);
+      } else {
+        console.log('No roles in database, using default roles');
+        // DEFAULT_ROLES already set in state
       }
     } catch (error: any) {
       console.error('Error in fetchRoles:', error);
+      // Keep using DEFAULT_ROLES as fallback
     }
   };
 
@@ -217,18 +224,14 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
                 <SelectValue placeholder="Select a role template" />
               </SelectTrigger>
               <SelectContent className="bg-popover z-50">
-                {roles.length === 0 ? (
-                  <SelectItem value="none" disabled>No roles available</SelectItem>
-                ) : (
-                  roles.map(role => (
-                    <SelectItem key={role.id} value={role.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{role.role_name}</span>
-                        <span className="text-xs text-muted-foreground">{role.department}</span>
-                      </div>
-                    </SelectItem>
-                  ))
-                )}
+                {roles.map(role => (
+                  <SelectItem key={role.id} value={role.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{role.role_name}</span>
+                      <span className="text-xs text-muted-foreground">{role.department}</span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {formData.role_id && (
