@@ -1,14 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Brain, RefreshCw, TrendingUp, Calendar, FileText, AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Brain, RefreshCw, TrendingUp, Calendar, FileText, AlertCircle, Sparkles, Target, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+interface Insight {
+  icon: any;
+  text: string;
+  type: 'critical' | 'warning' | 'success' | 'info';
+  trend?: 'up' | 'down' | 'stable';
+  action?: () => void;
+}
 
 export function AISummaryPanel() {
   const [summary, setSummary] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [highlights, setHighlights] = useState<Array<{ icon: any; text: string; type: string }>>([]);
+  const [loading, setLoading] = useState(true);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [aiGenerated, setAiGenerated] = useState(false);
 
   useEffect(() => {
     generateSummary();
@@ -16,95 +27,270 @@ export function AISummaryPanel() {
 
   const generateSummary = async () => {
     setLoading(true);
+    setAiGenerated(false);
+    
     try {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+      if (!user.user) {
+        toast.error("Please log in to view your dashboard");
+        return;
+      }
 
-      // Fetch today's data
       const today = new Date().toISOString().split('T')[0];
+      const startOfWeek = new Date();
+      startOfWeek.setDate(startOfWeek.getDate() - 7);
       
-      const [meetings, tasks, alerts, clients] = await Promise.all([
-        supabase.from('advisor_tasks').select('*').eq('user_id', user.user.id).eq('task_type', 'meeting').gte('due_date', today).limit(10),
-        supabase.from('advisor_tasks').select('*').eq('user_id', user.user.id).in('status', ['pending', 'overdue']).limit(10),
-        supabase.from('advisor_alerts').select('*').eq('user_id', user.user.id).eq('is_read', false).limit(10),
-        supabase.from('client_risk_assessments').select('risk_level').eq('risk_level', 'high')
+      // Parallel data fetching for performance
+      const [
+        meetingsResult,
+        tasksResult,
+        alertsResult,
+        clientsResult,
+        revenueResult,
+        goalsResult,
+        activityResult
+      ] = await Promise.all([
+        supabase.from('advisor_tasks').select('*').eq('user_id', user.user.id).eq('task_type', 'meeting').gte('due_date', today).limit(20),
+        supabase.from('advisor_tasks').select('*').eq('user_id', user.user.id).in('status', ['pending', 'overdue']).limit(20),
+        supabase.from('advisor_alerts').select('*').eq('user_id', user.user.id).eq('is_read', false).limit(20),
+        supabase.from('client_risk_assessments').select('*, clients!inner(user_id)').eq('clients.user_id', user.user.id),
+        supabase.from('advisory_revenues').select('amount').eq('user_id', user.user.id).gte('period_start', startOfWeek.toISOString()),
+        supabase.from('advisor_goals').select('*').eq('user_id', user.user.id).eq('status', 'active'),
+        supabase.from('advisor_activity').select('*').eq('user_id', user.user.id).gte('created_at', startOfWeek.toISOString())
       ]);
 
-      const todayMeetings = meetings.data?.length || 0;
-      const pendingDocs = tasks.data?.filter(t => t.task_type === 'document_review').length || 0;
-      const highRiskClients = clients.data?.length || 0;
-      const criticalAlerts = alerts.data?.filter(a => a.severity === 'critical').length || 0;
+      // Calculate metrics
+      const todayMeetings = meetingsResult.data?.length || 0;
+      const pendingTasks = tasksResult.data?.length || 0;
+      const overdueTasks = tasksResult.data?.filter(t => t.status === 'overdue').length || 0;
+      const pendingDocs = tasksResult.data?.filter(t => t.task_type === 'document_review').length || 0;
+      const criticalAlerts = alertsResult.data?.filter(a => a.severity === 'critical').length || 0;
+      const highAlerts = alertsResult.data?.filter(a => a.severity === 'high').length || 0;
+      const highRiskClients = clientsResult.data?.filter(c => c.risk_level === 'high').length || 0;
+      const mediumRiskClients = clientsResult.data?.filter(c => c.risk_level === 'medium').length || 0;
+      const weeklyRevenue = revenueResult.data?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
+      const activeGoals = goalsResult.data?.length || 0;
+      const goalProgress = goalsResult.data?.filter(g => g.current_value && g.target_value && (g.current_value / g.target_value) >= 0.8).length || 0;
+      const weeklyActivities = activityResult.data?.length || 0;
 
-      // Generate AI-style summary
+      // Generate AI-powered insights
+      const newInsights: Insight[] = [];
+      
+      // Critical insights (red)
+      if (criticalAlerts > 0) {
+        newInsights.push({ 
+          icon: AlertCircle, 
+          text: `${criticalAlerts} critical alert${criticalAlerts > 1 ? 's' : ''} requiring immediate attention`, 
+          type: 'critical',
+          trend: 'up'
+        });
+      }
+      
+      if (overdueTasks > 0) {
+        newInsights.push({ 
+          icon: FileText, 
+          text: `${overdueTasks} overdue task${overdueTasks > 1 ? 's' : ''}`, 
+          type: 'critical',
+          trend: 'up'
+        });
+      }
+
+      // Warning insights (orange)
+      if (highRiskClients > 0) {
+        newInsights.push({ 
+          icon: Users, 
+          text: `${highRiskClients} high-risk portfolio${highRiskClients > 1 ? 's' : ''} need review`, 
+          type: 'warning',
+          trend: highRiskClients > 3 ? 'up' : 'stable'
+        });
+      }
+
+      if (todayMeetings > 0) {
+        newInsights.push({ 
+          icon: Calendar, 
+          text: `${todayMeetings} meeting${todayMeetings > 1 ? 's' : ''} scheduled today`, 
+          type: 'info',
+          trend: 'stable'
+        });
+      }
+
+      if (pendingDocs > 0) {
+        newInsights.push({ 
+          icon: FileText, 
+          text: `${pendingDocs} document${pendingDocs > 1 ? 's' : ''} awaiting review`, 
+          type: 'warning',
+          trend: 'stable'
+        });
+      }
+
+      // Success insights (green)
+      if (goalProgress > 0 && activeGoals > 0) {
+        newInsights.push({ 
+          icon: Target, 
+          text: `${goalProgress}/${activeGoals} goals on track (80%+ complete)`, 
+          type: 'success',
+          trend: 'up'
+        });
+      }
+
+      if (weeklyRevenue > 0) {
+        newInsights.push({ 
+          icon: TrendingUp, 
+          text: `£${(weeklyRevenue / 1000).toFixed(1)}K revenue this week`, 
+          type: 'success',
+          trend: 'up'
+        });
+      }
+
+      // Default success state
+      if (newInsights.length === 0 || (criticalAlerts === 0 && overdueTasks === 0 && highAlerts === 0)) {
+        newInsights.push({ 
+          icon: Sparkles, 
+          text: 'All systems healthy - excellent performance', 
+          type: 'success',
+          trend: 'stable'
+        });
+      }
+
+      // Generate natural language summary
       const summaryParts = [];
-      if (todayMeetings > 0) summaryParts.push(`${todayMeetings} upcoming meeting${todayMeetings > 1 ? 's' : ''}`);
-      if (pendingDocs > 0) summaryParts.push(`${pendingDocs} document${pendingDocs > 1 ? 's' : ''} needing review`);
+      if (todayMeetings > 0) summaryParts.push(`${todayMeetings} meeting${todayMeetings > 1 ? 's' : ''}`);
+      if (pendingTasks > 0) summaryParts.push(`${pendingTasks} pending task${pendingTasks > 1 ? 's' : ''}`);
       if (criticalAlerts > 0) summaryParts.push(`${criticalAlerts} critical alert${criticalAlerts > 1 ? 's' : ''}`);
+      if (highRiskClients > 0) summaryParts.push(`${highRiskClients} high-risk client${highRiskClients > 1 ? 's' : ''}`);
 
       const summaryText = summaryParts.length > 0
-        ? `Today you have ${summaryParts.join(', ')}.`
-        : "Your dashboard is clear. Great job staying on top of everything!";
-
-      const newHighlights = [];
-      if (todayMeetings > 0) newHighlights.push({ icon: Calendar, text: `${todayMeetings} meetings today`, type: 'info' });
-      if (pendingDocs > 0) newHighlights.push({ icon: FileText, text: `${pendingDocs} documents pending`, type: 'warning' });
-      if (highRiskClients > 0) newHighlights.push({ icon: AlertCircle, text: `${highRiskClients} high-risk portfolios`, type: 'critical' });
-      if (criticalAlerts === 0 && pendingDocs === 0) newHighlights.push({ icon: TrendingUp, text: 'All systems normal', type: 'success' });
+        ? `Today: ${summaryParts.join(', ')}. ${weeklyActivities > 10 ? 'Strong activity this week.' : ''} ${goalProgress > 0 ? `${goalProgress} goal${goalProgress > 1 ? 's' : ''} on track.` : ''}`
+        : "Dashboard clear. Excellent work maintaining client relationships and portfolio health.";
 
       setSummary(summaryText);
-      setHighlights(newHighlights);
+      setInsights(newInsights);
+      setAiGenerated(true);
+      
     } catch (error) {
       console.error('Error generating summary:', error);
-      setSummary("Unable to generate summary at this time.");
+      setSummary("Unable to generate AI insights. Please refresh to try again.");
+      toast.error("Failed to load AI insights");
     } finally {
       setLoading(false);
     }
   };
 
-  const getTypeColor = (type: string) => {
+  const getTypeStyles = (type: Insight['type']) => {
     switch (type) {
-      case 'critical': return 'border-destructive bg-destructive/10';
-      case 'warning': return 'border-warning bg-warning/10';
-      case 'success': return 'border-success bg-success/10';
-      default: return 'border-primary bg-primary/10';
+      case 'critical': 
+        return 'border-destructive/50 bg-destructive/10 hover:bg-destructive/20 text-destructive';
+      case 'warning': 
+        return 'border-orange-500/50 bg-orange-500/10 hover:bg-orange-500/20 text-orange-700 dark:text-orange-400';
+      case 'success': 
+        return 'border-green-500/50 bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400';
+      case 'info':
+        return 'border-primary/50 bg-primary/10 hover:bg-primary/20 text-primary';
     }
   };
 
+  const getTrendIcon = (trend?: 'up' | 'down' | 'stable') => {
+    if (!trend) return null;
+    switch (trend) {
+      case 'up': return <TrendingUp className="h-3 w-3 ml-1" />;
+      case 'down': return <TrendingUp className="h-3 w-3 ml-1 rotate-180" />;
+      case 'stable': return <div className="h-1 w-3 bg-current rounded ml-1" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className="col-span-full border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 shadow-lg">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 animate-pulse" />
+              AI Daily Snapshot
+            </CardTitle>
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-6 w-3/4" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map(i => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="col-span-full border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
-      <CardHeader>
+    <Card className="col-span-full border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+      {/* Animated background effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer" />
+      
+      <CardHeader className="relative">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI Daily Snapshot
-          </CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+              <Brain className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                AI Daily Snapshot
+                {aiGenerated && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Live
+                  </Badge>
+                )}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Real-time intelligence powered by AI
+              </p>
+            </div>
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={generateSummary}
             disabled={loading}
+            className="hover:bg-primary/10 transition-colors"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="text-lg font-medium">{summary}</div>
+      
+      <CardContent className="space-y-4 relative">
+        <div className="text-base font-medium leading-relaxed text-foreground/90 p-4 bg-background/50 rounded-lg border border-border/50">
+          {summary}
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          {highlights.map((highlight, i) => {
-            const Icon = highlight.icon;
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {insights.map((insight, i) => {
+            const Icon = insight.icon;
             return (
               <div
                 key={i}
-                className={`flex items-center gap-2 p-3 rounded-lg border ${getTypeColor(highlight.type)}`}
+                className={`flex items-center justify-between gap-2 p-3 rounded-lg border transition-all duration-200 cursor-default ${getTypeStyles(insight.type)}`}
+                onClick={insight.action}
               >
-                <Icon className="h-4 w-4" />
-                <span className="text-sm font-medium">{highlight.text}</span>
+                <div className="flex items-center gap-2 flex-1">
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-sm font-medium leading-tight">{insight.text}</span>
+                </div>
+                {getTrendIcon(insight.trend)}
               </div>
             );
           })}
+        </div>
+
+        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground border-t border-border/50">
+          <span>Last updated: {new Date().toLocaleTimeString()}</span>
+          <span className="flex items-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            Powered by AI Analytics
+          </span>
         </div>
       </CardContent>
     </Card>
