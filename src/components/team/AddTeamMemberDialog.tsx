@@ -25,6 +25,7 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
     department: '',
     role_title: '',
     role_id: '',
+    join_date: new Date().toISOString().split('T')[0],
     status: 'active'
   });
 
@@ -35,26 +36,72 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
   }, [open]);
 
   const fetchRoles = async () => {
-    const { data } = await supabase.from('roles').select('*');
-    if (data) setRoles(data);
+    try {
+      const { data, error } = await supabase
+        .from('roles')
+        .select('*')
+        .order('role_name');
+      
+      if (error) {
+        console.error('Error fetching roles:', error);
+        toast({
+          title: "Warning",
+          description: "Could not load role templates",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (data) {
+        setRoles(data);
+        console.log('Loaded roles:', data.length);
+      }
+    } catch (error: any) {
+      console.error('Error in fetchRoles:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.first_name || !formData.last_name || !formData.email || !formData.role_id) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields including permission template",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await supabase.from('team_members').insert([formData]);
+      // Get the selected role's permissions
+      const selectedRole = roles.find(r => r.id === formData.role_id);
+      
+      const memberData = {
+        ...formData,
+        permissions: selectedRole?.permissions_schema || {},
+        workload_score: 0,
+        utilization_score: 0
+      };
+
+      const { error } = await supabase
+        .from('team_members')
+        .insert([memberData]);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Team member added successfully"
+        description: `${formData.first_name} ${formData.last_name} added successfully`
       });
 
       onSuccess();
       onOpenChange(false);
+      
+      // Reset form
       setFormData({
         first_name: '',
         last_name: '',
@@ -63,12 +110,14 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
         department: '',
         role_title: '',
         role_id: '',
+        join_date: new Date().toISOString().split('T')[0],
         status: 'active'
       });
     } catch (error: any) {
+      console.error('Error adding team member:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to add team member",
         variant: "destructive"
       });
     } finally {
@@ -150,19 +199,43 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role_id">Permission Template</Label>
-            <Select value={formData.role_id} onValueChange={(value) => setFormData({ ...formData, role_id: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
+            <Label htmlFor="role_id">Permission Template *</Label>
+            <Select 
+              value={formData.role_id} 
+              onValueChange={(value) => {
+                const selectedRole = roles.find(r => r.id === value);
+                setFormData({ 
+                  ...formData, 
+                  role_id: value,
+                  // Auto-populate department and role title if available
+                  department: selectedRole?.department || formData.department,
+                  role_title: selectedRole?.role_name || formData.role_title
+                });
+              }}
+            >
+              <SelectTrigger className="bg-background">
+                <SelectValue placeholder="Select a role template" />
               </SelectTrigger>
-              <SelectContent>
-                {roles.map(role => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.role_name} - {role.department}
-                  </SelectItem>
-                ))}
+              <SelectContent className="bg-popover z-50">
+                {roles.length === 0 ? (
+                  <SelectItem value="none" disabled>No roles available</SelectItem>
+                ) : (
+                  roles.map(role => (
+                    <SelectItem key={role.id} value={role.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{role.role_name}</span>
+                        <span className="text-xs text-muted-foreground">{role.department}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            {formData.role_id && (
+              <p className="text-xs text-muted-foreground">
+                Department and role title will be auto-populated from the selected template
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
