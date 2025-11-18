@@ -44,7 +44,7 @@ export default function BusinessDashboard() {
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col w-full">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
               <SidebarTrigger />
@@ -75,7 +75,7 @@ export default function BusinessDashboard() {
             </div>
           </header>
 
-          <main className="flex-1 space-y-6 p-6 bg-gradient-to-br from-background via-background to-muted/20">
+          <main className="flex-1 w-full space-y-6 p-6 bg-gradient-to-br from-background via-background to-muted/20 overflow-auto">
             {/* Welcome Banner */}
             <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-primary-foreground shadow-lg">
               <h2 className="text-3xl font-bold mb-2">Welcome to Flowpulse Business Command Center</h2>
