@@ -10,6 +10,20 @@ const InvestorDashboard = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [aiInsightsText, setAiInsightsText] = useState("");
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  
+  // Parse AI insights into individual insights
+  const parseInsights = (text: string): string[] => {
+    if (!text) return [];
+    // Split by numbered points (1., 2., 3., etc.) or by double newlines
+    const insights = text
+      .split(/\n\n+|\n(?=\d+\.)/g)
+      .map(insight => insight.trim())
+      .filter(insight => insight.length > 0)
+      .slice(0, 3); // Take only first 3 insights
+    return insights;
+  };
+  
+  const insights = parseInsights(aiInsightsText);
 
   const { analyzeWithAI, isLoading } = useAIAnalyst({
     onDelta: (text) => setAiInsightsText(prev => prev + text),
@@ -113,51 +127,75 @@ const InvestorDashboard = () => {
       </div>
 
       {/* AI Insights of the Day */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <CardTitle>AI Insights of the Day</CardTitle>
-            </div>
-            <div className="flex items-center gap-2">
-              {lastRefreshed && (
-                <span className="text-xs text-muted-foreground">
-                  Last updated: {lastRefreshed.toLocaleTimeString()}
-                </span>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchDailyInsights}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-2xl font-bold">AI Insights of the Day</h2>
           </div>
-          <CardDescription>Real-time intelligence powered by advanced AI</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading && !aiInsightsText ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : aiInsightsText ? (
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-              {aiInsightsText}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center py-8">
-              Click refresh to get today's AI insights
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2">
+            {lastRefreshed && (
+              <span className="text-xs text-muted-foreground">
+                Last updated: {lastRefreshed.toLocaleTimeString()}
+              </span>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchDailyInsights}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">Real-time intelligence powered by advanced AI</p>
+        
+        {isLoading && !aiInsightsText ? (
+          <div className="grid md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+                <CardContent className="pt-6 min-h-[180px] flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : insights.length > 0 ? (
+          <div className="grid md:grid-cols-3 gap-4">
+            {insights.map((insight, index) => (
+              <Card 
+                key={index} 
+                className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg hover:border-primary/40 transition-all duration-300"
+              >
+                <CardContent className="pt-6 min-h-[180px]">
+                  <div className="flex flex-col gap-3 h-full">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-lg font-bold text-primary">{index + 1}</span>
+                      </div>
+                      <div className="h-px flex-1 bg-primary/20"></div>
+                    </div>
+                    <p className="text-sm leading-relaxed flex-1">{insight.replace(/^\d+\.\s*/, '')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground text-center py-8">
+                Click refresh to get today's AI insights
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Macro Overview */}
       <Card>
