@@ -272,13 +272,6 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                   Employers
                 </Button>
                 <Button size="sm" className="justify-start" onClick={() => {
-                  handleAboutClick();
-                  setMobileMenuOpen(false);
-                }}>
-                  <User className="h-4 w-4 mr-2" />
-                  About Us
-                </Button>
-                <Button size="sm" className="justify-start" onClick={() => {
                   handleContactClick();
                   setMobileMenuOpen(false);
                 }}>
