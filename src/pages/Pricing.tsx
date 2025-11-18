@@ -345,68 +345,85 @@ const Pricing = () => {
             </div>
             </TabsContent>
 
-            <TabsContent value="investor" className="mt-8">
-              <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                {tiers.map((tier) => (
-                  <Card 
-                    key={tier.name}
-                    className={cn(
-                      "relative overflow-hidden transition-all duration-300 hover:shadow-xl",
-                      tier.name === "Pro" && "border-primary shadow-lg scale-105"
-                    )}
-                  >
-                    {tier.name === "Pro" && (
-                      <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-semibold">
-                        POPULAR
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                      <CardDescription className="text-base">{tier.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="space-y-2">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-4xl font-bold">
-                            £{isAnnual ? calculateMonthlyEquivalent(tier.investorPrice) : tier.investorPrice}
-                          </span>
-                          <span className="text-muted-foreground">/month</span>
-                        </div>
-                        {isAnnual && (
-                          <p className="text-sm text-muted-foreground">
-                            £{calculatePrice(tier.investorPrice)} billed annually (save 17%)
-                          </p>
-                        )}
-                      </div>
+          <TabsContent value="investor">
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(270, 76%, 56%)' }}>FlowPulse Investor</h2>
+              <p className="text-muted-foreground">Advanced investment analysis and portfolio management</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {tiers.map((tier, index) => (
+                <Card
+                  key={`investor-${tier.name}`}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                    tier.popular ? 'border-2 shadow-lg' : ''
+                  }`}
+                  style={tier.popular ? { borderColor: 'hsl(270, 76%, 56%)' } : {}}
+                >
+                  {tier.popular && (
+                    <div className="absolute top-0 right-0 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg" style={{ background: 'linear-gradient(to right, hsl(270, 76%, 56%), hsl(280, 70%, 60%))' }}>
+                      Most Popular
+                    </div>
+                  )}
+                  <div className="absolute top-0 left-0 right-0 h-2" style={{ background: `linear-gradient(to right, hsl(270, 76%, 56%), hsl(280, 70%, 60%))` }} />
+                  
+                  <CardHeader className="pt-8">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'linear-gradient(to right, hsl(270, 76%, 56%), hsl(280, 70%, 60%))' }}>
+                      <tier.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                    <CardDescription className="text-base">{tier.description}</CardDescription>
+                  </CardHeader>
 
-                      <Button 
-                        className="w-full" 
-                        size="lg"
-                        variant={tier.name === "Pro" ? "default" : "outline"}
-                        onClick={() => handleCheckout(
-                          isAnnual ? tier.investorAnnualPriceId : tier.investorMonthlyPriceId,
-                          'subscription',
-                          tier.name,
-                          'investor'
-                        )}
-                        disabled={loading === `investor-${tier.name}`}
-                      >
-                        {loading === `investor-${tier.name}` ? "Processing..." : "Get Started"}
-                      </Button>
+                  <CardContent>
+                    <div className="mb-6">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold">£{isAnnual ? calculateMonthlyEquivalent(tier.investorPrice) : tier.investorPrice}</span>
+                        <span className="text-muted-foreground">/{isAnnual ? 'month' : 'month'}</span>
+                      </div>
+                      {isAnnual && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Billed annually at £{calculatePrice(tier.investorPrice)}
+                        </p>
+                      )}
+                      {!isAnnual && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Billed monthly
+                        </p>
+                      )}
+                    </div>
 
-                      <div className="space-y-3 pt-4 border-t">
-                        {tier.features.map((feature, index) => (
-                          <div key={index} className="flex items-start gap-3">
-                            <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                            <span className="text-sm">{feature}</span>
+                    <ul className="space-y-3">
+                      {tier.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start gap-3">
+                          <div className="rounded-full p-1 flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(to right, hsl(270, 76%, 56%), hsl(280, 70%, 60%))' }}>
+                            <Check className="h-3 w-3 text-white" />
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter>
+                    <Button
+                      className="w-full text-white border-0 hover:opacity-90"
+                      size="lg"
+                      style={{ background: 'linear-gradient(to right, hsl(270, 76%, 56%), hsl(280, 70%, 60%))' }}
+                      onClick={() => handleCheckout(
+                        isAnnual ? tier.investorAnnualPriceId : tier.investorMonthlyPriceId,
+                        'subscription',
+                        tier.name,
+                        'investor'
+                      )}
+                      disabled={loading === `investor-${tier.name}`}
+                    >
+                      {loading === `investor-${tier.name}` ? 'Loading...' : 'Get Started'}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
           </Tabs>
 
         <div className="mt-16 text-center">
