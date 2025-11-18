@@ -53,3 +53,7 @@ verify_jwt = true
 
 [functions.compliance-insights]
 verify_jwt = true
+
+[functions.business-recommendations]
+verify_jwt = true
+

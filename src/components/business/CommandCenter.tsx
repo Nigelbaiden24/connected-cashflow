@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Plus, Users, Upload, Zap, FileText, GitBranch } from "lucide-react";
 import { useState } from "react";
+import { AssignMemberDialog } from "./AssignMemberDialog";
+import { UploadDocumentDialog } from "./UploadDocumentDialog";
+import { TriggerAutomationDialog } from "./TriggerAutomationDialog";
+import { AddWorkflowDialog } from "./AddWorkflowDialog";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +24,10 @@ export function CommandCenter() {
   const { toast } = useToast();
   const [taskDialog, setTaskDialog] = useState(false);
   const [projectDialog, setProjectDialog] = useState(false);
+  const [assignDialog, setAssignDialog] = useState(false);
+  const [uploadDialog, setUploadDialog] = useState(false);
+  const [automationDialog, setAutomationDialog] = useState(false);
+  const [workflowDialog, setWorkflowDialog] = useState(false);
   const [taskName, setTaskName] = useState("");
   const [taskDesc, setTaskDesc] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -161,7 +169,7 @@ export function CommandCenter() {
         size="sm" 
         variant="outline" 
         className="gap-2"
-        onClick={() => toast({ title: "Team assignment", description: "Opening team member selector..." })}
+        onClick={() => setAssignDialog(true)}
       >
         <Users className="h-4 w-4" />
         Assign Member
@@ -170,7 +178,7 @@ export function CommandCenter() {
         size="sm" 
         variant="outline" 
         className="gap-2"
-        onClick={() => toast({ title: "Document upload", description: "Opening document uploader..." })}
+        onClick={() => setUploadDialog(true)}
       >
         <Upload className="h-4 w-4" />
         Upload Document
@@ -179,7 +187,7 @@ export function CommandCenter() {
         size="sm" 
         variant="outline" 
         className="gap-2"
-        onClick={() => toast({ title: "Automation", description: "Triggering automation workflow..." })}
+        onClick={() => setAutomationDialog(true)}
       >
         <Zap className="h-4 w-4" />
         Trigger Automation
@@ -188,11 +196,16 @@ export function CommandCenter() {
         size="sm" 
         variant="outline" 
         className="gap-2"
-        onClick={() => toast({ title: "Workflow", description: "Adding new workflow..." })}
+        onClick={() => setWorkflowDialog(true)}
       >
         <FileText className="h-4 w-4" />
         Add Workflow
       </Button>
+
+      <AssignMemberDialog open={assignDialog} onOpenChange={setAssignDialog} />
+      <UploadDocumentDialog open={uploadDialog} onOpenChange={setUploadDialog} />
+      <TriggerAutomationDialog open={automationDialog} onOpenChange={setAutomationDialog} />
+      <AddWorkflowDialog open={workflowDialog} onOpenChange={setWorkflowDialog} />
     </div>
   );
 }

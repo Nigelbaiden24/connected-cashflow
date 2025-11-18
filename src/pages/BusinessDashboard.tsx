@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BusinessSidebar } from "@/components/BusinessSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Settings, Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
@@ -67,10 +67,6 @@ export default function BusinessDashboard() {
                   <h1 className="text-2xl font-bold">Business Dashboard</h1>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
             </div>
           </header>
 
