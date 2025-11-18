@@ -329,7 +329,7 @@ export default function FinancialPlanning() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-6 space-y-6 animate-fade-in ml-64">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background p-6 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
