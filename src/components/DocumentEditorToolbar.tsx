@@ -169,7 +169,7 @@ export function DocumentEditorToolbar({
   const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
 
   return (
-    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-[5]">
       <div className="flex items-center gap-2 p-2 flex-wrap">
         {/* Template Selection */}
         <div className="flex items-center gap-2">
