@@ -56,6 +56,7 @@ export function EnhancedDocumentEditor({
   currentPageId = "page-1",
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
+  const [editTextColor, setEditTextColor] = useState("#000000");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [newSectionContent, setNewSectionContent] = useState("");
@@ -78,11 +79,17 @@ export function EnhancedDocumentEditor({
 
   const handleEditSection = (section: HeaderSection) => {
     setEditingSection(section);
+    setEditTextColor(section.textColor || textColor || "#000000");
   };
 
   const handleSaveEdit = () => {
     if (editingSection) {
-      onContentChange(editingSection.id, editingSection.content);
+      const updatedSections = sections.map((s) =>
+        s.id === editingSection.id
+          ? { ...s, content: editingSection.content, textColor: editTextColor }
+          : s
+      );
+      onSectionsChange(updatedSections);
       setEditingSection(null);
       toast({
         title: "Section updated",
@@ -115,6 +122,7 @@ export function EnhancedDocumentEditor({
       height: 100,
       isCustom: true,
       pageId: currentPageId,
+      textColor: textColor,
     } as any;
     onSectionsChange([...sections, newSection]);
     setIsAddDialogOpen(false);
@@ -179,7 +187,7 @@ export function EnhancedDocumentEditor({
           width={section.width}
           height={section.height}
           isFirst={index === 0}
-          textColor={textColor}
+          textColor={section.textColor || textColor}
           onPositionChange={handleSectionPositionChange}
           onSizeChange={handleSectionSizeChange}
           onEdit={() => handleEditSection(section)}
@@ -260,6 +268,18 @@ export function EnhancedDocumentEditor({
                 }
                 rows={10}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Text Color</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="color"
+                  value={editTextColor}
+                  onChange={(e) => setEditTextColor(e.target.value)}
+                  className="w-20 h-10"
+                />
+                <span className="text-sm text-muted-foreground">{editTextColor}</span>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditingSection(null)}>

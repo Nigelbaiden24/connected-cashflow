@@ -15,6 +15,7 @@ export interface HeaderSection {
   editable?: boolean;
   placeholder?: string;
   defaultContent?: string;
+  textColor?: string;
 }
 
 export function useDocumentSections(templateSections: any[] = []) {
