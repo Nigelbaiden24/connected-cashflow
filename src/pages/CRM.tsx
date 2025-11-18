@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Users, TrendingUp, DollarSign, ArrowLeft, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
 
 const CRM = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const stageFilter = searchParams.get('stage');
   const [totalContacts, setTotalContacts] = useState(0);
   const [activeContacts, setActiveContacts] = useState(0);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -96,7 +98,7 @@ const CRM = () => {
         </Card>
       </div>
 
-      <CRMBoard key={refreshTrigger} />
+      <CRMBoard key={refreshTrigger} initialStage={stageFilter} />
 
       <BulkImportDialog
         open={importDialogOpen}

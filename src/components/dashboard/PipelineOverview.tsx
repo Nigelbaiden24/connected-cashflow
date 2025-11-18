@@ -54,8 +54,8 @@ export function PipelineOverview() {
             return (
               <div
                 key={stage.key}
-                onClick={() => navigate(`/crm?stage=${stage.key}`)}
-                className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
+                onClick={() => navigate(`/finance-crm?stage=${stage.key}`)}
+                className="flex flex-col items-center gap-2 p-4 rounded-lg border hover:bg-accent hover:shadow-md cursor-pointer transition-all duration-200 active:scale-95"
               >
                 <div className={`p-3 rounded-full ${stage.color} bg-opacity-10`}>
                   <Icon className={`h-5 w-5 ${stage.color.replace('bg-', 'text-')}`} />
