@@ -138,7 +138,7 @@ const Pricing = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
         className="fixed top-4 left-4 z-50 gap-2 bg-background/80 backdrop-blur-sm"
       >
         <ArrowLeft className="h-4 w-4" />
