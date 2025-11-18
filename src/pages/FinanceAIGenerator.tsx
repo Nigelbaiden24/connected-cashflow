@@ -134,33 +134,106 @@ const FinanceAIGenerator = () => {
     if (!template) return;
 
     toast({
-      title: "Generating content...",
-      description: "AI is filling the document with content based on your prompt",
+      title: "AI is planning your document...",
+      description: "Analyzing your request and structuring the document",
     });
 
     try {
-      for (const section of sections.filter(s => s.editable)) {
-        const { data, error } = await supabase.functions.invoke("financial-chat", {
-          body: {
-            message: `Based on this user request: "${prompt}"\n\nGenerate professional content for a document section titled "${section.title}". Provide detailed, well-structured content suitable for a financial or business document that aligns with the user's request.`,
-          },
-        });
+      // First, ask AI to plan the document structure
+      const { data: planData, error: planError } = await supabase.functions.invoke("financial-chat", {
+        body: {
+          message: `You are a professional document designer. Based on this request: "${prompt}"
 
-        if (error) throw error;
+Analyze the request and create a comprehensive document plan in JSON format:
+{
+  "needsMultiplePages": boolean,
+  "numberOfPages": number,
+  "documentColors": {
+    "backgroundColor": "hex color",
+    "textColor": "hex color"
+  },
+  "pages": [
+    {
+      "pageName": "string",
+      "sections": [
+        {
+          "title": "string",
+          "content": "detailed paragraph content with proper formatting",
+          "order": number
+        }
+      ]
+    }
+  ]
+}
 
-        const generatedContent = data.response || "";
-        updateSectionContent(section.id, generatedContent);
+Create a logical, well-structured document. Use professional colors. Split content into clear sections and paragraphs. Make it comprehensive and professional.`,
+        },
+      });
+
+      if (planError) throw planError;
+
+      // Parse the AI response to extract JSON
+      const responseText = planData.response || "";
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Could not parse document plan");
+      
+      const plan = JSON.parse(jsonMatch[0]);
+
+      toast({
+        title: "Building your document...",
+        description: `Creating ${plan.numberOfPages} page(s) with structured content`,
+      });
+
+      // Apply colors
+      if (plan.documentColors) {
+        setBackgroundColor(plan.documentColors.backgroundColor);
+        setTextColor(plan.documentColors.textColor);
       }
 
+      // Create pages if needed
+      const newPages = plan.pages.map((p: any, idx: number) => ({
+        id: `page-${idx + 1}`,
+        name: p.pageName || `Page ${idx + 1}`
+      }));
+      
+      setPages(newPages);
+      setCurrentPageId(newPages[0].id);
+
+      // Create sections across all pages
+      const allNewSections: any[] = [];
+      plan.pages.forEach((page: any, pageIdx: number) => {
+        page.sections.forEach((section: any, sectionIdx: number) => {
+          const newSection = {
+            id: `ai-section-${pageIdx}-${sectionIdx}-${Date.now()}`,
+            title: section.title,
+            content: section.content,
+            type: "body",
+            editable: true,
+            placeholder: "AI generated content",
+            order: section.order || sectionIdx,
+            x: 50,
+            y: 100 + (sectionIdx * 180),
+            width: 600,
+            height: 150,
+            isCustom: true,
+            pageId: newPages[pageIdx].id,
+          };
+          allNewSections.push(newSection);
+        });
+      });
+
+      setSections(allNewSections);
+      saveToHistory();
+
       toast({
-        title: "Document filled",
-        description: "AI has generated content for all sections based on your prompt",
+        title: "Document complete!",
+        description: `Created ${plan.numberOfPages} page(s) with ${allNewSections.length} sections`,
       });
     } catch (error) {
-      console.error("Error generating content:", error);
+      console.error("Error generating document:", error);
       toast({
         title: "Generation failed",
-        description: "Could not generate content. Please try again.",
+        description: "Could not generate document. Please try again with a clearer prompt.",
         variant: "destructive",
       });
     }
