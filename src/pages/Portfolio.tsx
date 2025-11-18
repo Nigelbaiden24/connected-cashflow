@@ -163,7 +163,7 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="p-6 space-y-6" ref={contentRef}>
+    <div className="p-6 space-y-6 ml-64" ref={contentRef}>
       <div className="flex justify-between items-center print:hidden">
         <div className="flex items-center gap-4">
           <Button

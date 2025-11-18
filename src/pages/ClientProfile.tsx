@@ -207,7 +207,7 @@ const ClientProfile = () => {
 
   if (loading) {
     return (
-      <div className="flex-1 space-y-6 p-6">
+      <div className="flex-1 space-y-6 p-6 ml-64">
         <div className="flex items-center justify-center h-64">
           <div className="text-lg">Loading client profile...</div>
         </div>
@@ -217,7 +217,7 @@ const ClientProfile = () => {
 
   if (!client) {
     return (
-      <div className="flex-1 space-y-6 p-6">
+      <div className="flex-1 space-y-6 p-6 ml-64">
         <div className="flex items-center justify-center h-64">
           <div className="text-lg">Client not found</div>
         </div>
@@ -226,7 +226,7 @@ const ClientProfile = () => {
   }
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6 ml-64">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

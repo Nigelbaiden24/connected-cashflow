@@ -117,7 +117,7 @@ const MarketData = () => {
   };
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6 ml-64">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
