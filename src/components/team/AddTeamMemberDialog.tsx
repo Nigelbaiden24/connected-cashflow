@@ -87,12 +87,27 @@ export function AddTeamMemberDialog({ open, onOpenChange, onSuccess }: AddTeamMe
       // Get the selected role's permissions
       const selectedRole = roles.find(r => r.id === formData.role_id);
       
-      const memberData = {
-        ...formData,
+      // Check if role_id is a valid UUID (from database) or a string (fallback)
+      const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(formData.role_id);
+      
+      const memberData: any = {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone || null,
+        department: formData.department,
+        role_title: formData.role_title,
+        join_date: formData.join_date,
+        status: formData.status,
         permissions: selectedRole?.permissions_schema || {},
         workload_score: 0,
         utilization_score: 0
       };
+      
+      // Only include role_id if it's a valid UUID from the database
+      if (isValidUUID) {
+        memberData.role_id = formData.role_id;
+      }
 
       const { error } = await supabase
         .from('team_members')
