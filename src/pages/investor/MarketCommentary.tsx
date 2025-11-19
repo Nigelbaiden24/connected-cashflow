@@ -1,44 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, MessageSquare, Upload, Send, TrendingUp, Loader2 } from "lucide-react";
+import { Sparkles, MessageSquare, Send, Loader2, ExternalLink, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Report {
+  id: string;
+  title: string;
+  description: string | null;
+  file_path: string;
+  report_type: string;
+  platform: string;
+  thumbnail_url: string | null;
+  published_date: string | null;
+  created_at: string;
+}
 
 const MarketCommentary = () => {
   const [aiQuery, setAiQuery] = useState("");
   const [aiResponse, setAiResponse] = useState("");
-  const [commentaries] = useState([
-    {
-      id: "1",
-      title: "Weekly Market Wrap-Up",
-      author: "Chief Investment Officer",
-      date: "2025-01-12",
-      excerpt: "Markets showed resilience this week as tech stocks led the charge...",
-      category: "Weekly",
-      sentiment: "positive"
-    },
-    {
-      id: "2",
-      title: "Fed Decision Impact Analysis",
-      author: "Market Strategist",
-      date: "2025-01-11",
-      excerpt: "The Federal Reserve's latest decision has created ripples across...",
-      category: "Special Report",
-      sentiment: "neutral"
-    },
-    {
-      id: "3",
-      title: "Crypto Market Update",
-      author: "Digital Assets Lead",
-      date: "2025-01-10",
-      excerpt: "Bitcoin continues to consolidate as institutional interest grows...",
-      category: "Daily",
-      sentiment: "positive"
-    },
-  ]);
+  const [commentaries, setCommentaries] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCommentaries();
+  }, []);
+
+  const fetchCommentaries = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('platform', 'investor')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCommentaries(data || []);
+    } catch (error) {
+      console.error('Error fetching commentaries:', error);
+      toast.error('Failed to load market commentaries');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const { analyzeWithAI, isLoading } = useAIAnalyst({
     onDelta: (text) => setAiResponse(prev => prev + text),
@@ -62,14 +71,45 @@ const MarketCommentary = () => {
     setAiQuery("");
   };
 
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case "positive":
-        return "text-green-600";
-      case "negative":
-        return "text-red-600";
-      default:
-        return "text-yellow-600";
+  const handleViewReport = async (report: Report) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('reports')
+        .createSignedUrl(report.file_path, 3600);
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error accessing report:', error);
+      toast.error('Failed to open commentary. Please ensure you have access to this report.');
+    }
+  };
+
+  const handleDownloadReport = async (report: Report) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('reports')
+        .download(report.file_path);
+
+      if (error) throw error;
+
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${report.title}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Commentary downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast.error('Failed to download commentary');
     }
   };
 
@@ -144,31 +184,70 @@ const MarketCommentary = () => {
       {/* Commentary Feed */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Latest Commentary</h2>
-        {commentaries.map((commentary) => (
-          <Card key={commentary.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
-                  <Badge variant="secondary">{commentary.category}</Badge>
-                </div>
-                <TrendingUp className={`h-5 w-5 ${getSentimentColor(commentary.sentiment)}`} />
-              </div>
-              <CardTitle className="mt-4">{commentary.title}</CardTitle>
-              <CardDescription className="flex items-center gap-2 text-sm">
-                <span className="font-medium">{commentary.author}</span>
-                <span>•</span>
-                <span>{commentary.date}</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">{commentary.excerpt}</p>
-              <Button className="bg-primary hover:bg-primary/90">
-                Read Full Commentary
-              </Button>
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">Loading market commentaries...</p>
+          </div>
+        ) : commentaries.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center h-64">
+              <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-semibold mb-2">No commentaries available</p>
+              <p className="text-sm text-muted-foreground text-center">
+                Market commentaries uploaded by administrators will appear here
+              </p>
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          <>
+            {commentaries.map((commentary) => (
+              <Card key={commentary.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      <Badge variant="secondary">{commentary.report_type}</Badge>
+                    </div>
+                  </div>
+                  <CardTitle className="mt-4">{commentary.title}</CardTitle>
+                  {commentary.description && (
+                    <CardDescription className="text-sm mt-2">
+                      {commentary.description}
+                    </CardDescription>
+                  )}
+                  {commentary.published_date && (
+                    <CardDescription className="text-sm">
+                      {new Date(commentary.published_date).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1 bg-primary hover:bg-primary/90"
+                      onClick={() => handleViewReport(commentary)}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Read Full Commentary
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => handleDownloadReport(commentary)}
+                      title="Download PDF"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
