@@ -54,6 +54,9 @@ verify_jwt = true
 [functions.portfolio-benchmark-analysis]
 verify_jwt = true
 
+[functions.ai-stock-discovery]
+verify_jwt = true
+
 [functions.scenario-simulation]
 verify_jwt = true
 
