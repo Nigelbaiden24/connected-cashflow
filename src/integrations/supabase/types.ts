@@ -2406,6 +2406,113 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_alert_notifications: {
+        Row: {
+          alert_id: string
+          delivered_at: string | null
+          delivery_method: string
+          id: string
+          is_read: boolean | null
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          delivered_at?: string | null
+          delivery_method: string
+          id?: string
+          is_read?: boolean | null
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          delivered_at?: string | null
+          delivery_method?: string
+          id?: string
+          is_read?: boolean | null
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_alert_notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "investor_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investor_alert_preferences: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          email_enabled: boolean | null
+          id: string
+          phone_number: string | null
+          platform_enabled: boolean | null
+          sms_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          phone_number?: string | null
+          platform_enabled?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          phone_number?: string | null
+          platform_enabled?: boolean | null
+          sms_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investor_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          published_date: string | null
+          severity: string | null
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          published_date?: string | null
+          severity?: string | null
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          published_date?: string | null
+          severity?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           candidate_email: string
