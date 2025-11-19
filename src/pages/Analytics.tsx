@@ -237,7 +237,7 @@ const Analytics = () => {
   };
 
   return (
-    <div className="flex-1 p-6 space-y-6 ml-64" ref={contentRef}>
+    <div className="flex-1 p-6 space-y-6" ref={contentRef}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics</h1>

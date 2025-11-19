@@ -80,7 +80,7 @@ export default function Payroll() {
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
-        <div className="flex-1 ml-64">
+        <div className="flex-1">
           <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center gap-4 px-6">
               <Button
