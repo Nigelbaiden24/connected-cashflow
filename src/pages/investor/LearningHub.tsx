@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   BookOpen, 
   Video, 
@@ -122,12 +123,6 @@ export default function LearningHub() {
       toast.error("Failed to update progress");
     }
   };
-
-  const filteredGlossary = glossary.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const beginnerGuides = [
     {
@@ -329,10 +324,10 @@ export default function LearningHub() {
     { term: "Yield", definition: "The income return on an investment, such as the interest or dividends received" },
   ];
 
-  const filteredGlossary = glossaryTerms.filter(
+  const filteredGlossary = glossary.filter(
     (item) =>
-      item.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.definition.toLowerCase().includes(searchTerm.toLowerCase())
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
