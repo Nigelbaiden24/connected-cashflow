@@ -3269,6 +3269,41 @@ export type Database = {
           },
         ]
       }
+      portfolio_benchmarks: {
+        Row: {
+          ai_analysis: string | null
+          benchmark_name: string
+          comparison_data: Json
+          created_at: string | null
+          id: string
+          portfolio_id: string | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          benchmark_name: string
+          comparison_data: Json
+          created_at?: string | null
+          id?: string
+          portfolio_id?: string | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          benchmark_name?: string
+          comparison_data?: Json
+          created_at?: string | null
+          id?: string
+          portfolio_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_benchmarks_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "user_portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_holdings: {
         Row: {
           allocation_percentage: number | null
@@ -3814,6 +3849,42 @@ export type Database = {
           quantity?: number
           symbol?: string
           updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_portfolios: {
+        Row: {
+          created_at: string | null
+          holdings: Json
+          id: string
+          metadata: Json | null
+          portfolio_name: string
+          total_value: number | null
+          updated_at: string | null
+          upload_date: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          holdings: Json
+          id?: string
+          metadata?: Json | null
+          portfolio_name: string
+          total_value?: number | null
+          updated_at?: string | null
+          upload_date?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          holdings?: Json
+          id?: string
+          metadata?: Json | null
+          portfolio_name?: string
+          total_value?: number | null
+          updated_at?: string | null
+          upload_date?: string | null
           user_id?: string | null
         }
         Relationships: []
