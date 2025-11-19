@@ -1,97 +1,91 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Briefcase, Upload, TrendingUp, Shield, Target } from "lucide-react";
+import { Briefcase, ExternalLink, Download } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Report {
+  id: string;
+  title: string;
+  description: string | null;
+  file_path: string;
+  report_type: string;
+  platform: string;
+  thumbnail_url: string | null;
+  published_date: string | null;
+  created_at: string;
+}
 
 const ModelPortfolios = () => {
-  const portfolios = [
-    {
-      id: "1",
-      name: "AI & Automation",
-      theme: "Technology Innovation",
-      expectedReturn: "15-20%",
-      allocation: {
-        "AI Companies": 40,
-        "Robotics": 30,
-        "Cloud Infrastructure": 20,
-        "Semiconductors": 10
-      },
-      performance: "+24.3%",
-      holdings: 25
-    },
-    {
-      id: "2",
-      name: "Cybersecurity",
-      theme: "Digital Security",
-      expectedReturn: "12-16%",
-      allocation: {
-        "Security Software": 45,
-        "Network Security": 30,
-        "Cloud Security": 15,
-        "Identity Management": 10
-      },
-      performance: "+19.7%",
-      holdings: 18
-    },
-    {
-      id: "3",
-      name: "Renewable Energy",
-      theme: "Sustainable Future",
-      expectedReturn: "10-14%",
-      allocation: {
-        "Solar Power": 35,
-        "Wind Energy": 30,
-        "Energy Storage": 20,
-        "EV Infrastructure": 15
-      },
-      performance: "+16.2%",
-      holdings: 22
-    },
-    {
-      id: "4",
-      name: "Consumer Staples Stability",
-      theme: "Defensive Growth",
-      expectedReturn: "6-9%",
-      allocation: {
-        "Food & Beverage": 40,
-        "Household Products": 30,
-        "Personal Care": 20,
-        "Retail": 10
-      },
-      performance: "+8.5%",
-      holdings: 30
-    },
-    {
-      id: "5",
-      name: "High-Cash-Flow Businesses",
-      theme: "Cash Generation",
-      expectedReturn: "9-12%",
-      allocation: {
-        "Infrastructure": 30,
-        "Utilities": 25,
-        "REITs": 25,
-        "Telecoms": 20
-      },
-      performance: "+11.4%",
-      holdings: 28
-    },
-    {
-      id: "6",
-      name: "Dividend Strength Portfolio",
-      theme: "Income Focus",
-      expectedReturn: "7-10%",
-      allocation: {
-        "Dividend Aristocrats": 50,
-        "High Yield Stocks": 25,
-        "Dividend Growth": 15,
-        "Preferred Stocks": 10
-      },
-      performance: "+9.8%",
-      holdings: 35
-    },
-  ];
+  const [portfolios, setPortfolios] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPortfolios();
+  }, []);
+
+  const fetchPortfolios = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('platform', 'investor')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPortfolios(data || []);
+    } catch (error) {
+      console.error('Error fetching portfolios:', error);
+      toast.error('Failed to load model portfolios');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewPortfolio = async (portfolio: Report) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('reports')
+        .createSignedUrl(portfolio.file_path, 3600);
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error accessing portfolio:', error);
+      toast.error('Failed to open portfolio. Please ensure you have access to this report.');
+    }
+  };
+
+  const handleDownloadPortfolio = async (portfolio: Report) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('reports')
+        .download(portfolio.file_path);
+
+      if (error) throw error;
+
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${portfolio.title}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Portfolio downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading portfolio:', error);
+      toast.error('Failed to download portfolio');
+    }
+  };
 
   return (
     <div className="p-6 space-y-6 investor-theme">
@@ -110,52 +104,43 @@ const ModelPortfolios = () => {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <Briefcase className="h-8 w-8 text-primary" />
-                <Badge variant="secondary">{portfolio.theme}</Badge>
+                <Badge variant="secondary">{portfolio.report_type}</Badge>
               </div>
-              <CardTitle className="mt-4">{portfolio.name}</CardTitle>
-              <CardDescription>
-                Target Return: {portfolio.expectedReturn} • {portfolio.holdings} Holdings
-              </CardDescription>
+              <CardTitle className="mt-4">{portfolio.title}</CardTitle>
+              {portfolio.description && (
+                <CardDescription className="line-clamp-2">
+                  {portfolio.description}
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">YTD Performance</span>
-                <span className={`text-lg font-bold ${portfolio.performance.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                  {portfolio.performance}
-                </span>
-              </div>
+              {portfolio.published_date && (
+                <p className="text-sm text-muted-foreground">
+                  Published: {new Date(portfolio.published_date).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </p>
+              )}
 
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium">Asset Allocation</h4>
-                {Object.entries(portfolio.allocation).map(([asset, percentage]) => (
-                  <div key={asset} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="capitalize">{asset}</span>
-                      <span className="font-medium">{percentage}%</span>
-                    </div>
-                    <Progress value={percentage} className="h-2" />
-                  </div>
-                ))}
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  onClick={() => handleViewPortfolio(portfolio)}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => handleDownloadPortfolio(portfolio)}
+                  title="Download PDF"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
               </div>
-
-              <div className="grid grid-cols-3 gap-2 pt-4 border-t">
-                <div className="flex flex-col items-center">
-                  <Shield className="h-4 w-4 text-muted-foreground mb-1" />
-                  <span className="text-xs text-muted-foreground">Protected</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <Target className="h-4 w-4 text-muted-foreground mb-1" />
-                  <span className="text-xs text-muted-foreground">Rebalanced</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <TrendingUp className="h-4 w-4 text-muted-foreground mb-1" />
-                  <span className="text-xs text-muted-foreground">Optimized</span>
-                </div>
-              </div>
-
-              <Button className="w-full bg-primary hover:bg-primary/90">
-                View Details
-              </Button>
             </CardContent>
           </Card>
         ))}
