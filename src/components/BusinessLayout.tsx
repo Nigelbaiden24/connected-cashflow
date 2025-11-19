@@ -14,7 +14,7 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
     <SidebarProvider>
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col ml-64">
           <main className="flex-1">
             {children}
           </main>

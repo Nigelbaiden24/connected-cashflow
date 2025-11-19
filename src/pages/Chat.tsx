@@ -519,7 +519,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-full flex-col ml-64">
+    <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b p-4">
         <div className="flex items-center justify-between">
