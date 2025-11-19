@@ -2608,6 +2608,122 @@ export type Database = {
         }
         Relationships: []
       }
+      learning_content: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          difficulty_level: string | null
+          duration: string | null
+          file_path: string | null
+          id: string
+          is_published: boolean | null
+          key_metrics: string[] | null
+          major_players: string[] | null
+          metadata: Json | null
+          mitigation: string | null
+          severity: string | null
+          subcategory: string | null
+          thumbnail_url: string | null
+          title: string
+          topics: string[] | null
+          updated_at: string | null
+          video_url: string | null
+          view_count: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration?: string | null
+          file_path?: string | null
+          id?: string
+          is_published?: boolean | null
+          key_metrics?: string[] | null
+          major_players?: string[] | null
+          metadata?: Json | null
+          mitigation?: string | null
+          severity?: string | null
+          subcategory?: string | null
+          thumbnail_url?: string | null
+          title: string
+          topics?: string[] | null
+          updated_at?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration?: string | null
+          file_path?: string | null
+          id?: string
+          is_published?: boolean | null
+          key_metrics?: string[] | null
+          major_players?: string[] | null
+          metadata?: Json | null
+          mitigation?: string | null
+          severity?: string | null
+          subcategory?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          topics?: string[] | null
+          updated_at?: string | null
+          video_url?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      learning_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          content_id: string | null
+          created_at: string | null
+          id: string
+          last_accessed_at: string | null
+          progress_percentage: number | null
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          content_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          content_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_progress_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "learning_content"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           category: string | null
@@ -4215,6 +4331,10 @@ export type Database = {
       calculate_next_cron_run: {
         Args: { cron_expr: string; tz?: string }
         Returns: string
+      }
+      increment_learning_content_views: {
+        Args: { content_id: string }
+        Returns: undefined
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_hr_admin: { Args: { _user_id: string }; Returns: boolean }

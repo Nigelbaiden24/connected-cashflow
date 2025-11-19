@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   BookOpen, 
   Video, 
@@ -16,12 +16,118 @@ import {
   Factory,
   ShieldAlert,
   Briefcase,
-  Library
+  Library,
+  CheckCircle,
+  Loader2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function LearningHub() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [guides, setGuides] = useState<any[]>([]);
+  const [sectors, setSectors] = useState<any[]>([]);
+  const [risks, setRisks] = useState<any[]>([]);
+  const [taxGuides, setTaxGuides] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [glossary, setGlossary] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchLearningContent();
+  }, []);
+
+  const fetchLearningContent = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("learning_content")
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        setGuides(data.filter(item => item.category === "guides"));
+        setSectors(data.filter(item => item.category === "sectors"));
+        setRisks(data.filter(item => item.category === "risks"));
+        setTaxGuides(data.filter(item => item.category === "tax"));
+        setVideos(data.filter(item => item.category === "videos"));
+        setGlossary(data.filter(item => item.category === "glossary"));
+      }
+    } catch (error: any) {
+      console.error("Error fetching learning content:", error);
+      toast.error("Failed to load learning content");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleViewContent = async (content: any) => {
+    setSelectedContent(content);
+    setContentDialogOpen(true);
+
+    // Increment view count
+    try {
+      await supabase.rpc("increment_learning_content_views", {
+        content_id: content.id
+      });
+
+      // Track user progress
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("learning_progress")
+          .upsert({
+            user_id: user.id,
+            content_id: content.id,
+            last_accessed_at: new Date().toISOString()
+          }, {
+            onConflict: "user_id,content_id"
+          });
+      }
+    } catch (error) {
+      console.error("Error tracking content view:", error);
+    }
+  };
+
+  const markAsCompleted = async (contentId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to track your progress");
+        return;
+      }
+
+      await supabase
+        .from("learning_progress")
+        .upsert({
+          user_id: user.id,
+          content_id: contentId,
+          completed: true,
+          progress_percentage: 100,
+          completed_at: new Date().toISOString()
+        }, {
+          onConflict: "user_id,content_id"
+        });
+
+      toast.success("Marked as completed!");
+    } catch (error) {
+      console.error("Error marking as completed:", error);
+      toast.error("Failed to update progress");
+    }
+  };
+
+  const filteredGlossary = glossary.filter(
+    (item) =>
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const beginnerGuides = [
     {
