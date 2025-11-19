@@ -4,82 +4,39 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Sparkles, TrendingUp, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AIDiscoveryScreener() {
   const [aiFilters, setAiFilters] = useState({
     lowDebt: false,
     strongMargins: false,
-    consistentGrowth: false,
-    highROE: false,
+    highGrowth: false,
     undervalued: false,
-    insiderBuying: false,
-    positiveEarnings: false,
-    lowPE: false,
+    strongCashFlow: false,
+    dividendPaying: false,
+    marketLeader: false,
+    innovativeTech: false,
   });
   
-  const [aiResponse, setAiResponse] = useState("");
   const [discoveries, setDiscoveries] = useState<any[]>([]);
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [selectedStock, setSelectedStock] = useState<any>(null);
+  const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
+  const [detailedAnalysis, setDetailedAnalysis] = useState("");
 
-  const mockAIDiscoveries = [
-    { 
-      symbol: "COST", 
-      name: "Costco Wholesale", 
-      score: 94, 
-      matchedCriteria: ["Low Debt", "Strong Margins", "Consistent Growth", "High ROE"], 
-      aiInsight: "Exceptional operational efficiency with industry-leading margins",
-      price: 789.45,
-      potential: "+22%"
-    },
-    { 
-      symbol: "V", 
-      name: "Visa Inc.", 
-      score: 91, 
-      matchedCriteria: ["Strong Margins", "High ROE", "Consistent Growth", "Positive Earnings"], 
-      aiInsight: "Dominant market position in digital payments with strong pricing power",
-      price: 285.32,
-      potential: "+18%"
-    },
-    { 
-      symbol: "MA", 
-      name: "Mastercard Inc.", 
-      score: 89, 
-      matchedCriteria: ["Strong Margins", "High ROE", "Low Debt", "Positive Earnings"], 
-      aiInsight: "Strong network effects and expanding into new payment technologies",
-      price: 478.56,
-      potential: "+16%"
-    },
-    { 
-      symbol: "LLY", 
-      name: "Eli Lilly", 
-      score: 87, 
-      matchedCriteria: ["Strong Margins", "Consistent Growth", "Undervalued", "Positive Earnings"], 
-      aiInsight: "Breakthrough drugs in diabetes and obesity markets driving growth",
-      price: 712.89,
-      potential: "+25%"
-    },
-    { 
-      symbol: "ADBE", 
-      name: "Adobe Inc.", 
-      score: 85, 
-      matchedCriteria: ["High ROE", "Strong Margins", "Consistent Growth", "Low Debt"], 
-      aiInsight: "Leading creative software suite with strong recurring revenue",
-      price: 623.45,
-      potential: "+15%"
-    },
-  ];
-
-  const { analyzeWithAI, isLoading } = useAIAnalyst({
-    onDelta: (text) => setAiResponse(prev => prev + text),
+  const { analyzeWithAI, isLoading: isAnalyzing } = useAIAnalyst({
+    onDelta: (text) => setDetailedAnalysis(prev => prev + text),
     onDone: () => {
-      toast.success("AI discovery complete");
+      toast.success("Analysis complete");
     },
     onError: (error) => {
       toast.error(error);
-      setAiResponse("");
+      setDetailedAnalysis("");
     }
   });
 
@@ -97,12 +54,58 @@ export function AIDiscoveryScreener() {
       return;
     }
     
-    setAiResponse("");
-    setDiscoveries(mockAIDiscoveries);
+    setIsDiscovering(true);
+    setDiscoveries([]);
     
-    const query = `Find investment opportunities that match these criteria: ${activeFilters.join(", ")}. Provide detailed analysis of why these stocks are good candidates based on the selected filters.`;
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-stock-discovery", {
+        body: { filters: aiFilters }
+      });
+
+      if (error) throw error;
+
+      if (data.discoveries && data.discoveries.length > 0) {
+        setDiscoveries(data.discoveries);
+        toast.success(`Discovered ${data.discoveries.length} opportunities!`);
+      } else {
+        toast.error("No opportunities found matching your criteria");
+      }
+    } catch (error: any) {
+      console.error("Discovery error:", error);
+      if (error.message?.includes("429")) {
+        toast.error("Rate limit exceeded. Please try again in a moment.");
+      } else if (error.message?.includes("402")) {
+        toast.error("Credits depleted. Please add more credits.");
+      } else {
+        toast.error("Failed to discover opportunities");
+      }
+    } finally {
+      setIsDiscovering(false);
+    }
+  };
+
+  const handleAnalyzeStock = async (stock: any) => {
+    setSelectedStock(stock);
+    setDetailedAnalysis("");
+    setAnalysisDialogOpen(true);
     
-    await analyzeWithAI(query, "company-qa");
+    const query = `Provide a comprehensive investment analysis for ${stock.name} (${stock.symbol}). 
+    
+Current Price: ${stock.price}
+AI Score: ${stock.aiScore}/100
+Upside Potential: ${stock.potential}
+
+Include:
+1. Fundamental analysis (financials, valuation)
+2. Technical analysis (price trends, support/resistance)
+3. Competitive positioning
+4. Growth catalysts and risks
+5. Investment recommendation with target price
+6. Key metrics: ${JSON.stringify(stock.keyMetrics || {})}
+
+Focus on actionable insights for investors.`;
+
+    await analyzeWithAI(query, "company-qa", stock.symbol);
   };
 
   return (
@@ -114,87 +117,104 @@ export function AIDiscoveryScreener() {
             AI-Powered Discovery Filters
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="lowDebt" 
+              <Checkbox
+                id="lowDebt"
                 checked={aiFilters.lowDebt}
                 onCheckedChange={() => toggleFilter("lowDebt")}
               />
-              <Label htmlFor="lowDebt" className="cursor-pointer">Low Debt (D/E &lt; 0.5)</Label>
+              <Label htmlFor="lowDebt" className="text-sm font-medium cursor-pointer">
+                Low Debt Ratio
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="strongMargins" 
+              <Checkbox
+                id="strongMargins"
                 checked={aiFilters.strongMargins}
                 onCheckedChange={() => toggleFilter("strongMargins")}
               />
-              <Label htmlFor="strongMargins" className="cursor-pointer">Strong Margins (&gt; 20%)</Label>
+              <Label htmlFor="strongMargins" className="text-sm font-medium cursor-pointer">
+                Strong Margins
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="consistentGrowth" 
-                checked={aiFilters.consistentGrowth}
-                onCheckedChange={() => toggleFilter("consistentGrowth")}
+              <Checkbox
+                id="highGrowth"
+                checked={aiFilters.highGrowth}
+                onCheckedChange={() => toggleFilter("highGrowth")}
               />
-              <Label htmlFor="consistentGrowth" className="cursor-pointer">Consistent Growth (3yr+)</Label>
+              <Label htmlFor="highGrowth" className="text-sm font-medium cursor-pointer">
+                High Growth
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="highROE" 
-                checked={aiFilters.highROE}
-                onCheckedChange={() => toggleFilter("highROE")}
-              />
-              <Label htmlFor="highROE" className="cursor-pointer">High ROE (&gt; 15%)</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="undervalued" 
+              <Checkbox
+                id="undervalued"
                 checked={aiFilters.undervalued}
                 onCheckedChange={() => toggleFilter("undervalued")}
               />
-              <Label htmlFor="undervalued" className="cursor-pointer">Undervalued (P/B &lt; 3)</Label>
+              <Label htmlFor="undervalued" className="text-sm font-medium cursor-pointer">
+                Undervalued
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="insiderBuying" 
-                checked={aiFilters.insiderBuying}
-                onCheckedChange={() => toggleFilter("insiderBuying")}
+              <Checkbox
+                id="strongCashFlow"
+                checked={aiFilters.strongCashFlow}
+                onCheckedChange={() => toggleFilter("strongCashFlow")}
               />
-              <Label htmlFor="insiderBuying" className="cursor-pointer">Insider Buying</Label>
+              <Label htmlFor="strongCashFlow" className="text-sm font-medium cursor-pointer">
+                Strong Cash Flow
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="positiveEarnings" 
-                checked={aiFilters.positiveEarnings}
-                onCheckedChange={() => toggleFilter("positiveEarnings")}
+              <Checkbox
+                id="dividendPaying"
+                checked={aiFilters.dividendPaying}
+                onCheckedChange={() => toggleFilter("dividendPaying")}
               />
-              <Label htmlFor="positiveEarnings" className="cursor-pointer">Positive Earnings Surprise</Label>
+              <Label htmlFor="dividendPaying" className="text-sm font-medium cursor-pointer">
+                Dividend Paying
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="lowPE" 
-                checked={aiFilters.lowPE}
-                onCheckedChange={() => toggleFilter("lowPE")}
+              <Checkbox
+                id="marketLeader"
+                checked={aiFilters.marketLeader}
+                onCheckedChange={() => toggleFilter("marketLeader")}
               />
-              <Label htmlFor="lowPE" className="cursor-pointer">Low P/E (&lt; 25)</Label>
+              <Label htmlFor="marketLeader" className="text-sm font-medium cursor-pointer">
+                Market Leader
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="innovativeTech"
+                checked={aiFilters.innovativeTech}
+                onCheckedChange={() => toggleFilter("innovativeTech")}
+              />
+              <Label htmlFor="innovativeTech" className="text-sm font-medium cursor-pointer">
+                Innovative Tech
+              </Label>
             </div>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex gap-3">
             <Button 
-              className="flex-1 bg-primary hover:bg-primary/90"
-              onClick={handleDiscoverWithAI}
-              disabled={isLoading}
+              onClick={handleDiscoverWithAI} 
+              disabled={isDiscovering}
+              className="flex-1 gap-2 bg-primary hover:bg-primary/90"
             >
-              {isLoading ? (
+              {isDiscovering ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Analyzing...
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Discovering...
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <Sparkles className="h-4 w-4" />
                   Discover with AI
                 </>
               )}
@@ -202,16 +222,19 @@ export function AIDiscoveryScreener() {
             <Button 
               variant="outline" 
               className="flex-1"
-              onClick={() => setAiFilters({
-                lowDebt: false,
-                strongMargins: false,
-                consistentGrowth: false,
-                highROE: false,
-                undervalued: false,
-                insiderBuying: false,
-                positiveEarnings: false,
-                lowPE: false,
-              })}
+              onClick={() => {
+                setAiFilters({
+                  lowDebt: false,
+                  strongMargins: false,
+                  highGrowth: false,
+                  undervalued: false,
+                  strongCashFlow: false,
+                  dividendPaying: false,
+                  marketLeader: false,
+                  innovativeTech: false,
+                });
+                setDiscoveries([]);
+              }}
             >
               Reset Filters
             </Button>
@@ -219,80 +242,116 @@ export function AIDiscoveryScreener() {
         </CardContent>
       </Card>
 
-      {/* AI Analysis Response */}
-      {aiResponse && (
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      {discoveries.length > 0 && (
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              AI Analysis
+              <TrendingUp className="h-5 w-5 text-primary" />
+              AI-Discovered Opportunities ({discoveries.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="prose prose-sm max-w-none whitespace-pre-wrap">
-              {aiResponse}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Symbol</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>AI Score</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Potential</TableHead>
+                  <TableHead>Matched</TableHead>
+                  <TableHead>AI Insight</TableHead>
+                  <TableHead>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {discoveries.map((stock) => (
+                  <TableRow key={stock.symbol} className="hover:bg-primary/5">
+                    <TableCell className="font-medium text-primary">{stock.symbol}</TableCell>
+                    <TableCell className="font-medium">{stock.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="font-bold text-primary">{stock.aiScore}/100</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{stock.price}</TableCell>
+                    <TableCell>
+                      <span className="text-green-600 font-medium">{stock.potential}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{stock.matched} criteria</Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <p className="text-sm text-muted-foreground line-clamp-2">{stock.insight}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleAnalyzeStock(stock)}
+                        className="gap-1"
+                      >
+                        <Search className="h-3 w-3" />
+                        Analyze
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            AI-Discovered Opportunities ({mockAIDiscoveries.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Symbol</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>AI Score</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Potential</TableHead>
-                <TableHead>Matched Criteria</TableHead>
-                <TableHead>AI Insight</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockAIDiscoveries.map((stock) => (
-                <TableRow key={stock.symbol} className="hover:bg-primary/5">
-                  <TableCell className="font-medium">{stock.symbol}</TableCell>
-                  <TableCell>{stock.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="font-bold text-primary">{stock.score}/100</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>${stock.price}</TableCell>
-                  <TableCell>
-                    <span className="text-green-500 font-medium">{stock.potential}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {stock.matchedCriteria.map((criteria, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {criteria}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-xs">
-                    <p className="text-sm text-muted-foreground truncate">{stock.aiInsight}</p>
-                  </TableCell>
-                  <TableCell>
-                    <Button size="sm" variant="outline">Analyze</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Detailed Analysis Dialog */}
+      <Dialog open={analysisDialogOpen} onOpenChange={setAnalysisDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Detailed Analysis: {selectedStock?.name} ({selectedStock?.symbol})
+            </DialogTitle>
+            <DialogDescription>
+              AI-powered comprehensive investment analysis
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {selectedStock && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="text-sm text-muted-foreground">Current Price</p>
+                  <p className="text-lg font-bold">{selectedStock.price}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">AI Score</p>
+                  <p className="text-lg font-bold text-primary">{selectedStock.aiScore}/100</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Potential</p>
+                  <p className="text-lg font-bold text-green-600">{selectedStock.potential}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Matched Criteria</p>
+                  <p className="text-lg font-bold">{selectedStock.matched}</p>
+                </div>
+              </div>
+            )}
+            
+            {isAnalyzing && !detailedAnalysis && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
+            
+            {detailedAnalysis && (
+              <div className="prose prose-sm max-w-none">
+                <div className="whitespace-pre-wrap">{detailedAnalysis}</div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
