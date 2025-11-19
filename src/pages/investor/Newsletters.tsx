@@ -1,121 +1,118 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Search, Calendar, Eye, Sparkles, TrendingUp, Newspaper } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Mail, Search, Calendar, Eye, Sparkles, TrendingUp, Newspaper, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Newsletter {
+  id: string;
+  title: string;
+  edition: string | null;
+  preview: string | null;
+  content: string;
+  read_time: string | null;
+  category: string;
+  published_date: string | null;
+}
 
 const Newsletters = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const [selectedNewsletter, setSelectedNewsletter] = useState<Newsletter | null>(null);
+  const [aiRoundup, setAiRoundup] = useState<string>("");
+  const [loadingAiRoundup, setLoadingAiRoundup] = useState(false);
+  const [showAiDialog, setShowAiDialog] = useState(false);
   
-  const weeklyRoundups = [
-    {
-      id: "1",
-      title: "AI Weekly Roundup",
-      edition: "Week of January 12, 2025",
-      preview: "This week in markets: Fed signals shift, tech earnings surprise, and crypto momentum builds. Plus: what the smart money is watching next week.",
-      aiGenerated: true,
-      category: "AI Weekly",
-      readTime: "5 min read"
-    },
-    {
-      id: "2",
-      title: "AI Weekly Roundup",
-      edition: "Week of January 5, 2025",
-      preview: "New year, new opportunities: Global markets kick off 2025 with strong momentum. AI stocks lead gains while energy sector shows consolidation.",
-      aiGenerated: true,
-      category: "AI Weekly",
-      readTime: "5 min read"
-    },
-  ];
+  const [weeklyRoundups, setWeeklyRoundups] = useState<Newsletter[]>([]);
+  const [sectorNewsletters, setSectorNewsletters] = useState<Newsletter[]>([]);
+  const [storyDigests, setStoryDigests] = useState<Newsletter[]>([]);
 
-  const sectorNewsletters = [
-    {
-      id: "1",
-      sector: "Technology",
-      title: "Tech Sector Insights",
-      edition: "January 2025",
-      preview: "AI revolution accelerates: semiconductor demand surges, cloud computing reaches new highs, and cybersecurity spending increases globally.",
-      subscribers: 12453,
-      frequency: "Weekly"
-    },
-    {
-      id: "2",
-      sector: "Healthcare",
-      title: "Healthcare & Biotech Update",
-      edition: "January 2025",
-      preview: "Breakthrough drug approvals, telemedicine expansion continues, and medical device innovation transforms patient care.",
-      subscribers: 8932,
-      frequency: "Bi-weekly"
-    },
-    {
-      id: "3",
-      sector: "Energy",
-      title: "Energy Transition Report",
-      edition: "January 2025",
-      preview: "Renewable energy capacity hits record highs, oil prices stabilize, and battery technology advances drive EV adoption.",
-      subscribers: 7654,
-      frequency: "Weekly"
-    },
-    {
-      id: "4",
-      sector: "Finance",
-      title: "Financial Services Digest",
-      edition: "January 2025",
-      preview: "Digital banking disruption intensifies, fintech valuations rebound, and regulatory landscape evolves for crypto assets.",
-      subscribers: 15234,
-      frequency: "Weekly"
-    },
-    {
-      id: "5",
-      sector: "Consumer",
-      title: "Consumer Trends Quarterly",
-      edition: "Q1 2025",
-      preview: "E-commerce growth persists, luxury goods demand strong in Asia, and sustainability drives brand loyalty.",
-      subscribers: 6543,
-      frequency: "Quarterly"
-    },
-  ];
+  useEffect(() => {
+    fetchNewsletters();
+  }, []);
 
-  const storyDigests = [
-    {
-      id: "1",
-      title: "Monday Morning Markets ☕",
-      edition: "January 13, 2025",
-      preview: "Good morning! While you were sleeping, Asian markets rallied on strong manufacturing data. Here's what you need to know today...",
-      stories: [
-        "📈 S&P 500 futures up 0.8% as tech earnings beat expectations",
-        "🏦 Fed official hints at March rate decision flexibility", 
-        "⚡ Tesla shares jump 4% on China delivery numbers",
-        "🌍 European markets open higher on ECB optimism"
-      ],
-      readTime: "3 min read",
-      style: "Morning Brew"
-    },
-    {
-      id: "2",
-      title: "Monday Morning Markets ☕",
-      edition: "January 6, 2025",
-      preview: "Happy New Year! Markets start 2025 with optimism. Here's your quick catch-up on what matters...",
-      stories: [
-        "🎯 Major indices hit new highs to start the year",
-        "💼 Job market data shows continued strength",
-        "🏠 Housing starts exceed economist forecasts",
-        "🛢️ Oil prices steady as OPEC+ maintains cuts"
-      ],
-      readTime: "3 min read",
-      style: "Morning Brew"
-    },
-  ];
+  const fetchNewsletters = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('newsletters')
+        .select('*')
+        .order('published_date', { ascending: false });
 
-  const handleSubscribe = () => {
-    toast.success("Subscription preferences updated");
+      if (error) throw error;
+
+      if (data) {
+        setWeeklyRoundups(data.filter(n => n.category === 'ai_roundup'));
+        setSectorNewsletters(data.filter(n => n.category === 'sector'));
+        setStoryDigests(data.filter(n => n.category === 'digest'));
+      }
+    } catch (error) {
+      console.error('Error fetching newsletters:', error);
+      toast.error('Failed to load newsletters');
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setSubscribing(true);
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscriptions')
+        .insert([{ email }]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast.info('This email is already subscribed!');
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success('Successfully subscribed to newsletters!');
+        setEmail('');
+      }
+    } catch (error) {
+      console.error('Error subscribing:', error);
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  const handleReadMore = (newsletter: Newsletter) => {
+    setSelectedNewsletter(newsletter);
+  };
+
+  const handleReadFullRoadmap = async () => {
+    setLoadingAiRoundup(true);
+    setShowAiDialog(true);
+    setAiRoundup('');
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ai-roundup');
+
+      if (error) throw error;
+
+      setAiRoundup(data.content);
+    } catch (error) {
+      console.error('Error generating AI roundup:', error);
+      setAiRoundup('Unable to generate AI roundup at this time. Please try again later.');
+      toast.error('Failed to generate AI roundup');
+    } finally {
+      setLoadingAiRoundup(false);
+    }
   };
 
   return (
-    <div className="p-6 space-y-6 investor-theme">
+    <div className="container mx-auto p-6 space-y-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Newsletters</h1>
@@ -184,35 +181,41 @@ const Newsletters = () => {
             Comprehensive market summaries powered by AI, analyzing thousands of data points to bring you what matters most.
           </p>
           
-          {weeklyRoundups.map((newsletter) => (
-            <Card key={newsletter.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-8 w-8 text-primary" />
-                    {newsletter.aiGenerated && (
+          {weeklyRoundups.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No AI roundups available yet
+              </CardContent>
+            </Card>
+          ) : (
+            weeklyRoundups.map((newsletter) => (
+              <Card key={newsletter.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-8 w-8 text-primary" />
                       <Badge variant="secondary" className="bg-primary/10 text-primary">
                         AI Generated
                       </Badge>
-                    )}
+                    </div>
+                    <Badge>{newsletter.read_time}</Badge>
                   </div>
-                  <Badge>{newsletter.readTime}</Badge>
-                </div>
-                <CardTitle className="mt-4">{newsletter.title}</CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {newsletter.edition}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">{newsletter.preview}</p>
-                <Button variant="outline" className="w-full">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Read Full Roundup
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  <CardTitle className="mt-4">{newsletter.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {newsletter.edition}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">{newsletter.preview}</p>
+                  <Button onClick={handleReadFullRoadmap} variant="outline" className="w-full">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Read Full Roadmap
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
 
         {/* Sector Newsletters */}
@@ -226,33 +229,40 @@ const Newsletters = () => {
           </p>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {sectorNewsletters.map((newsletter) => (
-              <Card key={newsletter.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <Badge variant="outline">{newsletter.sector}</Badge>
-                    <Badge variant="secondary">{newsletter.frequency}</Badge>
-                  </div>
-                  <CardTitle className="mt-4">{newsletter.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {newsletter.edition}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">{newsletter.preview}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      {newsletter.subscribers.toLocaleString()} subscribers
-                    </span>
-                    <Button variant="outline" size="sm">
-                      Read More
-                    </Button>
-                  </div>
+            {sectorNewsletters.length === 0 ? (
+              <Card className="md:col-span-2">
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  No sector newsletters available yet
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              sectorNewsletters.map((newsletter) => (
+                <Card key={newsletter.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <Badge variant="outline">{newsletter.category}</Badge>
+                      <Badge variant="secondary">{newsletter.read_time}</Badge>
+                    </div>
+                    <CardTitle className="mt-4">{newsletter.title}</CardTitle>
+                    <CardDescription className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {newsletter.edition}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">{newsletter.preview}</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => handleReadMore(newsletter)}
+                    >
+                      Read More →
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -266,43 +276,85 @@ const Newsletters = () => {
             Quick, engaging market updates in the Morning Brew style. Get up to speed in under 5 minutes.
           </p>
 
-          {storyDigests.map((digest) => (
-            <Card key={digest.id} className="hover:shadow-lg transition-shadow border-2">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <Newspaper className="h-8 w-8 text-primary" />
-                  <div className="flex gap-2">
-                    <Badge variant="secondary">{digest.style}</Badge>
-                    <Badge>{digest.readTime}</Badge>
-                  </div>
-                </div>
-                <CardTitle className="mt-4">{digest.title}</CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {digest.edition}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4 font-medium">{digest.preview}</p>
-                
-                <div className="space-y-2 mb-4 p-4 bg-muted/30 rounded-lg">
-                  <p className="text-sm font-semibold mb-2">Today's Top Stories:</p>
-                  {digest.stories.map((story, idx) => (
-                    <p key={idx} className="text-sm text-muted-foreground">
-                      {story}
-                    </p>
-                  ))}
-                </div>
-
-                <Button variant="default" className="w-full bg-primary hover:bg-primary/90">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Read Full Digest
-                </Button>
+          {storyDigests.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No story digests available yet
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            storyDigests.map((digest) => (
+              <Card key={digest.id} className="hover:shadow-lg transition-shadow border-l-4 border-l-primary">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-xl">{digest.title}</CardTitle>
+                      <CardDescription className="flex items-center gap-4 mt-2">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {digest.edition}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-4 w-4" />
+                          {digest.read_time}
+                        </span>
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">{digest.preview}</p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => handleReadMore(digest)}
+                  >
+                    Read Full Digest →
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
       </Tabs>
+
+      {/* Newsletter Detail Dialog */}
+      <Dialog open={!!selectedNewsletter} onOpenChange={() => setSelectedNewsletter(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedNewsletter?.title}</DialogTitle>
+            <p className="text-muted-foreground">{selectedNewsletter?.edition}</p>
+          </DialogHeader>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <div 
+              dangerouslySetInnerHTML={{ __html: selectedNewsletter?.content || '' }}
+              className="whitespace-pre-wrap"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Roadmap Dialog */}
+      <Dialog open={showAiDialog} onOpenChange={setShowAiDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              AI-Generated Weekly Market Roadmap
+            </DialogTitle>
+          </DialogHeader>
+          {loadingAiRoundup ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-muted-foreground">Generating comprehensive market analysis...</p>
+            </div>
+          ) : (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <div className="whitespace-pre-wrap">{aiRoundup}</div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
