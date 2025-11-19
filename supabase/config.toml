@@ -72,3 +72,12 @@ verify_jwt = false
 [functions.generate-ai-roundup]
 verify_jwt = false
 
+[functions.risk-stress-test]
+verify_jwt = true
+
+[functions.exposure-analysis]
+verify_jwt = true
+
+[functions.generate-regulatory-updates]
+verify_jwt = false
+

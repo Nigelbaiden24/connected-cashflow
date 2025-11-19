@@ -3578,6 +3578,45 @@ export type Database = {
         }
         Relationships: []
       }
+      regulatory_updates: {
+        Row: {
+          ai_generated: boolean | null
+          category: string
+          content: string
+          created_at: string | null
+          file_path: string | null
+          id: string
+          source: string | null
+          summary: string
+          title: string
+          update_date: string | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          category: string
+          content: string
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          source?: string | null
+          summary: string
+          title: string
+          update_date?: string | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          source?: string | null
+          summary?: string
+          title?: string
+          update_date?: string | null
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string | null
@@ -3617,6 +3656,36 @@ export type Database = {
           title?: string
           updated_at?: string | null
           uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      risk_assessment_reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          report_data: Json
+          report_name: string
+          report_type: string
+          summary: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          report_data: Json
+          report_name: string
+          report_type: string
+          summary?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          report_data?: Json
+          report_name?: string
+          report_type?: string
+          summary?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
