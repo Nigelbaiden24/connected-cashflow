@@ -2381,25 +2381,34 @@ export type Database = {
       }
       investment_watchlists: {
         Row: {
+          category: string | null
           created_at: string | null
+          created_by_admin: boolean | null
           description: string | null
           id: string
+          is_public: boolean | null
           name: string
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
+          created_by_admin?: boolean | null
           description?: string | null
           id?: string
+          is_public?: boolean | null
           name: string
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
+          created_by_admin?: boolean | null
           description?: string | null
           id?: string
+          is_public?: boolean | null
           name?: string
           updated_at?: string | null
           user_id?: string | null
