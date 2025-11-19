@@ -280,7 +280,7 @@ const AutomationCenter = () => {
 
   if (loading) {
     return (
-      <div className="flex-1 p-6 flex items-center justify-center ml-64">
+      <div className="flex-1 p-6 flex items-center justify-center">
         <div className="text-center">
           <Activity className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">Loading automation data...</p>
@@ -290,7 +290,7 @@ const AutomationCenter = () => {
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6 ml-64">
+    <div className="flex-1 p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
