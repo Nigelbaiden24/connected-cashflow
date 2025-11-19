@@ -2673,6 +2673,69 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscriptions: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean | null
+          subscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+        }
+        Relationships: []
+      }
+      newsletters: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          edition: string | null
+          id: string
+          preview: string | null
+          published_date: string | null
+          read_time: string | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          edition?: string | null
+          id?: string
+          preview?: string | null
+          published_date?: string | null
+          read_time?: string | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          edition?: string | null
+          id?: string
+          preview?: string | null
+          published_date?: string | null
+          read_time?: string | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       opportunities: {
         Row: {
           business_description: string | null
