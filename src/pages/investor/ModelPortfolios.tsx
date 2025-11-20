@@ -11,11 +11,9 @@ interface Report {
   title: string;
   description: string | null;
   file_path: string;
-  report_type: string;
-  platform: string;
   thumbnail_url: string | null;
-  published_date: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 const ModelPortfolios = () => {
@@ -30,9 +28,8 @@ const ModelPortfolios = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('reports')
+        .from('model_portfolios')
         .select('*')
-        .eq('platform', 'investor')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -48,7 +45,7 @@ const ModelPortfolios = () => {
   const handleViewPortfolio = async (portfolio: Report) => {
     try {
       const { data, error } = await supabase.storage
-        .from('reports')
+        .from('portfolios')
         .createSignedUrl(portfolio.file_path, 3600);
 
       if (error) throw error;
@@ -65,7 +62,7 @@ const ModelPortfolios = () => {
   const handleDownloadPortfolio = async (portfolio: Report) => {
     try {
       const { data, error } = await supabase.storage
-        .from('reports')
+        .from('portfolios')
         .download(portfolio.file_path);
 
       if (error) throw error;
@@ -104,7 +101,7 @@ const ModelPortfolios = () => {
             <CardHeader>
               <div className="flex items-start justify-between">
                 <Briefcase className="h-8 w-8 text-primary" />
-                <Badge variant="secondary">{portfolio.report_type}</Badge>
+                <Badge variant="secondary">Model Portfolio</Badge>
               </div>
               <CardTitle className="mt-4">{portfolio.title}</CardTitle>
               {portfolio.description && (
@@ -114,16 +111,6 @@ const ModelPortfolios = () => {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {portfolio.published_date && (
-                <p className="text-sm text-muted-foreground">
-                  Published: {new Date(portfolio.published_date).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </p>
-              )}
-
               <div className="flex gap-2">
                 <Button 
                   className="flex-1 bg-primary hover:bg-primary/90"
