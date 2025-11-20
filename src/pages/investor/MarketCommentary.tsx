@@ -13,11 +13,10 @@ interface Report {
   title: string;
   description: string | null;
   file_path: string;
-  report_type: string;
-  platform: string;
   thumbnail_url: string | null;
   published_date: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 const MarketCommentary = () => {
@@ -34,10 +33,9 @@ const MarketCommentary = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('reports')
+        .from('market_commentary')
         .select('*')
-        .eq('platform', 'investor')
-        .order('created_at', { ascending: false });
+        .order('published_date', { ascending: false });
 
       if (error) throw error;
       setCommentaries(data || []);
@@ -74,7 +72,7 @@ const MarketCommentary = () => {
   const handleViewReport = async (report: Report) => {
     try {
       const { data, error } = await supabase.storage
-        .from('reports')
+        .from('commentary')
         .createSignedUrl(report.file_path, 3600);
 
       if (error) throw error;
@@ -91,7 +89,7 @@ const MarketCommentary = () => {
   const handleDownloadReport = async (report: Report) => {
     try {
       const { data, error } = await supabase.storage
-        .from('reports')
+        .from('commentary')
         .download(report.file_path);
 
       if (error) throw error;
@@ -206,7 +204,7 @@ const MarketCommentary = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <MessageSquare className="h-5 w-5 text-primary" />
-                      <Badge variant="secondary">{commentary.report_type}</Badge>
+                      <Badge variant="secondary">Market Commentary</Badge>
                     </div>
                   </div>
                   <CardTitle className="mt-4">{commentary.title}</CardTitle>

@@ -2522,6 +2522,45 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_videos: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          duration_minutes: number | null
+          file_path: string
+          id: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          file_path: string
+          id?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          file_path?: string
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           candidate_email: string
@@ -2639,6 +2678,7 @@ export type Database = {
           title: string
           topics: string[] | null
           updated_at: string | null
+          uploaded_by: string | null
           video_url: string | null
           view_count: number | null
         }
@@ -2663,6 +2703,7 @@ export type Database = {
           title: string
           topics?: string[] | null
           updated_at?: string | null
+          uploaded_by?: string | null
           video_url?: string | null
           view_count?: number | null
         }
@@ -2687,6 +2728,7 @@ export type Database = {
           title?: string
           topics?: string[] | null
           updated_at?: string | null
+          uploaded_by?: string | null
           video_url?: string | null
           view_count?: number | null
         }
@@ -2732,6 +2774,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      market_commentary: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_path: string
+          id: string
+          published_date: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_path: string
+          id?: string
+          published_date?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_path?: string
+          id?: string
+          published_date?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -2798,6 +2876,39 @@ export type Database = {
         }
         Relationships: []
       }
+      model_portfolios: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_path: string
+          id: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_path: string
+          id?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_path?: string
+          id?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscriptions: {
         Row: {
           email: string
@@ -2825,6 +2936,7 @@ export type Database = {
           content: string
           created_at: string | null
           edition: string | null
+          file_path: string | null
           id: string
           preview: string | null
           published_date: string | null
@@ -2838,6 +2950,7 @@ export type Database = {
           content: string
           created_at?: string | null
           edition?: string | null
+          file_path?: string | null
           id?: string
           preview?: string | null
           published_date?: string | null
@@ -2851,6 +2964,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           edition?: string | null
+          file_path?: string | null
           id?: string
           preview?: string | null
           published_date?: string | null

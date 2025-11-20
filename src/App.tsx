@@ -82,6 +82,7 @@ import AboutUs from "./pages/AboutUs";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -450,6 +451,8 @@ const App = () => {
           <Route path="/investor/languages" element={
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Languages /></InvestorLayout>
           } />
+          
+          <Route path="/admin" element={<AdminDashboard />} />
           
           <Route path="/investor-features" element={<InvestorFeatures />} />
             
