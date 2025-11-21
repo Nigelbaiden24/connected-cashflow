@@ -1,5 +1,8 @@
 project_id = "wlsmdcdfyudtvbnbqfmn"
 
+[functions.send-auth-email]
+verify_jwt = false
+
 [functions.financial-chat]
 verify_jwt = true
 
