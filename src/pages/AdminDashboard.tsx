@@ -43,7 +43,7 @@ export default function AdminDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        navigate("/login-investor");
+        navigate("/admin/login");
         return;
       }
 
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
 
       if (error || !roleData) {
         toast.error("Access denied. Admin privileges required.");
-        navigate("/investor/dashboard");
+        navigate("/admin/login");
         return;
       }
 
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
       await fetchProfiles();
     } catch (error) {
       console.error("Error checking admin access:", error);
-      navigate("/investor/dashboard");
+      navigate("/admin/login");
     } finally {
       setLoading(false);
     }
