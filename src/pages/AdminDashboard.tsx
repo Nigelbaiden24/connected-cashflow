@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2 } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard } from "lucide-react";
 
 interface Profile {
   user_id: string;
@@ -68,6 +68,17 @@ export default function AdminDashboard() {
       navigate("/admin/login");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate("/admin/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Failed to log out");
     }
   };
 
@@ -339,56 +350,104 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Upload and manage investor platform content</p>
+    <div className="min-h-screen admin-theme bg-gradient-to-br from-background via-muted/30 to-background">
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header with gradient */}
+        <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-r from-primary via-secondary to-accent shadow-2xl">
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                  <LayoutDashboard className="h-8 w-8 text-white" />
+                </div>
+                <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
+              </div>
+              <p className="text-white/90 text-lg">Upload and manage investor platform content</p>
+            </div>
+            <div className="flex gap-3">
+              <Button 
+                variant="secondary" 
+                onClick={() => navigate("/investor/dashboard")}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
+              >
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                className="bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
         </div>
-        <Button variant="outline" onClick={() => navigate("/investor/dashboard")}>
-          Back to Dashboard
-        </Button>
-      </div>
 
-      <Tabs defaultValue="reports" className="w-full">
-        <TabsList className="grid w-full grid-cols-7 lg:w-auto">
-          <TabsTrigger value="reports">
-            <FileText className="h-4 w-4 mr-2" />
-            Reports
-          </TabsTrigger>
-          <TabsTrigger value="newsletters">
-            <Newspaper className="h-4 w-4 mr-2" />
-            Newsletters
-          </TabsTrigger>
-          <TabsTrigger value="portfolios">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Portfolios
-          </TabsTrigger>
-          <TabsTrigger value="commentary">
-            <FileText className="h-4 w-4 mr-2" />
-            Commentary
-          </TabsTrigger>
-          <TabsTrigger value="learning">
-            <BookOpen className="h-4 w-4 mr-2" />
-            Learning
-          </TabsTrigger>
-          <TabsTrigger value="videos">
-            <Video className="h-4 w-4 mr-2" />
-            Videos
-          </TabsTrigger>
-          <TabsTrigger value="watchlists">
-            <List className="h-4 w-4 mr-2" />
-            Watchlists
-          </TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="reports" className="w-full">
+          <TabsList className="grid w-full grid-cols-7 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+            <TabsTrigger 
+              value="reports"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Reports
+            </TabsTrigger>
+            <TabsTrigger 
+              value="newsletters"
+              className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <Newspaper className="h-4 w-4 mr-2" />
+              Newsletters
+            </TabsTrigger>
+            <TabsTrigger 
+              value="portfolios"
+              className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Portfolios
+            </TabsTrigger>
+            <TabsTrigger 
+              value="commentary"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Commentary
+            </TabsTrigger>
+            <TabsTrigger 
+              value="learning"
+              className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Learning
+            </TabsTrigger>
+            <TabsTrigger 
+              value="videos"
+              className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <Video className="h-4 w-4 mr-2" />
+              Videos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="watchlists"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <List className="h-4 w-4 mr-2" />
+              Watchlists
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Reports Tab */}
-        <TabsContent value="reports">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Report</CardTitle>
-              <CardDescription>Upload research reports for specific users</CardDescription>
-            </CardHeader>
+          {/* Reports Tab */}
+          <TabsContent value="reports">
+            <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <FileText className="h-6 w-6 text-primary" />
+                  Upload Report
+                </CardTitle>
+                <CardDescription>Upload research reports for specific users</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handleReportUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -448,13 +507,16 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Newsletters Tab */}
-        <TabsContent value="newsletters">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Newsletter</CardTitle>
-              <CardDescription>Upload newsletters for all investors</CardDescription>
-            </CardHeader>
+          {/* Newsletters Tab */}
+          <TabsContent value="newsletters">
+            <Card className="border-secondary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-secondary/10 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Newspaper className="h-6 w-6 text-secondary" />
+                  Upload Newsletter
+                </CardTitle>
+                <CardDescription>Upload newsletters for all investors</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handleNewsletterUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -508,13 +570,16 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Portfolios Tab */}
-        <TabsContent value="portfolios">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Model Portfolio</CardTitle>
-              <CardDescription>Upload model portfolios for investors to view</CardDescription>
-            </CardHeader>
+          {/* Portfolios Tab */}
+          <TabsContent value="portfolios">
+            <Card className="border-accent/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-accent/10 bg-gradient-to-r from-accent/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <TrendingUp className="h-6 w-6 text-accent" />
+                  Upload Model Portfolio
+                </CardTitle>
+                <CardDescription>Upload model portfolios for investors to view</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handlePortfolioUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -558,13 +623,16 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Commentary Tab */}
-        <TabsContent value="commentary">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Market Commentary</CardTitle>
-              <CardDescription>Upload market analysis and commentary</CardDescription>
-            </CardHeader>
+          {/* Commentary Tab */}
+          <TabsContent value="commentary">
+            <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <FileText className="h-6 w-6 text-primary" />
+                  Upload Market Commentary
+                </CardTitle>
+                <CardDescription>Upload market analysis and commentary</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handleCommentaryUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -608,13 +676,16 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Learning Tab */}
-        <TabsContent value="learning">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Learning Material</CardTitle>
-              <CardDescription>Upload educational content for the learning hub</CardDescription>
-            </CardHeader>
+          {/* Learning Tab */}
+          <TabsContent value="learning">
+            <Card className="border-secondary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-secondary/10 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <BookOpen className="h-6 w-6 text-secondary" />
+                  Upload Learning Material
+                </CardTitle>
+                <CardDescription>Upload educational content for the learning hub</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handleLearningUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -675,13 +746,16 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Videos Tab */}
-        <TabsContent value="videos">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Video</CardTitle>
-              <CardDescription>Upload video content for investors</CardDescription>
-            </CardHeader>
+          {/* Videos Tab */}
+          <TabsContent value="videos">
+            <Card className="border-accent/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-accent/10 bg-gradient-to-r from-accent/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Video className="h-6 w-6 text-accent" />
+                  Upload Video
+                </CardTitle>
+                <CardDescription>Upload video content for investors</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handleVideoUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -735,13 +809,16 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Watchlists Tab */}
-        <TabsContent value="watchlists">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create Public Watchlist</CardTitle>
-              <CardDescription>Create watchlists that all investors can view</CardDescription>
-            </CardHeader>
+          {/* Watchlists Tab */}
+          <TabsContent value="watchlists">
+            <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <List className="h-6 w-6 text-primary" />
+                  Create Public Watchlist
+                </CardTitle>
+                <CardDescription>Create watchlists that all investors can view</CardDescription>
+              </CardHeader>
             <CardContent>
               <form onSubmit={handleWatchlistUpload} className="space-y-4">
                 <div className="space-y-2">
@@ -784,6 +861,7 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
