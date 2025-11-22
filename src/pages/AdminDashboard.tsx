@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell } from "lucide-react";
+import { AlertsForm } from "@/components/admin/AlertsForm";
 
 interface Profile {
   user_id: string;
@@ -56,6 +57,16 @@ export default function AdminDashboard() {
     content: "",
     userId: "all", 
     file: null as File | null 
+  });
+  const [alertForm, setAlertForm] = useState({
+    alertType: "",
+    title: "",
+    description: "",
+    ticker: "",
+    company: "",
+    severity: "medium",
+    alertData: {} as any,
+    sendVia: [] as string[]
   });
 
   useEffect(() => {
@@ -445,6 +456,54 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleAlertUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!alertForm.alertType || !alertForm.title || !alertForm.description) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const { data: alertData, error } = await supabase.from("investor_alerts").insert({
+        alert_type: alertForm.alertType,
+        title: alertForm.title,
+        description: alertForm.description,
+        ticker: alertForm.ticker || null,
+        company: alertForm.company || null,
+        severity: alertForm.severity,
+        alert_data: alertForm.alertData,
+        published_date: new Date().toISOString(),
+      }).select().single();
+
+      if (error) throw error;
+
+      // Send notifications if requested
+      if (alertForm.sendVia.length > 0 && alertData) {
+        await supabase.functions.invoke("send-investor-alert", {
+          body: { alertId: alertData.id },
+        });
+      }
+
+      toast.success("Alert created successfully!");
+      setAlertForm({
+        alertType: "",
+        title: "",
+        description: "",
+        ticker: "",
+        company: "",
+        severity: "medium",
+        alertData: {},
+        sendVia: []
+      });
+    } catch (error: any) {
+      console.error("Error creating alert:", error);
+      toast.error(error.message || "Failed to create alert");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -494,7 +553,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="reports" className="w-full">
-          <TabsList className="grid w-full grid-cols-8 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+          <TabsList className="grid w-full grid-cols-9 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
             <TabsTrigger 
               value="reports"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
@@ -550,6 +609,13 @@ export default function AdminDashboard() {
             >
               <Shield className="h-4 w-4 mr-2" />
               Risk & Compliance
+            </TabsTrigger>
+            <TabsTrigger 
+              value="alerts"
+              className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <Bell className="h-4 w-4 mr-2" />
+              Signals & Alerts
             </TabsTrigger>
           </TabsList>
 
@@ -1306,6 +1372,16 @@ export default function AdminDashboard() {
               </form>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Alerts Tab */}
+        <TabsContent value="alerts">
+          <AlertsForm
+            form={alertForm}
+            setForm={setAlertForm}
+            onSubmit={handleAlertUpload}
+            uploading={uploading}
+          />
         </TabsContent>
       </Tabs>
       </div>
