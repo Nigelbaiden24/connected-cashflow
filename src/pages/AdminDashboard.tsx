@@ -30,7 +30,22 @@ export default function AdminDashboard() {
   const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", userId: "all", file: null as File | null });
   const [portfolioForm, setPortfolioForm] = useState({ title: "", description: "", userId: "all", file: null as File | null });
   const [commentaryForm, setCommentaryForm] = useState({ title: "", description: "", userId: "all", file: null as File | null });
-  const [learningForm, setLearningForm] = useState({ title: "", description: "", category: "", userId: "all", file: null as File | null });
+  const [learningForm, setLearningForm] = useState({ 
+    title: "", 
+    description: "", 
+    content: "",
+    category: "", 
+    duration: "",
+    difficultyLevel: "",
+    topics: "",
+    keyMetrics: "",
+    majorPlayers: "",
+    severity: "",
+    mitigation: "",
+    userId: "all", 
+    file: null as File | null,
+    videoUrl: ""
+  });
   const [videoForm, setVideoForm] = useState({ title: "", description: "", category: "", userId: "all", file: null as File | null });
   const [watchlistForm, setWatchlistForm] = useState({ name: "", description: "", category: "", userId: "all", file: null as File | null });
 
@@ -252,28 +267,60 @@ export default function AdminDashboard() {
 
   const handleLearningUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!learningForm.file || !learningForm.title || !learningForm.category) {
+    if (!learningForm.title || !learningForm.category || !learningForm.content) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     setUploading(true);
     try {
-      const filePath = await uploadFile("learning", learningForm.file);
+      let filePath = null;
+      if (learningForm.file) {
+        filePath = await uploadFile("learning", learningForm.file);
+      }
+
+      // Parse comma-separated values into arrays
+      const topics = learningForm.topics ? learningForm.topics.split(',').map(t => t.trim()).filter(Boolean) : null;
+      const keyMetrics = learningForm.keyMetrics ? learningForm.keyMetrics.split(',').map(t => t.trim()).filter(Boolean) : null;
+      const majorPlayers = learningForm.majorPlayers ? learningForm.majorPlayers.split(',').map(t => t.trim()).filter(Boolean) : null;
 
       const { error } = await supabase.from("learning_content").insert({
         title: learningForm.title,
-        content: learningForm.description,
-        file_path: filePath,
+        description: learningForm.description,
+        content: learningForm.content,
         category: learningForm.category,
+        duration: learningForm.duration || null,
+        difficulty_level: learningForm.difficultyLevel || null,
+        topics: topics,
+        key_metrics: keyMetrics,
+        major_players: majorPlayers,
+        severity: learningForm.severity || null,
+        mitigation: learningForm.mitigation || null,
+        video_url: learningForm.videoUrl || null,
+        file_path: filePath,
         is_published: true,
-        user_id: learningForm.userId && learningForm.userId !== "all" ? learningForm.userId : null,
+        uploaded_by: learningForm.userId && learningForm.userId !== "all" ? learningForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Learning material uploaded successfully${learningForm.userId && learningForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
-      setLearningForm({ title: "", description: "", category: "", userId: "all", file: null });
+      toast.success(`Learning content uploaded successfully${learningForm.userId && learningForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setLearningForm({ 
+        title: "", 
+        description: "", 
+        content: "",
+        category: "", 
+        duration: "",
+        difficultyLevel: "",
+        topics: "",
+        keyMetrics: "",
+        majorPlayers: "",
+        severity: "",
+        mitigation: "",
+        userId: "all", 
+        file: null,
+        videoUrl: ""
+      });
     } catch (error: any) {
       console.error("Error uploading learning material:", error);
       toast.error(error.message || "Failed to upload learning material");
@@ -739,86 +786,204 @@ export default function AdminDashboard() {
               <CardHeader className="border-b border-secondary/10 bg-gradient-to-r from-secondary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <BookOpen className="h-6 w-6 text-secondary" />
-                  Upload Learning Material
+                  Upload Learning Content
                 </CardTitle>
-                <CardDescription>Upload educational content for the learning hub</CardDescription>
+                <CardDescription>Upload educational content for all 6 Learning Hub categories</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleLearningUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="learning-title">Title *</Label>
-                  <Input
-                    id="learning-title"
-                    value={learningForm.title}
-                    onChange={(e) => setLearningForm({ ...learningForm, title: e.target.value })}
-                    placeholder="Content title"
-                    required
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="learning-title">Title *</Label>
+                      <Input
+                        id="learning-title"
+                        value={learningForm.title}
+                        onChange={(e) => setLearningForm({ ...learningForm, title: e.target.value })}
+                        placeholder="Content title"
+                        required
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="learning-desc">Description</Label>
-                  <Textarea
-                    id="learning-desc"
-                    value={learningForm.description}
-                    onChange={(e) => setLearningForm({ ...learningForm, description: e.target.value })}
-                    placeholder="Content description"
-                  />
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="learning-category">Category *</Label>
+                      <Select value={learningForm.category} onValueChange={(value) => setLearningForm({ ...learningForm, category: value })}>
+                        <SelectTrigger id="learning-category">
+                          <SelectValue placeholder="Choose a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="guides">📚 Guides</SelectItem>
+                          <SelectItem value="sectors">🏭 Sectors</SelectItem>
+                          <SelectItem value="risks">🛡️ Risks</SelectItem>
+                          <SelectItem value="tax">📋 Tax</SelectItem>
+                          <SelectItem value="videos">🎥 Videos</SelectItem>
+                          <SelectItem value="glossary">📖 Glossary</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="learning-category">Category *</Label>
-                  <Select value={learningForm.category} onValueChange={(value) => setLearningForm({ ...learningForm, category: value })}>
-                    <SelectTrigger id="learning-category">
-                      <SelectValue placeholder="Choose a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="guides">Guides</SelectItem>
-                      <SelectItem value="sectors">Sectors</SelectItem>
-                      <SelectItem value="risks">Risks</SelectItem>
-                      <SelectItem value="tax">Tax</SelectItem>
-                      <SelectItem value="videos">Videos</SelectItem>
-                      <SelectItem value="glossary">Glossary</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="learning-desc">Short Description</Label>
+                    <Input
+                      id="learning-desc"
+                      value={learningForm.description}
+                      onChange={(e) => setLearningForm({ ...learningForm, description: e.target.value })}
+                      placeholder="Brief description (appears in cards)"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="learning-user">Select User (Optional)</Label>
-                  <Select value={learningForm.userId} onValueChange={(value) => setLearningForm({ ...learningForm, userId: value })}>
-                    <SelectTrigger id="learning-user">
-                      <SelectValue placeholder="All users or select specific user" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Users</SelectItem>
-                      {profiles.map((profile) => (
-                        <SelectItem key={profile.user_id} value={profile.user_id}>
-                          {profile.full_name} ({profile.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="learning-content">Full Content *</Label>
+                    <Textarea
+                      id="learning-content"
+                      value={learningForm.content}
+                      onChange={(e) => setLearningForm({ ...learningForm, content: e.target.value })}
+                      placeholder="Full content text (will be displayed in detail view)"
+                      rows={6}
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="learning-file">File (PDF) *</Label>
-                  <Input
-                    id="learning-file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setLearningForm({ ...learningForm, file: e.target.files?.[0] || null })}
-                    required
-                  />
-                </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="learning-duration">Duration (e.g., "10 min read", "8:24")</Label>
+                      <Input
+                        id="learning-duration"
+                        value={learningForm.duration}
+                        onChange={(e) => setLearningForm({ ...learningForm, duration: e.target.value })}
+                        placeholder="Duration or reading time"
+                      />
+                    </div>
 
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Learning Material
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    <div className="space-y-2">
+                      <Label htmlFor="learning-difficulty">Difficulty Level</Label>
+                      <Select value={learningForm.difficultyLevel} onValueChange={(value) => setLearningForm({ ...learningForm, difficultyLevel: value })}>
+                        <SelectTrigger id="learning-difficulty">
+                          <SelectValue placeholder="Select difficulty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Beginner">Beginner</SelectItem>
+                          <SelectItem value="Intermediate">Intermediate</SelectItem>
+                          <SelectItem value="Advanced">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Category-specific fields */}
+                  {learningForm.category === "guides" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="learning-topics">Topics (comma-separated)</Label>
+                      <Input
+                        id="learning-topics"
+                        value={learningForm.topics}
+                        onChange={(e) => setLearningForm({ ...learningForm, topics: e.target.value })}
+                        placeholder="e.g., Stocks, Bonds, Markets, Risk"
+                      />
+                    </div>
+                  )}
+
+                  {learningForm.category === "sectors" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="learning-metrics">Key Metrics (comma-separated)</Label>
+                        <Input
+                          id="learning-metrics"
+                          value={learningForm.keyMetrics}
+                          onChange={(e) => setLearningForm({ ...learningForm, keyMetrics: e.target.value })}
+                          placeholder="e.g., Revenue Growth, R&D Spending, Market Share"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="learning-players">Major Players (comma-separated)</Label>
+                        <Input
+                          id="learning-players"
+                          value={learningForm.majorPlayers}
+                          onChange={(e) => setLearningForm({ ...learningForm, majorPlayers: e.target.value })}
+                          placeholder="e.g., Apple, Microsoft, NVIDIA, Google"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {learningForm.category === "risks" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="learning-severity">Risk Severity</Label>
+                        <Select value={learningForm.severity} onValueChange={(value) => setLearningForm({ ...learningForm, severity: value })}>
+                          <SelectTrigger id="learning-severity">
+                            <SelectValue placeholder="Select severity" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Low-Medium">Low-Medium</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="Medium-High">Medium-High</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="learning-mitigation">Mitigation Strategies</Label>
+                        <Textarea
+                          id="learning-mitigation"
+                          value={learningForm.mitigation}
+                          onChange={(e) => setLearningForm({ ...learningForm, mitigation: e.target.value })}
+                          placeholder="How to mitigate this risk"
+                          rows={3}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {learningForm.category === "videos" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="learning-video-url">Video URL (YouTube, Vimeo, etc.)</Label>
+                      <Input
+                        id="learning-video-url"
+                        value={learningForm.videoUrl}
+                        onChange={(e) => setLearningForm({ ...learningForm, videoUrl: e.target.value })}
+                        placeholder="https://youtube.com/embed/..."
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="learning-user">Select User (Optional)</Label>
+                    <Select value={learningForm.userId} onValueChange={(value) => setLearningForm({ ...learningForm, userId: value })}>
+                      <SelectTrigger id="learning-user">
+                        <SelectValue placeholder="All users or select specific user" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        {profiles.map((profile) => (
+                          <SelectItem key={profile.user_id} value={profile.user_id}>
+                            {profile.full_name} ({profile.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="learning-file">Attachment (PDF, optional)</Label>
+                    <Input
+                      id="learning-file"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setLearningForm({ ...learningForm, file: e.target.files?.[0] || null })}
+                    />
+                    <p className="text-sm text-muted-foreground">Optional: Attach a PDF document for additional resources</p>
+                  </div>
+
+                  <Button type="submit" disabled={uploading} className="w-full">
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Upload Learning Content
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Videos Tab */}
           <TabsContent value="videos">
