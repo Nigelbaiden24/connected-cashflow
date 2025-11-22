@@ -3,7 +3,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { documentTemplates } from "@/data/documentTemplates";
-import { FinanceLayout } from "@/components/FinanceLayout";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useDocumentSections, HeaderSection } from "@/hooks/useDocumentSections";
 import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
@@ -380,8 +381,12 @@ Make this document impressive, comprehensive, and professionally formatted.`,
   };
 
   return (
-    <FinanceLayout userEmail="finance@flowpulse.io" onLogout={handleLogout}>
-      <div className="bg-background flex flex-col h-screen">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar userEmail="finance@flowpulse.io" onLogout={handleLogout} />
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1">
+            <div className="bg-background flex flex-col h-full">
               <DocumentEditorToolbar
                 templates={documentTemplates}
                 selectedTemplate={selectedTemplate}
@@ -487,7 +492,10 @@ Make this document impressive, comprehensive, and professionally formatted.`,
                 )}
               </div>
             </div>
-    </FinanceLayout>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
