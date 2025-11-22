@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter } from "recharts";
-import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { CreateWatchlistDialog } from "@/components/investor/CreateWatchlistDialog";
+import { useAIAnalyst } from "@/hooks/useAIAnalyst";
+import { supabase } from "@/integrations/supabase/client";
+import ReactMarkdown from "react-markdown";
 
 // Dummy investment data
 const investments = [
@@ -112,6 +116,38 @@ export default function InvestmentAnalysis() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInvestment, setSelectedInvestment] = useState(investments[0]);
   const [sortBy, setSortBy] = useState("performance");
+  const [watchlistDialogOpen, setWatchlistDialogOpen] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const { analyzeWithAI, isLoading: aiLoading } = useAIAnalyst({
+    onDelta: (text) => setAiAnalysis(prev => prev + text),
+    onDone: () => setIsAnalyzing(false),
+    onError: (error) => {
+      toast({
+        title: "Analysis Error",
+        description: error,
+        variant: "destructive",
+      });
+      setIsAnalyzing(false);
+    },
+  });
+
+  useEffect(() => {
+    if (selectedInvestment) {
+      fetchAIAnalysis();
+    }
+  }, [selectedInvestment]);
+
+  const fetchAIAnalysis = async () => {
+    setIsAnalyzing(true);
+    setAiAnalysis("");
+    await analyzeWithAI(
+      `Provide a comprehensive investment analysis for ${selectedInvestment.name} (${selectedInvestment.symbol})`,
+      "company-qa",
+      selectedInvestment.symbol
+    );
+  };
 
   const filteredInvestments = investments.filter(inv =>
     inv.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -200,21 +236,7 @@ export default function InvestmentAnalysis() {
           </Button>
           <Button 
             size="sm"
-            onClick={() => {
-              if (!selectedInvestment) {
-                toast({
-                  title: "No Investment Selected",
-                  description: "Please select an investment first.",
-                  variant: "destructive",
-                });
-                return;
-              }
-              
-              toast({
-                title: "Watchlist Created",
-                description: `${selectedInvestment.symbol} has been added to your new watchlist.`,
-              });
-            }}
+            onClick={() => setWatchlistDialogOpen(true)}
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Create Watchlist
@@ -406,20 +428,25 @@ export default function InvestmentAnalysis() {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <h4 className="font-semibold mb-2">Key Insights</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-start gap-2">
-                      <Info className="h-4 w-4 text-primary mt-0.5" />
-                      <span>Strong fundamentals with consistent growth trajectory</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Star className="h-4 w-4 text-warning mt-0.5" />
-                      <span>Outperforming sector average by 3.2%</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
-                      <span>Monitor upcoming earnings report</span>
-                    </div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    AI Analysis
+                    {isAnalyzing && <Loader2 className="h-4 w-4 animate-spin" />}
+                  </h4>
+                  <div className="space-y-2 text-sm max-h-[300px] overflow-y-auto">
+                    {isAnalyzing && !aiAnalysis && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Generating AI analysis...</span>
+                      </div>
+                    )}
+                    {aiAnalysis && (
+                      <div className="prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+                      </div>
+                    )}
+                    {!aiAnalysis && !isAnalyzing && (
+                      <p className="text-muted-foreground">No AI analysis available</p>
+                    )}
                   </div>
                 </div>
 
@@ -536,6 +563,17 @@ export default function InvestmentAnalysis() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <CreateWatchlistDialog
+        open={watchlistDialogOpen}
+        onOpenChange={setWatchlistDialogOpen}
+        initialSymbol={{
+          symbol: selectedInvestment.symbol,
+          name: selectedInvestment.name,
+          price: selectedInvestment.price,
+          change_percent: selectedInvestment.changePercent,
+        }}
+      />
     </div>
   );
 }
