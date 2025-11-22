@@ -44,78 +44,6 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
     }, 1500);
   };
 
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    const demoEmail = "business@flowpulse.com";
-    const demoPassword = "demo123456";
-    
-    try {
-      // Try to sign in with demo account
-      let { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPassword,
-      });
-
-      if (signInError) {
-        // If demo account doesn't exist, create it
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: demoEmail,
-          password: demoPassword,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: "Business Demo User",
-              platform: "business"
-            }
-          }
-        });
-
-        if (signUpError) throw signUpError;
-
-        // Check if email confirmation is required
-        if (signUpData?.user && !signUpData?.session) {
-          toast({
-            title: "Email Confirmation Required",
-            description: "Please check your email to confirm your account, or disable email confirmation in Supabase settings.",
-            variant: "destructive"
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // Try to sign in again
-        const { data: retryData, error: retrySignInError } = await supabase.auth.signInWithPassword({
-          email: demoEmail,
-          password: demoPassword,
-        });
-
-        if (retrySignInError) throw retrySignInError;
-        data = retryData;
-      }
-
-      // Verify we have a valid session
-      if (!data?.session) {
-        throw new Error("No session created. Please check if email confirmation is enabled in Supabase.");
-      }
-
-      toast({
-        title: "Demo Login Successful",
-        description: `Welcome to FlowPulse Business demo!`,
-      });
-      onLogin(demoEmail);
-      navigate("/business/dashboard");
-    } catch (error: any) {
-      console.error("Demo login error:", error);
-      toast({
-        title: "Demo Login Error",
-        description: error.message || "Failed to login with demo account",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Side - Branding with Green Theme */}
@@ -258,35 +186,6 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
               {isLoading ? "Signing in..." : "Sign in to workspace"}
             </Button>
           </form>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Demo access
-              </span>
-            </div>
-          </div>
-          
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full border-green-500/30 hover:bg-green-500/10"
-            onClick={handleDemoLogin}
-            disabled={isLoading}
-          >
-            <Building2 className="h-4 w-4 mr-2 text-green-600" />
-            {isLoading ? "Signing in..." : "Sign in with Demo Account"}
-          </Button>
-
-          <div className="p-3 bg-green-500/5 rounded-lg border border-green-500/20">
-            <p className="text-xs font-medium mb-1">Demo Credentials:</p>
-            <p className="text-xs text-muted-foreground font-mono">
-              business@flowpulse.com / business2024
-            </p>
-          </div>
         </div>
       </div>
     </div>
