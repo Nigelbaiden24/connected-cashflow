@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { BusinessLayout } from "@/components/BusinessLayout";
 import { businessTemplates } from "@/data/businessTemplates";
+import { BusinessSidebar } from "@/components/BusinessSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useDocumentSections, HeaderSection } from "@/hooks/useDocumentSections";
 import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
@@ -380,114 +381,121 @@ Create an executive-level document that demonstrates strategic thinking and prof
   };
 
   return (
-    <BusinessLayout userEmail="business@flowpulse.io" onLogout={handleLogout}>
-      <div className="bg-background flex flex-col h-full">
-        <DocumentEditorToolbar
-          templates={businessTemplates}
-          selectedTemplate={selectedTemplate}
-          onTemplateSelect={handleTemplateSelect}
-          onImageUpload={handleImageUpload}
-          onLogoUpload={handleLogoUpload}
-          backgroundColor={backgroundColor}
-          onBackgroundColorChange={setBackgroundColor}
-          textColor={textColor}
-          onTextColorChange={setTextColor}
-          onDownloadPDF={handleDownloadPDF}
-          onFillDocument={handleFillDocument}
-          onAddPage={handleAddPage}
-          fontFamily={fontFamily}
-          onFontFamilyChange={setFontFamily}
-          fontSize={fontSize}
-          onFontSizeChange={setFontSize}
-          textAlign={textAlign}
-          onTextAlignChange={setTextAlign}
-          zoom={zoom}
-          onZoomChange={setZoom}
-          showGrid={showGrid}
-          onShowGridChange={setShowGrid}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          canUndo={historyIndex > 0}
-          canRedo={historyIndex < history.length - 1}
-          onAddSection={() => {
-            const maxY = currentPageSections.length > 0
-              ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
-              : 0;
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full business-theme">
+        <BusinessSidebar userEmail="business@flowpulse.io" onLogout={handleLogout} />
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1">
+            <div className="bg-background flex flex-col h-full">
+              <DocumentEditorToolbar
+                templates={businessTemplates}
+                selectedTemplate={selectedTemplate}
+                onTemplateSelect={handleTemplateSelect}
+                onImageUpload={handleImageUpload}
+                onLogoUpload={handleLogoUpload}
+                backgroundColor={backgroundColor}
+                onBackgroundColorChange={setBackgroundColor}
+                textColor={textColor}
+                onTextColorChange={setTextColor}
+                onDownloadPDF={handleDownloadPDF}
+                onFillDocument={handleFillDocument}
+                onAddPage={handleAddPage}
+                fontFamily={fontFamily}
+                onFontFamilyChange={setFontFamily}
+                fontSize={fontSize}
+                onFontSizeChange={setFontSize}
+                textAlign={textAlign}
+                onTextAlignChange={setTextAlign}
+                zoom={zoom}
+                onZoomChange={setZoom}
+                showGrid={showGrid}
+                onShowGridChange={setShowGrid}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                canUndo={historyIndex > 0}
+                canRedo={historyIndex < history.length - 1}
+                onAddSection={() => {
+                  const maxY = currentPageSections.length > 0
+                    ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
+                    : 0;
 
-            const newSection: any = {
-              id: `custom-${Date.now()}`,
-              title: "New Section",
-              content: "Click to edit this section...",
-              type: "body",
-              editable: true,
-              placeholder: "Enter content...",
-              order: sections.length,
-              x: 50,
-              y: maxY + 50,
-              width: 600,
-              height: 150,
-              isCustom: true,
-              pageId: currentPageId,
-            };
-            setSections([...sections, newSection]);
-            toast({
-              title: "Section added",
-              description: "New section created on current page",
-            });
-          }}
-          onAddShape={handleAddShape}
-          pages={pages}
-          currentPageId={currentPageId}
-          onPageChange={setCurrentPageId}
-        />
+                  const newSection: any = {
+                    id: `custom-${Date.now()}`,
+                    title: "New Section",
+                    content: "Click to edit this section...",
+                    type: "body",
+                    editable: true,
+                    placeholder: "Enter content...",
+                    order: sections.length,
+                    x: 50,
+                    y: maxY + 50,
+                    width: 600,
+                    height: 150,
+                    isCustom: true,
+                    pageId: currentPageId,
+                  };
+                  setSections([...sections, newSection]);
+                  toast({
+                    title: "Section added",
+                    description: "New section created on current page",
+                  });
+                }}
+                onAddShape={handleAddShape}
+                pages={pages}
+                currentPageId={currentPageId}
+                onPageChange={setCurrentPageId}
+              />
 
-        <div className="flex-1 overflow-auto">
-          {!selectedTemplate ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-muted-foreground">
-                <p className="text-lg">Select a template from the toolbar to get started</p>
+              <div className="flex-1 overflow-auto">
+                {!selectedTemplate ? (
+                  <div className="flex items-center justify-center h-full pointer-events-none">
+                    <div className="text-center text-muted-foreground pointer-events-auto">
+                      <p className="text-lg">Select a template from the toolbar to get started</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    id="document-preview"
+                    className="w-full h-full"
+                    style={{
+                      transform: `scale(${zoom / 100})`,
+                      transformOrigin: "top left",
+                      fontFamily: fontFamily,
+                      fontSize: `${fontSize}px`,
+                    }}
+                  >
+                    <EnhancedDocumentEditor
+                      sections={currentPageSections}
+                      onSectionsChange={(newSections) => {
+                        setSections(newSections);
+                        saveToHistory();
+                      }}
+                      onContentChange={(id, content) => {
+                        updateSectionContent(id, content);
+                        saveToHistory();
+                      }}
+                      backgroundColor={backgroundColor}
+                      textColor={textColor}
+                      logoUrl={logoUrl}
+                      uploadedImages={currentPageImages}
+                      onImagePositionChange={handleImagePositionChange}
+                      onImageSizeChange={handleImageSizeChange}
+                      onImageRemove={handleImageRemove}
+                      shapes={currentPageShapes}
+                      onShapePositionChange={handleShapePositionChange}
+                      onShapeSizeChange={handleShapeSizeChange}
+                      onShapeRemove={handleShapeRemove}
+                      onShapeColorChange={handleShapeColorChange}
+                      currentPageId={currentPageId}
+                    />
+                  </div>
+                )}
               </div>
             </div>
-          ) : (
-            <div
-              id="document-preview"
-              className="w-full h-full"
-              style={{
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: "top left",
-                fontFamily: fontFamily,
-                fontSize: `${fontSize}px`,
-              }}
-            >
-              <EnhancedDocumentEditor
-                sections={currentPageSections}
-                onSectionsChange={(newSections) => {
-                  setSections(newSections);
-                  saveToHistory();
-                }}
-                onContentChange={(id, content) => {
-                  updateSectionContent(id, content);
-                  saveToHistory();
-                }}
-                backgroundColor={backgroundColor}
-                textColor={textColor}
-                logoUrl={logoUrl}
-                uploadedImages={currentPageImages}
-                onImagePositionChange={handleImagePositionChange}
-                onImageSizeChange={handleImageSizeChange}
-                onImageRemove={handleImageRemove}
-                shapes={currentPageShapes}
-                onShapePositionChange={handleShapePositionChange}
-                onShapeSizeChange={handleShapeSizeChange}
-                onShapeRemove={handleShapeRemove}
-                onShapeColorChange={handleShapeColorChange}
-                currentPageId={currentPageId}
-              />
-            </div>
-          )}
+          </main>
         </div>
       </div>
-    </BusinessLayout>
+    </SidebarProvider>
   );
 };
 
