@@ -27,12 +27,12 @@ export default function AdminDashboard() {
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
-  const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", userId: "", file: null as File | null });
-  const [portfolioForm, setPortfolioForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
-  const [commentaryForm, setCommentaryForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
-  const [learningForm, setLearningForm] = useState({ title: "", description: "", category: "", userId: "", file: null as File | null });
-  const [videoForm, setVideoForm] = useState({ title: "", description: "", category: "", userId: "", file: null as File | null });
-  const [watchlistForm, setWatchlistForm] = useState({ name: "", description: "", category: "", userId: "", file: null as File | null });
+  const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", userId: "all", file: null as File | null });
+  const [portfolioForm, setPortfolioForm] = useState({ title: "", description: "", userId: "all", file: null as File | null });
+  const [commentaryForm, setCommentaryForm] = useState({ title: "", description: "", userId: "all", file: null as File | null });
+  const [learningForm, setLearningForm] = useState({ title: "", description: "", category: "", userId: "all", file: null as File | null });
+  const [videoForm, setVideoForm] = useState({ title: "", description: "", category: "", userId: "all", file: null as File | null });
+  const [watchlistForm, setWatchlistForm] = useState({ name: "", description: "", category: "", userId: "all", file: null as File | null });
 
   useEffect(() => {
     checkAdminAccess();
@@ -175,13 +175,13 @@ export default function AdminDashboard() {
         file_path: filePath,
         category: "admin_upload",
         published_date: newsletterForm.publishDate || new Date().toISOString(),
-        user_id: newsletterForm.userId || null,
+        user_id: newsletterForm.userId && newsletterForm.userId !== "all" ? newsletterForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Newsletter uploaded successfully${newsletterForm.userId ? ' for selected user' : ' for all users'}!`);
-      setNewsletterForm({ title: "", description: "", publishDate: "", userId: "", file: null });
+      toast.success(`Newsletter uploaded successfully${newsletterForm.userId && newsletterForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setNewsletterForm({ title: "", description: "", publishDate: "", userId: "all", file: null });
     } catch (error: any) {
       console.error("Error uploading newsletter:", error);
       toast.error(error.message || "Failed to upload newsletter");
@@ -205,13 +205,13 @@ export default function AdminDashboard() {
         title: portfolioForm.title,
         description: portfolioForm.description,
         file_path: filePath,
-        user_id: portfolioForm.userId || null,
+        user_id: portfolioForm.userId && portfolioForm.userId !== "all" ? portfolioForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Model portfolio uploaded successfully${portfolioForm.userId ? ' for selected user' : ' for all users'}!`);
-      setPortfolioForm({ title: "", description: "", userId: "", file: null });
+      toast.success(`Model portfolio uploaded successfully${portfolioForm.userId && portfolioForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setPortfolioForm({ title: "", description: "", userId: "all", file: null });
     } catch (error: any) {
       console.error("Error uploading portfolio:", error);
       toast.error(error.message || "Failed to upload portfolio");
@@ -235,13 +235,13 @@ export default function AdminDashboard() {
         title: commentaryForm.title,
         description: commentaryForm.description,
         file_path: filePath,
-        user_id: commentaryForm.userId || null,
+        user_id: commentaryForm.userId && commentaryForm.userId !== "all" ? commentaryForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Market commentary uploaded successfully${commentaryForm.userId ? ' for selected user' : ' for all users'}!`);
-      setCommentaryForm({ title: "", description: "", userId: "", file: null });
+      toast.success(`Market commentary uploaded successfully${commentaryForm.userId && commentaryForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setCommentaryForm({ title: "", description: "", userId: "all", file: null });
     } catch (error: any) {
       console.error("Error uploading commentary:", error);
       toast.error(error.message || "Failed to upload commentary");
@@ -267,13 +267,13 @@ export default function AdminDashboard() {
         file_path: filePath,
         category: learningForm.category,
         is_published: true,
-        user_id: learningForm.userId || null,
+        user_id: learningForm.userId && learningForm.userId !== "all" ? learningForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Learning material uploaded successfully${learningForm.userId ? ' for selected user' : ' for all users'}!`);
-      setLearningForm({ title: "", description: "", category: "", userId: "", file: null });
+      toast.success(`Learning material uploaded successfully${learningForm.userId && learningForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setLearningForm({ title: "", description: "", category: "", userId: "all", file: null });
     } catch (error: any) {
       console.error("Error uploading learning material:", error);
       toast.error(error.message || "Failed to upload learning material");
@@ -298,13 +298,13 @@ export default function AdminDashboard() {
         description: videoForm.description,
         file_path: filePath,
         category: videoForm.category || "general",
-        user_id: videoForm.userId || null,
+        user_id: videoForm.userId && videoForm.userId !== "all" ? videoForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Video uploaded successfully${videoForm.userId ? ' for selected user' : ' for all users'}!`);
-      setVideoForm({ title: "", description: "", category: "", userId: "", file: null });
+      toast.success(`Video uploaded successfully${videoForm.userId && videoForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setVideoForm({ title: "", description: "", category: "", userId: "all", file: null });
     } catch (error: any) {
       console.error("Error uploading video:", error);
       toast.error(error.message || "Failed to upload video");
@@ -326,15 +326,15 @@ export default function AdminDashboard() {
         name: watchlistForm.name,
         description: watchlistForm.description,
         category: watchlistForm.category || "general",
-        is_public: watchlistForm.userId ? false : true,
+        is_public: watchlistForm.userId && watchlistForm.userId !== "all" ? false : true,
         created_by_admin: true,
-        user_id: watchlistForm.userId || null,
+        user_id: watchlistForm.userId && watchlistForm.userId !== "all" ? watchlistForm.userId : null,
       });
 
       if (error) throw error;
 
-      toast.success(`Watchlist created successfully${watchlistForm.userId ? ' for selected user' : ' for all users'}!`);
-      setWatchlistForm({ name: "", description: "", category: "", userId: "", file: null });
+      toast.success(`Watchlist created successfully${watchlistForm.userId && watchlistForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setWatchlistForm({ name: "", description: "", category: "", userId: "all", file: null });
     } catch (error: any) {
       console.error("Error creating watchlist:", error);
       toast.error(error.message || "Failed to create watchlist");
@@ -563,7 +563,7 @@ export default function AdminDashboard() {
                       <SelectValue placeholder="All users or select specific user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Users</SelectItem>
+                      <SelectItem value="all">All Users</SelectItem>
                       {profiles.map((profile) => (
                         <SelectItem key={profile.user_id} value={profile.user_id}>
                           {profile.full_name} ({profile.email})
@@ -633,7 +633,7 @@ export default function AdminDashboard() {
                       <SelectValue placeholder="All users or select specific user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Users</SelectItem>
+                      <SelectItem value="all">All Users</SelectItem>
                       {profiles.map((profile) => (
                         <SelectItem key={profile.user_id} value={profile.user_id}>
                           {profile.full_name} ({profile.email})
@@ -703,7 +703,7 @@ export default function AdminDashboard() {
                       <SelectValue placeholder="All users or select specific user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Users</SelectItem>
+                      <SelectItem value="all">All Users</SelectItem>
                       {profiles.map((profile) => (
                         <SelectItem key={profile.user_id} value={profile.user_id}>
                           {profile.full_name} ({profile.email})
@@ -790,7 +790,7 @@ export default function AdminDashboard() {
                       <SelectValue placeholder="All users or select specific user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Users</SelectItem>
+                      <SelectItem value="all">All Users</SelectItem>
                       {profiles.map((profile) => (
                         <SelectItem key={profile.user_id} value={profile.user_id}>
                           {profile.full_name} ({profile.email})
@@ -870,7 +870,7 @@ export default function AdminDashboard() {
                       <SelectValue placeholder="All users or select specific user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Users</SelectItem>
+                      <SelectItem value="all">All Users</SelectItem>
                       {profiles.map((profile) => (
                         <SelectItem key={profile.user_id} value={profile.user_id}>
                           {profile.full_name} ({profile.email})
@@ -950,7 +950,7 @@ export default function AdminDashboard() {
                       <SelectValue placeholder="All users or select specific user" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Users (Public)</SelectItem>
+                      <SelectItem value="all">All Users (Public)</SelectItem>
                       {profiles.map((profile) => (
                         <SelectItem key={profile.user_id} value={profile.user_id}>
                           {profile.full_name} ({profile.email})
