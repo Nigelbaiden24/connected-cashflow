@@ -84,3 +84,6 @@ verify_jwt = true
 [functions.generate-regulatory-updates]
 verify_jwt = false
 
+[functions.portfolio-analysis]
+verify_jwt = true
+
