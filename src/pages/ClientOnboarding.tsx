@@ -118,7 +118,13 @@ export default function ClientOnboarding() {
       
       const riskProfile = riskProfileMap[clientData.financialProfile.investmentExperience] || 'Moderate';
       
-      // Insert client data into Supabase
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Insert client data into Supabase with user_id
       const { data, error } = await supabase
         .from('clients')
         .insert([
@@ -139,20 +145,47 @@ export default function ClientOnboarding() {
             investment_objectives: clientData.goals.map(g => g.goal),
             liquidity_needs: clientData.financialProfile.liquidSavings.toString(),
             time_horizon: clientData.goals.length > 0 ? clientData.goals[0].timeframe : null,
-            notes: `Onboarded on ${new Date().toLocaleDateString('en-GB')}`
+            notes: `Onboarded on ${new Date().toLocaleDateString('en-GB')}`,
+            user_id: user.id
           }
         ])
         .select();
 
       if (error) throw error;
 
+      // Also add to CRM contacts for cross-platform visibility
+      try {
+        await supabase
+          .from('crm_contacts')
+          .insert([
+            {
+              name: `${clientData.personalInfo.firstName} ${clientData.personalInfo.lastName}`,
+              email: clientData.personalInfo.email,
+              phone: clientData.personalInfo.phone,
+              company: clientData.personalInfo.employer,
+              position: clientData.personalInfo.occupation,
+              status: 'active',
+              priority: 'high',
+              user_id: user.id
+            }
+          ]);
+      } catch (crmError) {
+        console.error('Error syncing to CRM:', crmError);
+        // Don't fail the whole process if CRM sync fails
+      }
+
       toast({
         title: "Success!",
         description: `Client ${clientData.personalInfo.firstName} ${clientData.personalInfo.lastName} has been successfully onboarded.`,
       });
 
-      // Reset form or redirect as needed
-      console.log('Client onboarded successfully:', data);
+      // Refresh the client list
+      await fetchClients();
+      
+      // Navigate to clients page to show the new client
+      setTimeout(() => {
+        navigate('/clients');
+      }, 1000);
       
     } catch (error) {
       console.error('Error completing onboarding:', error);

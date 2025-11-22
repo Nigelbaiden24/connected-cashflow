@@ -37,6 +37,12 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
     try {
       const clientId = `CLI-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
       const { data, error } = await supabase
         .from('clients')
         .insert([
@@ -54,12 +60,34 @@ export function NewClientDialog({ open, onOpenChange, onClientCreated }: NewClie
             risk_profile: formData.riskProfile,
             status: 'active',
             investment_experience: formData.investmentExperience,
-            notes: `Client added on ${new Date().toLocaleDateString('en-GB')}`
+            notes: `Client added on ${new Date().toLocaleDateString('en-GB')}`,
+            user_id: user.id
           }
         ])
         .select();
 
       if (error) throw error;
+
+      // Also add to CRM contacts for cross-platform visibility
+      try {
+        await supabase
+          .from('crm_contacts')
+          .insert([
+            {
+              name: `${formData.firstName} ${formData.lastName}`,
+              email: formData.email,
+              phone: formData.phone,
+              company: formData.occupation,
+              position: formData.occupation,
+              status: 'active',
+              priority: 'medium',
+              user_id: user.id
+            }
+          ]);
+      } catch (crmError) {
+        console.error('Error syncing to CRM:', crmError);
+        // Don't fail the whole process if CRM sync fails
+      }
 
       // Trigger onboarding automation
       try {
