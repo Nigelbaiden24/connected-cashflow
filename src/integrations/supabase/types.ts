@@ -1893,11 +1893,18 @@ export type Database = {
       }
       crm_contacts: {
         Row: {
+          ai_recommendations: Json | null
           company: string | null
+          conversion_probability: number | null
           created_at: string
           email: string | null
+          engagement_score: number | null
           id: string
+          last_ai_analysis: string | null
+          lead_score: number | null
+          lead_score_factors: Json | null
           name: string
+          next_best_action: string | null
           notes: string | null
           phone: string | null
           position: string | null
@@ -1905,14 +1912,22 @@ export type Database = {
           status: string | null
           tags: string[] | null
           updated_at: string
+          upsell_opportunities: Json | null
           user_id: string | null
         }
         Insert: {
+          ai_recommendations?: Json | null
           company?: string | null
+          conversion_probability?: number | null
           created_at?: string
           email?: string | null
+          engagement_score?: number | null
           id?: string
+          last_ai_analysis?: string | null
+          lead_score?: number | null
+          lead_score_factors?: Json | null
           name: string
+          next_best_action?: string | null
           notes?: string | null
           phone?: string | null
           position?: string | null
@@ -1920,14 +1935,22 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string
+          upsell_opportunities?: Json | null
           user_id?: string | null
         }
         Update: {
+          ai_recommendations?: Json | null
           company?: string | null
+          conversion_probability?: number | null
           created_at?: string
           email?: string | null
+          engagement_score?: number | null
           id?: string
+          last_ai_analysis?: string | null
+          lead_score?: number | null
+          lead_score_factors?: Json | null
           name?: string
+          next_best_action?: string | null
           notes?: string | null
           phone?: string | null
           position?: string | null
@@ -1935,6 +1958,7 @@ export type Database = {
           status?: string | null
           tags?: string[] | null
           updated_at?: string
+          upsell_opportunities?: Json | null
           user_id?: string | null
         }
         Relationships: []

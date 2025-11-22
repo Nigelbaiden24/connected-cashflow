@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { AIInsightsPanel } from "@/components/crm/AIInsightsPanel";
 
 interface Contact {
   id: string;
@@ -200,7 +201,7 @@ const CRMContactDetail = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-4">
         {/* Contact Information */}
         <Card className="lg:col-span-1 border-2 shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
@@ -394,6 +395,11 @@ const CRMContactDetail = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* AI Insights Panel */}
+        <div className="lg:col-span-1">
+          <AIInsightsPanel contactId={id!} contact={contact} onUpdate={fetchContactData} />
+        </div>
 
         {/* Interaction History */}
         <Card className="lg:col-span-2 border-2 shadow-lg hover:shadow-xl transition-shadow duration-300">
