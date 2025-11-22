@@ -448,8 +448,8 @@ Make this document impressive, comprehensive, and professionally formatted.`,
 
               <div className="flex-1 overflow-auto">
                 {!selectedTemplate ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center text-muted-foreground">
+                  <div className="flex items-center justify-center h-full pointer-events-none">
+                    <div className="text-center text-muted-foreground pointer-events-auto">
                       <p className="text-lg">Select a template from the toolbar to get started</p>
                     </div>
                   </div>
