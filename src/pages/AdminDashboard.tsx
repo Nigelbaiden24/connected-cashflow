@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell } from "lucide-react";
 import { AlertsForm } from "@/components/admin/AlertsForm";
+import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 
 interface Profile {
   user_id: string;
@@ -553,7 +554,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="reports" className="w-full">
-          <TabsList className="grid w-full grid-cols-9 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+          <TabsList className="grid w-full grid-cols-10 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
             <TabsTrigger 
               value="reports"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
@@ -616,6 +617,13 @@ export default function AdminDashboard() {
             >
               <Bell className="h-4 w-4 mr-2" />
               Signals & Alerts
+            </TabsTrigger>
+            <TabsTrigger 
+              value="market-trends"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Market Trends
             </TabsTrigger>
           </TabsList>
 
@@ -1382,6 +1390,11 @@ export default function AdminDashboard() {
             onSubmit={handleAlertUpload}
             uploading={uploading}
           />
+        </TabsContent>
+
+        {/* Market Trends Tab */}
+        <TabsContent value="market-trends">
+          <MarketTrendsUpload />
         </TabsContent>
       </Tabs>
       </div>

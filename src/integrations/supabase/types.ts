@@ -2820,6 +2820,42 @@ export type Database = {
         }
         Relationships: []
       }
+      market_trends: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          impact: string
+          is_published: boolean | null
+          timeframe: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          impact: string
+          is_published?: boolean | null
+          timeframe: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          impact?: string
+          is_published?: boolean | null
+          timeframe?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           category: string | null
