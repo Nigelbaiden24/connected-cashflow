@@ -87,3 +87,6 @@ verify_jwt = false
 [functions.portfolio-analysis]
 verify_jwt = true
 
+[functions.translate-content]
+verify_jwt = false
+

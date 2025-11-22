@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Globe, Loader2 } from "lucide-react";
+import { useTranslation } from "@/contexts/TranslationContext";
+import { TranslatedText } from "@/components/TranslatedText";
 
 const LANGUAGES = [
   { code: "en", name: "English", nativeName: "English" },
@@ -41,6 +43,7 @@ const LANGUAGES = [
 ];
 
 export function LanguageSettings() {
+  const { setLanguage: setGlobalLanguage } = useTranslation();
   const [language, setLanguage] = useState("en");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -87,10 +90,15 @@ export function LanguageSettings() {
 
       if (error) throw error;
 
-      toast.success("Language preference saved successfully");
+      // Update global language context
+      setGlobalLanguage(language);
       
-      // Store language in localStorage for immediate UI updates
-      localStorage.setItem("preferredLanguage", language);
+      toast.success("Language preference saved successfully. The page will reload to apply translations.");
+      
+      // Reload page to apply translations
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error: any) {
       console.error("Error saving language:", error);
       toast.error(error.message || "Failed to save language preference");
@@ -123,15 +131,17 @@ export function LanguageSettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Globe className="h-5 w-5" />
-          Language
+          <TranslatedText>Language</TranslatedText>
         </CardTitle>
         <CardDescription>
-          Choose your preferred language for the platform
+          <TranslatedText>Choose your preferred language for the platform</TranslatedText>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="language">Display Language</Label>
+          <Label htmlFor="language">
+            <TranslatedText>Display Language</TranslatedText>
+          </Label>
           <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger id="language">
               <SelectValue />
@@ -148,7 +158,7 @@ export function LanguageSettings() {
             </SelectContent>
           </Select>
           <p className="text-sm text-muted-foreground">
-            Note: Full translation support is coming soon. Currently, this setting will prepare your account for automatic translation when available.
+            <TranslatedText>All content on the platform will be automatically translated to your selected language.</TranslatedText>
           </p>
         </div>
 
@@ -156,10 +166,10 @@ export function LanguageSettings() {
           {saving ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
+              <TranslatedText>Saving...</TranslatedText>
             </>
           ) : (
-            "Save Language Preference"
+            <TranslatedText>Save Language Preference</TranslatedText>
           )}
         </Button>
       </CardContent>
