@@ -80,15 +80,25 @@ const Calendar = () => {
   };
 
   const fetchIntegratedEvents = async () => {
-    const { data, error } = await supabase.functions.invoke('fetch-calendar-events');
-
-    if (error) {
-      console.error('Error fetching integrated events:', error);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.log('User not authenticated, skipping integrated events fetch');
       return;
     }
 
-    if (data?.events) {
-      setIntegratedEvents(data.events);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-calendar-events');
+
+      if (error) {
+        console.error('Error fetching integrated events:', error);
+        return;
+      }
+
+      if (data?.events) {
+        setIntegratedEvents(data.events);
+      }
+    } catch (error) {
+      console.error('Failed to fetch integrated events:', error);
     }
   };
 
@@ -122,20 +132,31 @@ const Calendar = () => {
   };
 
   const handleConnectGoogle = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to connect your Google Calendar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke('google-calendar-auth');
 
       if (error || !data?.authUrl) {
+        console.error('Error details:', error);
         throw new Error('Failed to get authorization URL');
       }
 
       window.open(data.authUrl, 'google-calendar-auth', 'width=600,height=700');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error connecting Google Calendar:', error);
       toast({
-        title: "Error",
-        description: "Failed to connect Google Calendar. Please ensure API credentials are configured.",
+        title: "Connection Error",
+        description: error.message || "Failed to connect Google Calendar. Please try again or contact support.",
         variant: "destructive",
       });
     } finally {
