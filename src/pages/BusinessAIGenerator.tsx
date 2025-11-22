@@ -77,11 +77,27 @@ const BusinessAIGenerator = () => {
   };
 
   const handleTemplateSelect = (templateId: string) => {
+    const newTemplate = businessTemplates.find(t => t.id === templateId);
     setSelectedTemplate(templateId);
-    setBackgroundColor("#ffffff");
-    setTextColor("#000000");
+    
+    // Apply template colors
+    if (newTemplate?.styles) {
+      setBackgroundColor(newTemplate.styles.backgroundColor);
+      setTextColor(newTemplate.styles.primaryColor);
+    } else {
+      setBackgroundColor("#ffffff");
+      setTextColor("#000000");
+    }
+    
     setLogoUrl("");
     setUploadedImages([]);
+    setPages([{ id: 'page-1', name: 'Page 1' }]);
+    setCurrentPageId('page-1');
+    
+    toast({
+      title: "Template Selected",
+      description: `${newTemplate?.name} is ready. Click "AI Fill" to generate content.`,
+    });
   };
 
   const handleImagePositionChange = (id: string, x: number, y: number) => {
@@ -143,31 +159,45 @@ const BusinessAIGenerator = () => {
       // First, ask AI to plan the document structure
       const { data: planData, error: planError } = await supabase.functions.invoke("business-chat", {
         body: {
-          message: `You are a professional document designer. Based on this request: "${prompt}"
+          message: `You are an expert business document designer with expertise in corporate communications and visual presentation.
 
-Analyze the request and create a comprehensive document plan in JSON format:
+USER REQUEST: "${prompt}"
+
+Create a comprehensive, visually striking business document plan in JSON format:
+
+REQUIRED JSON STRUCTURE:
 {
   "needsMultiplePages": boolean,
-  "numberOfPages": number,
+  "numberOfPages": number (create 2-5 pages for substantial business content),
   "documentColors": {
-    "backgroundColor": "hex color",
-    "textColor": "hex color"
+    "backgroundColor": "professional hex color (use modern palettes like #f4f6f9, #ffffff, or industry-appropriate colors)",
+    "textColor": "readable hex color with good contrast",
+    "accentColor": "bold brand-style accent color"
   },
   "pages": [
     {
-      "pageName": "string",
+      "pageName": "strategic page title",
       "sections": [
         {
-          "title": "string",
-          "content": "detailed paragraph content with proper formatting",
-          "order": number
+          "title": "impactful section heading",
+          "content": "Detailed, persuasive business content. Write 200-400 words per section with specific examples, metrics, market insights, and strategic recommendations.",
+          "order": number,
+          "layout": "full-width" | "two-column" | "highlighted"
         }
       ]
     }
   ]
 }
 
-Create a logical, well-structured document. Use professional colors. Split content into clear sections and paragraphs. Make it comprehensive and professional.`,
+BUSINESS DOCUMENT STANDARDS:
+- Professional color schemes aligned with corporate branding (navy, slate, emerald, burgundy)
+- Multi-page structure: Cover/Executive Summary → Key Points → Detailed Analysis → Recommendations → Appendix
+- Rich content with quantitative data, market analysis, competitive insights
+- Varied section layouts for visual interest and information hierarchy
+- Each section 200-400 words with specific business value
+- Include actionable recommendations and clear next steps
+
+Create an executive-level document that demonstrates strategic thinking and professional polish.`,
         },
       });
 

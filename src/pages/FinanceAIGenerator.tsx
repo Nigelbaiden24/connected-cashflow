@@ -77,11 +77,27 @@ const FinanceAIGenerator = () => {
   };
 
   const handleTemplateSelect = (templateId: string) => {
+    const newTemplate = documentTemplates.find(t => t.id === templateId);
     setSelectedTemplate(templateId);
-    setBackgroundColor("#ffffff");
-    setTextColor("#000000");
+    
+    // Apply template colors
+    if (newTemplate?.styles) {
+      setBackgroundColor(newTemplate.styles.backgroundColor);
+      setTextColor(newTemplate.styles.primaryColor);
+    } else {
+      setBackgroundColor("#ffffff");
+      setTextColor("#000000");
+    }
+    
     setLogoUrl("");
     setUploadedImages([]);
+    setPages([{ id: 'page-1', name: 'Page 1' }]);
+    setCurrentPageId('page-1');
+    
+    toast({
+      title: "Template Selected",
+      description: `${newTemplate?.name} is ready. Click "AI Fill" to generate content.`,
+    });
   };
 
   const handleImagePositionChange = (id: string, x: number, y: number) => {
@@ -143,31 +159,45 @@ const FinanceAIGenerator = () => {
       // First, ask AI to plan the document structure
       const { data: planData, error: planError } = await supabase.functions.invoke("financial-chat", {
         body: {
-          message: `You are a professional document designer. Based on this request: "${prompt}"
+          message: `You are an expert document designer with a keen eye for visual aesthetics and professional layouts.
 
-Analyze the request and create a comprehensive document plan in JSON format:
+USER REQUEST: "${prompt}"
+
+Create a comprehensive, visually appealing document plan in JSON format. Be creative and professional:
+
+REQUIRED JSON STRUCTURE:
 {
   "needsMultiplePages": boolean,
-  "numberOfPages": number,
+  "numberOfPages": number (create 2-5 pages if the content warrants it),
   "documentColors": {
-    "backgroundColor": "hex color",
-    "textColor": "hex color"
+    "backgroundColor": "professional hex color (use subtle gradients like #f8f9fa, #ffffff, or themed colors)",
+    "textColor": "contrasting hex color for readability",
+    "accentColor": "bold accent hex color for highlights"
   },
   "pages": [
     {
-      "pageName": "string",
+      "pageName": "descriptive page name",
       "sections": [
         {
-          "title": "string",
-          "content": "detailed paragraph content with proper formatting",
-          "order": number
+          "title": "compelling section title",
+          "content": "Rich, detailed paragraph content. Use multiple paragraphs. Include specific data, examples, and insights. Make it comprehensive (200-400 words per section).",
+          "order": number,
+          "layout": "full-width" | "two-column" | "highlighted"
         }
       ]
     }
   ]
 }
 
-Create a logical, well-structured document. Use professional colors. Split content into clear sections and paragraphs. Make it comprehensive and professional.`,
+DESIGN GUIDELINES:
+- Use professional color schemes (corporate blues, elegant grays, modern greens)
+- Create multiple pages for complex topics (Executive Summary, Main Content, Analysis, Conclusions)
+- Write substantial content - each section should be 200-400 words
+- Use varied layouts - mix full-width, two-column, and highlighted sections
+- Include specific details, data points, and actionable insights
+- Structure logically with clear progression
+
+Make this document impressive, comprehensive, and professionally formatted.`,
         },
       });
 
