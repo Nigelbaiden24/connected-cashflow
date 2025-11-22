@@ -3,7 +3,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { businessTemplates } from "@/data/businessTemplates";
-import { BusinessLayout } from "@/components/BusinessLayout";
+import { BusinessSidebar } from "@/components/BusinessSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { useDocumentSections, HeaderSection } from "@/hooks/useDocumentSections";
 import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
@@ -380,8 +381,12 @@ Create an executive-level document that demonstrates strategic thinking and prof
   };
 
   return (
-    <BusinessLayout userEmail="business@flowpulse.io" onLogout={handleLogout}>
-      <div className="bg-background flex flex-col h-screen">
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full business-theme">
+        <BusinessSidebar userEmail="business@flowpulse.io" onLogout={handleLogout} />
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1">
+            <div className="bg-background flex flex-col h-full">
               <DocumentEditorToolbar
                 templates={businessTemplates}
                 selectedTemplate={selectedTemplate}
@@ -487,7 +492,10 @@ Create an executive-level document that demonstrates strategic thinking and prof
                 )}
               </div>
             </div>
-    </BusinessLayout>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
 
