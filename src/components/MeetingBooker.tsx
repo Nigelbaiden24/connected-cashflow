@@ -23,12 +23,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export const MeetingBooker = () => {
-  const [date, setDate] = useState<Date>();
-  const [time, setTime] = useState("09:00");
-  const [duration, setDuration] = useState("30");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+interface MeetingBookerProps {
+  promptData?: {
+    title?: string;
+    date?: Date;
+    time?: string;
+    duration?: string;
+    description?: string;
+  };
+  onPromptBook?: () => void;
+}
+
+export const MeetingBooker = ({ promptData, onPromptBook }: MeetingBookerProps = {}) => {
+  const [date, setDate] = useState<Date | undefined>(promptData?.date);
+  const [time, setTime] = useState(promptData?.time || "09:00");
+  const [duration, setDuration] = useState(promptData?.duration || "30");
+  const [title, setTitle] = useState(promptData?.title || "");
+  const [description, setDescription] = useState(promptData?.description || "");
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
