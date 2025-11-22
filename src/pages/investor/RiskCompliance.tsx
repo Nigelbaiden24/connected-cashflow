@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Shield, AlertTriangle, CheckCircle, FileText, Upload, Loader2, Download } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, FileText, Upload, Loader2, Download, Brain, TrendingUp, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -17,6 +17,9 @@ export default function RiskCompliance() {
   const [selectedUpdate, setSelectedUpdate] = useState<any>(null);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [aiRiskInsights, setAiRiskInsights] = useState<any>(null);
+  const [aiComplianceInsights, setAiComplianceInsights] = useState<any>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const riskMetrics = [
     { label: "Portfolio Risk Score", value: "6.5/10", status: "Medium", color: "yellow" },
@@ -27,6 +30,8 @@ export default function RiskCompliance() {
   useEffect(() => {
     loadReports();
     loadRegulatoryUpdates();
+    loadAIRiskAnalysis();
+    loadAIComplianceMonitoring();
   }, []);
 
   const loadReports = async () => {
@@ -131,32 +136,109 @@ export default function RiskCompliance() {
     }
   };
 
+  const loadAIRiskAnalysis = async () => {
+    setLoadingAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-risk-analysis");
+      if (error) throw error;
+      setAiRiskInsights(data);
+    } catch (error) {
+      console.error("AI risk analysis error:", error);
+      toast({
+        title: "AI Analysis Unavailable",
+        description: "Unable to load AI risk insights",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  const loadAIComplianceMonitoring = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-compliance-monitor");
+      if (error) throw error;
+      setAiComplianceInsights(data);
+    } catch (error) {
+      console.error("AI compliance monitoring error:", error);
+      toast({
+        title: "AI Monitoring Unavailable",
+        description: "Unable to load AI compliance insights",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const refreshAIAnalysis = () => {
+    loadAIRiskAnalysis();
+    loadAIComplianceMonitoring();
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">Risk & Compliance Hub</h1>
-          <p className="text-muted-foreground mt-2">Monitor risk exposure and maintain regulatory compliance</p>
+          <p className="text-muted-foreground mt-2">AI-powered risk analysis and compliance monitoring</p>
         </div>
+        <Button onClick={refreshAIAnalysis} disabled={loadingAI} variant="outline">
+          {loadingAI ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Brain className="h-4 w-4 mr-2" />}
+          Refresh AI Analysis
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {riskMetrics.map((metric, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{metric.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
-              <Badge 
-                variant={metric.color === "green" ? "default" : metric.color === "yellow" ? "secondary" : "destructive"}
-                className="mt-2"
-              >
-                {metric.status}
-              </Badge>
-            </CardContent>
-          </Card>
-        ))}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">AI Risk Score</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{aiRiskInsights?.riskScore?.toFixed(1) || "—"}/10</div>
+            <Badge 
+              variant={
+                !aiRiskInsights?.riskLevel ? "secondary" :
+                aiRiskInsights.riskLevel === "low" ? "default" : 
+                aiRiskInsights.riskLevel === "medium" ? "secondary" : 
+                "destructive"
+              }
+              className="mt-2"
+            >
+              {aiRiskInsights?.riskLevel || "Calculating..."}
+            </Badge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Compliance Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{aiComplianceInsights?.complianceScore || "—"}%</div>
+            <Badge 
+              variant={
+                !aiComplianceInsights?.status ? "secondary" :
+                aiComplianceInsights.status === "compliant" ? "default" : 
+                aiComplianceInsights.status === "needs_attention" ? "secondary" : 
+                "destructive"
+              }
+              className="mt-2"
+            >
+              {aiComplianceInsights?.status?.replace('_', ' ') || "Analyzing..."}
+            </Badge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Priority Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {aiComplianceInsights?.priorities?.filter((p: any) => p.level === "critical" || p.level === "high").length || 0}
+            </div>
+            <Badge variant="destructive" className="mt-2">
+              {aiComplianceInsights?.priorities?.length || 0} Total Tasks
+            </Badge>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -164,10 +246,47 @@ export default function RiskCompliance() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              Risk Management
+              AI Risk Analysis
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            {loadingAI ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : aiRiskInsights?.insights ? (
+              <div className="space-y-3">
+                {aiRiskInsights.insights.slice(0, 3).map((insight: any, idx: number) => (
+                  <div key={idx} className="p-3 border rounded-lg">
+                    <div className="flex items-start gap-2">
+                      {insight.type === "risk" && <AlertTriangle className="h-4 w-4 text-destructive mt-1" />}
+                      {insight.type === "warning" && <AlertTriangle className="h-4 w-4 text-yellow-500 mt-1" />}
+                      {insight.type === "opportunity" && <TrendingUp className="h-4 w-4 text-green-500 mt-1" />}
+                      {insight.type === "recommendation" && <Activity className="h-4 w-4 text-primary mt-1" />}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-sm">{insight.title}</p>
+                          <Badge variant={
+                            insight.priority === "critical" ? "destructive" :
+                            insight.priority === "high" ? "secondary" : "outline"
+                          } className="text-xs">
+                            {insight.priority}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">{insight.description}</p>
+                        {insight.actionable && insight.action && (
+                          <p className="text-xs text-primary mt-2">→ {insight.action}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No AI insights available yet
+              </p>
+            )}
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div>
                 <p className="font-medium">Portfolio Stress Test</p>
@@ -211,48 +330,61 @@ export default function RiskCompliance() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Compliance Center
+              AI Compliance Monitoring
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <div>
-                  <p className="font-medium">KYC Verification</p>
-                  <p className="text-sm text-muted-foreground">Status: Complete</p>
-                </div>
+            {loadingAI ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
               </div>
-            </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <div>
-                  <p className="font-medium">AML Compliance</p>
-                  <p className="text-sm text-muted-foreground">Status: Up to date</p>
-                </div>
+            ) : aiComplianceInsights?.checks ? (
+              <div className="space-y-3">
+                {aiComplianceInsights.checks.map((check: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-2">
+                      {check.status === "pass" && <CheckCircle className="h-5 w-5 text-green-600" />}
+                      {check.status === "warning" && <AlertTriangle className="h-5 w-5 text-yellow-600" />}
+                      {check.status === "fail" && <AlertTriangle className="h-5 w-5 text-destructive" />}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">{check.title}</p>
+                          <Badge variant="outline" className="text-xs">{check.category}</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">{check.finding}</p>
+                        {check.action && check.status !== "pass" && (
+                          <p className="text-xs text-primary mt-1">→ {check.action}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {aiComplianceInsights.priorities && aiComplianceInsights.priorities.length > 0 && (
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <p className="font-medium text-sm mb-2">Priority Tasks:</p>
+                    <div className="space-y-2">
+                      {aiComplianceInsights.priorities.slice(0, 2).map((priority: any, idx: number) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <Badge variant={
+                            priority.level === "critical" ? "destructive" : "secondary"
+                          } className="text-xs mt-0.5">
+                            {priority.level}
+                          </Badge>
+                          <div className="flex-1">
+                            <p className="text-xs">{priority.task}</p>
+                            <p className="text-xs text-muted-foreground">Due: {priority.deadline}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                <div>
-                  <p className="font-medium">Tax Reporting</p>
-                  <p className="text-sm text-muted-foreground">Action required</p>
-                </div>
-              </div>
-              <Button 
-                size="sm"
-                onClick={() => {
-                  toast({
-                    title: "Tax Compliance Review",
-                    description: "Tax reporting documents reviewed and approved for current period",
-                  });
-                }}
-              >
-                Review
-              </Button>
-            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No compliance checks available yet
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
