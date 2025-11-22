@@ -64,29 +64,31 @@ const BenchmarkingTrends = () => {
         { name: "Gold", value: "$2,634", change: "+8.5%", ytd: "+12.1%" },
       ];
 
-  const trends = [
-    {
-      id: "1",
-      title: "AI & Technology Boom",
-      description: "Artificial intelligence investments driving market growth",
-      impact: "High",
-      timeframe: "2024-2025"
-    },
-    {
-      id: "2",
-      title: "Green Energy Transition",
-      description: "Renewable energy and ESG investments gaining momentum",
-      impact: "Medium",
-      timeframe: "2024-2030"
-    },
-    {
-      id: "3",
-      title: "Digital Currency Adoption",
-      description: "Institutional crypto adoption and CBDC development",
-      impact: "High",
-      timeframe: "2025-2027"
-    },
-  ];
+  const [trends, setTrends] = useState<any[]>([]);
+  const [loadingTrends, setLoadingTrends] = useState(false);
+
+  const fetchMarketTrends = async () => {
+    setLoadingTrends(true);
+    try {
+      const { data, error } = await supabase
+        .from("market_trends")
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setTrends(data || []);
+    } catch (error) {
+      console.error("Error fetching market trends:", error);
+      toast.error("Failed to load market trends");
+    } finally {
+      setLoadingTrends(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarketTrends();
+  }, []);
 
   // Sample performance data for charts
   const performanceData = [
@@ -386,8 +388,22 @@ const BenchmarkingTrends = () => {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4 mt-6">
-          <div className="grid gap-4">
-            {trends.map((trend) => (
+          {loadingTrends ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-8">
+                <Activity className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">Loading market trends...</span>
+              </CardContent>
+            </Card>
+          ) : trends.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No market trends available at this time.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {trends.map((trend) => (
               <Card key={trend.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -411,7 +427,8 @@ const BenchmarkingTrends = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4 mt-6">
