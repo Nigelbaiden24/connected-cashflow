@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,8 @@ interface CRMBoardProps {
 
 export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isBusiness = location.pathname.startsWith('/business');
   const [contacts, setContacts] = useState<any[]>([]);
   const [customColumns, setCustomColumns] = useState<any[]>([]);
   const [customData, setCustomData] = useState<Record<string, Record<string, string>>>({});
@@ -779,7 +781,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                     </td>
                     <td
                       className={compactView ? "p-2 cursor-pointer" : "p-4 cursor-pointer"}
-                      onClick={() => navigate(`/crm/${contact.id}`)}
+                      onClick={() => navigate(isBusiness ? `/business/crm/${contact.id}` : `/finance-crm/${contact.id}`)}
                     >
                       <div className="flex items-center gap-2">
                         <div className={compactView ? "w-1.5 h-1.5 rounded-full" : `w-2 h-2 rounded-full ${getPriorityColor(contact.priority)}`} style={compactView ? {backgroundColor: `var(--priority-${contact.priority})`} : undefined} />
