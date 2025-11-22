@@ -151,10 +151,29 @@ export default function InvestmentAnalysis() {
     };
   });
 
-  const filteredInvestments = investments.filter(inv =>
-    inv.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    inv.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredInvestments = investments
+    .filter(inv =>
+      inv.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inv.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "performance":
+          return b.changePercent - a.changePercent;
+        case "marketCap":
+          const aMarketCap = parseFloat(a.marketCap.replace(/[^\d.]/g, ''));
+          const bMarketCap = parseFloat(b.marketCap.replace(/[^\d.]/g, ''));
+          return bMarketCap - aMarketCap;
+        case "pe":
+          return b.pe - a.pe;
+        case "dividend":
+          return b.dividend - a.dividend;
+        case "beta":
+          return b.beta - a.beta;
+        default:
+          return 0;
+      }
+    });
 
   if (loadingMarketData) {
     return (
