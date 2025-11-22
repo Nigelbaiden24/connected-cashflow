@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Phone, Mail, MessageSquare, Calendar, Plus, Edit2 } from "lucide-react";
+import { ArrowLeft, Phone, Mail, MessageSquare, Calendar, Plus, Edit2, Building2, Briefcase, Clock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Contact {
   id: string;
@@ -151,14 +152,21 @@ const CRMContactDetail = () => {
   const getInteractionColor = (type: string) => {
     switch (type) {
       case "phone":
-        return "bg-blue-500/10 text-blue-500";
+        return "bg-primary/10 text-primary border-primary/20";
       case "email":
-        return "bg-purple-500/10 text-purple-500";
+        return "bg-secondary/10 text-secondary border-secondary/20";
       case "meeting":
-        return "bg-green-500/10 text-green-500";
+        return "bg-accent/10 text-accent border-accent/20";
       default:
-        return "bg-gray-500/10 text-gray-500";
+        return "bg-muted text-muted-foreground border-border";
     }
+  };
+
+  const quickLogInteraction = (type: string) => {
+    setNewInteraction({
+      ...newInteraction,
+      interaction_type: type,
+    });
   };
 
   if (loading) {
@@ -172,30 +180,43 @@ const CRMContactDetail = () => {
   const isBusiness = window.location.pathname.startsWith('/business');
 
   return (
-    <div className="flex-1 p-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate(isBusiness ? "/business/crm" : "/finance-crm")}>
+    <div className="flex-1 p-4 md:p-6 space-y-6 animate-in fade-in-50 duration-500">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate(isBusiness ? "/business/crm" : "/finance-crm")}
+          className="hover:bg-primary/10"
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to CRM
         </Button>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            <Clock className="h-3 w-3 mr-1" />
+            Last updated {format(new Date(), "MMM d, yyyy")}
+          </Badge>
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         {/* Contact Information */}
-        <Card className="md:col-span-1">
-          <CardHeader>
+        <Card className="lg:col-span-1 border-2 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent">
             <div className="flex items-center justify-between">
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle className="text-lg font-semibold">Contact Profile</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setEditMode(!editMode)}
+                className="hover:bg-primary/10"
               >
                 <Edit2 className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6 pt-6">
             {editMode ? (
               <>
                 <div>
@@ -296,34 +317,74 @@ const CRMContactDetail = () => {
               </>
             ) : (
               <>
-                <div>
-                  <h3 className="text-2xl font-bold">{contact.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {contact.position} at {contact.company}
-                  </p>
-                </div>
-                <Separator />
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.email || "N/A"}</span>
+                {/* Contact Header */}
+                <div className="text-center space-y-3 pb-4">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-lg">
+                    {contact.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{contact.phone || "N/A"}</span>
+                  <div>
+                    <h3 className="text-2xl font-bold tracking-tight">{contact.name}</h3>
+                    <div className="flex items-center justify-center gap-2 mt-2 text-muted-foreground">
+                      <Briefcase className="h-4 w-4" />
+                      <span className="text-sm">{contact.position || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 mt-1 text-muted-foreground">
+                      <Building2 className="h-4 w-4" />
+                      <span className="text-sm">{contact.company || "N/A"}</span>
+                    </div>
                   </div>
                 </div>
+
                 <Separator />
-                <div className="flex gap-2">
-                  <Badge variant="secondary">{contact.status}</Badge>
-                  <Badge variant="outline">{contact.priority} priority</Badge>
+
+                {/* Contact Details */}
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <Mail className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-1">Email</p>
+                      <p className="text-sm font-medium truncate">{contact.email || "N/A"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <Phone className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">Phone</p>
+                      <p className="text-sm font-medium">{contact.phone || "N/A"}</p>
+                    </div>
+                  </div>
                 </div>
+
+                <Separator />
+
+                {/* Status & Priority */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <Badge 
+                      variant="secondary" 
+                      className="capitalize font-medium"
+                    >
+                      {contact.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Priority</span>
+                    <Badge 
+                      variant={contact.priority === "high" ? "destructive" : "outline"}
+                      className="capitalize font-medium"
+                    >
+                      {contact.priority}
+                    </Badge>
+                  </div>
+                </div>
+
                 {contact.notes && (
                   <>
                     <Separator />
-                    <div>
-                      <Label>Notes</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Notes</Label>
+                      <p className="text-sm leading-relaxed p-3 rounded-lg bg-muted/30">
                         {contact.notes}
                       </p>
                     </div>
@@ -335,13 +396,18 @@ const CRMContactDetail = () => {
         </Card>
 
         {/* Interaction History */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Interaction History</CardTitle>
+        <Card className="lg:col-span-2 border-2 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="bg-gradient-to-br from-primary/5 to-transparent space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-lg font-semibold">Interaction Timeline</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {interactions.length} total {interactions.length === 1 ? "interaction" : "interactions"}
+                </p>
+              </div>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button className="shadow-md hover:shadow-lg transition-shadow">
                     <Plus className="h-4 w-4 mr-2" />
                     Log Interaction
                   </Button>
@@ -424,53 +490,172 @@ const CRMContactDetail = () => {
               </Dialog>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+              {[
+                { type: "phone", label: "Phone Call", icon: Phone },
+                { type: "email", label: "Email", icon: Mail },
+                { type: "meeting", label: "Meeting", icon: Calendar },
+                { type: "note", label: "Note", icon: MessageSquare },
+              ].map((action) => (
+                <Dialog key={action.type}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-auto py-3 flex-col gap-1 hover:scale-105 transition-transform",
+                        getInteractionColor(action.type)
+                      )}
+                      onClick={() => quickLogInteraction(action.type)}
+                    >
+                      <action.icon className="h-4 w-4" />
+                      <span className="text-xs font-medium">{action.label}</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <action.icon className="h-5 w-5" />
+                        Log {action.label}
+                      </DialogTitle>
+                      <DialogDescription>
+                        Record details about this interaction with {contact.name}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <Label>Subject *</Label>
+                        <Input
+                          value={newInteraction.subject}
+                          onChange={(e) =>
+                            setNewInteraction({
+                              ...newInteraction,
+                              subject: e.target.value,
+                            })
+                          }
+                          placeholder="Brief summary of the interaction"
+                          className="mt-1.5"
+                        />
+                      </div>
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea
+                          value={newInteraction.description}
+                          onChange={(e) =>
+                            setNewInteraction({
+                              ...newInteraction,
+                              description: e.target.value,
+                            })
+                          }
+                          placeholder="Detailed notes about what was discussed..."
+                          rows={4}
+                          className="mt-1.5"
+                        />
+                      </div>
+                      <div>
+                        <Label>Outcome / Next Steps</Label>
+                        <Input
+                          value={newInteraction.outcome}
+                          onChange={(e) =>
+                            setNewInteraction({
+                              ...newInteraction,
+                              outcome: e.target.value,
+                            })
+                          }
+                          placeholder="Result or action items"
+                          className="mt-1.5"
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={addInteraction} className="w-full sm:w-auto">
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Save Interaction
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ))}
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* Interaction Timeline */}
             <div className="space-y-4">
               {interactions.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No interactions recorded yet
-                </p>
+                <div className="text-center py-12">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground font-medium">
+                    No interactions recorded yet
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use the quick actions above to log your first interaction
+                  </p>
+                </div>
               ) : (
-                interactions.map((interaction) => (
-                  <div
-                    key={interaction.id}
-                    className="border rounded-lg p-4 space-y-2"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${getInteractionColor(
-                            interaction.interaction_type
-                          )}`}
-                        >
-                          {getInteractionIcon(interaction.interaction_type)}
+                <div className="relative space-y-6">
+                  {/* Timeline line */}
+                  <div className="absolute left-[17px] top-6 bottom-6 w-0.5 bg-gradient-to-b from-primary via-primary/50 to-transparent" />
+                  
+                  {interactions.map((interaction, index) => (
+                    <div
+                      key={interaction.id}
+                      className="relative pl-12 group animate-in fade-in-50 slide-in-from-left-10"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Timeline dot */}
+                      <div className={cn(
+                        "absolute left-0 w-9 h-9 rounded-full border-2 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform",
+                        getInteractionColor(interaction.interaction_type)
+                      )}>
+                        {getInteractionIcon(interaction.interaction_type)}
+                      </div>
+
+                      {/* Interaction card */}
+                      <div className="border rounded-lg p-4 bg-card hover:shadow-md transition-all duration-300 hover:border-primary/30">
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-base mb-1 truncate">
+                              {interaction.subject}
+                            </h4>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {format(new Date(interaction.interaction_date), "PPpp")}
+                            </div>
+                          </div>
+                          <Badge 
+                            variant="secondary" 
+                            className="capitalize shrink-0"
+                          >
+                            {interaction.interaction_type}
+                          </Badge>
                         </div>
-                        <div>
-                          <h4 className="font-medium">{interaction.subject}</h4>
-                          <p className="text-xs text-muted-foreground">
-                            {format(
-                              new Date(interaction.interaction_date),
-                              "PPpp"
-                            )}
+
+                        {interaction.description && (
+                          <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                            {interaction.description}
                           </p>
-                        </div>
+                        )}
+
+                        {interaction.outcome && (
+                          <div className="bg-primary/5 border border-primary/10 rounded-md p-3 flex items-start gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-primary mb-1">
+                                Outcome
+                              </p>
+                              <p className="text-sm">
+                                {interaction.outcome}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <Badge variant="outline" className="capitalize">
-                        {interaction.interaction_type}
-                      </Badge>
                     </div>
-                    {interaction.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {interaction.description}
-                      </p>
-                    )}
-                    {interaction.outcome && (
-                      <div className="bg-muted/50 p-2 rounded text-sm">
-                        <strong>Outcome:</strong> {interaction.outcome}
-                      </div>
-                    )}
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </CardContent>
