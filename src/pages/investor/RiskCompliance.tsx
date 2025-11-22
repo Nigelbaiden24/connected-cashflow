@@ -30,8 +30,6 @@ export default function RiskCompliance() {
   useEffect(() => {
     loadReports();
     loadRegulatoryUpdates();
-    loadAIRiskAnalysis();
-    loadAIComplianceMonitoring();
   }, []);
 
   const loadReports = async () => {
@@ -136,17 +134,21 @@ export default function RiskCompliance() {
     }
   };
 
-  const loadAIRiskAnalysis = async () => {
+  const runAIRiskAnalysis = async () => {
     setLoadingAI(true);
     try {
       const { data, error } = await supabase.functions.invoke("ai-risk-analysis");
       if (error) throw error;
       setAiRiskInsights(data);
+      toast({
+        title: "AI Risk Analysis Complete",
+        description: "Portfolio risk analysis completed successfully",
+      });
     } catch (error) {
       console.error("AI risk analysis error:", error);
       toast({
-        title: "AI Analysis Unavailable",
-        description: "Unable to load AI risk insights",
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Unable to complete AI risk analysis",
         variant: "destructive",
       });
     } finally {
@@ -154,24 +156,26 @@ export default function RiskCompliance() {
     }
   };
 
-  const loadAIComplianceMonitoring = async () => {
+  const runAIComplianceCheck = async () => {
+    setLoadingAI(true);
     try {
       const { data, error } = await supabase.functions.invoke("ai-compliance-monitor");
       if (error) throw error;
       setAiComplianceInsights(data);
+      toast({
+        title: "AI Compliance Check Complete",
+        description: "Compliance monitoring completed successfully",
+      });
     } catch (error) {
       console.error("AI compliance monitoring error:", error);
       toast({
-        title: "AI Monitoring Unavailable",
-        description: "Unable to load AI compliance insights",
+        title: "Check Failed",
+        description: error instanceof Error ? error.message : "Unable to complete AI compliance check",
         variant: "destructive",
       });
+    } finally {
+      setLoadingAI(false);
     }
-  };
-
-  const refreshAIAnalysis = () => {
-    loadAIRiskAnalysis();
-    loadAIComplianceMonitoring();
   };
 
   return (
@@ -181,10 +185,6 @@ export default function RiskCompliance() {
           <h1 className="text-3xl font-bold">Risk & Compliance Hub</h1>
           <p className="text-muted-foreground mt-2">AI-powered risk analysis and compliance monitoring</p>
         </div>
-        <Button onClick={refreshAIAnalysis} disabled={loadingAI} variant="outline">
-          {loadingAI ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Brain className="h-4 w-4 mr-2" />}
-          Refresh AI Analysis
-        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -250,7 +250,18 @@ export default function RiskCompliance() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {loadingAI ? (
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium">Run AI Risk Analysis</p>
+                <p className="text-sm text-muted-foreground">
+                  Analyze portfolio risk using AI
+                </p>
+              </div>
+              <Button size="sm" onClick={runAIRiskAnalysis} disabled={loadingAI}>
+                {loadingAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+              </Button>
+            </div>
+            {loadingAI && !aiRiskInsights ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
@@ -284,7 +295,7 @@ export default function RiskCompliance() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No AI insights available yet
+                Click "Run AI Risk Analysis" to get started
               </p>
             )}
             <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -334,7 +345,18 @@ export default function RiskCompliance() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {loadingAI ? (
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium">Run AI Compliance Check</p>
+                <p className="text-sm text-muted-foreground">
+                  Monitor compliance status with AI
+                </p>
+              </div>
+              <Button size="sm" onClick={runAIComplianceCheck} disabled={loadingAI}>
+                {loadingAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+              </Button>
+            </div>
+            {loadingAI && !aiComplianceInsights ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
@@ -382,7 +404,7 @@ export default function RiskCompliance() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No compliance checks available yet
+                Click "Run AI Compliance Check" to get started
               </p>
             )}
           </CardContent>

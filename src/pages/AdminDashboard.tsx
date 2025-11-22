@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield } from "lucide-react";
 
 interface Profile {
   user_id: string;
@@ -48,6 +48,15 @@ export default function AdminDashboard() {
   });
   const [videoForm, setVideoForm] = useState({ title: "", description: "", category: "", userId: "all", file: null as File | null });
   const [watchlistForm, setWatchlistForm] = useState({ name: "", description: "", category: "", userId: "all", file: null as File | null });
+  const [riskComplianceForm, setRiskComplianceForm] = useState({ 
+    title: "", 
+    description: "", 
+    type: "", 
+    severity: "",
+    content: "",
+    userId: "all", 
+    file: null as File | null 
+  });
 
   useEffect(() => {
     checkAdminAccess();
@@ -390,6 +399,52 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleRiskComplianceUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!riskComplianceForm.title || !riskComplianceForm.type || !riskComplianceForm.content) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      let filePath = null;
+      if (riskComplianceForm.file) {
+        filePath = await uploadFile("reports", riskComplianceForm.file);
+      }
+
+      const { error } = await supabase.from("risk_assessment_reports").insert({
+        report_name: riskComplianceForm.title,
+        report_type: riskComplianceForm.type,
+        summary: riskComplianceForm.description,
+        report_data: {
+          content: riskComplianceForm.content,
+          severity: riskComplianceForm.severity || "medium",
+          file_path: filePath,
+        },
+        user_id: riskComplianceForm.userId && riskComplianceForm.userId !== "all" ? riskComplianceForm.userId : null,
+      });
+
+      if (error) throw error;
+
+      toast.success(`Risk & Compliance content uploaded successfully${riskComplianceForm.userId && riskComplianceForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
+      setRiskComplianceForm({ 
+        title: "", 
+        description: "", 
+        type: "", 
+        severity: "",
+        content: "",
+        userId: "all", 
+        file: null 
+      });
+    } catch (error: any) {
+      console.error("Error uploading risk/compliance content:", error);
+      toast.error(error.message || "Failed to upload risk/compliance content");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -439,7 +494,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="reports" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+          <TabsList className="grid w-full grid-cols-8 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
             <TabsTrigger 
               value="reports"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
@@ -488,6 +543,13 @@ export default function AdminDashboard() {
             >
               <List className="h-4 w-4 mr-2" />
               Watchlists
+            </TabsTrigger>
+            <TabsTrigger 
+              value="risk-compliance"
+              className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Risk & Compliance
             </TabsTrigger>
           </TabsList>
 
@@ -1128,6 +1190,118 @@ export default function AdminDashboard() {
                 <Button type="submit" disabled={uploading}>
                   {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
                   Create Watchlist
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+          {/* Risk & Compliance Tab */}
+          <TabsContent value="risk-compliance">
+            <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Shield className="h-6 w-6 text-primary" />
+                  Upload Risk & Compliance Content
+                </CardTitle>
+                <CardDescription>Upload risk analysis and compliance monitoring content for investors</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleRiskComplianceUpload} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="risk-title">Title *</Label>
+                  <Input
+                    id="risk-title"
+                    value={riskComplianceForm.title}
+                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, title: e.target.value })}
+                    placeholder="Report or analysis title"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="risk-type">Type *</Label>
+                  <Select value={riskComplianceForm.type} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, type: value })}>
+                    <SelectTrigger id="risk-type">
+                      <SelectValue placeholder="Select content type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="stress_test">Stress Test</SelectItem>
+                      <SelectItem value="exposure_analysis">Exposure Analysis</SelectItem>
+                      <SelectItem value="compliance_check">Compliance Check</SelectItem>
+                      <SelectItem value="risk_assessment">Risk Assessment</SelectItem>
+                      <SelectItem value="regulatory_update">Regulatory Update</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="risk-severity">Severity</Label>
+                  <Select value={riskComplianceForm.severity} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, severity: value })}>
+                    <SelectTrigger id="risk-severity">
+                      <SelectValue placeholder="Select severity level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="risk-desc">Summary</Label>
+                  <Textarea
+                    id="risk-desc"
+                    value={riskComplianceForm.description}
+                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, description: e.target.value })}
+                    placeholder="Brief summary of the analysis"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="risk-content">Full Content *</Label>
+                  <Textarea
+                    id="risk-content"
+                    value={riskComplianceForm.content}
+                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, content: e.target.value })}
+                    placeholder="Detailed analysis and findings"
+                    rows={6}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="risk-user">Select User (Optional)</Label>
+                  <Select value={riskComplianceForm.userId} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, userId: value })}>
+                    <SelectTrigger id="risk-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Users</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="risk-file">Supporting Document (Optional)</Label>
+                  <Input
+                    id="risk-file"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, file: e.target.files?.[0] || null })}
+                  />
+                </div>
+
+                <Button type="submit" disabled={uploading}>
+                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                  Upload Content
                 </Button>
               </form>
             </CardContent>
