@@ -2491,33 +2491,42 @@ export type Database = {
       }
       investor_alerts: {
         Row: {
+          alert_data: Json | null
           alert_type: string
+          company: string | null
           created_at: string | null
           description: string | null
           id: string
           metadata: Json | null
           published_date: string | null
           severity: string | null
+          ticker: string | null
           title: string
         }
         Insert: {
+          alert_data?: Json | null
           alert_type: string
+          company?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           metadata?: Json | null
           published_date?: string | null
           severity?: string | null
+          ticker?: string | null
           title: string
         }
         Update: {
+          alert_data?: Json | null
           alert_type?: string
+          company?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           metadata?: Json | null
           published_date?: string | null
           severity?: string | null
+          ticker?: string | null
           title?: string
         }
         Relationships: []
