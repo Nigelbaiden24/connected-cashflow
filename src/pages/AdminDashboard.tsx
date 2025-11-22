@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users } from "lucide-react";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
+import { UserManagement } from "@/components/admin/UserManagement";
 
 interface Profile {
   user_id: string;
@@ -553,8 +554,15 @@ export default function AdminDashboard() {
           <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
         </div>
 
-        <Tabs defaultValue="reports" className="w-full">
-          <TabsList className="grid w-full grid-cols-10 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+        <Tabs defaultValue="users" className="w-full">
+          <TabsList className="grid w-full grid-cols-11 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+            <TabsTrigger 
+              value="users"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Users
+            </TabsTrigger>
             <TabsTrigger 
               value="reports"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
@@ -626,6 +634,11 @@ export default function AdminDashboard() {
               Market Trends
             </TabsTrigger>
           </TabsList>
+
+          {/* User Management Tab */}
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
 
           {/* Reports Tab */}
           <TabsContent value="reports">
