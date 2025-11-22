@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, Calendar, Filter, TrendingUp, BarChart3, Shield, Globe, Briefcase, Target, Activity } from "lucide-react";
+import { Download, FileText, Calendar, Filter, TrendingUp, BarChart3, Shield, Globe, Briefcase, Target, Activity, Eye, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 
 interface Report {
   id: string;
@@ -26,6 +27,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchReports();
@@ -65,6 +67,24 @@ export default function Reports() {
     }
   };
 
+  const viewReport = async (report: Report) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('reports')
+        .createSignedUrl(report.file_path, 3600);
+
+      if (error) throw error;
+
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+        toast.success("Opening report...");
+      }
+    } catch (error) {
+      console.error('Error viewing report:', error);
+      toast.error("Failed to open report");
+    }
+  };
+
   const downloadReport = async (report: Report) => {
     try {
       const { data, error } = await supabase.storage
@@ -89,11 +109,16 @@ export default function Reports() {
     }
   };
 
-  const filteredReports = selectedType === "all" 
-    ? reports 
-    : reports.filter(r => r.report_type === selectedType);
+  const filteredReports = reports.filter(report => {
+    const matchesType = selectedType === "all" || report.report_type === selectedType;
+    const matchesSearch = !searchQuery || 
+      report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      report.report_type.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesType && matchesSearch;
+  });
 
-  const reportTypes = [...new Set(reports.map(r => r.report_type))];
+  const reportTypes = [...new Set(reports.map(r => r.report_type))].sort();
 
   // Category mapping for Morningstar-style organization
   const reportCategories = {
@@ -159,9 +184,11 @@ export default function Reports() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Investment Research & Reports</h1>
-          <p className="text-muted-foreground mt-1">
-            Professional analysis and insights from industry experts
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Investment Research
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Access comprehensive market analysis and investment insights
           </p>
         </div>
         <div className="flex gap-2">
@@ -169,23 +196,29 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Reports</SelectItem>
-              {reportTypes.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search reports by title, description, or type..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Select value={selectedType} onValueChange={setSelectedType}>
+          <SelectTrigger className="w-full sm:w-[280px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[400px]">
+            <SelectItem value="all">All Reports</SelectItem>
+            {reportTypes.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
@@ -202,12 +235,14 @@ export default function Reports() {
           ))}
         </div>
       ) : filteredReports.length === 0 ? (
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="h-16 w-16 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Reports Available</h3>
             <p className="text-muted-foreground text-center max-w-md">
-              Research reports and analysis will appear here once they are published.
+              {searchQuery 
+                ? `No reports match "${searchQuery}"`
+                : "Research reports and analysis will appear here once they are published."}
             </p>
           </CardContent>
         </Card>
@@ -238,39 +273,52 @@ export default function Reports() {
                 {/* Reports Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {categoryReports.map((report) => (
-                    <Card key={report.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-2 hover:border-primary/50">
+                    <Card key={report.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
                       <div className={`relative h-48 bg-gradient-to-br ${colorClass} opacity-10 flex items-center justify-center`}>
                         <FileText className="h-20 w-20 text-foreground opacity-20" />
-                        <Badge className="absolute top-4 right-4">{report.report_type}</Badge>
+                        <Badge variant="secondary" className="absolute top-4 right-4 text-xs">
+                          {report.report_type}
+                        </Badge>
                       </div>
                       <CardContent className="p-6">
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           <div>
-                            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors leading-tight">
                               {report.title}
                             </h3>
                             <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                               <Calendar className="h-3.5 w-3.5" />
-                              {new Date(report.published_date).toLocaleDateString('en-GB', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
+                              <span className="text-xs">
+                                {new Date(report.published_date).toLocaleDateString('en-GB', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </span>
                             </div>
                           </div>
                           {report.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-3">
+                            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                               {report.description}
                             </p>
                           )}
-                          <Button 
-                            onClick={() => downloadReport(report)} 
-                            className="w-full gap-2"
-                            variant="outline"
-                          >
-                            <Download className="h-4 w-4" />
-                            Download PDF
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              onClick={() => viewReport(report)}
+                              variant="outline"
+                              className="flex-1 group/btn hover:bg-primary hover:text-primary-foreground transition-all"
+                            >
+                              <Eye className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                              View
+                            </Button>
+                            <Button 
+                              onClick={() => downloadReport(report)}
+                              className="flex-1 group/btn"
+                            >
+                              <Download className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                              Download
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
