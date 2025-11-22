@@ -3508,6 +3508,69 @@ export type Database = {
           },
         ]
       }
+      platform_permissions: {
+        Row: {
+          can_access_analytics: boolean | null
+          can_access_automation: boolean | null
+          can_access_calendar: boolean | null
+          can_access_chat: boolean | null
+          can_access_crm: boolean | null
+          can_access_dashboard: boolean | null
+          can_access_document_generator: boolean | null
+          can_access_payroll: boolean | null
+          can_access_projects: boolean | null
+          can_access_revenue: boolean | null
+          can_access_security: boolean | null
+          can_access_tasks: boolean | null
+          can_access_team_management: boolean | null
+          created_at: string
+          id: string
+          organization_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_access_analytics?: boolean | null
+          can_access_automation?: boolean | null
+          can_access_calendar?: boolean | null
+          can_access_chat?: boolean | null
+          can_access_crm?: boolean | null
+          can_access_dashboard?: boolean | null
+          can_access_document_generator?: boolean | null
+          can_access_payroll?: boolean | null
+          can_access_projects?: boolean | null
+          can_access_revenue?: boolean | null
+          can_access_security?: boolean | null
+          can_access_tasks?: boolean | null
+          can_access_team_management?: boolean | null
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_access_analytics?: boolean | null
+          can_access_automation?: boolean | null
+          can_access_calendar?: boolean | null
+          can_access_chat?: boolean | null
+          can_access_crm?: boolean | null
+          can_access_dashboard?: boolean | null
+          can_access_document_generator?: boolean | null
+          can_access_payroll?: boolean | null
+          can_access_projects?: boolean | null
+          can_access_revenue?: boolean | null
+          can_access_security?: boolean | null
+          can_access_tasks?: boolean | null
+          can_access_team_management?: boolean | null
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_benchmarks: {
         Row: {
           ai_analysis: string | null
@@ -4069,6 +4132,60 @@ export type Database = {
           },
         ]
       }
+      team_message_threads: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string | null
+          participants: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          participants: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          participants?: string[]
+        }
+        Relationships: []
+      }
+      team_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean | null
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean | null
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean | null
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       time_off_requests: {
         Row: {
           approved_at: string | null
@@ -4523,6 +4640,10 @@ export type Database = {
       calculate_next_cron_run: {
         Args: { cron_expr: string; tz?: string }
         Returns: string
+      }
+      check_user_permission: {
+        Args: { _permission: string; _user_id: string }
+        Returns: boolean
       }
       increment_learning_content_views: {
         Args: { content_id: string }
