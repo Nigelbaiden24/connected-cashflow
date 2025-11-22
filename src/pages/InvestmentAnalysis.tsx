@@ -7,86 +7,27 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter } from "recharts";
-import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft, Loader2 } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { CreateWatchlistDialog } from "@/components/investor/CreateWatchlistDialog";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 
-// Dummy investment data
-const investments = [
-  {
-    symbol: "AAPL",
-    name: "Apple Inc.",
-    price: 185.43,
-    change: 2.34,
-    changePercent: 1.28,
-    marketCap: "2.89T",
-    pe: 28.5,
-    dividend: 0.54,
-    beta: 1.12,
-    rating: "Buy",
-    risk: "Medium",
-    sector: "Technology"
-  },
-  {
-    symbol: "MSFT", 
-    name: "Microsoft Corp.",
-    price: 378.91,
-    change: -4.23,
-    changePercent: -1.10,
-    marketCap: "2.81T",
-    pe: 32.1,
-    dividend: 0.75,
-    beta: 0.89,
-    rating: "Buy",
-    risk: "Medium",
-    sector: "Technology"
-  },
-  {
-    symbol: "GOOGL",
-    name: "Alphabet Inc.",
-    price: 142.56,
-    change: 1.87,
-    changePercent: 1.33,
-    marketCap: "1.79T", 
-    pe: 25.8,
-    dividend: 0.00,
-    beta: 1.05,
-    rating: "Hold",
-    risk: "Medium",
-    sector: "Technology"
-  },
-  {
-    symbol: "TSLA",
-    name: "Tesla Inc.",
-    price: 238.45,
-    change: 12.34,
-    changePercent: 5.46,
-    marketCap: "758B",
-    pe: 45.2,
-    dividend: 0.00,
-    beta: 2.15,
-    rating: "Hold",
-    risk: "High",
-    sector: "Consumer Discretionary"
-  },
-  {
-    symbol: "JNJ",
-    name: "Johnson & Johnson",
-    price: 168.92,
-    change: 0.45,
-    changePercent: 0.27,
-    marketCap: "445B",
-    pe: 15.7,
-    dividend: 2.95,
-    beta: 0.65,
-    rating: "Buy",
-    risk: "Low",
-    sector: "Healthcare"
-  }
-];
+interface Investment {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  marketCap: string;
+  pe: number;
+  dividend: number;
+  beta: number;
+  rating: string;
+  risk: string;
+  sector: string;
+}
 
 const performanceData = [
   { period: "1M", AAPL: 5.2, MSFT: -2.1, GOOGL: 3.8, TSLA: 15.4, JNJ: 1.2, SP500: 2.8 },
@@ -95,13 +36,6 @@ const performanceData = [
   { period: "1Y", AAPL: 24.3, MSFT: 28.1, GOOGL: 19.5, TSLA: 35.2, JNJ: 12.3, SP500: 18.9 },
   { period: "3Y", AAPL: 65.8, MSFT: 89.2, GOOGL: 45.7, TSLA: 125.4, JNJ: 25.1, SP500: 52.3 }
 ];
-
-const riskReturnData = investments.map(inv => ({
-  symbol: inv.symbol,
-  risk: inv.beta,
-  return: parseFloat(performanceData[3][inv.symbol as keyof typeof performanceData[3]] as string),
-  marketCap: parseFloat(inv.marketCap.replace(/[^\d.]/g, ''))
-}));
 
 const sectorAnalysis = [
   { sector: "Technology", allocation: 45.2, performance: "12.4%", risk: "Medium", outlook: "Positive" },
@@ -114,11 +48,13 @@ const sectorAnalysis = [
 export default function InvestmentAnalysis() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedInvestment, setSelectedInvestment] = useState(investments[0]);
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [selectedInvestment, setSelectedInvestment] = useState<Investment | null>(null);
   const [sortBy, setSortBy] = useState("performance");
   const [watchlistDialogOpen, setWatchlistDialogOpen] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [loadingMarketData, setLoadingMarketData] = useState(true);
 
   const { analyzeWithAI, isLoading: aiLoading } = useAIAnalyst({
     onDelta: (text) => setAiAnalysis(prev => prev + text),
@@ -134,12 +70,47 @@ export default function InvestmentAnalysis() {
   });
 
   useEffect(() => {
+    fetchMarketData();
+  }, []);
+
+  useEffect(() => {
     if (selectedInvestment) {
       fetchAIAnalysis();
     }
   }, [selectedInvestment]);
 
+  const fetchMarketData = async () => {
+    setLoadingMarketData(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+        body: { symbols: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'JNJ', 'NVDA', 'META', 'AMZN'] }
+      });
+
+      if (error) throw error;
+
+      setInvestments(data.investments);
+      if (data.investments.length > 0) {
+        setSelectedInvestment(data.investments[0]);
+      }
+
+      toast({
+        title: "Market Data Updated",
+        description: "Latest investment data loaded successfully",
+      });
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch market data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMarketData(false);
+    }
+  };
+
   const fetchAIAnalysis = async () => {
+    if (!selectedInvestment) return;
     setIsAnalyzing(true);
     setAiAnalysis("");
     await analyzeWithAI(
@@ -149,10 +120,28 @@ export default function InvestmentAnalysis() {
     );
   };
 
+  const riskReturnData = investments.map(inv => ({
+    symbol: inv.symbol,
+    risk: inv.beta,
+    return: parseFloat(performanceData[3][inv.symbol as keyof typeof performanceData[3]] as string) || 0,
+    marketCap: parseFloat(inv.marketCap.replace(/[^\d.]/g, '')) || 0
+  }));
+
   const filteredInvestments = investments.filter(inv =>
     inv.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
     inv.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loadingMarketData) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading market data...</p>
+        </div>
+      </div>
+    );
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -208,6 +197,15 @@ export default function InvestmentAnalysis() {
           <Button 
             variant="outline" 
             size="sm"
+            onClick={fetchMarketData}
+            disabled={loadingMarketData}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loadingMarketData ? 'animate-spin' : ''}`} />
+            Refresh Data
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
             onClick={() => {
               if (!selectedInvestment) {
                 toast({
@@ -237,6 +235,7 @@ export default function InvestmentAnalysis() {
           <Button 
             size="sm"
             onClick={() => setWatchlistDialogOpen(true)}
+            disabled={!selectedInvestment}
           >
             <BarChart3 className="h-4 w-4 mr-2" />
             Create Watchlist
@@ -564,16 +563,18 @@ export default function InvestmentAnalysis() {
         </TabsContent>
       </Tabs>
 
-      <CreateWatchlistDialog
-        open={watchlistDialogOpen}
-        onOpenChange={setWatchlistDialogOpen}
-        initialSymbol={{
-          symbol: selectedInvestment.symbol,
-          name: selectedInvestment.name,
-          price: selectedInvestment.price,
-          change_percent: selectedInvestment.changePercent,
-        }}
-      />
+      {selectedInvestment && (
+        <CreateWatchlistDialog
+          open={watchlistDialogOpen}
+          onOpenChange={setWatchlistDialogOpen}
+          initialSymbol={{
+            symbol: selectedInvestment.symbol,
+            name: selectedInvestment.name,
+            price: selectedInvestment.price,
+            change_percent: selectedInvestment.changePercent,
+          }}
+        />
+      )}
     </div>
   );
 }
