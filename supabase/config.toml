@@ -87,6 +87,12 @@ verify_jwt = false
 [functions.portfolio-analysis]
 verify_jwt = true
 
+[functions.ai-risk-analysis]
+verify_jwt = true
+
+[functions.ai-compliance-monitor]
+verify_jwt = true
+
 [functions.translate-content]
 verify_jwt = false
 
