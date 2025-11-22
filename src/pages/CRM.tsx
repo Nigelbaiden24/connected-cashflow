@@ -38,14 +38,22 @@ const CRM = () => {
   };
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 p-6 space-y-6 animate-in fade-in duration-500">
+      {/* Enhanced Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">CRM</h1>
-          <p className="text-muted-foreground">Customer Relationship Management</p>
+        <div className="space-y-1">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            CRM
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Customer Relationship Management
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setImportDialogOpen(true)}>
+          <Button 
+            onClick={() => setImportDialogOpen(true)}
+            className="shadow-sm hover:shadow-md transition-all duration-200"
+          >
             <Upload className="h-4 w-4 mr-2" />
             Bulk Import
           </Button>
@@ -53,7 +61,7 @@ const CRM = () => {
             variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
-            className="gap-2"
+            className="gap-2 hover:bg-accent/50 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -61,39 +69,57 @@ const CRM = () => {
         </div>
       </div>
 
+      {/* Enhanced Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total Contacts
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Users className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalContacts}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="space-y-1">
+            <div className="text-3xl font-bold tracking-tight">{totalContacts}</div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               {activeContacts} active relationships
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Conversion Rate
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-chart-1/10">
+              <TrendingUp className="h-4 w-4 text-chart-1" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">24.5%</div>
-            <p className="text-xs text-muted-foreground">From leads to clients</p>
+          <CardContent className="space-y-1">
+            <div className="text-3xl font-bold tracking-tight">24.5%</div>
+            <p className="text-xs text-muted-foreground">
+              From leads to clients
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pipeline Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Pipeline Value
+            </CardTitle>
+            <div className="p-2 rounded-lg bg-chart-2/10">
+              <DollarSign className="h-4 w-4 text-chart-2" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">£125K</div>
-            <p className="text-xs text-muted-foreground">Potential revenue</p>
+          <CardContent className="space-y-1">
+            <div className="text-3xl font-bold tracking-tight">£125K</div>
+            <p className="text-xs text-muted-foreground">
+              Potential revenue
+            </p>
           </CardContent>
         </Card>
       </div>
