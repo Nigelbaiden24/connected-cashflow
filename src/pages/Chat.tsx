@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
   id: string;
@@ -116,8 +117,7 @@ const Chat = () => {
       .from('conversations')
       .select('id, title, updated_at')
       .eq('user_id', user.id)
-      .order('updated_at', { ascending: false })
-      .limit(20);
+      .order('updated_at', { ascending: false });
 
     if (error) {
       console.error('Error loading conversations:', error);
@@ -567,21 +567,31 @@ const Chat = () => {
                     New Conversation
                   </Button>
                   <Separator className="my-4" />
-                  {conversations.map((conv) => (
-                    <Button
-                      key={conv.id}
-                      onClick={() => loadConversation(conv.id)}
-                      variant={currentConversationId === conv.id ? "secondary" : "ghost"}
-                      className="w-full justify-start text-left"
-                    >
-                      <div className="flex-1 truncate">
-                        <div className="font-medium truncate">{conv.title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {new Date(conv.updated_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
+                  <ScrollArea className="h-[500px]">
+                    <div className="space-y-2 pr-4">
+                      {conversations.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          No conversations yet. Start chatting to create your first conversation!
+                        </p>
+                      ) : (
+                        conversations.map((conv) => (
+                          <Button
+                            key={conv.id}
+                            onClick={() => loadConversation(conv.id)}
+                            variant={currentConversationId === conv.id ? "secondary" : "ghost"}
+                            className="w-full justify-start text-left"
+                          >
+                            <div className="flex-1 truncate">
+                              <div className="font-medium truncate">{conv.title}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(conv.updated_at).toLocaleDateString()} {new Date(conv.updated_at).toLocaleTimeString()}
+                              </div>
+                            </div>
+                          </Button>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
                 </div>
               </SheetContent>
             </Sheet>

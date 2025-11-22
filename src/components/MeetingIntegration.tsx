@@ -7,6 +7,7 @@ import { Video, Mic, MicOff, VideoOff, Phone, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMeetingTranscription } from "@/hooks/useMeetingTranscription";
 
 interface MeetingIntegrationProps {
   onMeetingJoined: (platform: string, meetingUrl: string) => void;
@@ -19,12 +20,11 @@ export const MeetingIntegration = ({ onMeetingJoined }: MeetingIntegrationProps)
   const [activeMeeting, setActiveMeeting] = useState<{
     platform: string;
     url: string;
-    transcript: string[];
-    isRecording: boolean;
   } | null>(null);
   const { toast } = useToast();
+  const { isTranscribing, transcript, startTranscription, stopTranscription, clearTranscript } = useMeetingTranscription();
 
-  const handleJoinMeeting = (platform: string, url: string) => {
+  const handleJoinMeeting = async (platform: string, url: string) => {
     if (!url.trim()) {
       toast({
         title: "Error",
@@ -34,45 +34,45 @@ export const MeetingIntegration = ({ onMeetingJoined }: MeetingIntegrationProps)
       return;
     }
 
-    // Simulate joining meeting
-    setActiveMeeting({
-      platform,
-      url,
-      transcript: [`Joined ${platform} meeting at ${new Date().toLocaleTimeString()}`],
-      isRecording: true,
-    });
+    try {
+      setActiveMeeting({
+        platform,
+        url,
+      });
 
-    onMeetingJoined(platform, url);
+      await startTranscription();
+      onMeetingJoined(platform, url);
 
-    toast({
-      title: "Meeting Joined",
-      description: `Connected to ${platform} meeting. Transcription started.`,
-    });
-
-    // Simulate receiving transcript entries
-    setTimeout(() => {
-      if (activeMeeting) {
-        setActiveMeeting(prev => prev ? {
-          ...prev,
-          transcript: [...prev.transcript, "Theodore (AI): Hello, I've joined the meeting and will transcribe all dialogue."]
-        } : null);
-      }
-    }, 2000);
-  };
-
-  const handleEndMeeting = () => {
-    if (activeMeeting) {
       toast({
-        title: "Meeting Ended",
-        description: "Transcription saved and meeting disconnected.",
+        title: "Meeting Joined",
+        description: `Connected to ${platform} meeting. Real-time transcription started.`,
+      });
+    } catch (error) {
+      console.error('Error joining meeting:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start transcription. Please check microphone permissions.",
+        variant: "destructive",
       });
       setActiveMeeting(null);
     }
   };
 
-  const copyTranscript = () => {
+  const handleEndMeeting = () => {
     if (activeMeeting) {
-      navigator.clipboard.writeText(activeMeeting.transcript.join('\n'));
+      stopTranscription();
+      toast({
+        title: "Meeting Ended",
+        description: "Transcription saved and meeting disconnected.",
+      });
+      setActiveMeeting(null);
+      clearTranscript();
+    }
+  };
+
+  const copyTranscript = () => {
+    if (transcript.length > 0) {
+      navigator.clipboard.writeText(transcript.join('\n'));
       toast({
         title: "Copied",
         description: "Transcript copied to clipboard",
@@ -160,7 +160,7 @@ export const MeetingIntegration = ({ onMeetingJoined }: MeetingIntegrationProps)
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">
-                  {activeMeeting.isRecording ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                  {isTranscribing ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
                 </Button>
                 <Button variant="outline" size="sm">
                   <Video className="h-4 w-4" />
@@ -175,18 +175,24 @@ export const MeetingIntegration = ({ onMeetingJoined }: MeetingIntegrationProps)
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold">Live Transcript</h3>
-                <Button variant="ghost" size="sm" onClick={copyTranscript}>
+                <Button variant="ghost" size="sm" onClick={copyTranscript} disabled={transcript.length === 0}>
                   <Copy className="h-4 w-4 mr-2" />
                   Copy
                 </Button>
               </div>
               <ScrollArea className="h-[300px] w-full rounded-md border p-4">
                 <div className="space-y-2">
-                  {activeMeeting.transcript.map((entry, index) => (
-                    <div key={index} className="text-sm">
-                      {entry}
-                    </div>
-                  ))}
+                  {transcript.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Listening for speech... Start talking to see the transcription.
+                    </p>
+                  ) : (
+                    transcript.map((entry, index) => (
+                      <div key={index} className="text-sm">
+                        {entry}
+                      </div>
+                    ))
+                  )}
                 </div>
               </ScrollArea>
             </div>
