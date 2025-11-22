@@ -175,11 +175,12 @@ export default function AdminDashboard() {
         file_path: filePath,
         category: "admin_upload",
         published_date: newsletterForm.publishDate || new Date().toISOString(),
+        user_id: newsletterForm.userId || null,
       });
 
       if (error) throw error;
 
-      toast.success("Newsletter uploaded successfully!");
+      toast.success(`Newsletter uploaded successfully${newsletterForm.userId ? ' for selected user' : ' for all users'}!`);
       setNewsletterForm({ title: "", description: "", publishDate: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading newsletter:", error);
@@ -204,11 +205,12 @@ export default function AdminDashboard() {
         title: portfolioForm.title,
         description: portfolioForm.description,
         file_path: filePath,
+        user_id: portfolioForm.userId || null,
       });
 
       if (error) throw error;
 
-      toast.success("Model portfolio uploaded successfully!");
+      toast.success(`Model portfolio uploaded successfully${portfolioForm.userId ? ' for selected user' : ' for all users'}!`);
       setPortfolioForm({ title: "", description: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading portfolio:", error);
@@ -233,11 +235,12 @@ export default function AdminDashboard() {
         title: commentaryForm.title,
         description: commentaryForm.description,
         file_path: filePath,
+        user_id: commentaryForm.userId || null,
       });
 
       if (error) throw error;
 
-      toast.success("Market commentary uploaded successfully!");
+      toast.success(`Market commentary uploaded successfully${commentaryForm.userId ? ' for selected user' : ' for all users'}!`);
       setCommentaryForm({ title: "", description: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading commentary:", error);
@@ -264,11 +267,12 @@ export default function AdminDashboard() {
         file_path: filePath,
         category: learningForm.category,
         is_published: true,
+        user_id: learningForm.userId || null,
       });
 
       if (error) throw error;
 
-      toast.success("Learning material uploaded successfully!");
+      toast.success(`Learning material uploaded successfully${learningForm.userId ? ' for selected user' : ' for all users'}!`);
       setLearningForm({ title: "", description: "", category: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading learning material:", error);
@@ -294,11 +298,12 @@ export default function AdminDashboard() {
         description: videoForm.description,
         file_path: filePath,
         category: videoForm.category || "general",
+        user_id: videoForm.userId || null,
       });
 
       if (error) throw error;
 
-      toast.success("Video uploaded successfully!");
+      toast.success(`Video uploaded successfully${videoForm.userId ? ' for selected user' : ' for all users'}!`);
       setVideoForm({ title: "", description: "", category: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading video:", error);
@@ -321,13 +326,14 @@ export default function AdminDashboard() {
         name: watchlistForm.name,
         description: watchlistForm.description,
         category: watchlistForm.category || "general",
-        is_public: true,
+        is_public: watchlistForm.userId ? false : true,
         created_by_admin: true,
+        user_id: watchlistForm.userId || null,
       });
 
       if (error) throw error;
 
-      toast.success("Watchlist created successfully!");
+      toast.success(`Watchlist created successfully${watchlistForm.userId ? ' for selected user' : ' for all users'}!`);
       setWatchlistForm({ name: "", description: "", category: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error creating watchlist:", error);
@@ -448,8 +454,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Upload research reports for specific users</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handleReportUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handleReportUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="report-title">Title *</Label>
                   <Input
@@ -517,8 +523,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Upload newsletters for all investors</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handleNewsletterUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handleNewsletterUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="newsletter-title">Title *</Label>
                   <Input
@@ -597,8 +603,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Upload model portfolios for investors to view</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handlePortfolioUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handlePortfolioUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="portfolio-title">Title *</Label>
                   <Input
@@ -667,8 +673,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Upload market analysis and commentary</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCommentaryUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handleCommentaryUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="commentary-title">Title *</Label>
                   <Input
@@ -737,8 +743,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Upload educational content for the learning hub</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLearningUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handleLearningUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="learning-title">Title *</Label>
                   <Input
@@ -824,8 +830,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Upload video content for investors</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handleVideoUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handleVideoUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="video-title">Title *</Label>
                   <Input
@@ -904,8 +910,8 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <CardDescription>Create watchlists that all investors can view</CardDescription>
               </CardHeader>
-            <CardContent>
-              <form onSubmit={handleWatchlistUpload} className="space-y-4">
+              <CardContent className="pt-6">
+                <form onSubmit={handleWatchlistUpload} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="watchlist-name">Name *</Label>
                   <Input
