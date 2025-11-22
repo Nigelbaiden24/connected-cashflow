@@ -27,12 +27,12 @@ export default function AdminDashboard() {
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
-  const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", file: null as File | null });
-  const [portfolioForm, setPortfolioForm] = useState({ title: "", description: "", file: null as File | null });
-  const [commentaryForm, setCommentaryForm] = useState({ title: "", description: "", file: null as File | null });
-  const [learningForm, setLearningForm] = useState({ title: "", description: "", category: "", file: null as File | null });
-  const [videoForm, setVideoForm] = useState({ title: "", description: "", category: "", file: null as File | null });
-  const [watchlistForm, setWatchlistForm] = useState({ name: "", description: "", category: "", file: null as File | null });
+  const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", userId: "", file: null as File | null });
+  const [portfolioForm, setPortfolioForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
+  const [commentaryForm, setCommentaryForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
+  const [learningForm, setLearningForm] = useState({ title: "", description: "", category: "", userId: "", file: null as File | null });
+  const [videoForm, setVideoForm] = useState({ title: "", description: "", category: "", userId: "", file: null as File | null });
+  const [watchlistForm, setWatchlistForm] = useState({ name: "", description: "", category: "", userId: "", file: null as File | null });
 
   useEffect(() => {
     checkAdminAccess();
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       toast.success("Newsletter uploaded successfully!");
-      setNewsletterForm({ title: "", description: "", publishDate: "", file: null });
+      setNewsletterForm({ title: "", description: "", publishDate: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading newsletter:", error);
       toast.error(error.message || "Failed to upload newsletter");
@@ -209,7 +209,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       toast.success("Model portfolio uploaded successfully!");
-      setPortfolioForm({ title: "", description: "", file: null });
+      setPortfolioForm({ title: "", description: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading portfolio:", error);
       toast.error(error.message || "Failed to upload portfolio");
@@ -238,7 +238,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       toast.success("Market commentary uploaded successfully!");
-      setCommentaryForm({ title: "", description: "", file: null });
+      setCommentaryForm({ title: "", description: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading commentary:", error);
       toast.error(error.message || "Failed to upload commentary");
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       toast.success("Learning material uploaded successfully!");
-      setLearningForm({ title: "", description: "", category: "", file: null });
+      setLearningForm({ title: "", description: "", category: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading learning material:", error);
       toast.error(error.message || "Failed to upload learning material");
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       toast.success("Video uploaded successfully!");
-      setVideoForm({ title: "", description: "", category: "", file: null });
+      setVideoForm({ title: "", description: "", category: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error uploading video:", error);
       toast.error(error.message || "Failed to upload video");
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
       if (error) throw error;
 
       toast.success("Watchlist created successfully!");
-      setWatchlistForm({ name: "", description: "", category: "", file: null });
+      setWatchlistForm({ name: "", description: "", category: "", userId: "", file: null });
     } catch (error: any) {
       console.error("Error creating watchlist:", error);
       toast.error(error.message || "Failed to create watchlist");
@@ -551,6 +551,23 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="newsletter-user">Select User (Optional)</Label>
+                  <Select value={newsletterForm.userId} onValueChange={(value) => setNewsletterForm({ ...newsletterForm, userId: value })}>
+                    <SelectTrigger id="newsletter-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Users</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="newsletter-file">File (PDF) *</Label>
                   <Input
                     id="newsletter-file"
@@ -604,6 +621,23 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="portfolio-user">Select User (Optional)</Label>
+                  <Select value={portfolioForm.userId} onValueChange={(value) => setPortfolioForm({ ...portfolioForm, userId: value })}>
+                    <SelectTrigger id="portfolio-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Users</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="portfolio-file">File (PDF) *</Label>
                   <Input
                     id="portfolio-file"
@@ -654,6 +688,23 @@ export default function AdminDashboard() {
                     onChange={(e) => setCommentaryForm({ ...commentaryForm, description: e.target.value })}
                     placeholder="Commentary description"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="commentary-user">Select User (Optional)</Label>
+                  <Select value={commentaryForm.userId} onValueChange={(value) => setCommentaryForm({ ...commentaryForm, userId: value })}>
+                    <SelectTrigger id="commentary-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Users</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -727,6 +778,23 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="learning-user">Select User (Optional)</Label>
+                  <Select value={learningForm.userId} onValueChange={(value) => setLearningForm({ ...learningForm, userId: value })}>
+                    <SelectTrigger id="learning-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Users</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="learning-file">File (PDF) *</Label>
                   <Input
                     id="learning-file"
@@ -790,6 +858,23 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="video-user">Select User (Optional)</Label>
+                  <Select value={videoForm.userId} onValueChange={(value) => setVideoForm({ ...videoForm, userId: value })}>
+                    <SelectTrigger id="video-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Users</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="video-file">File (MP4) *</Label>
                   <Input
                     id="video-file"
@@ -850,6 +935,23 @@ export default function AdminDashboard() {
                     onChange={(e) => setWatchlistForm({ ...watchlistForm, category: e.target.value })}
                     placeholder="e.g., Technology, Energy"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="watchlist-user">Select User (Optional)</Label>
+                  <Select value={watchlistForm.userId} onValueChange={(value) => setWatchlistForm({ ...watchlistForm, userId: value })}>
+                    <SelectTrigger id="watchlist-user">
+                      <SelectValue placeholder="All users or select specific user" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Users (Public)</SelectItem>
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} ({profile.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Button type="submit" disabled={uploading}>
