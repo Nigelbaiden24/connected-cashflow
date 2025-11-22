@@ -570,22 +570,22 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold">CRM Board</h2>
-        <div className="flex items-center gap-2">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Enhanced Toolbar */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <h2 className="text-2xl font-bold tracking-tight">CRM Board</h2>
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-64"
+              className="pl-9 w-64 border-border/50 focus-visible:ring-primary/20"
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-36 border-border/50">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
@@ -597,14 +597,19 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             </SelectContent>
           </Select>
           {selectedContacts.length > 0 && (
-            <Button variant="destructive" size="sm" onClick={deleteSelected}>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={deleteSelected}
+              className="shadow-sm hover:shadow-md transition-all duration-200"
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete ({selectedContacts.length})
             </Button>
           )}
           <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="shadow-sm hover:shadow-md transition-all duration-200">
                 <Plus className="h-4 w-4 mr-2" />
                 New Contact
               </Button>
@@ -657,7 +662,11 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          <Button variant="outline" onClick={() => setShowColumnManager(true)}>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowColumnManager(true)}
+            className="hover:bg-accent/50 transition-colors"
+          >
             <Columns className="h-4 w-4 mr-2" />
             Add Column
           </Button>
@@ -665,13 +674,14 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             variant="outline" 
             onClick={() => setCompactView(!compactView)}
             title={compactView ? "Expand view" : "Compact view"}
+            className="hover:bg-accent/50 transition-colors"
           >
             {compactView ? <Maximize2 className="h-4 w-4 mr-2" /> : <Minimize2 className="h-4 w-4 mr-2" />}
             {compactView ? "Expand" : "Compact"}
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="hover:bg-accent/50 transition-colors">
                 <Plus className="h-4 w-4 mr-2" />
                 New Table
               </Button>
@@ -708,15 +718,15 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         existingColumns={customColumns}
       />
 
-      {/* Modern Grid-Style Contacts Table */}
-      <Card className="border-0 shadow-sm">
+      {/* Enhanced Contacts Table */}
+      <Card className="border-border/50 shadow-sm overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className={compactView ? "bg-muted/30 border-b h-8" : "bg-muted/30 border-b"}>
+                <tr className={compactView ? "bg-gradient-to-r from-muted/40 to-muted/20 border-b h-9" : "bg-gradient-to-r from-muted/40 to-muted/20 border-b"}>
                   <th className="p-0 w-12">
-                    <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-12"}>
+                    <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
                         checked={
                           filteredContacts.length > 0 &&
@@ -727,15 +737,15 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                       />
                     </div>
                   </th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Name</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Email</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Phone</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Company</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs" : "text-left p-4 font-semibold text-sm"}>Position</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs w-24" : "text-left p-4 font-semibold text-sm w-32"}>Status</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs w-24" : "text-left p-4 font-semibold text-sm w-32"}>Priority</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Name</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Email</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Phone</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Company</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Position</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-32"}>Status</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-32"}>Priority</th>
                   {customColumns.map((col) => (
-                    <th key={col.id} className={compactView ? "text-left p-2 font-semibold text-xs relative group" : "text-left p-4 font-semibold text-sm relative group"}>
+                    <th key={col.id} className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider relative group" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider relative group"}>
                       <div className="flex items-center justify-between">
                         <span className={compactView ? "text-[10px]" : ""}>
                           {col.column_name}
@@ -744,7 +754,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100"}
+                          className={compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"}
                           onClick={() => deleteCustomColumn(col.id)}
                           title="Delete column"
                         >
@@ -760,8 +770,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 {filteredContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
-                    className={compactView ? "border-b hover:bg-muted/20 transition-colors group h-8" : "border-b hover:bg-muted/20 transition-colors group"}
-                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.05)" }}
+                    className={compactView ? "border-b hover:bg-accent/30 transition-all duration-200 group h-8" : "border-b hover:bg-accent/30 hover:shadow-sm transition-all duration-200 group"}
+                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.03)" }}
                   >
                     <td className="p-0">
                       <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-14"}>
@@ -784,7 +794,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                       onClick={() => navigate(isBusiness ? `/business/crm/${contact.id}` : `/finance-crm/${contact.id}`)}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={compactView ? "w-1.5 h-1.5 rounded-full" : `w-2 h-2 rounded-full ${getPriorityColor(contact.priority)}`} style={compactView ? {backgroundColor: `var(--priority-${contact.priority})`} : undefined} />
+                        <div className={compactView ? "w-2 h-2 rounded-full ring-2 ring-background" : `w-2.5 h-2.5 rounded-full ring-2 ring-background ${getPriorityColor(contact.priority)}`} style={compactView ? {backgroundColor: `var(--priority-${contact.priority})`} : undefined} />
                         {editingCell?.id === contact.id && editingCell?.field === "name" ? (
                           <Input
                             autoFocus
@@ -797,7 +807,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                           />
                         ) : (
                           <span
-                            className={compactView ? "font-medium hover:text-primary text-xs" : "font-medium hover:text-primary"}
+                            className={compactView ? "font-medium hover:text-primary transition-colors text-xs" : "font-semibold hover:text-primary transition-colors"}
                             onDoubleClick={(e) => {
                               e.stopPropagation();
                               setEditingCell({ id: contact.id, field: "name" });
@@ -825,7 +835,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                             e.stopPropagation();
                             setEditingCell({ id: contact.id, field: "email" });
                           }}
-                          className={compactView ? "cursor-text text-xs" : "cursor-text"}
+                          className={compactView ? "cursor-text text-xs text-muted-foreground" : "cursor-text text-muted-foreground"}
                         >
                           {contact.email || "—"}
                         </span>
@@ -905,8 +915,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         value={contact.status}
                         onValueChange={(value) => updateContactField(contact.id, "status", value)}
                       >
-                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent" : "h-8 border-0 bg-transparent"}>
-                          <Badge variant="outline" className={compactView ? `${getStatusColor(contact.status)} text-[10px] h-5 px-1.5` : getStatusColor(contact.status)}>
+                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent hover:bg-accent/50 transition-colors" : "h-8 border-0 bg-transparent hover:bg-accent/50 transition-colors"}>
+                          <Badge variant="outline" className={compactView ? `${getStatusColor(contact.status)} text-[10px] h-5 px-2 font-medium` : `${getStatusColor(contact.status)} font-medium`}>
                             {contact.status}
                           </Badge>
                         </SelectTrigger>
@@ -922,8 +932,11 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         value={contact.priority}
                         onValueChange={(value) => updateContactField(contact.id, "priority", value)}
                       >
-                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent" : "h-8 border-0 bg-transparent"}>
-                          <Badge variant="outline" className={compactView ? "capitalize text-[10px] h-5 px-1.5" : "capitalize"}>
+                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent hover:bg-accent/50 transition-colors" : "h-8 border-0 bg-transparent hover:bg-accent/50 transition-colors"}>
+                          <Badge 
+                            variant="outline" 
+                            className={compactView ? "capitalize text-[10px] h-5 px-2 font-medium" : "capitalize font-medium"}
+                          >
                             {contact.priority}
                           </Badge>
                         </SelectTrigger>
@@ -982,7 +995,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                               e.stopPropagation();
                               setEditingCell({ id: contact.id, field: col.id });
                             }}
-                            className={compactView ? "cursor-text text-xs" : "cursor-text"}
+                            className={compactView ? "cursor-text text-xs text-muted-foreground" : "cursor-text text-muted-foreground"}
                           >
                             {col.column_type === "checkbox"
                               ? customData[contact.id]?.[col.id] === "true"
@@ -996,19 +1009,23 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                     <td className={compactView ? "p-2" : "p-4"}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="sm" className={compactView ? "h-6 w-6 p-0 opacity-0 group-hover:opacity-100" : "h-8 w-8 p-0 opacity-0 group-hover:opacity-100"}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={compactView ? "h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-accent" : "h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-accent"}
+                          >
                             <MoreVertical className={compactView ? "h-3 w-3" : "h-4 w-4"} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/crm/${contact.id}`)}>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => navigate(`/crm/${contact.id}`)} className="cursor-pointer">
                             <ExternalLink className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => deleteContact(contact.id)}
-                            className="text-destructive"
+                            className="text-destructive cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
@@ -1021,8 +1038,12 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </tbody>
             </table>
           </div>
-          <div className="border-t p-4">
-            <Button variant="ghost" onClick={addEmptyRow} className="w-full justify-start text-muted-foreground hover:text-foreground">
+          <div className="border-t bg-muted/10 p-4">
+            <Button 
+              variant="ghost" 
+              onClick={addEmptyRow} 
+              className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add new row
             </Button>
@@ -1030,16 +1051,15 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         </CardContent>
       </Card>
 
-      {/* Custom Tables */}
-
+      {/* Enhanced Custom Tables */}
       <div className="grid gap-6">
         {tables.map((table) => {
           const filteredRows = getFilteredTableRows(table);
           const selectedRows = table.selectedRows || [];
           
           return (
-          <Card key={table.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <Card key={table.id} className="border-border/50 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 bg-gradient-to-r from-muted/20 to-transparent border-b">
               <div className="flex items-center gap-2">
                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
                 {editingTable === table.id ? (
