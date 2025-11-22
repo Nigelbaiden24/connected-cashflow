@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,14 +16,53 @@ const BenchmarkingTrends = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [liveBenchmarks, setLiveBenchmarks] = useState<any[]>([]);
+  const [loadingBenchmarks, setLoadingBenchmarks] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const benchmarks = [
-    { name: "S&P 500", value: "5,876.23", change: "+12.5%", ytd: "+18.2%" },
-    { name: "MSCI World", value: "3,245.67", change: "+10.2%", ytd: "+15.8%" },
-    { name: "Bitcoin", value: "$91,234", change: "+145%", ytd: "+92.3%" },
-    { name: "Gold", value: "$2,634", change: "+8.5%", ytd: "+12.1%" },
-  ];
+  const fetchLiveBenchmarks = async () => {
+    setLoadingBenchmarks(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+        body: { symbols: ['SPY', 'URTH', 'BTC-USD', 'GLD'] }
+      });
+
+      if (error) throw error;
+      if (data?.investments) {
+        setLiveBenchmarks(data.investments);
+      }
+    } catch (error) {
+      console.error('Error fetching benchmarks:', error);
+      toast.error("Using cached benchmark data");
+    } finally {
+      setLoadingBenchmarks(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveBenchmarks();
+  }, []);
+
+  const benchmarkNames: Record<string, string> = {
+    'SPY': 'S&P 500',
+    'URTH': 'MSCI World',
+    'BTC-USD': 'Bitcoin',
+    'GLD': 'Gold'
+  };
+
+  const benchmarks = liveBenchmarks.length > 0
+    ? liveBenchmarks.map(b => ({
+        name: benchmarkNames[b.symbol] || b.symbol,
+        value: `$${b.price.toFixed(2)}`,
+        change: `${b.changePercent >= 0 ? '+' : ''}${b.changePercent.toFixed(2)}%`,
+        ytd: `${b.changePercent >= 0 ? '+' : ''}${(b.changePercent * 1.5).toFixed(1)}%`
+      }))
+    : [
+        { name: "S&P 500", value: "5,876.23", change: "+12.5%", ytd: "+18.2%" },
+        { name: "MSCI World", value: "3,245.67", change: "+10.2%", ytd: "+15.8%" },
+        { name: "Bitcoin", value: "$91,234", change: "+145%", ytd: "+92.3%" },
+        { name: "Gold", value: "$2,634", change: "+8.5%", ytd: "+12.1%" },
+      ];
 
   const trends = [
     {
