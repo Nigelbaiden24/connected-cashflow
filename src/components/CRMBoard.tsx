@@ -10,10 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2 } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
+import { AILeadScoringBadge } from "./crm/AILeadScoringBadge";
+import { BulkAIScoring } from "./crm/BulkAIScoring";
 
 interface CRMTable {
   id: string;
@@ -45,6 +47,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [filterStatus, setFilterStatus] = useState<string>(initialStage || "all");
   const [searchQuery, setSearchQuery] = useState("");
   const [compactView, setCompactView] = useState(false);
+  const [showAIPanel, setShowAIPanel] = useState(false);
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -571,6 +574,11 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      {/* AI Scoring Panel */}
+      {showAIPanel && (
+        <BulkAIScoring contacts={contacts} onComplete={fetchContacts} />
+      )}
+
       {/* Enhanced Toolbar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h2 className="text-2xl font-bold tracking-tight">CRM Board</h2>
@@ -671,6 +679,14 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             Add Column
           </Button>
           <Button 
+            variant={showAIPanel ? "default" : "outline"}
+            onClick={() => setShowAIPanel(!showAIPanel)}
+            className="hover:bg-accent/50 transition-colors"
+          >
+            <Brain className="h-4 w-4 mr-2" />
+            AI Scoring
+          </Button>
+          <Button 
             variant="outline" 
             onClick={() => setCompactView(!compactView)}
             title={compactView ? "Expand view" : "Compact view"}
@@ -744,6 +760,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                   <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Position</th>
                   <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-32"}>Status</th>
                   <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-32"}>Priority</th>
+                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-28"}>AI Score</th>
                   {customColumns.map((col) => (
                     <th key={col.id} className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider relative group" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider relative group"}>
                       <div className="flex items-center justify-between">
@@ -946,6 +963,17 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                           <SelectItem value="low">Low</SelectItem>
                         </SelectContent>
                       </Select>
+                    </td>
+                    <td className={compactView ? "p-2" : "p-4"}>
+                      {contact.lead_score > 0 ? (
+                        <AILeadScoringBadge 
+                          score={contact.lead_score} 
+                          conversionProbability={contact.conversion_probability}
+                          size={compactView ? "sm" : "default"}
+                        />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Not scored</span>
+                      )}
                     </td>
                     {customColumns.map((col) => (
                       <td key={col.id} className={compactView ? "p-2" : "p-4"}>
