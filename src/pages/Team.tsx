@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,8 @@ import { Plus, Users, UserCheck, Clock, Mail, Phone, ArrowLeft, MessageSquare, E
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { TeamMessaging } from "@/components/team/TeamMessaging";
+import { PermissionManager } from "@/components/team/PermissionManager";
 
 const Team = () => {
   const navigate = useNavigate();
@@ -104,6 +106,37 @@ const Team = () => {
   });
   
   const [uploadingAvatar, setUploadingAvatar] = useState<number | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string>("");
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkUserPermissions();
+  }, []);
+
+  const checkUserPermissions = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+      // Check if user is admin
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      setIsAdmin(!!roleData);
+    }
+  };
+
+  // Convert local member to messaging member format
+  const getMessagingMember = (member: typeof teamMembers[0]) => ({
+    id: member.id.toString(),
+    email: member.email,
+    full_name: member.name,
+    avatar_url: member.avatarUrl || undefined,
+    status: member.status
+  });
 
   const handleAvatarUpload = async (memberId: number, file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -317,7 +350,8 @@ const Team = () => {
       <Tabs defaultValue="members" className="space-y-6">
         <TabsList>
           <TabsTrigger value="members">Team Members</TabsTrigger>
-          <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
+          <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsTrigger value="permissions">Permissions</TabsTrigger>
           <TabsTrigger value="workload">Workload</TabsTrigger>
         </TabsList>
 
@@ -413,70 +447,21 @@ const Team = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="roles" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Roles & Permissions
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Manage access control and permissions based on modern RBAC principles
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="p-4 border rounded-lg space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarFallback className="bg-primary text-primary-foreground">
-                            {getInitials(member.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold">{member.name}</p>
-                          <p className="text-sm text-muted-foreground">{member.role}</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" onClick={() => {
-                        toast.success("Permission management opened");
-                      }}>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Manage Access
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Access Level:</span>
-                        <Badge variant={member.permissions.includes("manage") ? "default" : "secondary"}>
-                          {member.permissions.includes("manage") ? "Administrator" : 
-                           member.permissions.includes("edit") ? "Editor" : "Viewer"}
-                        </Badge>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          <Shield className="h-3 w-3 mr-1" />
-                          {member.permissions.includes("view") && "Read Access"}
-                        </Badge>
-                        {member.permissions.includes("edit") && (
-                          <Badge variant="outline" className="text-xs">
-                            Write Access
-                          </Badge>
-                        )}
-                        {member.permissions.includes("manage") && (
-                          <Badge variant="outline" className="text-xs">
-                            Full Control
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="messages" className="space-y-4">
+          {currentUserId && (
+            <TeamMessaging
+              currentUserId={currentUserId}
+              selectedMember={selectedMemberId ? getMessagingMember(teamMembers.find(m => m.id.toString() === selectedMemberId)!) : null}
+              onSelectMember={(member) => setSelectedMemberId(member.id)}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="permissions" className="space-y-4">
+          <PermissionManager
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+          />
         </TabsContent>
 
         <TabsContent value="workload" className="space-y-4">
