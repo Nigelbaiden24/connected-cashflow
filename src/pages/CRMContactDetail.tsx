@@ -169,10 +169,12 @@ const CRMContactDetail = () => {
     return <div className="flex-1 p-6">Contact not found</div>;
   }
 
+  const isBusiness = window.location.pathname.startsWith('/business');
+
   return (
     <div className="flex-1 p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/crm")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate(isBusiness ? "/business/crm" : "/finance-crm")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to CRM
         </Button>
