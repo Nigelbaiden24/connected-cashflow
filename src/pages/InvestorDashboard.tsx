@@ -5,11 +5,14 @@ import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChar
 import { useState, useEffect } from "react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const InvestorDashboard = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [aiInsightsText, setAiInsightsText] = useState("");
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [liveMarketData, setLiveMarketData] = useState<any[]>([]);
+  const [loadingMarketData, setLoadingMarketData] = useState(false);
   
   // Parse AI insights into individual insights
   const parseInsights = (text: string): string[] => {
@@ -45,6 +48,26 @@ const InvestorDashboard = () => {
     );
   };
 
+  const fetchLiveMarketData = async () => {
+    setLoadingMarketData(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+        body: { symbols: ['NVDA', 'TSLA', 'AAPL', 'META', 'MSFT', 'BTC-USD', 'GC=F'] }
+      });
+
+      if (error) throw error;
+      if (data?.investments) {
+        setLiveMarketData(data.investments);
+        toast.success("Live market data loaded");
+      }
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+      toast.error("Using cached market data");
+    } finally {
+      setLoadingMarketData(false);
+    }
+  };
+
   useEffect(() => {
     const today = new Date().toDateString();
     const lastFetch = localStorage.getItem('lastInsightsFetch');
@@ -62,6 +85,8 @@ const InvestorDashboard = () => {
         fetchDailyInsights();
       }
     }
+
+    fetchLiveMarketData();
   }, []);
 
   useEffect(() => {
@@ -78,20 +103,44 @@ const InvestorDashboard = () => {
     { metric: "Fed Funds Rate", value: "5.25%", change: "0.0%", positive: null }
   ];
 
-  const topMovers = [
-    { symbol: "NVDA", name: "NVIDIA Corp", price: "$875.32", change: "+8.45%", volume: "245M", positive: true },
-    { symbol: "TSLA", name: "Tesla Inc", price: "$245.18", change: "+5.23%", volume: "156M", positive: true },
-    { symbol: "AAPL", name: "Apple Inc", price: "$182.45", change: "+3.21%", volume: "89M", positive: true },
-    { symbol: "META", name: "Meta Platforms", price: "$456.78", change: "-2.34%", volume: "34M", positive: false },
-    { symbol: "MSFT", name: "Microsoft Corp", price: "$378.90", change: "-1.12%", volume: "28M", positive: false }
-  ];
+  const formatVolume = (volume: number) => {
+    if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
+    if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`;
+    return volume.toString();
+  };
 
-  const watchlistToday = [
-    { name: "Apple Inc.", symbol: "AAPL", price: "$182.45", change: "+1.2%", trend: "up", alert: false },
-    { name: "Bitcoin", symbol: "BTC", price: "$43,250", change: "+3.4%", trend: "up", alert: true },
-    { name: "Tesla Inc.", symbol: "TSLA", price: "$245.18", change: "+3.1%", trend: "up", alert: false },
-    { name: "Gold", symbol: "GC", price: "$2,045/oz", change: "+0.5%", trend: "up", alert: false }
-  ];
+  const topMovers = liveMarketData.length > 0 
+    ? liveMarketData.slice(0, 5).map(stock => ({
+        symbol: stock.symbol,
+        name: stock.name,
+        price: `$${stock.price.toFixed(2)}`,
+        change: `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`,
+        volume: formatVolume(stock.volume),
+        positive: stock.changePercent >= 0
+      }))
+    : [
+        { symbol: "NVDA", name: "NVIDIA Corp", price: "$875.32", change: "+8.45%", volume: "245M", positive: true },
+        { symbol: "TSLA", name: "Tesla Inc", price: "$245.18", change: "+5.23%", volume: "156M", positive: true },
+        { symbol: "AAPL", name: "Apple Inc", price: "$182.45", change: "+3.21%", volume: "89M", positive: true },
+        { symbol: "META", name: "Meta Platforms", price: "$456.78", change: "-2.34%", volume: "34M", positive: false },
+        { symbol: "MSFT", name: "Microsoft Corp", price: "$378.90", change: "-1.12%", volume: "28M", positive: false }
+      ];
+
+  const watchlistToday = liveMarketData.length > 0
+    ? liveMarketData.slice(0, 4).map(stock => ({
+        name: stock.name,
+        symbol: stock.symbol,
+        price: `$${stock.price.toFixed(2)}`,
+        change: `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`,
+        trend: stock.changePercent >= 0 ? "up" : "down",
+        alert: stock.changePercent > 5
+      }))
+    : [
+        { name: "Apple Inc.", symbol: "AAPL", price: "$182.45", change: "+1.2%", trend: "up", alert: false },
+        { name: "Bitcoin", symbol: "BTC", price: "$43,250", change: "+3.4%", trend: "up", alert: true },
+        { name: "Tesla Inc.", symbol: "TSLA", price: "$245.18", change: "+3.1%", trend: "up", alert: false },
+        { name: "Gold", symbol: "GC", price: "$2,045/oz", change: "+0.5%", trend: "up", alert: false }
+      ];
 
   const sectorHeatmap = [
     { name: "Technology", performance: "+12.5%", value: 12.5, companies: 127 },
@@ -142,10 +191,13 @@ const InvestorDashboard = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={fetchDailyInsights}
-              disabled={isLoading}
+              onClick={() => {
+                fetchDailyInsights();
+                fetchLiveMarketData();
+              }}
+              disabled={isLoading || loadingMarketData}
             >
-              {isLoading ? (
+              {isLoading || loadingMarketData ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <RefreshCw className="h-4 w-4" />

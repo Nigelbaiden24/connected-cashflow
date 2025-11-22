@@ -1,31 +1,88 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrendingUp, TrendingDown, Activity, Globe, Zap, ThermometerSun } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Globe, Zap, ThermometerSun, RefreshCw, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function MarketDataHub() {
   const { toast } = useToast();
+  const [liveMarketData, setLiveMarketData] = useState<any[]>([]);
+  const [loadingMarketData, setLoadingMarketData] = useState(false);
 
-  const majorIndices = [
-    { name: "S&P 500", value: "4,783.45", change: "+1.2%", changeValue: 56.78, trend: "up" },
-    { name: "NASDAQ", value: "15,095.14", change: "+0.8%", changeValue: 118.32, trend: "up" },
-    { name: "FTSE 100", value: "7,623.45", change: "+0.3%", changeValue: 22.15, trend: "up" },
-    { name: "DAX", value: "16,852.30", change: "-0.4%", changeValue: -67.20, trend: "down" },
-    { name: "Nikkei 225", value: "33,464.17", change: "+1.5%", changeValue: 495.23, trend: "up" },
-    { name: "Hang Seng", value: "16,830.30", change: "-0.9%", changeValue: -153.45, trend: "down" },
-  ];
+  const fetchLiveMarketData = async () => {
+    setLoadingMarketData(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+        body: { symbols: ['SPY', 'QQQ', 'EWU', 'EWG', 'EWJ', 'EWH', 'GLD', 'SLV', 'USO', 'UNG'] }
+      });
 
-  const commodities = [
-    { name: "Gold", value: "$2,045.50", change: "+0.5%", unit: "/oz" },
-    { name: "Silver", value: "$24.15", change: "+1.2%", unit: "/oz" },
-    { name: "Crude Oil (WTI)", value: "$78.45", change: "-1.3%", unit: "/bbl" },
-    { name: "Brent Crude", value: "$82.30", change: "-1.1%", unit: "/bbl" },
-    { name: "Natural Gas", value: "$2.85", change: "+2.4%", unit: "/MMBtu" },
-    { name: "Copper", value: "$3.82", change: "+0.8%", unit: "/lb" },
-  ];
+      if (error) throw error;
+      if (data?.investments) {
+        setLiveMarketData(data.investments);
+        toast({ title: "Live market data updated" });
+      }
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+      toast({ title: "Using cached market data", variant: "destructive" });
+    } finally {
+      setLoadingMarketData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveMarketData();
+  }, []);
+
+  const indexMapping: Record<string, string> = {
+    'SPY': 'S&P 500',
+    'QQQ': 'NASDAQ',
+    'EWU': 'FTSE 100',
+    'EWG': 'DAX',
+    'EWJ': 'Nikkei 225',
+    'EWH': 'Hang Seng'
+  };
+
+  const commodityMapping: Record<string, { name: string; unit: string }> = {
+    'GLD': { name: 'Gold', unit: '/oz' },
+    'SLV': { name: 'Silver', unit: '/oz' },
+    'USO': { name: 'Crude Oil (WTI)', unit: '/bbl' },
+    'UNG': { name: 'Natural Gas', unit: '/MMBtu' }
+  };
+
+  const majorIndices = liveMarketData.length > 0
+    ? liveMarketData.filter(d => indexMapping[d.symbol]).map(stock => ({
+        name: indexMapping[stock.symbol],
+        value: stock.price.toFixed(2),
+        change: `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`,
+        changeValue: stock.change,
+        trend: stock.changePercent >= 0 ? "up" : "down"
+      }))
+    : [
+        { name: "S&P 500", value: "4,783.45", change: "+1.2%", changeValue: 56.78, trend: "up" },
+        { name: "NASDAQ", value: "15,095.14", change: "+0.8%", changeValue: 118.32, trend: "up" },
+        { name: "FTSE 100", value: "7,623.45", change: "+0.3%", changeValue: 22.15, trend: "up" },
+        { name: "DAX", value: "16,852.30", change: "-0.4%", changeValue: -67.20, trend: "down" },
+        { name: "Nikkei 225", value: "33,464.17", change: "+1.5%", changeValue: 495.23, trend: "up" },
+        { name: "Hang Seng", value: "16,830.30", change: "-0.9%", changeValue: -153.45, trend: "down" },
+      ];
+
+  const commodities = liveMarketData.length > 0
+    ? liveMarketData.filter(d => commodityMapping[d.symbol]).map(stock => ({
+        name: commodityMapping[stock.symbol].name,
+        value: `$${stock.price.toFixed(2)}`,
+        change: `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`,
+        unit: commodityMapping[stock.symbol].unit
+      }))
+    : [
+        { name: "Gold", value: "$2,045.50", change: "+0.5%", unit: "/oz" },
+        { name: "Silver", value: "$24.15", change: "+1.2%", unit: "/oz" },
+        { name: "Crude Oil (WTI)", value: "$78.45", change: "-1.3%", unit: "/bbl" },
+        { name: "Natural Gas", value: "$2.85", change: "+2.4%", unit: "/MMBtu" },
+      ];
 
   const forexPairs = [
     { pair: "EUR/USD", rate: "1.0845", change: "+0.15%", bid: "1.0843", ask: "1.0847" },
@@ -57,8 +114,22 @@ export default function MarketDataHub() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">Market Data Hub</h1>
-          <p className="text-muted-foreground mt-2">Real-time market data and analytics</p>
+          <p className="text-muted-foreground mt-2">Real-time market data powered by Alpha Vantage</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchLiveMarketData}
+          disabled={loadingMarketData}
+          className="gap-2"
+        >
+          {loadingMarketData ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          Refresh Data
+        </Button>
       </div>
 
       <Tabs defaultValue="indices" className="space-y-6">
