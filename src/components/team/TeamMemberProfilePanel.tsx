@@ -1,12 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { Send, Paperclip, Smile, Check, CheckCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface TeamMember {
   id: string;
@@ -34,13 +40,33 @@ interface TeamMemberProfilePanelProps {
 export function TeamMemberProfilePanel({ member, open, onOpenChange, onRefresh }: TeamMemberProfilePanelProps) {
   const [workloadItems, setWorkloadItems] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (member && open) {
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (member && open && currentUserId) {
       fetchWorkloadItems();
       fetchAuditLogs();
+      fetchMessages();
+      subscribeToMessages();
     }
-  }, [member, open]);
+  }, [member, open, currentUserId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) setCurrentUserId(user.id);
+  };
 
   const fetchWorkloadItems = async () => {
     if (!member) return;
@@ -61,6 +87,103 @@ export function TeamMemberProfilePanel({ member, open, onOpenChange, onRefresh }
       .order('timestamp', { ascending: false })
       .limit(20);
     if (data) setAuditLogs(data);
+  };
+
+  const fetchMessages = async () => {
+    if (!member || !currentUserId) return;
+    
+    const { data, error } = await supabase
+      .from('team_messages')
+      .select('*')
+      .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${member.id}),and(sender_id.eq.${member.id},recipient_id.eq.${currentUserId})`)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching messages:', error);
+      return;
+    }
+
+    if (data) {
+      setMessages(data);
+      markMessagesAsRead();
+    }
+  };
+
+  const markMessagesAsRead = async () => {
+    if (!member || !currentUserId) return;
+    
+    await supabase
+      .from('team_messages')
+      .update({ read: true, read_at: new Date().toISOString() })
+      .eq('recipient_id', currentUserId)
+      .eq('sender_id', member.id)
+      .eq('read', false);
+  };
+
+  const subscribeToMessages = () => {
+    if (!member || !currentUserId) return;
+
+    const subscription = supabase
+      .channel('team_messages_profile')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'team_messages',
+        },
+        (payload) => {
+          const newMsg = payload.new as any;
+          if (
+            (newMsg.sender_id === currentUserId && newMsg.recipient_id === member.id) ||
+            (newMsg.sender_id === member.id && newMsg.recipient_id === currentUserId)
+          ) {
+            setMessages(prev => [...prev, newMsg]);
+            if (newMsg.sender_id === member.id) {
+              markMessagesAsRead();
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !member || !currentUserId) return;
+
+    const { error } = await supabase
+      .from('team_messages')
+      .insert({
+        sender_id: currentUserId,
+        recipient_id: member.id,
+        message: newMessage.trim(),
+      });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setNewMessage("");
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   if (!member) return null;
@@ -93,9 +216,10 @@ export function TeamMemberProfilePanel({ member, open, onOpenChange, onRefresh }
           </div>
 
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="workload">Workload</TabsTrigger>
+              <TabsTrigger value="messages">Messages</TabsTrigger>
               <TabsTrigger value="permissions">Permissions</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
             </TabsList>
@@ -174,6 +298,101 @@ export function TeamMemberProfilePanel({ member, open, onOpenChange, onRefresh }
                     </div>
                   )}
                 </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Messages Tab */}
+            <TabsContent value="messages" className="space-y-4 h-[600px] flex flex-col">
+              <Card className="flex-1 flex flex-col">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Direct Messages</CardTitle>
+                  <CardDescription>Send instant messages to {member.first_name}</CardDescription>
+                </CardHeader>
+                <ScrollArea className="flex-1 px-6">
+                  <div className="space-y-4 pb-4">
+                    {messages.map((msg) => {
+                      const isOwn = msg.sender_id === currentUserId;
+                      return (
+                        <div
+                          key={msg.id}
+                          className={cn(
+                            "flex gap-3 animate-in fade-in slide-in-from-bottom-2",
+                            isOwn && "flex-row-reverse"
+                          )}
+                        >
+                          <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
+                            <AvatarImage src={isOwn ? undefined : member.avatar_url} />
+                            <AvatarFallback className={cn(
+                              "text-xs",
+                              isOwn ? "bg-primary text-primary-foreground" : "bg-muted"
+                            )}>
+                              {isOwn ? 'Me' : initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={cn("flex flex-col gap-1 max-w-[70%]", isOwn && "items-end")}>
+                            <div
+                              className={cn(
+                                "rounded-2xl px-4 py-2 text-sm break-words",
+                                isOwn
+                                  ? "bg-primary text-primary-foreground rounded-tr-sm"
+                                  : "bg-muted rounded-tl-sm"
+                              )}
+                            >
+                              {msg.message}
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground px-2">
+                              <span>{format(new Date(msg.created_at), 'HH:mm')}</span>
+                              {isOwn && (
+                                msg.read ? (
+                                  <CheckCheck className="h-3 w-3 text-success" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {messages.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+                <div className="border-t p-4">
+                  <div className="flex items-end gap-2">
+                    <Button variant="ghost" size="icon" className="rounded-full flex-shrink-0">
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <div className="flex-1 relative">
+                      <Input
+                        placeholder={`Message ${member.first_name}...`}
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        className="pr-10 rounded-full"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full"
+                      >
+                        <Smile className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      onClick={sendMessage}
+                      disabled={!newMessage.trim()}
+                      size="icon"
+                      className="rounded-full flex-shrink-0"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </Card>
             </TabsContent>
 
