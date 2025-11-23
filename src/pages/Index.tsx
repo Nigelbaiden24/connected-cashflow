@@ -41,6 +41,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
@@ -944,6 +945,9 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 };
