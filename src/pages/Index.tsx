@@ -248,6 +248,16 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start"
                     onClick={() => {
+                      navigate("/investor-features");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Features
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
                       navigate("/opportunities");
                       setMobileMenuOpen(false);
                     }}
@@ -255,19 +265,6 @@ const Index = () => {
                     Opportunities
                   </Button>
                 </div>
-
-                <Separator />
-
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    navigate("/about");
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  About Us
-                </Button>
               </div>
             </SheetContent>
           </Sheet>
