@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, TrendingDown, Search, RefreshCw, DollarSign, BarChart3, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const MarketData = () => {
   const navigate = useNavigate();
   const [searchTicker, setSearchTicker] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [liveData, setLiveData] = useState<any>(null);
 
   const majorIndices = [
     {
@@ -107,9 +111,32 @@ const MarketData = () => {
     { name: "Natural Gas", price: "$2.89", change: "-2.1%" },
   ];
 
-  const handleRefresh = () => {
+  const fetchMarketData = async () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 2000);
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-market-data', {
+        body: { symbols: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'JNJ', 'NVDA', 'META', 'AMZN'] }
+      });
+
+      if (error) throw error;
+      setLiveData(data);
+      toast.success("Market data updated");
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+      toast.error("Failed to fetch market data");
+    } finally {
+      setIsRefreshing(false);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarketData();
+  }, []);
+
+  const handleRefresh = () => {
+    fetchMarketData();
   };
 
   const handleSearch = () => {
@@ -169,33 +196,39 @@ const MarketData = () => {
         </TabsList>
 
         <TabsContent value="indices">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {majorIndices.map((index) => (
-              <Card key={index.symbol}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {index.name}
-                  </CardTitle>
-                  <Badge variant="secondary" className="text-xs">
-                    {index.symbol}
-                  </Badge>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{index.price}</div>
-                  <div className="flex items-center text-xs">
-                    {index.trend === "up" ? (
-                      <TrendingUp className="mr-1 h-3 w-3 text-success" />
-                    ) : (
-                      <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
-                    )}
-                    <span className={index.trend === "up" ? "text-success" : "text-destructive"}>
-                      {index.change} ({index.changePercent})
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-8">Loading live market data...</div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {(liveData?.investments || majorIndices).slice(0, 8).map((index: any) => (
+                <Card key={index.symbol}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      {index.name || index.symbol}
+                    </CardTitle>
+                    <Badge variant="secondary" className="text-xs">
+                      {index.symbol}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      ${index.price?.toFixed(2) || index.price}
+                    </div>
+                    <div className="flex items-center text-xs">
+                      {(index.change >= 0 || index.trend === "up") ? (
+                        <TrendingUp className="mr-1 h-3 w-3 text-success" />
+                      ) : (
+                        <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
+                      )}
+                      <span className={(index.change >= 0 || index.trend === "up") ? "text-success" : "text-destructive"}>
+                        {index.change >= 0 ? "+" : ""}{index.change?.toFixed(2) || index.change} ({index.changePercent?.toFixed(2) || index.changePercent}%)
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="stocks">
@@ -207,39 +240,43 @@ const MarketData = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {topMovers.map((stock) => (
-                  <div
-                    key={stock.symbol}
-                    className="flex items-center justify-between border-b pb-4 last:border-0"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{stock.symbol}</p>
-                        <Badge variant="outline" className="text-xs">
-                          Vol: {stock.volume}
-                        </Badge>
+              {isLoading ? (
+                <div className="text-center py-8">Loading...</div>
+              ) : (
+                <div className="space-y-4">
+                  {(liveData?.investments || topMovers).slice(0, 4).map((stock: any) => (
+                    <div
+                      key={stock.symbol}
+                      className="flex items-center justify-between border-b pb-4 last:border-0"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{stock.symbol}</p>
+                          <Badge variant="outline" className="text-xs">
+                            Vol: {stock.volume ? stock.volume : (stock.volume || "N/A")}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {stock.name}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {stock.name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">{stock.price}</p>
-                      <div className="flex items-center text-xs">
-                        {stock.trend === "up" ? (
-                          <TrendingUp className="mr-1 h-3 w-3 text-success" />
-                        ) : (
-                          <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
-                        )}
-                        <span className={stock.trend === "up" ? "text-success" : "text-destructive"}>
-                          {stock.change}
-                        </span>
+                      <div className="text-right">
+                        <p className="font-medium">${stock.price?.toFixed?.(2) || stock.price}</p>
+                        <div className="flex items-center text-xs">
+                          {(stock.change >= 0 || stock.trend === "up") ? (
+                            <TrendingUp className="mr-1 h-3 w-3 text-success" />
+                          ) : (
+                            <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
+                          )}
+                          <span className={(stock.change >= 0 || stock.trend === "up") ? "text-success" : "text-destructive"}>
+                            {stock.changePercent?.toFixed?.(2) || stock.change}%
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
