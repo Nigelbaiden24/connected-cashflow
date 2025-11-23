@@ -18,6 +18,21 @@ serve(async (req) => {
       throw new Error('ALPHA_VANTAGE_API_KEY not configured');
     }
 
+    // Fetch GBP/USD exchange rate
+    let gbpRate = 0.79; // Default fallback rate
+    try {
+      const fxResponse = await fetch(
+        `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=GBP&apikey=${ALPHA_VANTAGE_KEY}`
+      );
+      const fxData = await fxResponse.json();
+      const rate = fxData['Realtime Currency Exchange Rate']?.[' 5. Exchange Rate'];
+      if (rate) {
+        gbpRate = parseFloat(rate);
+      }
+    } catch (error) {
+      console.error('Error fetching exchange rate, using default:', error);
+    }
+
     const investments = await Promise.all(
       symbols.map(async (symbol: string) => {
         try {
@@ -35,9 +50,17 @@ serve(async (req) => {
 
           const quote = quoteData['Global Quote'] || {};
           
-          const price = parseFloat(quote['05. price'] || '0');
-          const change = parseFloat(quote['09. change'] || '0');
+          const priceUSD = parseFloat(quote['05. price'] || '0');
+          const changeUSD = parseFloat(quote['09. change'] || '0');
           const changePercent = parseFloat(quote['10. change percent']?.replace('%', '') || '0');
+          const high52WeekUSD = parseFloat(quote['03. high'] || '0');
+          const low52WeekUSD = parseFloat(quote['04. low'] || '0');
+          
+          // Convert to GBP
+          const price = priceUSD * gbpRate;
+          const change = changeUSD * gbpRate;
+          const high52Week = high52WeekUSD * gbpRate;
+          const low52Week = low52WeekUSD * gbpRate;
           
           return {
             symbol,
@@ -52,9 +75,10 @@ serve(async (req) => {
             rating: change >= 0 ? (changePercent > 2 ? 'Buy' : 'Hold') : 'Sell',
             risk: overviewData.Beta > 1.5 ? 'High' : overviewData.Beta > 1 ? 'Medium' : 'Low',
             sector: overviewData.Sector || 'Unknown',
-            high52Week: parseFloat(quote['03. high'] || '0'),
-            low52Week: parseFloat(quote['04. low'] || '0'),
+            high52Week,
+            low52Week,
             volume: parseInt(quote['06. volume'] || '0'),
+            currency: 'GBP'
           };
         } catch (error) {
           console.error(`Error fetching data for ${symbol}:`, error);
