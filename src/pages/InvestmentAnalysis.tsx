@@ -220,8 +220,8 @@ export default function InvestmentAnalysis() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
@@ -229,26 +229,28 @@ export default function InvestmentAnalysis() {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Investment Analysis</h1>
-            <p className="text-muted-foreground">Comprehensive investment research and analysis tools</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">Investment Analysis</h1>
+            <p className="text-sm sm:text-base text-muted-foreground hidden sm:block">Comprehensive investment research and analysis tools</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Button 
             variant="outline" 
             size="sm"
             onClick={fetchMarketData}
             disabled={loadingMarketData}
+            className="flex-1 sm:flex-none"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loadingMarketData ? 'animate-spin' : ''}`} />
-            Refresh Data
+            <RefreshCw className={`h-4 w-4 sm:mr-2 ${loadingMarketData ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh Data</span>
           </Button>
           <Button 
             variant="outline" 
             size="sm"
+            className="flex-1 sm:flex-none"
             onClick={() => {
               if (!selectedInvestment) {
                 toast({
@@ -272,16 +274,17 @@ export default function InvestmentAnalysis() {
               }, 1500);
             }}
           >
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export Report</span>
           </Button>
           <Button 
             size="sm"
             onClick={() => setWatchlistDialogOpen(true)}
             disabled={!selectedInvestment}
+            className="flex-1 sm:flex-none"
           >
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Create Watchlist
+            <BarChart3 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Create Watchlist</span>
           </Button>
         </div>
       </div>
@@ -295,7 +298,7 @@ export default function InvestmentAnalysis() {
         </TabsList>
 
         <TabsContent value="screener" className="space-y-6">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -306,7 +309,7 @@ export default function InvestmentAnalysis() {
               />
             </div>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Sort by..." />
               </SelectTrigger>
               <SelectContent>
@@ -345,14 +348,14 @@ export default function InvestmentAnalysis() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-6 gap-6 text-right">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-6 text-right">
                       <div>
-                        <div className="text-sm text-muted-foreground">Price</div>
-                        <div className="font-semibold">{formatCurrency(investment.price)}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">Price</div>
+                        <div className="font-semibold text-sm sm:text-base">{formatCurrency(investment.price)}</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Change</div>
-                        <div className={`font-semibold flex items-center justify-end gap-1 ${
+                        <div className="text-xs sm:text-sm text-muted-foreground">Change</div>
+                        <div className={`font-semibold text-sm sm:text-base flex items-center justify-end gap-1 ${
                           investment.change >= 0 ? 'text-success' : 'text-destructive'
                         }`}>
                           {investment.change >= 0 ? (
@@ -364,20 +367,20 @@ export default function InvestmentAnalysis() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Market Cap</div>
-                        <div className="font-semibold">{investment.marketCap}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">Market Cap</div>
+                        <div className="font-semibold text-sm sm:text-base">{investment.marketCap}</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">P/E Ratio</div>
-                        <div className="font-semibold">{investment.pe}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">P/E Ratio</div>
+                        <div className="font-semibold text-sm sm:text-base">{investment.pe}</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Dividend</div>
-                        <div className="font-semibold">{investment.dividend}%</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">Dividend</div>
+                        <div className="font-semibold text-sm sm:text-base">{investment.dividend}%</div>
                       </div>
                       <div>
-                        <div className="text-sm text-muted-foreground">Risk</div>
-                        <div className={`font-semibold ${getRiskColor(investment.risk)}`}>
+                        <div className="text-xs sm:text-sm text-muted-foreground">Risk</div>
+                        <div className={`font-semibold text-sm sm:text-base ${getRiskColor(investment.risk)}`}>
                           {investment.risk}
                         </div>
                       </div>
@@ -404,25 +407,25 @@ export default function InvestmentAnalysis() {
                   <CardDescription>{selectedInvestment.name}</CardDescription>
                 </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   <div className="p-3 rounded-lg bg-background border">
-                    <div className="text-sm text-muted-foreground">Current Price</div>
-                    <div className="text-xl font-bold">{formatCurrency(selectedInvestment.price)}</div>
-                    <div className={`text-sm ${selectedInvestment.change >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Current Price</div>
+                    <div className="text-lg sm:text-xl font-bold">{formatCurrency(selectedInvestment.price)}</div>
+                    <div className={`text-xs sm:text-sm ${selectedInvestment.change >= 0 ? 'text-success' : 'text-destructive'}`}>
                       {formatPercent(selectedInvestment.changePercent)} today
                     </div>
                   </div>
                   <div className="p-3 rounded-lg bg-background border">
-                    <div className="text-sm text-muted-foreground">Market Cap</div>
-                    <div className="text-xl font-bold">{selectedInvestment.marketCap}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Market Cap</div>
+                    <div className="text-lg sm:text-xl font-bold">{selectedInvestment.marketCap}</div>
                   </div>
                   <div className="p-3 rounded-lg bg-background border">
-                    <div className="text-sm text-muted-foreground">P/E Ratio</div>
-                    <div className="text-xl font-bold">{selectedInvestment.pe}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">P/E Ratio</div>
+                    <div className="text-lg sm:text-xl font-bold">{selectedInvestment.pe}</div>
                   </div>
                   <div className="p-3 rounded-lg bg-background border">
-                    <div className="text-sm text-muted-foreground">Beta</div>
-                    <div className="text-xl font-bold">{selectedInvestment.beta}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Beta</div>
+                    <div className="text-lg sm:text-xl font-bold">{selectedInvestment.beta}</div>
                   </div>
                 </div>
 
@@ -574,7 +577,7 @@ export default function InvestmentAnalysis() {
               <div className="space-y-4">
                 {sectorAnalysis.map((sector) => (
                   <div key={sector.sector} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
                       <div>
                         <h3 className="font-semibold">{sector.sector}</h3>
                         <p className="text-sm text-muted-foreground">
@@ -584,7 +587,7 @@ export default function InvestmentAnalysis() {
                       <Badge variant="outline">{sector.outlook}</Badge>
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-3 gap-3 sm:gap-4 text-sm">
                       <div>
                         <div className="text-muted-foreground">Performance</div>
                         <div className="font-semibold text-success">{sector.performance}</div>
