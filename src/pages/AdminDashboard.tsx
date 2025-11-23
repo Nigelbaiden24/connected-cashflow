@@ -663,12 +663,13 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Reports Tab */}
-          <TabsContent value="reports">
+          <TabsContent value="reports" className="space-y-6">
+            {/* General Reports Upload */}
             <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
               <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl">
                   <FileBarChart className="h-6 w-6 text-primary" />
-                  Upload Reports to FlowPulse Platforms
+                  General Reports Upload
                 </CardTitle>
                 <CardDescription>
                   Upload reports for Finance, Business, or Investor platforms. Select platform, report type, and assign to specific users.
@@ -688,6 +689,64 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <AdminReportUpload onUploadSuccess={fetchProfiles} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Research Reports for Investor Platform */}
+            <Card className="border-accent/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-accent/10 bg-gradient-to-r from-accent/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <FileBarChart className="h-6 w-6 text-accent" />
+                  Investor Research Reports
+                </CardTitle>
+                <CardDescription>
+                  Upload research reports that will appear in the FlowPulse Investor Research Reports tab
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      • Upload PDF research reports for investors
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Reports will appear in the Investor Research Reports section
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Assign to specific users or make available to all investors
+                    </p>
+                  </div>
+                  <AdminReportUpload platform="investor" onUploadSuccess={fetchProfiles} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Analysis Reports for Investor Platform */}
+            <Card className="border-secondary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b border-secondary/10 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <FileBarChart className="h-6 w-6 text-secondary" />
+                  Investor Analysis Reports
+                </CardTitle>
+                <CardDescription>
+                  Upload analysis reports that will appear in the FlowPulse Investor Analysis Reports tab
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      • Upload PDF analysis reports for investors
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Reports will appear in the Investor Analysis Reports section
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Assign to specific users or make available to all investors
+                    </p>
+                  </div>
+                  <AdminReportUpload platform="investor" onUploadSuccess={fetchProfiles} />
                 </div>
               </CardContent>
             </Card>
