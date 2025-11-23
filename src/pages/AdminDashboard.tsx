@@ -10,11 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart } from "lucide-react";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DemoRequests } from "@/components/admin/DemoRequests";
+import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 
 interface Profile {
   user_id: string;
@@ -666,69 +667,31 @@ export default function AdminDashboard() {
             <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
               <CardHeader className="border-b border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <FileText className="h-6 w-6 text-primary" />
-                  Upload Report
+                  <FileBarChart className="h-6 w-6 text-primary" />
+                  Upload Reports to FlowPulse Platforms
                 </CardTitle>
-                <CardDescription>Upload research reports for specific users</CardDescription>
+                <CardDescription>
+                  Upload reports for Finance, Business, or Investor platforms. Select platform, report type, and assign to specific users.
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
-                <form onSubmit={handleReportUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="report-title">Title *</Label>
-                  <Input
-                    id="report-title"
-                    value={reportForm.title}
-                    onChange={(e) => setReportForm({ ...reportForm, title: e.target.value })}
-                    placeholder="Report title"
-                    required
-                  />
+                <div className="flex justify-between items-center">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      • Select which platform (Finance, Business, or Investor)
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Choose report type from platform-specific categories
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      • Assign to specific users or make available to all
+                    </p>
+                  </div>
+                  <AdminReportUpload onUploadSuccess={fetchProfiles} />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="report-desc">Description</Label>
-                  <Textarea
-                    id="report-desc"
-                    value={reportForm.description}
-                    onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
-                    placeholder="Report description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="report-user">Select User *</Label>
-                  <Select value={reportForm.userId} onValueChange={(value) => setReportForm({ ...reportForm, userId: value })}>
-                    <SelectTrigger id="report-user">
-                      <SelectValue placeholder="Choose a user" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {profiles.map((profile) => (
-                        <SelectItem key={profile.user_id} value={profile.user_id}>
-                          {profile.full_name} ({profile.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="report-file">File (PDF) *</Label>
-                  <Input
-                    id="report-file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setReportForm({ ...reportForm, file: e.target.files?.[0] || null })}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Report
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Newsletters Tab */}
           <TabsContent value="newsletters">

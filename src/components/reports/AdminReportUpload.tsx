@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,19 +9,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Loader2 } from "lucide-react";
 
+interface Profile {
+  user_id: string;
+  email: string;
+  full_name: string;
+}
+
 interface AdminReportUploadProps {
-  platform: "finance" | "business";
+  platform?: "finance" | "business" | "investor";
   onUploadSuccess?: () => void;
 }
 
-export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUploadProps) {
+export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }: AdminReportUploadProps) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [reportType, setReportType] = useState("");
-  const [userIds, setUserIds] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState("all");
+  const [selectedPlatform, setSelectedPlatform] = useState<string>(defaultPlatform || "finance");
+  const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const financeReportTypes = [
     "Equity Research Reports",
@@ -87,7 +95,42 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
     "Executive Briefings"
   ];
 
-  const reportTypes = platform === "finance" ? financeReportTypes : businessReportTypes;
+  const investorReportTypes = [
+    "Research Reports",
+    "Market Analysis",
+    "Investment Strategy",
+    "Portfolio Analysis",
+    "Risk Assessment",
+    "Performance Reports",
+    "ESG Reports"
+  ];
+
+  const getReportTypes = () => {
+    if (selectedPlatform === "finance") return financeReportTypes;
+    if (selectedPlatform === "business") return businessReportTypes;
+    return investorReportTypes;
+  };
+
+  useEffect(() => {
+    if (open) {
+      fetchProfiles();
+    }
+  }, [open]);
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("user_id, email, full_name")
+        .order("email");
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error) {
+      console.error("Error fetching profiles:", error);
+      toast.error("Failed to load user profiles");
+    }
+  };
 
   const handleUpload = async () => {
     if (!file || !title || !reportType) {
@@ -101,7 +144,7 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${platform}/${fileName}`;
+      const filePath = `${selectedPlatform}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('reports')
@@ -117,24 +160,21 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
           description,
           file_path: filePath,
           report_type: reportType,
-          platform
+          platform: selectedPlatform
         })
         .select()
         .single();
 
       if (reportError) throw reportError;
 
-      // Grant access to specified users (comma-separated UUIDs) or all if empty
-      if (userIds.trim()) {
-        const userIdArray = userIds.split(',').map(id => id.trim()).filter(id => id);
-        const accessRecords = userIdArray.map(userId => ({
-          user_id: userId,
-          report_id: reportData.id
-        }));
-
+      // Grant access to specified user or make available to all
+      if (selectedUserId && selectedUserId !== "all") {
         const { error: accessError } = await supabase
           .from('user_report_access')
-          .insert(accessRecords);
+          .insert({
+            user_id: selectedUserId,
+            report_id: reportData.id
+          });
 
         if (accessError) throw accessError;
       }
@@ -156,7 +196,10 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
     setTitle("");
     setDescription("");
     setReportType("");
-    setUserIds("");
+    setSelectedUserId("all");
+    if (!defaultPlatform) {
+      setSelectedPlatform("finance");
+    }
   };
 
   return (
@@ -203,6 +246,22 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
             />
           </div>
 
+          {!defaultPlatform && (
+            <div className="space-y-2">
+              <Label htmlFor="platform">Platform *</Label>
+              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="finance">Finance</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
+                  <SelectItem value="investor">Investor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="reportType">Report Type *</Label>
             <Select value={reportType} onValueChange={setReportType}>
@@ -210,7 +269,7 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
                 <SelectValue placeholder="Select report type" />
               </SelectTrigger>
               <SelectContent>
-                {reportTypes.map((type) => (
+                {getReportTypes().map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
                   </SelectItem>
@@ -220,16 +279,22 @@ export function AdminReportUpload({ platform, onUploadSuccess }: AdminReportUplo
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="userIds">User IDs (optional)</Label>
-            <Textarea
-              id="userIds"
-              value={userIds}
-              onChange={(e) => setUserIds(e.target.value)}
-              placeholder="Comma-separated user UUIDs. Leave empty to manually assign later."
-              rows={2}
-            />
+            <Label htmlFor="userId">Assign to User</Label>
+            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select user" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Users</SelectItem>
+                {profiles.map((profile) => (
+                  <SelectItem key={profile.user_id} value={profile.user_id}>
+                    {profile.full_name} ({profile.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground">
-              Specify user UUIDs to grant access, or leave empty to assign manually later.
+              Select a specific user or make it available to all users
             </p>
           </div>
 
