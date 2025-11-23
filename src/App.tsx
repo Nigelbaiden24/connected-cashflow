@@ -85,6 +85,7 @@ import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import Install from "./pages/Install";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,7 @@ const App = () => {
           <Routes>
           {/* Public routes */}
           <Route path="/" element={<Index />} />
+          <Route path="/install" element={<Install />} />
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
           <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
