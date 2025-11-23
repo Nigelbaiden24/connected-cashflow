@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { UserPlus, UserMinus, CheckCircle2, XCircle, Shield, Users, Search, Mail, Loader2, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { UserPlus, UserMinus, CheckCircle2, XCircle, Shield, Users, Search, Mail, Loader2, MoreHorizontal, Trash2, Edit, Building2, TrendingUp, Briefcase } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 interface UserWithRole {
@@ -20,12 +21,22 @@ interface UserWithRole {
   created_at: string;
   roles: string[];
   status: "active" | "pending" | "inactive";
+  platforms: {
+    finance: boolean;
+    business: boolean;
+    investor: boolean;
+  };
 }
 
 interface InviteForm {
   email: string;
   fullName: string;
   role: string;
+  platforms: {
+    finance: boolean;
+    business: boolean;
+    investor: boolean;
+  };
 }
 
 export function UserManagement() {
@@ -33,7 +44,12 @@ export function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [addUserOpen, setAddUserOpen] = useState(false);
-  const [inviteForm, setInviteForm] = useState<InviteForm>({ email: "", fullName: "", role: "viewer" });
+  const [inviteForm, setInviteForm] = useState<InviteForm>({ 
+    email: "", 
+    fullName: "", 
+    role: "viewer",
+    platforms: { finance: false, business: false, investor: false }
+  });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -58,16 +74,30 @@ export function UserManagement() {
 
       if (rolesError) throw rolesError;
 
+      // Fetch platform permissions
+      const { data: permissionsData, error: permissionsError } = await supabase
+        .from("platform_permissions")
+        .select("user_id, can_access_finance_platform, can_access_business_platform, can_access_investor_platform");
+
+      if (permissionsError) throw permissionsError;
+
       // Combine the data
       const usersWithRoles: UserWithRole[] = (profilesData || []).map((profile) => {
         const userRoles = rolesData?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
+        const userPermissions = permissionsData?.find(p => p.user_id === profile.user_id);
+        
         return {
           user_id: profile.user_id,
           email: profile.email || "",
           full_name: profile.full_name || "",
           created_at: profile.created_at || "",
           roles: userRoles,
-          status: userRoles.length > 0 ? "active" : "pending"
+          status: userRoles.length > 0 ? "active" : "pending",
+          platforms: {
+            finance: userPermissions?.can_access_finance_platform || false,
+            business: userPermissions?.can_access_business_platform || false,
+            investor: userPermissions?.can_access_investor_platform || false
+          }
         };
       });
 
@@ -120,22 +150,35 @@ export function UserManagement() {
       if (authError) throw authError;
 
       if (authData.user) {
-      // Assign role
-      if (inviteForm.role !== "viewer") {
-        const validRoles: Array<"admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer"> = 
-          ['admin', 'analyst', 'hr_admin', 'manager', 'payroll_admin', 'viewer'];
-        
-        if (validRoles.includes(inviteForm.role as any)) {
-          await supabase.from("user_roles").insert([{
-            user_id: authData.user.id,
-            role: inviteForm.role as "admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer"
-          }]);
+        // Assign role
+        if (inviteForm.role !== "viewer") {
+          const validRoles: Array<"admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer"> = 
+            ['admin', 'analyst', 'hr_admin', 'manager', 'payroll_admin', 'viewer'];
+          
+          if (validRoles.includes(inviteForm.role as any)) {
+            await supabase.from("user_roles").insert([{
+              user_id: authData.user.id,
+              role: inviteForm.role as "admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer"
+            }]);
+          }
         }
-      }
+
+        // Grant platform access
+        await supabase.rpc('grant_platform_access', {
+          _user_id: authData.user.id,
+          _finance: inviteForm.platforms.finance,
+          _business: inviteForm.platforms.business,
+          _investor: inviteForm.platforms.investor
+        });
 
         toast.success(`Invitation sent to ${inviteForm.email}`);
         setAddUserOpen(false);
-        setInviteForm({ email: "", fullName: "", role: "user" });
+        setInviteForm({ 
+          email: "", 
+          fullName: "", 
+          role: "viewer",
+          platforms: { finance: false, business: false, investor: false }
+        });
         await fetchUsers();
       }
     } catch (error: any) {
@@ -227,6 +270,69 @@ export function UserManagement() {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const handleUpdatePlatformAccess = async (
+    userId: string, 
+    platform: "finance" | "business" | "investor", 
+    hasAccess: boolean
+  ) => {
+    try {
+      const platformMap = {
+        finance: hasAccess,
+        business: platform === "business" ? false : hasAccess,
+        investor: platform === "investor" ? false : hasAccess
+      };
+
+      // Get current permissions first
+      const { data: currentPerms } = await supabase
+        .from("platform_permissions")
+        .select("can_access_finance_platform, can_access_business_platform, can_access_investor_platform")
+        .eq("user_id", userId)
+        .single();
+
+      await supabase.rpc('grant_platform_access', {
+        _user_id: userId,
+        _finance: platform === "finance" ? hasAccess : (currentPerms?.can_access_finance_platform || false),
+        _business: platform === "business" ? hasAccess : (currentPerms?.can_access_business_platform || false),
+        _investor: platform === "investor" ? hasAccess : (currentPerms?.can_access_investor_platform || false)
+      });
+
+      toast.success(`${platform} platform access ${hasAccess ? 'granted' : 'revoked'}`);
+      await fetchUsers();
+    } catch (error: any) {
+      console.error("Error updating platform access:", error);
+      toast.error("Failed to update platform access");
+    }
+  };
+
+  const getPlatformBadges = (platforms: { finance: boolean; business: boolean; investor: boolean }) => {
+    const badges = [];
+    if (platforms.finance) {
+      badges.push(
+        <Badge key="finance" className="bg-primary/20 text-primary border-primary/30" variant="outline">
+          <Briefcase className="h-3 w-3 mr-1" />
+          Finance
+        </Badge>
+      );
+    }
+    if (platforms.business) {
+      badges.push(
+        <Badge key="business" className="bg-success/20 text-success border-success/30" variant="outline">
+          <Building2 className="h-3 w-3 mr-1" />
+          Business
+        </Badge>
+      );
+    }
+    if (platforms.investor) {
+      badges.push(
+        <Badge key="investor" className="bg-secondary/20 text-secondary border-secondary/30" variant="outline">
+          <TrendingUp className="h-3 w-3 mr-1" />
+          Investor
+        </Badge>
+      );
+    }
+    return badges.length > 0 ? badges : [<Badge key="none" variant="outline" className="text-muted-foreground">No access</Badge>];
   };
 
   const getRoleBadge = (role: string) => {
@@ -368,6 +474,50 @@ export function UserManagement() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-3">
+                    <Label>Platform Access</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="platform-finance"
+                          checked={inviteForm.platforms.finance}
+                          onCheckedChange={(checked) => 
+                            setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, finance: checked as boolean }})
+                          }
+                        />
+                        <label htmlFor="platform-finance" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                          <Briefcase className="h-4 w-4 text-primary" />
+                          Finance Platform
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="platform-business"
+                          checked={inviteForm.platforms.business}
+                          onCheckedChange={(checked) => 
+                            setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, business: checked as boolean }})
+                          }
+                        />
+                        <label htmlFor="platform-business" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                          <Building2 className="h-4 w-4 text-success" />
+                          Business Platform
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="platform-investor"
+                          checked={inviteForm.platforms.investor}
+                          onCheckedChange={(checked) => 
+                            setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, investor: checked as boolean }})
+                          }
+                        />
+                        <label htmlFor="platform-investor" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                          <TrendingUp className="h-4 w-4 text-secondary" />
+                          Investor Platform
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex gap-2 pt-4">
                     <Button type="button" variant="outline" onClick={() => setAddUserOpen(false)} className="flex-1">
                       Cancel
@@ -409,6 +559,7 @@ export function UserManagement() {
                     <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Roles</TableHead>
+                    <TableHead>Platform Access</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Joined</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -417,7 +568,7 @@ export function UserManagement() {
                 <TableBody>
                   {filteredUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                         No users found
                       </TableCell>
                     </TableRow>
@@ -444,6 +595,11 @@ export function UserManagement() {
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">No roles</Badge>
                             )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {getPlatformBadges(user.platforms)}
                           </div>
                         </TableCell>
                         <TableCell>{getStatusBadge(user.status)}</TableCell>
@@ -486,6 +642,19 @@ export function UserManagement() {
                               <DropdownMenuItem onClick={() => handleUpdateRole(user.user_id, "payroll_admin")}>
                                 <Shield className="h-4 w-4 mr-2" />
                                 Make Payroll Admin
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleUpdatePlatformAccess(user.user_id, "finance", !user.platforms.finance)}>
+                                <Briefcase className="h-4 w-4 mr-2" />
+                                {user.platforms.finance ? "Revoke" : "Grant"} Finance Access
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleUpdatePlatformAccess(user.user_id, "business", !user.platforms.business)}>
+                                <Building2 className="h-4 w-4 mr-2" />
+                                {user.platforms.business ? "Revoke" : "Grant"} Business Access
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleUpdatePlatformAccess(user.user_id, "investor", !user.platforms.investor)}>
+                                <TrendingUp className="h-4 w-4 mr-2" />
+                                {user.platforms.investor ? "Revoke" : "Grant"} Investor Access
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem

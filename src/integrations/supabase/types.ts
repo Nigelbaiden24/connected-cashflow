@@ -3584,11 +3584,14 @@ export type Database = {
         Row: {
           can_access_analytics: boolean | null
           can_access_automation: boolean | null
+          can_access_business_platform: boolean | null
           can_access_calendar: boolean | null
           can_access_chat: boolean | null
           can_access_crm: boolean | null
           can_access_dashboard: boolean | null
           can_access_document_generator: boolean | null
+          can_access_finance_platform: boolean | null
+          can_access_investor_platform: boolean | null
           can_access_payroll: boolean | null
           can_access_projects: boolean | null
           can_access_revenue: boolean | null
@@ -3604,11 +3607,14 @@ export type Database = {
         Insert: {
           can_access_analytics?: boolean | null
           can_access_automation?: boolean | null
+          can_access_business_platform?: boolean | null
           can_access_calendar?: boolean | null
           can_access_chat?: boolean | null
           can_access_crm?: boolean | null
           can_access_dashboard?: boolean | null
           can_access_document_generator?: boolean | null
+          can_access_finance_platform?: boolean | null
+          can_access_investor_platform?: boolean | null
           can_access_payroll?: boolean | null
           can_access_projects?: boolean | null
           can_access_revenue?: boolean | null
@@ -3624,11 +3630,14 @@ export type Database = {
         Update: {
           can_access_analytics?: boolean | null
           can_access_automation?: boolean | null
+          can_access_business_platform?: boolean | null
           can_access_calendar?: boolean | null
           can_access_chat?: boolean | null
           can_access_crm?: boolean | null
           can_access_dashboard?: boolean | null
           can_access_document_generator?: boolean | null
+          can_access_finance_platform?: boolean | null
+          can_access_investor_platform?: boolean | null
           can_access_payroll?: boolean | null
           can_access_projects?: boolean | null
           can_access_revenue?: boolean | null
@@ -4715,6 +4724,19 @@ export type Database = {
       }
       check_user_permission: {
         Args: { _permission: string; _user_id: string }
+        Returns: boolean
+      }
+      grant_platform_access: {
+        Args: {
+          _business?: boolean
+          _finance?: boolean
+          _investor?: boolean
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      has_platform_access: {
+        Args: { _platform: string; _user_id: string }
         Returns: boolean
       }
       increment_learning_content_views: {
