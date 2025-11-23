@@ -19,6 +19,13 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
+      // Only allow specific admin email
+      if (email.toLowerCase() !== "nigelbaiden24@yahoo.com") {
+        toast.error("Access denied. Only authorized administrators can access this dashboard.");
+        setLoading(false);
+        return;
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,

@@ -84,6 +84,14 @@ export default function AdminDashboard() {
         return;
       }
 
+      // Only allow specific admin email
+      if (user.email?.toLowerCase() !== "nigelbaiden24@yahoo.com") {
+        toast.error("Access denied. Only authorized administrators can access this dashboard.");
+        await supabase.auth.signOut();
+        navigate("/admin/login");
+        return;
+      }
+
       // Check if user has admin role
       const { data: roleData, error } = await supabase
         .from("user_roles")
