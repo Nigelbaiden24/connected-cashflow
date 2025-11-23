@@ -104,14 +104,14 @@ export default function InvestmentAnalysis() {
       
       // Provide fallback data if API fails
       const fallbackInvestments: Investment[] = [
-        { symbol: 'AAPL', name: 'Apple Inc.', price: 178.25, change: 2.50, changePercent: 1.42, marketCap: '$2.8T', pe: 29.5, dividend: 0.53, beta: 1.24, rating: 'Buy', risk: 'Medium', sector: 'Technology' },
-        { symbol: 'MSFT', name: 'Microsoft Corporation', price: 378.91, change: -1.20, changePercent: -0.32, marketCap: '$2.8T', pe: 35.2, dividend: 0.75, beta: 1.10, rating: 'Buy', risk: 'Low', sector: 'Technology' },
-        { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 140.53, change: 1.85, changePercent: 1.33, marketCap: '$1.8T', pe: 26.8, dividend: 0.00, beta: 1.05, rating: 'Buy', risk: 'Medium', sector: 'Technology' },
-        { symbol: 'TSLA', name: 'Tesla, Inc.', price: 242.84, change: 8.45, changePercent: 3.60, marketCap: '$770B', pe: 68.5, dividend: 0.00, beta: 2.01, rating: 'Hold', risk: 'High', sector: 'Automotive' },
-        { symbol: 'JNJ', name: 'Johnson & Johnson', price: 156.73, change: 0.45, changePercent: 0.29, marketCap: '$378B', pe: 15.3, dividend: 2.85, beta: 0.65, rating: 'Buy', risk: 'Low', sector: 'Healthcare' },
-        { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 495.22, change: 12.30, changePercent: 2.55, marketCap: '$1.2T', pe: 118.4, dividend: 0.04, beta: 1.68, rating: 'Buy', risk: 'High', sector: 'Technology' },
-        { symbol: 'META', name: 'Meta Platforms, Inc.', price: 488.50, change: 5.75, changePercent: 1.19, marketCap: '$1.2T', pe: 31.7, dividend: 0.00, beta: 1.32, rating: 'Buy', risk: 'Medium', sector: 'Technology' },
-        { symbol: 'AMZN', name: 'Amazon.com, Inc.', price: 175.33, change: 2.10, changePercent: 1.21, marketCap: '$1.8T', pe: 52.9, dividend: 0.00, beta: 1.15, rating: 'Buy', risk: 'Medium', sector: 'E-commerce' },
+        { symbol: 'AAPL', name: 'Apple Inc.', price: 141.02, change: 1.98, changePercent: 1.42, marketCap: '£2.2T', pe: 29.5, dividend: 0.53, beta: 1.24, rating: 'Buy', risk: 'Medium', sector: 'Technology' },
+        { symbol: 'MSFT', name: 'Microsoft Corporation', price: 299.94, change: -0.95, changePercent: -0.32, marketCap: '£2.2T', pe: 35.2, dividend: 0.75, beta: 1.10, rating: 'Buy', risk: 'Low', sector: 'Technology' },
+        { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 111.22, change: 1.46, changePercent: 1.33, marketCap: '£1.4T', pe: 26.8, dividend: 0.00, beta: 1.05, rating: 'Buy', risk: 'Medium', sector: 'Technology' },
+        { symbol: 'TSLA', name: 'Tesla, Inc.', price: 192.25, change: 6.69, changePercent: 3.60, marketCap: '£609B', pe: 68.5, dividend: 0.00, beta: 2.01, rating: 'Hold', risk: 'High', sector: 'Automotive' },
+        { symbol: 'JNJ', name: 'Johnson & Johnson', price: 124.08, change: 0.36, changePercent: 0.29, marketCap: '£299B', pe: 15.3, dividend: 2.85, beta: 0.65, rating: 'Buy', risk: 'Low', sector: 'Healthcare' },
+        { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 392.03, change: 9.73, changePercent: 2.55, marketCap: '£950B', pe: 118.4, dividend: 0.04, beta: 1.68, rating: 'Buy', risk: 'High', sector: 'Technology' },
+        { symbol: 'META', name: 'Meta Platforms, Inc.', price: 386.53, change: 4.55, changePercent: 1.19, marketCap: '£950B', pe: 31.7, dividend: 0.00, beta: 1.32, rating: 'Buy', risk: 'Medium', sector: 'Technology' },
+        { symbol: 'AMZN', name: 'Amazon.com, Inc.', price: 138.81, change: 1.66, changePercent: 1.21, marketCap: '£1.4T', pe: 52.9, dividend: 0.00, beta: 1.15, rating: 'Buy', risk: 'Medium', sector: 'E-commerce' },
       ];
       
       setInvestments(fallbackInvestments);
@@ -187,9 +187,9 @@ export default function InvestmentAnalysis() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GBP',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
