@@ -16,9 +16,10 @@ interface DemoRequest {
   company: string | null;
   phone: string | null;
   message: string | null;
-  status: string;
+  status: string | null;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
+  user_id: string | null;
 }
 
 export function DemoRequests() {
@@ -63,7 +64,9 @@ export function DemoRequests() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string | null) => {
+    if (!status) return <Badge variant="secondary">pending</Badge>;
+    
     const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
       pending: "secondary",
       contacted: "outline",

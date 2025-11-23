@@ -10,10 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar } from "lucide-react";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
+import { DemoRequests } from "@/components/admin/DemoRequests";
 
 interface Profile {
   user_id: string;
@@ -563,13 +564,20 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-11 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
+          <TabsList className="grid w-full grid-cols-12 gap-2 bg-card/50 p-2 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg">
             <TabsTrigger 
               value="users"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg transition-all"
             >
               <Users className="h-4 w-4 mr-2" />
               Users
+            </TabsTrigger>
+            <TabsTrigger 
+              value="demo-requests"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-accent data-[state=active]:to-primary data-[state=active]:text-accent-foreground data-[state=active]:shadow-lg transition-all"
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Demo Requests
             </TabsTrigger>
             <TabsTrigger 
               value="reports"
@@ -646,6 +654,11 @@ export default function AdminDashboard() {
           {/* User Management Tab */}
           <TabsContent value="users">
             <UserManagement />
+          </TabsContent>
+
+          {/* Demo Requests Tab */}
+          <TabsContent value="demo-requests">
+            <DemoRequests />
           </TabsContent>
 
           {/* Reports Tab */}
