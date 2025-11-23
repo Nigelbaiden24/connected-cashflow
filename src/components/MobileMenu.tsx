@@ -55,10 +55,12 @@ export function MobileMenu({ platform = "business" }: MobileMenuProps) {
 
   const investorLinks = [
     { title: "Dashboard", url: "/investor/dashboard", icon: Home },
+    { title: "Features", url: "/investor-features", icon: TrendingUp },
     { title: "Research Reports", url: "/investor/research", icon: FileText },
     { title: "Market Commentary", url: "/investor/commentary", icon: TrendingUp },
     { title: "AI Analyst", url: "/investor/ai-analyst", icon: Settings },
     { title: "Watchlists", url: "/investor/watchlists", icon: Briefcase },
+    { title: "Pricing", url: "/pricing", icon: Briefcase },
   ];
 
   const links = platform === "business" ? businessLinks 
