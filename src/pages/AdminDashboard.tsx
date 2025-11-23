@@ -545,14 +545,6 @@ export default function AdminDashboard() {
             </div>
             <div className="flex gap-3">
               <Button 
-                variant="secondary" 
-                onClick={() => navigate("/investor/dashboard")}
-                className="bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
-              >
-                <LayoutDashboard className="h-4 w-4 mr-2" />
-                Dashboard
-              </Button>
-              <Button 
                 onClick={handleLogout}
                 className="bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-sm"
               >
