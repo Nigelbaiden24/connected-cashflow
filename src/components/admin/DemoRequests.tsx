@@ -38,7 +38,22 @@ export function DemoRequests() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      
+      // Map the data to ensure all fields are present
+      const mappedData: DemoRequest[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        company: item.company,
+        phone: item.phone,
+        message: item.message,
+        status: (item as any).status || 'pending',
+        created_at: item.created_at,
+        updated_at: (item as any).updated_at || item.created_at,
+        user_id: (item as any).user_id || null,
+      }));
+      
+      setRequests(mappedData);
     } catch (error) {
       console.error("Error fetching demo requests:", error);
       toast.error("Failed to load demo requests");
@@ -51,7 +66,10 @@ export function DemoRequests() {
     try {
       const { error } = await supabase
         .from("demo_requests")
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          status: newStatus, 
+          updated_at: new Date().toISOString() 
+        } as any)
         .eq("id", id);
 
       if (error) throw error;
