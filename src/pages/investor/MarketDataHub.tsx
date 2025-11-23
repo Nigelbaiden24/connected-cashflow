@@ -56,32 +56,32 @@ export default function MarketDataHub() {
   const majorIndices = liveMarketData.length > 0
     ? liveMarketData.filter(d => indexMapping[d.symbol]).map(stock => ({
         name: indexMapping[stock.symbol],
-        value: stock.price.toFixed(2),
+        value: `£${stock.price.toFixed(2)}`,
         change: `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`,
-        changeValue: stock.change,
+        changeValue: `£${stock.change.toFixed(2)}`,
         trend: stock.changePercent >= 0 ? "up" : "down"
       }))
     : [
-        { name: "S&P 500", value: "4,783.45", change: "+1.2%", changeValue: 56.78, trend: "up" },
-        { name: "NASDAQ", value: "15,095.14", change: "+0.8%", changeValue: 118.32, trend: "up" },
-        { name: "FTSE 100", value: "7,623.45", change: "+0.3%", changeValue: 22.15, trend: "up" },
-        { name: "DAX", value: "16,852.30", change: "-0.4%", changeValue: -67.20, trend: "down" },
-        { name: "Nikkei 225", value: "33,464.17", change: "+1.5%", changeValue: 495.23, trend: "up" },
-        { name: "Hang Seng", value: "16,830.30", change: "-0.9%", changeValue: -153.45, trend: "down" },
+        { name: "S&P 500", value: "£3,789.12", change: "+1.2%", changeValue: "£44.96", trend: "up" },
+        { name: "NASDAQ", value: "£11,952.66", change: "+0.8%", changeValue: "£93.68", trend: "up" },
+        { name: "FTSE 100", value: "£6,035.13", change: "+0.3%", changeValue: "£17.54", trend: "up" },
+        { name: "DAX", value: "£13,343.32", change: "-0.4%", changeValue: "-£53.22", trend: "down" },
+        { name: "Nikkei 225", value: "£26,490.89", change: "+1.5%", changeValue: "£392.07", trend: "up" },
+        { name: "Hang Seng", value: "£13,327.14", change: "-0.9%", changeValue: "-£121.51", trend: "down" },
       ];
 
   const commodities = liveMarketData.length > 0
     ? liveMarketData.filter(d => commodityMapping[d.symbol]).map(stock => ({
         name: commodityMapping[stock.symbol].name,
-        value: `$${stock.price.toFixed(2)}`,
+        value: `£${stock.price.toFixed(2)}`,
         change: `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`,
         unit: commodityMapping[stock.symbol].unit
       }))
     : [
-        { name: "Gold", value: "$2,045.50", change: "+0.5%", unit: "/oz" },
-        { name: "Silver", value: "$24.15", change: "+1.2%", unit: "/oz" },
-        { name: "Crude Oil (WTI)", value: "$78.45", change: "-1.3%", unit: "/bbl" },
-        { name: "Natural Gas", value: "$2.85", change: "+2.4%", unit: "/MMBtu" },
+        { name: "Gold", value: "£1,619.15", change: "+0.5%", unit: "/oz" },
+        { name: "Silver", value: "£19.13", change: "+1.2%", unit: "/oz" },
+        { name: "Crude Oil (WTI)", value: "£62.10", change: "-1.3%", unit: "/bbl" },
+        { name: "Natural Gas", value: "£2.26", change: "+2.4%", unit: "/MMBtu" },
       ];
 
   const forexPairs = [
@@ -167,7 +167,7 @@ export default function MarketDataHub() {
                       <TableCell className="text-right">{index.value}</TableCell>
                       <TableCell className="text-right">
                         <span className={index.trend === "up" ? "text-green-600" : "text-red-600"}>
-                          {index.changeValue > 0 ? "+" : ""}{index.changeValue}
+                          {index.changeValue}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">

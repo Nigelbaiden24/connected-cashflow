@@ -212,7 +212,7 @@ const MarketData = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      ${index.price?.toFixed(2) || index.price}
+                      £{index.price?.toFixed(2) || index.price}
                     </div>
                     <div className="flex items-center text-xs">
                       {(index.change >= 0 || index.trend === "up") ? (
@@ -221,7 +221,7 @@ const MarketData = () => {
                         <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
                       )}
                       <span className={(index.change >= 0 || index.trend === "up") ? "text-success" : "text-destructive"}>
-                        {index.change >= 0 ? "+" : ""}{index.change?.toFixed(2) || index.change} ({index.changePercent?.toFixed(2) || index.changePercent}%)
+                        {index.change >= 0 ? "+" : ""}£{index.change?.toFixed(2) || index.change} ({index.changePercent?.toFixed(2) || index.changePercent}%)
                       </span>
                     </div>
                   </CardContent>
@@ -261,7 +261,7 @@ const MarketData = () => {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">${stock.price?.toFixed?.(2) || stock.price}</p>
+                        <p className="font-medium">£{stock.price?.toFixed?.(2) || stock.price}</p>
                         <div className="flex items-center text-xs">
                           {(stock.change >= 0 || stock.trend === "up") ? (
                             <TrendingUp className="mr-1 h-3 w-3 text-success" />
