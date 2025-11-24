@@ -3262,6 +3262,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_invitations: {
+        Row: {
+          completed_at: string | null
+          email: string
+          full_name: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          invited_role: string
+          platform_business: boolean | null
+          platform_finance: boolean | null
+          platform_investor: boolean | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          invited_role: string
+          platform_business?: boolean | null
+          platform_finance?: boolean | null
+          platform_investor?: boolean | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          invited_role?: string
+          platform_business?: boolean | null
+          platform_finance?: boolean | null
+          platform_investor?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_alerts: {
         Row: {
           alert_type: string
