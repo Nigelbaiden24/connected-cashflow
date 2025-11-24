@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending authentication email to:", to);
 
     const emailResponse = await resend.emails.send({
-      from: from || "FlowPulse <onboarding@resend.dev>",
+      from: from || "FlowPulse Support <support@flowpulse.co.uk>",
       to: [to],
       subject: subject,
       html: html,
