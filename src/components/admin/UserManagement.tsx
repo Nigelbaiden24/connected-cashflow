@@ -150,26 +150,24 @@ export function UserManagement() {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Assign role
-        if (inviteForm.role !== "viewer") {
-          const validRoles: Array<"admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer"> = 
-            ['admin', 'analyst', 'hr_admin', 'manager', 'payroll_admin', 'viewer'];
-          
-          if (validRoles.includes(inviteForm.role as any)) {
-            await supabase.from("user_roles").insert([{
-              user_id: authData.user.id,
-              role: inviteForm.role as "admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer"
-            }]);
-          }
-        }
+        // Store invitation details - roles and permissions will be assigned when user confirms email
+        const { error: invitationError } = await supabase
+          .from("pending_invitations")
+          .insert({
+            user_id: authData.user.id,
+            email: inviteForm.email,
+            full_name: inviteForm.fullName,
+            invited_role: inviteForm.role,
+            platform_finance: inviteForm.platforms.finance,
+            platform_business: inviteForm.platforms.business,
+            platform_investor: inviteForm.platforms.investor,
+            invited_by: (await supabase.auth.getUser()).data.user?.id
+          });
 
-        // Grant platform access
-        await supabase.rpc('grant_platform_access', {
-          _user_id: authData.user.id,
-          _finance: inviteForm.platforms.finance,
-          _business: inviteForm.platforms.business,
-          _investor: inviteForm.platforms.investor
-        });
+        if (invitationError) {
+          console.error('Error storing invitation:', invitationError);
+          throw new Error('Failed to store invitation details');
+        }
 
         // Send custom invitation email
         const platformsList = Object.entries(inviteForm.platforms)
@@ -222,7 +220,7 @@ export function UserManagement() {
           console.error('Error sending invitation email:', emailError);
           toast.warning('User created but invitation email failed to send');
         } else {
-          toast.success(`Invitation sent to ${inviteForm.email}`);
+          toast.success(`Invitation sent to ${inviteForm.email}. User will be activated once they confirm their email.`);
         }
 
         setAddUserOpen(false);
