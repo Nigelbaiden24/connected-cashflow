@@ -171,7 +171,60 @@ export function UserManagement() {
           _investor: inviteForm.platforms.investor
         });
 
-        toast.success(`Invitation sent to ${inviteForm.email}`);
+        // Send custom invitation email
+        const platformsList = Object.entries(inviteForm.platforms)
+          .filter(([_, hasAccess]) => hasAccess)
+          .map(([platform]) => platform.charAt(0).toUpperCase() + platform.slice(1))
+          .join(', ') || 'None';
+
+        const emailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2563eb;">Welcome to FlowPulse!</h2>
+            <p>Hi ${inviteForm.fullName},</p>
+            <p>You have been invited to join FlowPulse with the following access:</p>
+            <ul>
+              <li><strong>Role:</strong> ${inviteForm.role.replace('_', ' ').toUpperCase()}</li>
+              <li><strong>Platform Access:</strong> ${platformsList}</li>
+            </ul>
+            <p>Your temporary credentials:</p>
+            <ul>
+              <li><strong>Email:</strong> ${inviteForm.email}</li>
+              <li><strong>Temporary Password:</strong> ${tempPassword}</li>
+            </ul>
+            <p style="padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; margin: 20px 0;">
+              ⚠️ <strong>Important:</strong> Please change your password after your first login.
+            </p>
+            <p>
+              <a href="${window.location.origin}/auth" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin: 10px 0;">
+                Login to FlowPulse
+              </a>
+            </p>
+            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+              If you have any questions, please contact our support team.
+            </p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+            <p style="color: #9ca3af; font-size: 12px;">
+              © ${new Date().getFullYear()} FlowPulse. All rights reserved.
+            </p>
+          </div>
+        `;
+
+        const { error: emailError } = await supabase.functions.invoke('send-auth-email', {
+          body: {
+            to: inviteForm.email,
+            subject: 'Welcome to FlowPulse - Your Account Details',
+            html: emailHtml,
+            from: 'FlowPulse Support <support@flowpulse.co.uk>'
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending invitation email:', emailError);
+          toast.warning('User created but invitation email failed to send');
+        } else {
+          toast.success(`Invitation sent to ${inviteForm.email}`);
+        }
+
         setAddUserOpen(false);
         setInviteForm({ 
           email: "", 
