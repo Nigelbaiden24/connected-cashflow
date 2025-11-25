@@ -3940,6 +3940,7 @@ export type Database = {
           id: string
           platform: string
           published_date: string | null
+          report_category: string | null
           report_type: string
           thumbnail_url: string | null
           title: string
@@ -3953,6 +3954,7 @@ export type Database = {
           id?: string
           platform: string
           published_date?: string | null
+          report_category?: string | null
           report_type: string
           thumbnail_url?: string | null
           title: string
@@ -3966,6 +3968,7 @@ export type Database = {
           id?: string
           platform?: string
           published_date?: string | null
+          report_category?: string | null
           report_type?: string
           thumbnail_url?: string | null
           title?: string
