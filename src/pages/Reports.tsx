@@ -51,14 +51,47 @@ export default function Reports() {
   const fetchReports = async () => {
     try {
       setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setReports([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch reports the user has access to
       const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .eq('platform', 'finance')
-        .order('published_date', { ascending: false });
+        .from('user_report_access')
+        .select(`
+          report_id,
+          reports (
+            id,
+            title,
+            description,
+            file_path,
+            report_type,
+            platform,
+            thumbnail_url,
+            published_date,
+            created_at
+          )
+        `)
+        .eq('user_id', user.id);
 
       if (error) throw error;
-      setReports(data || []);
+      
+      // Filter for finance platform reports and flatten the data
+      const financeReports = (data || [])
+        .map(item => item.reports)
+        .filter((report): report is Report => 
+          report !== null && 
+          typeof report === 'object' && 
+          'platform' in report && 
+          report.platform === 'finance'
+        )
+        .sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+      
+      setReports(financeReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
       toast.error("Failed to load reports");
