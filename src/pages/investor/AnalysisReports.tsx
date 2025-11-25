@@ -235,23 +235,32 @@ const AnalysisReports = () => {
             Technical, fundamental, and quantitative analysis across all asset classes
           </p>
         </div>
-        <Button 
-          onClick={handleAIAnalysis} 
-          className="bg-primary hover:bg-primary/90"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4 mr-2" />
-              AI Analysis
-            </>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleAIAnalysis} 
+            className="bg-primary hover:bg-primary/90"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Analysis
+              </>
+            )}
+          </Button>
+          {isAdmin && (
+            <AdminReportUpload
+              platform="investor"
+              section="investor_analysis"
+              onUploadSuccess={fetchReports}
+            />
           )}
-        </Button>
+        </div>
       </div>
 
       {aiResponse && (
