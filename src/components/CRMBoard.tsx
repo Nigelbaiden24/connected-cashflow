@@ -10,12 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
 import { AILeadScoringBadge } from "./crm/AILeadScoringBadge";
 import { BulkAIScoring } from "./crm/BulkAIScoring";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface CRMTable {
   id: string;
@@ -48,6 +49,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [compactView, setCompactView] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -129,6 +132,17 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
       contact.company?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredContacts.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedContacts = filteredContacts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterStatus]);
 
   const [newTableName, setNewTableName] = useState("");
   const [editingTable, setEditingTable] = useState<string | null>(null);
@@ -784,7 +798,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 </tr>
               </thead>
               <tbody>
-                {filteredContacts.map((contact, index) => (
+                {paginatedContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
                     className={compactView ? "border-b hover:bg-accent/30 transition-all duration-200 group h-8" : "border-b hover:bg-accent/30 hover:shadow-sm transition-all duration-200 group"}
@@ -1075,6 +1089,95 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               <Plus className="h-4 w-4 mr-2" />
               Add new row
             </Button>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between p-4 border-t border-border/50">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="pageSize" className="text-sm text-muted-foreground">
+                  Show:
+                </Label>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(value) => {
+                    setPageSize(Number(value));
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger id="pageSize" className="w-[80px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredContacts.length)} of {filteredContacts.length}
+              </p>
+            </div>
+
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                </PaginationItem>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Show first page, last page, current page, and pages around current
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 1 && page <= currentPage + 1)
+                  ) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => setCurrentPage(page)}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  } else if (page === currentPage - 2 || page === currentPage + 2) {
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    );
+                  }
+                  return null;
+                })}
+
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="gap-1"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         </CardContent>
       </Card>
