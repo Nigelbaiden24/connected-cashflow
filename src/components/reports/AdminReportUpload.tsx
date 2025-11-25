@@ -29,7 +29,9 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
   const [reportType, setReportType] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("all");
   const [selectedPlatform, setSelectedPlatform] = useState<string>(defaultPlatform || "finance");
-  const [platformSection, setPlatformSection] = useState<string>("finance_reports");
+  const [platformSection, setPlatformSection] = useState<string>(
+    defaultPlatform === "investor" ? "investor_research" : "finance_reports"
+  );
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const financeReportTypes = [
