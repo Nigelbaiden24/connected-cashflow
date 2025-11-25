@@ -18,30 +18,70 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [useMagicLink, setUseMagicLink] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate authentication
-    setTimeout(() => {
-      if (email && password) {
-        toast({
-          title: "Login Successful",
-          description: `Welcome back! Logged in as ${email}`,
+    try {
+      if (useMagicLink) {
+        // Magic link authentication
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/business/dashboard`,
+          },
         });
-        onLogin(email);
-        navigate("/business/dashboard");
+
+        if (error) {
+          toast({
+            title: "Failed to Send Magic Link",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Check Your Email",
+          description: "We've sent you a magic link to sign in. Please check your inbox.",
+        });
       } else {
-        toast({
-          title: "Login Failed",
-          description: "Please enter both email and password.",
-          variant: "destructive",
+        // Password authentication
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
+
+        if (error) {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data.user) {
+          toast({
+            title: "Login Successful",
+            description: `Welcome back! Logged in as ${email}`,
+          });
+          onLogin(email);
+          navigate("/business/dashboard");
+        }
       }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "An error occurred during login",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -136,40 +176,42 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
               />
             </div>
             
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
-                <button type="button" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </button>
+            {!useMagicLink && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">
+                    Password
+                  </Label>
+                  <button type="button" className="text-sm text-primary hover:underline">
+                    Forgot password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                    required={!useMagicLink}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
+            )}
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -183,8 +225,19 @@ const LoginBusiness = ({ onLogin }: LoginBusinessProps) => {
               className="w-full h-11 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign in to workspace"}
+              {isLoading ? "Processing..." : useMagicLink ? "Send Magic Link" : "Sign in to workspace"}
             </Button>
+
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                className="text-sm"
+                onClick={() => setUseMagicLink(!useMagicLink)}
+              >
+                {useMagicLink ? "Use password instead" : "Use magic link instead"}
+              </Button>
+            </div>
           </form>
         </div>
       </div>

@@ -24,24 +24,38 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate authentication
-    setTimeout(() => {
-      if (email && password) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.user) {
         toast({
           title: "Login Successful",
           description: `Welcome back! Logged in as ${email}`,
         });
         onLogin(email);
         navigate("/investor/dashboard");
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Please enter both email and password.",
-          variant: "destructive",
-        });
       }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "An error occurred during login",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
