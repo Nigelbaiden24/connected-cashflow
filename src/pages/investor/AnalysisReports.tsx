@@ -8,6 +8,7 @@ import { BarChart3, Download, Search, Sparkles, Loader2, ExternalLink } from "lu
 import { toast } from "sonner";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 
 interface Report {
   id: string;
@@ -26,10 +27,26 @@ const AnalysisReports = () => {
   const [aiResponse, setAiResponse] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchReports();
+    checkAdminStatus();
   }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .single();
+
+    setIsAdmin(!!data);
+  };
 
   const fetchReports = async () => {
     try {
