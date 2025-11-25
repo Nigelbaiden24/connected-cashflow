@@ -324,7 +324,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <SidebarMenuButton asChild className="justify-center">
-                          <NavLink to="/settings" className={getNavClassName("/settings")}>
+                          <NavLink to="/finance/languages" className={getNavClassName("/finance/languages")}>
                             <Globe className="h-4 w-4 flex-shrink-0" />
                           </NavLink>
                         </SidebarMenuButton>
@@ -335,7 +335,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
-                      <NavLink to="/settings" className={`${getNavClassName("/settings")} flex items-center gap-3`}>
+                      <NavLink to="/finance/languages" className={`${getNavClassName("/finance/languages")} flex items-center gap-3`}>
                         <Globe className="h-4 w-4 flex-shrink-0" />
                         <span className="truncate">Languages</span>
                       </NavLink>

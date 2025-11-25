@@ -33,6 +33,8 @@ import ToolsCalculators from "./pages/investor/ToolsCalculators";
 import RiskCompliance from "./pages/investor/RiskCompliance";
 import Watchlists from "./pages/investor/Watchlists";
 import Languages from "./pages/investor/Languages";
+import BusinessLanguages from "./pages/business/Languages";
+import FinanceLanguages from "./pages/finance/Languages";
 import InvestorFeatures from "./pages/InvestorFeatures";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
@@ -331,6 +333,14 @@ const App = () => {
               )
             } />
             
+            <Route path="/finance/languages" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceLanguages />
+                </FinanceLayout>
+              )
+            } />
+            
           {/* Business Routes - All prefixed with /business */}
           <Route path="/business/dashboard" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessDashboard /></BusinessLayout>
@@ -388,6 +398,9 @@ const App = () => {
           } />
           <Route path="/business/settings" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Settings /></BusinessLayout>
+          } />
+          <Route path="/business/languages" element={
+            !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessLanguages /></BusinessLayout>
           } />
           <Route path="/business/automation-center" element={
             !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AutomationCenter /></BusinessLayout>

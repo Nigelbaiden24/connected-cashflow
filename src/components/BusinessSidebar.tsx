@@ -280,7 +280,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <SidebarMenuButton asChild className="justify-center">
-                          <NavLink to="/business/settings" className={getNavClassName("/business/settings")}>
+                          <NavLink to="/business/languages" className={getNavClassName("/business/languages")}>
                             <Globe className="h-4 w-4 flex-shrink-0" />
                           </NavLink>
                         </SidebarMenuButton>
@@ -291,7 +291,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
-                      <NavLink to="/business/settings" className={`${getNavClassName("/business/settings")} flex items-center gap-3 w-full`}>
+                      <NavLink to="/business/languages" className={`${getNavClassName("/business/languages")} flex items-center gap-3 w-full`}>
                         <Globe className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
                         <span className="flex-1 truncate min-w-0">Languages</span>
                       </NavLink>
