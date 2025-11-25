@@ -204,7 +204,7 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
 
       if (reportError) throw reportError;
 
-      // Grant access to specified user or make available to all
+      // Grant access to specified user or all users
       if (selectedUserId && selectedUserId !== "all") {
         const { error: accessError } = await supabase
           .from('user_report_access')
@@ -214,6 +214,19 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
           });
 
         if (accessError) throw accessError;
+      } else if (selectedUserId === "all") {
+        const accessPayload = profiles.map((profile) => ({
+          user_id: profile.user_id,
+          report_id: reportData.id,
+        }));
+
+        if (accessPayload.length > 0) {
+          const { error: accessError } = await supabase
+            .from('user_report_access')
+            .insert(accessPayload);
+
+          if (accessError) throw accessError;
+        }
       }
 
       toast.success("Report uploaded successfully");
