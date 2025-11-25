@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Phone, Mail, MessageSquare, Calendar, Plus, Edit2, Building2, Briefcase, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Phone, Mail, MessageSquare, Calendar, Plus, Edit2, Building2, Briefcase, Clock, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -45,6 +45,8 @@ const CRMContactDetail = () => {
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [allContactIds, setAllContactIds] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [newInteraction, setNewInteraction] = useState({
     interaction_type: "note",
     subject: "",
@@ -54,7 +56,28 @@ const CRMContactDetail = () => {
 
   useEffect(() => {
     fetchContactData();
+    fetchAllContactIds();
   }, [id]);
+
+  const fetchAllContactIds = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_contacts")
+        .select("id")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      const ids = (data || []).map(contact => contact.id);
+      setAllContactIds(ids);
+      
+      // Find current contact's index
+      const index = ids.findIndex(contactId => contactId === id);
+      setCurrentIndex(index);
+    } catch (error) {
+      console.error("Error fetching contact IDs:", error);
+    }
+  };
 
   const fetchContactData = async () => {
     try {
@@ -180,19 +203,66 @@ const CRMContactDetail = () => {
 
   const isBusiness = window.location.pathname.startsWith('/business');
 
+  const navigateToPrevious = () => {
+    if (currentIndex > 0) {
+      const previousId = allContactIds[currentIndex - 1];
+      navigate(isBusiness ? `/business/crm/${previousId}` : `/finance-crm/${previousId}`);
+    }
+  };
+
+  const navigateToNext = () => {
+    if (currentIndex < allContactIds.length - 1) {
+      const nextId = allContactIds[currentIndex + 1];
+      navigate(isBusiness ? `/business/crm/${nextId}` : `/finance-crm/${nextId}`);
+    }
+  };
+
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < allContactIds.length - 1;
+
   return (
     <div className="flex-1 p-4 md:p-6 space-y-6 animate-in fade-in-50 duration-500">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate(isBusiness ? "/business/crm" : "/finance-crm")}
-          className="hover:bg-primary/10"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to CRM
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate(isBusiness ? "/business/crm" : "/finance-crm")}
+            className="hover:bg-primary/10"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to CRM
+          </Button>
+          
+          {/* Navigation Buttons */}
+          <div className="flex items-center gap-1 ml-2 border-l pl-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={navigateToPrevious}
+              disabled={!hasPrevious}
+              className="h-8 px-2"
+              title="Previous Prospect"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground px-2">
+              {currentIndex + 1} of {allContactIds.length}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={navigateToNext}
+              disabled={!hasNext}
+              className="h-8 px-2"
+              title="Next Prospect"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-xs">
             <Clock className="h-3 w-3 mr-1" />
