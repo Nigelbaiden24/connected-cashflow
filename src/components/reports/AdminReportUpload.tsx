@@ -29,6 +29,7 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
   const [reportType, setReportType] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("all");
   const [selectedPlatform, setSelectedPlatform] = useState<string>(defaultPlatform || "finance");
+  const [platformSection, setPlatformSection] = useState<string>("finance_reports");
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const financeReportTypes = [
@@ -106,7 +107,8 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
   ];
 
   const getReportTypes = () => {
-    if (selectedPlatform === "finance") return financeReportTypes;
+    const section = platformSection || "finance_reports";
+    if (section === "finance_reports" || selectedPlatform === "finance") return financeReportTypes;
     if (selectedPlatform === "business") return businessReportTypes;
     return investorReportTypes;
   };
@@ -125,7 +127,25 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
         .order("email");
 
       if (error) throw error;
-      setProfiles(data || []);
+      
+      // Ensure admin user is included
+      const allProfiles = data || [];
+      const hasAdmin = allProfiles.some(p => p.email === "nigelbaiden24@yahoo.com");
+      
+      if (!hasAdmin) {
+        // Fetch admin user specifically
+        const { data: adminData } = await supabase
+          .from("user_profiles")
+          .select("user_id, email, full_name")
+          .eq("email", "nigelbaiden24@yahoo.com")
+          .single();
+        
+        if (adminData) {
+          allProfiles.unshift(adminData);
+        }
+      }
+      
+      setProfiles(allProfiles);
     } catch (error) {
       console.error("Error fetching profiles:", error);
       toast.error("Failed to load user profiles");
@@ -152,6 +172,20 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
 
       if (uploadError) throw uploadError;
 
+      // Determine platform and category based on section
+      let finalPlatform = selectedPlatform;
+      let reportCategory = null;
+      
+      if (platformSection === "finance_reports") {
+        finalPlatform = "finance";
+      } else if (platformSection === "investor_research") {
+        finalPlatform = "investor";
+        reportCategory = "research";
+      } else if (platformSection === "investor_analysis") {
+        finalPlatform = "investor";
+        reportCategory = "analysis";
+      }
+
       // Insert report metadata
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
@@ -160,7 +194,8 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
           description,
           file_path: filePath,
           report_type: reportType,
-          platform: selectedPlatform
+          platform: finalPlatform,
+          ...(reportCategory && { report_category: reportCategory })
         })
         .select()
         .single();
@@ -197,6 +232,7 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
     setDescription("");
     setReportType("");
     setSelectedUserId("all");
+    setPlatformSection("finance_reports");
     if (!defaultPlatform) {
       setSelectedPlatform("finance");
     }
@@ -244,6 +280,20 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
               placeholder="Brief description of the report content..."
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="platformSection">Platform Section *</Label>
+            <Select value={platformSection} onValueChange={setPlatformSection}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select platform section" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="finance_reports">FlowPulse Finance Reports</SelectItem>
+                <SelectItem value="investor_research">FlowPulse Investor Research Reports</SelectItem>
+                <SelectItem value="investor_analysis">FlowPulse Investor Analysis Reports</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {!defaultPlatform && (
