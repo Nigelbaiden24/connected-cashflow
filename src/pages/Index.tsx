@@ -182,7 +182,7 @@ const Index = () => {
               <Separator className="my-4" />
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground">FlowPulse Finance</h3>
+                  <h3 className="font-semibold text-sm text-muted-foreground">Flowpulse Tech</h3>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -191,24 +191,8 @@ const Index = () => {
                       setMobileMenuOpen(false);
                     }}
                   >
-                    Platform Login
+                    FlowPulse Finance
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/finance-features");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Features
-                  </Button>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground">FlowPulse Business</h3>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -217,24 +201,8 @@ const Index = () => {
                       setMobileMenuOpen(false);
                     }}
                   >
-                    Platform Login
+                    FlowPulse Business
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/business-features");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Features
-                  </Button>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground">FlowPulse Investor</h3>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -243,18 +211,14 @@ const Index = () => {
                       setMobileMenuOpen(false);
                     }}
                   >
-                    Platform Login
+                    FlowPulse Investor
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/investor-features");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Features
-                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground">Quick Links</h3>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -265,54 +229,81 @@ const Index = () => {
                   >
                     Opportunities
                   </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/finance-features");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Finance Features
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/business-features");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Business Features
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/investor-features");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Investor Features
+                  </Button>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
           
           <nav className="hidden md:flex items-center gap-8">
-            <button 
-              onClick={() => navigate('/login')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">FlowPulse Finance</span>
-              <span className="absolute inset-0 bg-blue-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-full transition-all duration-300" />
-            </button>
-            
-            <button 
-              onClick={() => navigate('/login-business')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">FlowPulse Business</span>
-              <span className="absolute inset-0 bg-green-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-400 to-emerald-400 group-hover:w-full transition-all duration-300" />
-            </button>
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative font-space-grotesk font-semibold text-lg group flex items-center gap-2">
-                  <span className="relative z-10">FlowPulse Investor</span>
+                  <span className="relative z-10">Flowpulse Tech</span>
                   <ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform" />
-                  <span className="absolute inset-0 bg-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-fuchsia-400 group-hover:w-full transition-all duration-300" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl z-[100]" align="center">
                 <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
-                  onClick={() => navigate('/login-investor')}
+                  className="cursor-pointer py-3 text-base hover:bg-blue-500/10 focus:bg-blue-500/10"
+                  onClick={() => navigate('/login')}
                 >
-                  Platform Login
+                  FlowPulse Finance
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-green-500/10 focus:bg-green-500/10"
+                  onClick={() => navigate('/login-business')}
+                >
+                  FlowPulse Business
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
-                  onClick={() => navigate('/opportunities')}
+                  onClick={() => navigate('/login-investor')}
                 >
-                  Opportunities
+                  FlowPulse Investor
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <button 
+              onClick={() => navigate('/opportunities')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">Opportunities</span>
+              <span className="absolute inset-0 bg-amber-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 group-hover:w-full transition-all duration-300" />
+            </button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
