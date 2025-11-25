@@ -47,6 +47,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>(initialStage || "all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [compactView, setCompactView] = useState(false);
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -133,16 +135,36 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
     return matchesStatus && matchesSearch;
   });
 
+  // Sort contacts
+  const sortedContacts = [...filteredContacts].sort((a, b) => {
+    let aValue = a[sortBy];
+    let bValue = b[sortBy];
+    
+    // Handle null/undefined values
+    if (aValue === null || aValue === undefined) aValue = "";
+    if (bValue === null || bValue === undefined) bValue = "";
+    
+    // Convert to strings for comparison
+    const aStr = String(aValue).toLowerCase();
+    const bStr = String(bValue).toLowerCase();
+    
+    if (sortOrder === "asc") {
+      return aStr.localeCompare(bStr);
+    } else {
+      return bStr.localeCompare(aStr);
+    }
+  });
+
   // Pagination calculations
-  const totalPages = Math.ceil(filteredContacts.length / pageSize);
+  const totalPages = Math.ceil(sortedContacts.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedContacts = filteredContacts.slice(startIndex, endIndex);
+  const paginatedContacts = sortedContacts.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterStatus]);
+  }, [searchQuery, filterStatus, sortBy, sortOrder]);
 
   const [newTableName, setNewTableName] = useState("");
   const [editingTable, setEditingTable] = useState<string | null>(null);
@@ -397,6 +419,16 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         return "bg-gray-500/10 text-gray-700 border-gray-200";
       case "prospect":
         return "bg-blue-500/10 text-blue-700 border-blue-200";
+      case "qualified lead":
+        return "bg-purple-500/10 text-purple-700 border-purple-200";
+      case "proposal":
+        return "bg-yellow-500/10 text-yellow-700 border-yellow-200";
+      case "negotiation":
+        return "bg-orange-500/10 text-orange-700 border-orange-200";
+      case "contract sent":
+        return "bg-indigo-500/10 text-indigo-700 border-indigo-200";
+      case "closed":
+        return "bg-emerald-500/10 text-emerald-700 border-emerald-200";
       default:
         return "bg-gray-500/10 text-gray-700 border-gray-200";
     }
@@ -607,15 +639,41 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-36 border-border/50">
+            <SelectTrigger className="w-40 border-border/50">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background">
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="prospect">Prospect</SelectItem>
+              <SelectItem value="qualified lead">Qualified Lead</SelectItem>
+              <SelectItem value="proposal">Proposal</SelectItem>
+              <SelectItem value="negotiation">Negotiation</SelectItem>
+              <SelectItem value="contract sent">Contract Sent</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+            const [field, order] = value.split('-');
+            setSortBy(field);
+            setSortOrder(order as "asc" | "desc");
+          }}>
+            <SelectTrigger className="w-48 border-border/50">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent className="bg-background">
+              <SelectItem value="created_at-desc">Newest First</SelectItem>
+              <SelectItem value="created_at-asc">Oldest First</SelectItem>
+              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+              <SelectItem value="company-asc">Company (A-Z)</SelectItem>
+              <SelectItem value="company-desc">Company (Z-A)</SelectItem>
+              <SelectItem value="status-asc">Status (A-Z)</SelectItem>
+              <SelectItem value="status-desc">Status (Z-A)</SelectItem>
+              <SelectItem value="priority-desc">Priority (High-Low)</SelectItem>
+              <SelectItem value="priority-asc">Priority (Low-High)</SelectItem>
             </SelectContent>
           </Select>
           {selectedContacts.length > 0 && (
@@ -951,10 +1009,15 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                             {contact.status}
                           </Badge>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background">
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="inactive">Inactive</SelectItem>
                           <SelectItem value="prospect">Prospect</SelectItem>
+                          <SelectItem value="qualified lead">Qualified Lead</SelectItem>
+                          <SelectItem value="proposal">Proposal</SelectItem>
+                          <SelectItem value="negotiation">Negotiation</SelectItem>
+                          <SelectItem value="contract sent">Contract Sent</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
