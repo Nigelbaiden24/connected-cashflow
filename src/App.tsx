@@ -38,6 +38,7 @@ import FinanceLanguages from "./pages/finance/Languages";
 import InvestorFeatures from "./pages/InvestorFeatures";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
+import Paraplanning from "./pages/Paraplanning";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -124,6 +125,7 @@ const App = () => {
           <Route path="/investor-features" element={<InvestorFeatures />} />
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
+          <Route path="/paraplanning" element={<Paraplanning />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />

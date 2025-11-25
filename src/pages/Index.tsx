@@ -223,6 +223,16 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start"
                     onClick={() => {
+                      navigate("/paraplanning");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Paraplanning
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
                       navigate("/opportunities");
                       setMobileMenuOpen(false);
                     }}
@@ -295,6 +305,15 @@ const Index = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <button 
+              onClick={() => navigate('/paraplanning')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">Paraplanning</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+            </button>
 
             <button 
               onClick={() => navigate('/opportunities')}
