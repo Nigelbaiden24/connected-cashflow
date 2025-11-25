@@ -139,6 +139,13 @@ const ResearchReports = () => {
             Non-Advisory Research Only
           </Badge>
         </div>
+        {isAdmin && (
+          <AdminReportUpload
+            platform="investor"
+            section="investor_research"
+            onUploadSuccess={fetchReports}
+          />
+        )}
       </div>
 
       {/* Search and Filter */}

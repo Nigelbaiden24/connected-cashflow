@@ -17,10 +17,11 @@ interface Profile {
 
 interface AdminReportUploadProps {
   platform?: "finance" | "business" | "investor";
+  section?: "finance_reports" | "investor_research" | "investor_analysis";
   onUploadSuccess?: () => void;
 }
 
-export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }: AdminReportUploadProps) {
+export function AdminReportUpload({ platform: defaultPlatform, section, onUploadSuccess }: AdminReportUploadProps) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -30,7 +31,7 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
   const [selectedUserId, setSelectedUserId] = useState("all");
   const [selectedPlatform, setSelectedPlatform] = useState<string>(defaultPlatform || "finance");
   const [platformSection, setPlatformSection] = useState<string>(
-    defaultPlatform === "investor" ? "investor_research" : "finance_reports"
+    section || (defaultPlatform === "investor" ? "investor_research" : "finance_reports")
   );
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
@@ -297,19 +298,21 @@ export function AdminReportUpload({ platform: defaultPlatform, onUploadSuccess }
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="platformSection">Platform Section *</Label>
-            <Select value={platformSection} onValueChange={setPlatformSection}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select platform section" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="finance_reports">FlowPulse Finance Reports</SelectItem>
-                <SelectItem value="investor_research">FlowPulse Investor Research Reports</SelectItem>
-                <SelectItem value="investor_analysis">FlowPulse Investor Analysis Reports</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {!section && (
+            <div className="space-y-2">
+              <Label htmlFor="platformSection">Platform Section *</Label>
+              <Select value={platformSection} onValueChange={setPlatformSection}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select platform section" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="finance_reports">FlowPulse Finance Reports</SelectItem>
+                  <SelectItem value="investor_research">FlowPulse Investor Research Reports</SelectItem>
+                  <SelectItem value="investor_analysis">FlowPulse Investor Analysis Reports</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {!defaultPlatform && (
             <div className="space-y-2">
