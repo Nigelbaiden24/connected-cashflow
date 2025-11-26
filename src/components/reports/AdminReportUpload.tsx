@@ -179,15 +179,17 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
       let finalPlatform = selectedPlatform;
       let reportCategory = null;
       
-      if (platformSection === "finance_reports") {
-        finalPlatform = "finance";
-      } else if (platformSection === "investor_research") {
-        finalPlatform = "investor";
-        reportCategory = "research";
-      } else if (platformSection === "investor_analysis") {
-        finalPlatform = "investor";
-        reportCategory = "analysis";
-      }
+       const effectiveSection = section || platformSection || "finance_reports";
+
+       if (effectiveSection === "finance_reports") {
+         finalPlatform = "finance";
+       } else if (effectiveSection === "investor_research") {
+         finalPlatform = "investor";
+         reportCategory = "research";
+       } else if (effectiveSection === "investor_analysis") {
+         finalPlatform = "investor";
+         reportCategory = "analysis";
+       }
 
       // Insert report metadata
       const { data: reportData, error: reportError } = await supabase
@@ -242,17 +244,17 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
     }
   };
 
-  const resetForm = () => {
-    setFile(null);
-    setTitle("");
-    setDescription("");
-    setReportType("");
-    setSelectedUserId("all");
-    setPlatformSection("finance_reports");
-    if (!defaultPlatform) {
-      setSelectedPlatform("finance");
-    }
-  };
+   const resetForm = () => {
+     setFile(null);
+     setTitle("");
+     setDescription("");
+     setReportType("");
+     setSelectedUserId("all");
+     setPlatformSection(section || (defaultPlatform === "investor" ? "investor_research" : "finance_reports"));
+     if (!defaultPlatform) {
+       setSelectedPlatform("finance");
+     }
+   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
