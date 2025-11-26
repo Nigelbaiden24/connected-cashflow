@@ -11,7 +11,6 @@ import {
   BarChart3,
   Target,
   ArrowRight,
-  Sparkles,
   ArrowLeft,
   Award,
   Briefcase,
@@ -154,46 +153,6 @@ const Paraplanning = () => {
           </nav>
         </div>
       </header>
-
-      {/* Hero Section */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-green-500/10 animate-pulse" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(120,119,198,0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(74,222,128,0.15),transparent_50%)]" />
-        
-        <div className="container mx-auto px-6 relative">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 animate-fade-in">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold">Elite Paraplanning Services</span>
-            </div>
-            
-            <h1 className="text-6xl md:text-7xl font-bold leading-tight animate-fade-in">
-              Modern{" "}
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-green-400 bg-clip-text text-transparent">
-                Paraplanning
-              </span>
-              <br />
-              Excellence
-            </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in">
-              Outsourced paraplanning that elevates your practice. Expert support that 
-              seamlessly integrates with your workflow, delivering exceptional quality at scale.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
-              <Button size="lg" className="text-lg px-8 group" onClick={() => navigate('/login')}>
-                Get Started
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                Learn More
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Office Image Section */}
       <section className="py-24 bg-background/50">
