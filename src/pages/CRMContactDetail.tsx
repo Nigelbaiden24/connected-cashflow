@@ -29,6 +29,14 @@ interface Contact {
   notes: string;
 }
 
+interface CustomColumn {
+  id: string;
+  column_name: string;
+  column_type: string;
+  is_required: boolean;
+  column_options: any;
+}
+
 interface Interaction {
   id: string;
   interaction_type: string;
@@ -47,6 +55,8 @@ const CRMContactDetail = () => {
   const [editMode, setEditMode] = useState(false);
   const [allContactIds, setAllContactIds] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
+  const [customData, setCustomData] = useState<Record<string, string>>({});
   const [newInteraction, setNewInteraction] = useState({
     interaction_type: "note",
     subject: "",
@@ -57,6 +67,7 @@ const CRMContactDetail = () => {
   useEffect(() => {
     fetchContactData();
     fetchAllContactIds();
+    fetchCustomColumns();
   }, [id]);
 
   const fetchAllContactIds = async () => {
@@ -76,6 +87,46 @@ const CRMContactDetail = () => {
       setCurrentIndex(index);
     } catch (error) {
       console.error("Error fetching contact IDs:", error);
+    }
+  };
+
+  const fetchCustomColumns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_custom_columns")
+        .select("*")
+        .order("column_order", { ascending: true });
+
+      if (error) throw error;
+      setCustomColumns(data || []);
+      
+      // Fetch custom data after columns are loaded
+      if (data && data.length > 0) {
+        fetchCustomData();
+      }
+    } catch (error) {
+      console.error("Error fetching custom columns:", error);
+    }
+  };
+
+  const fetchCustomData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_contact_data")
+        .select("*")
+        .eq("contact_id", id);
+
+      if (error) throw error;
+
+      // Organize data by column_id
+      const organized: Record<string, string> = {};
+      data?.forEach((item) => {
+        organized[item.column_id] = item.value || "";
+      });
+
+      setCustomData(organized);
+    } catch (error) {
+      console.error("Error fetching custom data:", error);
     }
   };
 
@@ -103,6 +154,45 @@ const CRMContactDetail = () => {
       toast.error("Failed to load contact details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateCustomField = async (columnId: string, value: string) => {
+    try {
+      // Check if record exists
+      const { data: existing } = await supabase
+        .from("crm_contact_data")
+        .select("id")
+        .eq("contact_id", id)
+        .eq("column_id", columnId)
+        .single();
+
+      if (existing) {
+        // Update existing
+        const { error } = await supabase
+          .from("crm_contact_data")
+          .update({ value })
+          .eq("contact_id", id)
+          .eq("column_id", columnId);
+
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from("crm_contact_data")
+          .insert({
+            contact_id: id,
+            column_id: columnId,
+            value,
+          });
+
+        if (error) throw error;
+      }
+
+      setCustomData({ ...customData, [columnId]: value });
+    } catch (error) {
+      console.error("Error updating custom field:", error);
+      toast.error("Failed to update custom field");
     }
   };
 
@@ -386,6 +476,48 @@ const CRMContactDetail = () => {
                     rows={4}
                   />
                 </div>
+
+                {/* Custom Fields */}
+                {customColumns.map((column) => (
+                  <div key={column.id}>
+                    <Label>
+                      {column.column_name}
+                      {column.is_required && <span className="text-destructive ml-1">*</span>}
+                    </Label>
+                    {column.column_type === "select" && column.column_options ? (
+                      <Select
+                        value={customData[column.id] || ""}
+                        onValueChange={(value) => updateCustomField(column.id, value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={`Select ${column.column_name}`} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          {(Array.isArray(column.column_options) ? column.column_options : []).map((option: string) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : column.column_type === "textarea" ? (
+                      <Textarea
+                        value={customData[column.id] || ""}
+                        onChange={(e) => updateCustomField(column.id, e.target.value)}
+                        rows={3}
+                      />
+                    ) : (
+                      <Input
+                        type={column.column_type === "number" ? "number" : 
+                              column.column_type === "date" ? "date" : 
+                              column.column_type === "email" ? "email" : "text"}
+                        value={customData[column.id] || ""}
+                        onChange={(e) => updateCustomField(column.id, e.target.value)}
+                      />
+                    )}
+                  </div>
+                ))}
+
                 <Button onClick={updateContact} className="w-full">
                   Save Changes
                 </Button>
@@ -462,6 +594,27 @@ const CRMContactDetail = () => {
                       <p className="text-sm leading-relaxed p-3 rounded-lg bg-muted/30">
                         {contact.notes}
                       </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Display Custom Fields */}
+                {customColumns.length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      <Label className="text-xs text-muted-foreground uppercase">Additional Information</Label>
+                      {customColumns.map((column) => {
+                        const value = customData[column.id];
+                        if (!value) return null;
+                        
+                        return (
+                          <div key={column.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                            <span className="text-xs text-muted-foreground">{column.column_name}</span>
+                            <span className="text-sm font-medium">{value}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </>
                 )}
