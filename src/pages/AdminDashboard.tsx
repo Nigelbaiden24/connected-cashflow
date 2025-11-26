@@ -220,7 +220,7 @@ export default function AdminDashboard() {
         preview: newsletterForm.description,
         content: newsletterForm.description,
         file_path: filePath,
-        category: "digest", // Changed to show in Morning Market Digest tab
+        category: "sector", // Changed to show in Sector Newsletters tab
         edition: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
         read_time: "5 min read",
         published_date: newsletterForm.publishDate || new Date().toISOString(),
