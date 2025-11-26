@@ -203,7 +203,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
 
   return (
       <Sidebar 
-        className={isCollapsed ? "w-16" : "w-64"}
+        className={`${isCollapsed ? "w-16" : "w-64"} border-r`}
         collapsible="icon"
       >
       <SidebarHeader className="border-b border-sidebar-border">
