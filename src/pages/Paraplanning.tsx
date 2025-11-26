@@ -19,6 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import paraplanningOffice from "@/assets/paraplanning-office.jpg";
+import { ContactForm } from "@/components/ContactForm";
 
 const Paraplanning = () => {
   const navigate = useNavigate();
@@ -145,10 +146,7 @@ const Paraplanning = () => {
               Home
             </Button>
             <Button variant="ghost" asChild>
-              <a href="mailto:support@flowpulse.co.uk">Contact Us</a>
-            </Button>
-            <Button onClick={() => navigate('/login')}>
-              Get Started
+              <a href="#contact-form">Contact Us</a>
             </Button>
           </nav>
         </div>
@@ -174,7 +172,7 @@ const Paraplanning = () => {
                   qualified paraplanners delivers exceptional support to financial advisers across the UK.
                 </p>
                 <Button size="lg" variant="secondary" asChild>
-                  <a href="mailto:support@flowpulse.co.uk" className="inline-flex items-center">
+                  <a href="#contact-form" className="inline-flex items-center">
                     Contact Our Team
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </a>
@@ -316,51 +314,34 @@ const Paraplanning = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-green-500/20" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(120,119,198,0.2),transparent_70%)]" />
-        
-        <div className="container mx-auto px-6 relative">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-5xl md:text-6xl font-bold">
-              Ready to Elevate Your Practice?
-            </h2>
-            <p className="text-xl text-muted-foreground">
+      {/* Contact Form Section */}
+      <section id="contact-form" className="py-24 bg-muted/30">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Ready to Elevate Your Practice?</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Partner with FlowPulse for paraplanning services that enhance your 
               client relationships and grow your business.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 group" onClick={() => navigate('/login')}>
-                Start Today
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-                <a href="mailto:support@flowpulse.co.uk">Schedule Consultation</a>
-              </Button>
-            </div>
           </div>
+          <ContactForm sourcePage="paraplanning" />
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 bg-background/95">
+      <footer className="py-12 bg-muted/50 border-t">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
+          <div className="max-w-4xl mx-auto text-center space-y-4">
+            <div className="flex items-center justify-center gap-3 mb-4">
               <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
               <span className="font-bold text-lg">FlowPulse</span>
             </div>
-            <p className="text-muted-foreground text-center md:text-left">
-              © 2024 FlowPulse. Elite paraplanning services.
+            <p className="text-muted-foreground">
+              © 2024 FlowPulse. Professional paraplanning services for modern financial advisors.
             </p>
-            <div className="flex gap-4">
-              <Button variant="ghost" size="sm">Privacy</Button>
-              <Button variant="ghost" size="sm">Terms</Button>
-              <Button variant="ghost" size="sm" asChild>
-                <a href="mailto:support@flowpulse.co.uk">Contact</a>
-              </Button>
-            </div>
+            <Button variant="ghost" onClick={() => navigate('/login')}>
+              Sign In
+            </Button>
           </div>
         </div>
       </footer>
