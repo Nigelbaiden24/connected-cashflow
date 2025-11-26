@@ -22,9 +22,9 @@ import { NewClientDialog } from "@/components/NewClientDialog";
 
 // Onboarding steps
 const onboardingSteps = [
-  { id: 1, title: "Personal Information", status: "completed" },
-  { id: 2, title: "Financial Profile", status: "completed" },
-  { id: 3, title: "Risk Assessment", status: "current" },
+  { id: 1, title: "Personal Information", status: "current" },
+  { id: 2, title: "Financial Profile", status: "pending" },
+  { id: 3, title: "Risk Assessment", status: "pending" },
   { id: 4, title: "Investment Goals", status: "pending" },
   { id: 5, title: "Account Setup", status: "pending" },
   { id: 6, title: "Document Upload", status: "pending" }
@@ -33,46 +33,42 @@ const onboardingSteps = [
 // Client onboarding data structure
 const clientData = {
   personalInfo: {
-    firstName: "Sarah",
-    lastName: "Johnson",
-    dateOfBirth: new Date(1985, 5, 15),
-    email: "sarah.johnson@email.com",
-    phone: "(555) 123-4567",
-    address: "123 Main St, Anytown, ST 12345",
-    occupation: "Marketing Manager",
-    employer: "Tech Solutions Inc.",
-    annualIncome: 125000,
-    netWorth: 350000
+    firstName: "",
+    lastName: "",
+    dateOfBirth: new Date(),
+    email: "",
+    phone: "",
+    address: "",
+    occupation: "",
+    employer: "",
+    annualIncome: 0,
+    netWorth: 0
   },
   financialProfile: {
-    investmentExperience: "intermediate",
-    currentInvestments: 180000,
-    liquidSavings: 45000,
-    monthlyInvestmentCapacity: 3500,
-    debt: 85000,
-    insurance: ["life", "disability", "health"]
+    investmentExperience: "",
+    currentInvestments: 0,
+    liquidSavings: 0,
+    monthlyInvestmentCapacity: 0,
+    debt: 0,
+    insurance: []
   },
-  goals: [
-    { goal: "retirement", target: 1200000, timeframe: 25, priority: "high" },
-    { goal: "house", target: 100000, timeframe: 5, priority: "medium" },
-    { goal: "education", target: 80000, timeframe: 15, priority: "medium" }
-  ]
+  goals: []
 };
 
 // Required documents (UK)
 const requiredDocuments = [
-  { name: "Government-issued Photo ID (Passport/Driving Licence)", type: "identification", required: true, status: "uploaded" },
+  { name: "Government-issued Photo ID (Passport/Driving Licence)", type: "identification", required: true, status: "pending" },
   { name: "National Insurance Number", type: "identification", required: true, status: "pending" },
-  { name: "Recent Payslip", type: "income", required: true, status: "uploaded" },
-  { name: "Self Assessment Tax Return (Last 2 Years)", type: "income", required: true, status: "uploaded" },
+  { name: "Recent Payslip", type: "income", required: true, status: "pending" },
+  { name: "Self Assessment Tax Return (Last 2 Years)", type: "income", required: true, status: "pending" },
   { name: "Bank Statements (Last 3 Months)", type: "financial", required: true, status: "pending" },
-  { name: "Investment Account Statements", type: "financial", required: false, status: "uploaded" },
+  { name: "Investment Account Statements", type: "financial", required: false, status: "pending" },
   { name: "Proof of Address (Utility Bill/Council Tax)", type: "identification", required: true, status: "pending" }
 ];
 
 export default function ClientOnboarding() {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
   const [riskAnswers, setRiskAnswers] = useState<Record<string, string>>({});
   const [investmentGoals, setInvestmentGoals] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>();
