@@ -223,32 +223,6 @@ const Index = () => {
                   >
                     Pricing
                   </Button>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground">Quick Links</h3>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/paraplanning");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Paraplanning
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/opportunities");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Opportunities
-                  </Button>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -278,6 +252,32 @@ const Index = () => {
                     }}
                   >
                     Investor Features
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground">Quick Links</h3>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/paraplanning");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Paraplanning
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate("/opportunities");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Opportunities
                   </Button>
                 </div>
               </div>
@@ -319,6 +319,24 @@ const Index = () => {
                 >
                   Pricing
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-blue-500/10 focus:bg-blue-500/10"
+                  onClick={() => navigate('/finance-features')}
+                >
+                  Finance Features
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-green-500/10 focus:bg-green-500/10"
+                  onClick={() => navigate('/business-features')}
+                >
+                  Business Features
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
+                  onClick={() => navigate('/investor-features')}
+                >
+                  Investor Features
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -339,226 +357,6 @@ const Index = () => {
               <span className="absolute inset-0 bg-amber-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400 group-hover:w-full transition-all duration-300" />
             </button>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="relative font-space-grotesk font-semibold text-lg group flex items-center gap-2">
-                  <span className="relative z-10">Features</span>
-                  <ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform" />
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 group-hover:w-full transition-all duration-300" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-[1200px] p-8 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl" align="center">
-                <div className="grid grid-cols-3 gap-6">
-                  {/* Finance Platform Features */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg">
-                        <TrendingUp className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                          FlowPulse Finance
-                        </h3>
-                        <p className="text-sm text-muted-foreground">Wealth Management Platform</p>
-                      </div>
-                    </div>
-                    
-                    {/* Laptop Mockup */}
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 blur-xl group-hover:blur-2xl transition-all" />
-                      <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-t-xl border-2 border-blue-500/30 p-2 pb-0">
-                        <div className="bg-black rounded-t-lg overflow-hidden">
-                          <img 
-                            src={financeScreenshot} 
-                            alt="Finance Platform" 
-                            className="w-full h-auto"
-                          />
-                        </div>
-                      </div>
-                      <div className="h-3 bg-gradient-to-b from-slate-800 to-slate-700 rounded-b-lg border-x-2 border-b-2 border-blue-500/30" />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
-                        <BarChart3 className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Portfolio Management</h4>
-                          <p className="text-xs text-muted-foreground">Real-time tracking of client investments with advanced analytics and performance metrics</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
-                        <Sparkles className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">AI-Powered Insights</h4>
-                          <p className="text-xs text-muted-foreground">Intelligent recommendations and automated financial planning with machine learning</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
-                        <Shield className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Compliance & Security</h4>
-                          <p className="text-xs text-muted-foreground">Built-in regulatory compliance tools with enterprise-grade security and encryption</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
-                        <Users className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Client Management</h4>
-                          <p className="text-xs text-muted-foreground">Comprehensive CRM with onboarding workflows and relationship tracking</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button 
-                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                      onClick={() => navigate('/finance-features')}
-                    >
-                      Learn More About Finance
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Business Platform Features */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl shadow-lg">
-                        <Building2 className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                          FlowPulse Business
-                        </h3>
-                        <p className="text-sm text-muted-foreground">Business Operations Platform</p>
-                      </div>
-                    </div>
-                    
-                    {/* Laptop Mockup */}
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 blur-xl group-hover:blur-2xl transition-all" />
-                      <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-t-xl border-2 border-green-500/30 p-2 pb-0">
-                        <div className="bg-black rounded-t-lg overflow-hidden">
-                          <img 
-                            src={businessScreenshot} 
-                            alt="Business Platform" 
-                            className="w-full h-auto"
-                          />
-                        </div>
-                      </div>
-                      <div className="h-3 bg-gradient-to-b from-slate-800 to-slate-700 rounded-b-lg border-x-2 border-b-2 border-green-500/30" />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                        <Target className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Project Management</h4>
-                          <p className="text-xs text-muted-foreground">Track tasks, milestones, and deliverables with visual boards and timelines</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                        <Users className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Team Collaboration</h4>
-                          <p className="text-xs text-muted-foreground">Seamless communication with integrated chat, video calls, and file sharing</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                        <BarChart3 className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Business Analytics</h4>
-                          <p className="text-xs text-muted-foreground">Data-driven insights with customizable dashboards and real-time reporting</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-green-500/5 hover:bg-green-500/10 transition-colors">
-                        <Zap className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Workflow Automation</h4>
-                          <p className="text-xs text-muted-foreground">Automate repetitive tasks and streamline business processes for efficiency</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button 
-                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                      onClick={() => navigate('/business-features')}
-                    >
-                      Learn More About Business
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Investor Platform Features */}
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl shadow-lg">
-                        <TrendingUp className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                          FlowPulse Investor
-                        </h3>
-                        <p className="text-sm text-muted-foreground">Global Investment Portal</p>
-                      </div>
-                    </div>
-                    
-                    {/* Laptop Mockup */}
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 blur-xl group-hover:blur-2xl transition-all" />
-                      <div className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-t-xl border-2 border-purple-500/30 p-2 pb-0">
-                        <div className="bg-black rounded-t-lg overflow-hidden">
-                          <img 
-                            src={investorScreenshot} 
-                            alt="Investor Platform" 
-                            className="w-full h-auto"
-                          />
-                        </div>
-                      </div>
-                      <div className="h-3 bg-gradient-to-b from-slate-800 to-slate-700 rounded-b-lg border-x-2 border-b-2 border-purple-500/30" />
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
-                        <BarChart3 className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Global Markets Access</h4>
-                          <p className="text-xs text-muted-foreground">International stocks, crypto, real estate, and alternative investments</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
-                        <Sparkles className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">AI Investment Analyst</h4>
-                          <p className="text-xs text-muted-foreground">Intelligent insights, predictions, and personalized recommendations</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
-                        <Shield className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Research & Analysis</h4>
-                          <p className="text-xs text-muted-foreground">Exclusive reports, market commentary, and investment intelligence</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
-                        <Target className="h-5 w-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-sm mb-1">Learning Hub</h4>
-                          <p className="text-xs text-muted-foreground">Educational resources, courses, and certifications for investors</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button 
-                      className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
-                      onClick={() => navigate('/investor-features')}
-                    >
-                      Learn More About Investor
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </nav>
 
           <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
