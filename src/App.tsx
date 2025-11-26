@@ -80,6 +80,8 @@ import AutomationCenter from "./pages/AutomationCenter";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 import AboutUs from "./pages/AboutUs";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import PaymentSuccess from "./pages/PaymentSuccess";
@@ -120,7 +122,9 @@ const App = () => {
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
           <Route path="/paraplanning" element={<Paraplanning />} />
-          <Route path="/about" element={<AboutUs />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
