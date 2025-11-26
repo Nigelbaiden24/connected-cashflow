@@ -243,7 +243,8 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
       onUploadSuccess?.();
     } catch (error) {
       console.error('Error uploading report:', error);
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const err = error as any;
+      const message = err?.message || err?.error_description || err?.details || 'Unknown error';
       toast.error(`Failed to upload report: ${message}`);
     } finally {
       setUploading(false);
