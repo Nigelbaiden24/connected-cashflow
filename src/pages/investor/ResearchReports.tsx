@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Search, Filter, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 
 interface Report {
   id: string;
@@ -25,26 +24,10 @@ const ResearchReports = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchReports();
-    checkAdminStatus();
   }, []);
-
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
-
-    setIsAdmin(!!data);
-  };
 
   const fetchReports = async () => {
     try {
@@ -148,23 +131,14 @@ const ResearchReports = () => {
 
   return (
     <div className="p-6 space-y-6 investor-theme">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Research Reports</h1>
-          <p className="text-muted-foreground mt-2">
-            Expert research reports and professional analysis
-          </p>
-          <Badge variant="secondary" className="mt-2">
-            Non-Advisory Research Only
-          </Badge>
-        </div>
-        {isAdmin && (
-          <AdminReportUpload
-            platform="investor"
-            section="investor_research"
-            onUploadSuccess={fetchReports}
-          />
-        )}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Research Reports</h1>
+        <p className="text-muted-foreground mt-2">
+          Expert research reports and professional analysis
+        </p>
+        <Badge variant="secondary" className="mt-2">
+          Non-Advisory Research Only
+        </Badge>
       </div>
 
       {/* Search and Filter */}

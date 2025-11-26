@@ -8,7 +8,6 @@ import { BarChart3, Download, Search, Sparkles, Loader2, ExternalLink } from "lu
 import { toast } from "sonner";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { supabase } from "@/integrations/supabase/client";
-import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 
 interface Report {
   id: string;
@@ -28,26 +27,10 @@ const AnalysisReports = () => {
   const [aiResponse, setAiResponse] = useState("");
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchReports();
-    checkAdminStatus();
   }, []);
-
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
-
-    setIsAdmin(!!data);
-  };
 
   const fetchReports = async () => {
     try {
@@ -254,32 +237,23 @@ const AnalysisReports = () => {
             Technical, fundamental, and quantitative analysis across all asset classes
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={handleAIAnalysis} 
-            className="bg-primary hover:bg-primary/90"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                AI Analysis
-              </>
-            )}
-          </Button>
-          {isAdmin && (
-            <AdminReportUpload
-              platform="investor"
-              section="investor_analysis"
-              onUploadSuccess={fetchReports}
-            />
+        <Button 
+          onClick={handleAIAnalysis} 
+          className="bg-primary hover:bg-primary/90"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Analysis
+            </>
           )}
-        </div>
+        </Button>
       </div>
 
       {aiResponse && (
