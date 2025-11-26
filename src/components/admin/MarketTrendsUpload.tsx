@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,21 @@ import { Loader2, TrendingUp } from "lucide-react";
 
 export function MarketTrendsUpload() {
   const [uploading, setUploading] = useState(false);
+  const [adminId, setAdminId] = useState<string | null>(null);
   const [trendForm, setTrendForm] = useState({
     title: "",
     description: "",
     impact: "",
     timeframe: "",
   });
+
+  useEffect(() => {
+    const getAdminId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setAdminId(user.id);
+    };
+    getAdminId();
+  }, []);
 
   const handleTrendUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +42,7 @@ export function MarketTrendsUpload() {
         impact: trendForm.impact,
         timeframe: trendForm.timeframe,
         is_published: true,
+        created_by: adminId,
       });
 
       if (error) throw error;
