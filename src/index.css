@@ -405,3 +405,26 @@ All colors MUST be HSL.
 .animate-shimmer {
   animation: shimmer 3s ease-in-out infinite;
 }
+
+/* Mobile responsive sidebar fixes */
+@layer utilities {
+  @media (max-width: 767px) {
+    /* Ensure main content takes full width on mobile */
+    .sidebar-layout-main {
+      margin-left: 0 !important;
+      width: 100% !important;
+    }
+    
+    /* Hide desktop sidebar on mobile */
+    [data-sidebar="sidebar"][data-mobile="false"] {
+      display: none !important;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    /* Ensure sidebar is visible on desktop */
+    [data-sidebar="sidebar"] {
+      display: flex !important;
+    }
+  }
+}
