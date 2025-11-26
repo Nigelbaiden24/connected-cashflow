@@ -223,36 +223,6 @@ const Index = () => {
                   >
                     Pricing
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/finance-features");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Finance Features
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/business-features");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Business Features
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      navigate("/investor-features");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Investor Features
-                  </Button>
                 </div>
 
                 <Separator />
@@ -308,24 +278,6 @@ const Index = () => {
                   onClick={() => navigate('/pricing')}
                 >
                   Pricing
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-blue-500/10 focus:bg-blue-500/10"
-                  onClick={() => navigate('/finance-features')}
-                >
-                  Finance Features
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-green-500/10 focus:bg-green-500/10"
-                  onClick={() => navigate('/business-features')}
-                >
-                  Business Features
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
-                  onClick={() => navigate('/investor-features')}
-                >
-                  Investor Features
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
