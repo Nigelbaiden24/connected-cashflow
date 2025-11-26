@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, MapPin, ArrowRight } from "lucide-react";
+import { Building2, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface Opportunity {
@@ -57,9 +57,15 @@ export default function Opportunities() {
               <img src={flowpulseLogo} alt="FlowPulse" className="h-8 w-8" />
               <span className="text-xl font-bold">FlowPulse Investor</span>
             </div>
-            <Button variant="ghost" onClick={() => navigate("/")}>
-              Home
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+              <Button variant="ghost" onClick={() => navigate("/")}>
+                Home
+              </Button>
+            </div>
           </div>
         </div>
       </header>
