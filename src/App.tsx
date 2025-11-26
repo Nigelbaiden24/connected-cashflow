@@ -14,8 +14,6 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoginBusiness from "./pages/LoginBusiness";
 import LoginInvestor from "./pages/LoginInvestor";
-import FinanceFeatures from "./pages/FinanceFeatures";
-import BusinessFeatures from "./pages/BusinessFeatures";
 import Dashboard from "./pages/Dashboard";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import ResearchReports from "./pages/investor/ResearchReports";
@@ -35,7 +33,6 @@ import Watchlists from "./pages/investor/Watchlists";
 import Languages from "./pages/investor/Languages";
 import BusinessLanguages from "./pages/business/Languages";
 import FinanceLanguages from "./pages/finance/Languages";
-import InvestorFeatures from "./pages/InvestorFeatures";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import Paraplanning from "./pages/Paraplanning";
@@ -120,9 +117,6 @@ const App = () => {
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
           <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
-          <Route path="/finance-features" element={<FinanceFeatures />} />
-          <Route path="/business-features" element={<BusinessFeatures />} />
-          <Route path="/investor-features" element={<InvestorFeatures />} />
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
           <Route path="/paraplanning" element={<Paraplanning />} />
@@ -474,8 +468,6 @@ const App = () => {
           
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          
-          <Route path="/investor-features" element={<InvestorFeatures />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
