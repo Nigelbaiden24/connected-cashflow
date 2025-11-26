@@ -20,6 +20,7 @@ interface Report {
   thumbnail_url: string | null;
   published_date: string | null;
   created_at: string;
+  report_category?: string | null;
 }
 
 const AnalysisReports = () => {
@@ -64,7 +65,7 @@ const AnalysisReports = () => {
         .from('user_report_access')
         .select(`
           report_id,
-          reports (
+          reports!inner (
             id,
             title,
             description,
@@ -73,24 +74,25 @@ const AnalysisReports = () => {
             platform,
             thumbnail_url,
             published_date,
-            created_at
+            created_at,
+            report_category
           )
         `)
         .eq('user_id', user.id);
 
       if (error) throw error;
       
-      // Filter for investor platform reports and flatten the data
-      const investorReports = (data || [])
-        .map(item => item.reports)
+      // Filter for investor analysis reports and flatten the data
+      const analysisReports = (data || [])
+        .map(item => item.reports as any)
         .filter((report): report is Report => 
           report !== null && 
           typeof report === 'object' && 
-          'platform' in report && 
-          report.platform === 'investor'
+          report.platform === 'investor' &&
+          report.report_category === 'analysis'
         );
       
-      setReports(investorReports);
+      setReports(analysisReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
       toast.error('Failed to load reports');
