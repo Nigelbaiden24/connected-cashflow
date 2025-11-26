@@ -692,7 +692,7 @@ export default function AdminDashboard() {
                           • Choose report type and assign to specific users
                         </p>
                       </div>
-                      <AdminReportUpload onUploadSuccess={fetchProfiles} />
+                       <AdminReportUpload onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
@@ -723,7 +723,7 @@ export default function AdminDashboard() {
                           • Assign to specific users or make available to all investors
                         </p>
                       </div>
-                      <AdminReportUpload platform="investor" onUploadSuccess={fetchProfiles} />
+                       <AdminReportUpload platform="investor" section="investor_research" onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
@@ -754,7 +754,7 @@ export default function AdminDashboard() {
                           • Assign to specific users or make available to all investors
                         </p>
                       </div>
-                      <AdminReportUpload platform="investor" onUploadSuccess={fetchProfiles} />
+                      <AdminReportUpload platform="investor" section="investor_analysis" onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
