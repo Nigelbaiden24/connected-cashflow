@@ -18,6 +18,7 @@ interface Newsletter {
   read_time: string | null;
   category: string;
   published_date: string | null;
+  file_path: string | null;
 }
 
 const Newsletters = () => {
@@ -320,17 +321,27 @@ const Newsletters = () => {
 
       {/* Newsletter Detail Dialog */}
       <Dialog open={!!selectedNewsletter} onOpenChange={() => setSelectedNewsletter(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl">{selectedNewsletter?.title}</DialogTitle>
             <p className="text-muted-foreground">{selectedNewsletter?.edition}</p>
           </DialogHeader>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <div 
-              dangerouslySetInnerHTML={{ __html: selectedNewsletter?.content || '' }}
-              className="whitespace-pre-wrap"
-            />
-          </div>
+          {selectedNewsletter?.file_path ? (
+            <div className="w-full h-[70vh]">
+              <iframe
+                src={`https://wlsmdcdfyudtvbnbqfmn.supabase.co/storage/v1/object/public/newsletters/${selectedNewsletter.file_path}`}
+                className="w-full h-full border rounded-lg"
+                title={selectedNewsletter.title}
+              />
+            </div>
+          ) : (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <div 
+                dangerouslySetInnerHTML={{ __html: selectedNewsletter?.content || '' }}
+                className="whitespace-pre-wrap"
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
