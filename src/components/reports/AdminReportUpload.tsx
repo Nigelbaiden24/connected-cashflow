@@ -176,20 +176,20 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
       if (uploadError) throw uploadError;
 
       // Determine platform and category based on section
-      let finalPlatform = selectedPlatform;
-      let reportCategory = null;
-      
-       const effectiveSection = section || platformSection || "finance_reports";
+      let finalPlatform: "finance" | "business" | "investor" = "finance";
+      let reportCategory: string | null = null;
 
-       if (effectiveSection === "finance_reports") {
-         finalPlatform = "finance";
-       } else if (effectiveSection === "investor_research") {
-         finalPlatform = "investor";
-         reportCategory = "research";
-       } else if (effectiveSection === "investor_analysis") {
-         finalPlatform = "investor";
-         reportCategory = "analysis";
-       }
+      const effectiveSection = section || platformSection || "finance_reports";
+
+      if (effectiveSection === "finance_reports") {
+        finalPlatform = selectedPlatform === "business" ? "business" : "finance";
+      } else if (effectiveSection === "investor_research") {
+        finalPlatform = "investor";
+        reportCategory = "research";
+      } else if (effectiveSection === "investor_analysis") {
+        finalPlatform = "investor";
+        reportCategory = "analysis";
+      }
 
       // Get current Supabase user for audit / RLS
       const { data: authData } = await supabase.auth.getUser();
