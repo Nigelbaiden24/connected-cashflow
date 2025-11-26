@@ -11,7 +11,11 @@ import {
   BarChart3,
   Target,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  ArrowLeft,
+  Award,
+  Briefcase,
+  Headphones
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
@@ -23,32 +27,65 @@ const Paraplanning = () => {
     {
       icon: FileText,
       title: "Report Generation",
-      description: "Professional suitability reports, cashflow models, and client presentations crafted to the highest standards."
+      description: "Professional suitability reports, cashflow models, and client presentations crafted to the highest standards.",
+      details: "Our team produces FCA-compliant reports with clear recommendations, visual data representations, and client-friendly language."
     },
     {
       icon: BarChart3,
       title: "Research & Analysis",
-      description: "In-depth market research, fund analysis, and investment recommendations backed by data-driven insights."
+      description: "In-depth market research, fund analysis, and investment recommendations backed by data-driven insights.",
+      details: "Access to premium research tools and databases, delivering evidence-based investment strategies and due diligence reports."
     },
     {
       icon: Target,
       title: "Financial Planning",
-      description: "Comprehensive financial plans including retirement, tax, and estate planning strategies."
+      description: "Comprehensive financial plans including retirement, tax, and estate planning strategies.",
+      details: "Holistic planning approach covering lifetime cashflow modelling, tax-efficient strategies, and intergenerational wealth transfer."
     },
     {
       icon: Shield,
       title: "Compliance Support",
-      description: "Regulatory compliance checks, documentation review, and audit preparation assistance."
+      description: "Regulatory compliance checks, documentation review, and audit preparation assistance.",
+      details: "Stay ahead of FCA regulations with our compliance specialists ensuring all documentation meets current standards."
     },
     {
       icon: Users,
       title: "Client Communications",
-      description: "Tailored client letters, review summaries, and ongoing communication support."
+      description: "Tailored client letters, review summaries, and ongoing communication support.",
+      details: "Personalized client correspondence that maintains your firm's tone and strengthens adviser-client relationships."
     },
     {
       icon: TrendingUp,
       title: "Portfolio Reviews",
-      description: "Regular portfolio analysis, rebalancing recommendations, and performance reporting."
+      description: "Regular portfolio analysis, rebalancing recommendations, and performance reporting.",
+      details: "Comprehensive portfolio assessments with performance attribution, risk metrics, and strategic rebalancing guidance."
+    }
+  ];
+
+  const expertise = [
+    {
+      icon: Award,
+      title: "Qualified Professionals",
+      description: "All paraplanners hold Level 4+ qualifications including DipPFS, CertPFS, and working towards Chartered status.",
+      metric: "95%+ qualified to Diploma level"
+    },
+    {
+      icon: Clock,
+      title: "Fast Turnaround",
+      description: "Standard reports delivered within 48-72 hours. Priority service available for urgent requirements.",
+      metric: "48-72 hour standard delivery"
+    },
+    {
+      icon: Headphones,
+      title: "Dedicated Support",
+      description: "Each client assigned a dedicated paraplanner who understands your firm's processes and preferences.",
+      metric: "1:1 paraplanner relationship"
+    },
+    {
+      icon: Briefcase,
+      title: "Industry Experience",
+      description: "Our team brings combined 100+ years of financial services experience across diverse areas of advice.",
+      metric: "100+ years combined experience"
     }
   ];
 
@@ -89,9 +126,19 @@ const Paraplanning = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-            <img src={flowpulseLogo} alt="FlowPulse" className="h-10" />
-            <span className="font-bold text-xl">FlowPulse</span>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate('/')}
+              className="hover:bg-primary/10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+              <img src={flowpulseLogo} alt="FlowPulse" className="h-10" />
+              <span className="font-bold text-xl">FlowPulse</span>
+            </div>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <Button variant="ghost" onClick={() => navigate('/')}>
@@ -171,10 +218,13 @@ const Paraplanning = () => {
                   </div>
                   <CardTitle className="text-2xl">{service.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <CardDescription className="text-base leading-relaxed">
                     {service.description}
                   </CardDescription>
+                  <p className="text-sm text-muted-foreground border-l-2 border-primary/30 pl-3">
+                    {service.details}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -218,14 +268,44 @@ const Paraplanning = () => {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Expertise Section */}
       <section className="py-24 bg-primary/5">
         <div className="container mx-auto px-6">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-5xl font-bold">
+              Our Expertise
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Qualified professionals delivering exceptional paraplanning services
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            {expertise.map((item, index) => (
+              <Card key={index} className="text-center bg-background/50 backdrop-blur border-2 hover:border-primary/50 transition-all hover:scale-105">
+                <CardHeader>
+                  <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <CardDescription className="text-sm leading-relaxed">
+                    {item.description}
+                  </CardDescription>
+                  <p className="text-sm font-semibold text-primary">
+                    {item.metric}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16 space-y-4">
-              <h2 className="text-4xl md:text-5xl font-bold">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold mb-4">
                 Why Choose FlowPulse Paraplanning?
-              </h2>
+              </h3>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
