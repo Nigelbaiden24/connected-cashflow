@@ -80,29 +80,34 @@ export function LanguageSettings() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase
+      // First update the database
+      const { error: updateError } = await supabase
         .from("user_profiles")
         .upsert({
           user_id: user.id,
           language,
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
+      // Update localStorage
+      localStorage.setItem("preferredLanguage", language);
+      
       // Update global language context
       setGlobalLanguage(language);
       
       toast.success("Language preference saved successfully. The page will reload to apply translations.");
       
-      // Reload page to apply translations
+      // Reload page to apply translations after a short delay
       setTimeout(() => {
         window.location.reload();
       }, 1500);
     } catch (error: any) {
       console.error("Error saving language:", error);
       toast.error(error.message || "Failed to save language preference");
-    } finally {
       setSaving(false);
     }
   };

@@ -17,28 +17,47 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState("en");
   const [isTranslating, setIsTranslating] = useState(false);
   const [pendingTranslations, setPendingTranslations] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Load language preference
     const loadLanguage = async () => {
-      const stored = localStorage.getItem("preferredLanguage");
-      if (stored && stored !== "en") {
-        setLanguageState(stored);
-      }
-
-      // Try to load from database
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("language")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        
-        if (data?.language) {
-          setLanguageState(data.language);
-          localStorage.setItem("preferredLanguage", data.language);
+      try {
+        // Try to load from database first
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase
+            .from("user_profiles")
+            .select("language")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          
+          if (data?.language) {
+            setLanguageState(data.language);
+            localStorage.setItem("preferredLanguage", data.language);
+          } else {
+            // Fallback to localStorage if no DB entry
+            const stored = localStorage.getItem("preferredLanguage");
+            if (stored && stored !== "en") {
+              setLanguageState(stored);
+            }
+          }
+        } else {
+          // No user, check localStorage
+          const stored = localStorage.getItem("preferredLanguage");
+          if (stored && stored !== "en") {
+            setLanguageState(stored);
+          }
         }
+      } catch (error) {
+        console.error("Error loading language:", error);
+        // Fallback to localStorage on error
+        const stored = localStorage.getItem("preferredLanguage");
+        if (stored && stored !== "en") {
+          setLanguageState(stored);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -46,6 +65,11 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setLanguage = (lang: string) => {
+    // Clear all cached translations for the old language
+    if (translationCache[language]) {
+      delete translationCache[language];
+    }
+    
     setLanguageState(lang);
     localStorage.setItem("preferredLanguage", lang);
     
@@ -123,7 +147,7 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
 
   return (
     <TranslationContext.Provider value={{ language, setLanguage, t, isTranslating }}>
-      {children}
+      {isLoading ? null : children}
     </TranslationContext.Provider>
   );
 }
