@@ -48,7 +48,7 @@ const Newsletters = () => {
 
       if (data) {
         setWeeklyRoundups(data.filter(n => n.category === 'ai_roundup'));
-        setSectorNewsletters(data.filter(n => n.category === 'sector'));
+        setSectorNewsletters(data.filter(n => n.category === 'sector' || n.category === 'admin_upload'));
         setStoryDigests(data.filter(n => n.category === 'digest'));
       }
     } catch (error) {

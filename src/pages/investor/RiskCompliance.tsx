@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Shield, AlertTriangle, CheckCircle, FileText, Upload, Loader2, Download, Brain, TrendingUp, Activity } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, FileText, Upload, Loader2, Download, Brain, TrendingUp, Activity, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -311,19 +311,35 @@ export default function RiskCompliance() {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Run Test"}
               </Button>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div>
-                <p className="font-medium">Risk Assessment Reports</p>
-                <p className="text-sm text-muted-foreground">{reports.length} reports available</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="font-medium">Risk Assessment Reports</p>
+                  <p className="text-sm text-muted-foreground">{reports.length} reports available</p>
+                </div>
               </div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={() => reports[0] && viewReport(reports[0])}
-                disabled={reports.length === 0}
-              >
-                View Reports
-              </Button>
+              {reports.length > 0 && (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {reports.map((report) => (
+                    <div key={report.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{report.report_type?.replace('_', ' ').toUpperCase()}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(report.created_at).toLocaleDateString()} at {new Date(report.created_at).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => viewReport(report)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div>
