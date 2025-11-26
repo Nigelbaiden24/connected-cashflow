@@ -32,7 +32,7 @@ export default function AdminDashboard() {
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
-  const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", userId: "all", file: null as File | null });
+  const [newsletterForm, setNewsletterForm] = useState({ title: "", description: "", publishDate: "", file: null as File | null });
   const [portfolioForm, setPortfolioForm] = useState({ title: "", description: "", userId: "all", file: null as File | null });
   const [commentaryForm, setCommentaryForm] = useState({ title: "", description: "", userId: "all", file: null as File | null });
   const [learningForm, setLearningForm] = useState({ 
@@ -215,6 +215,8 @@ export default function AdminDashboard() {
     try {
       const filePath = await uploadFile("newsletters", newsletterForm.file);
 
+      const { data: { user } } = await supabase.auth.getUser();
+
       const { error } = await supabase.from("newsletters").insert({
         title: newsletterForm.title,
         preview: newsletterForm.description,
@@ -222,13 +224,13 @@ export default function AdminDashboard() {
         file_path: filePath,
         category: "admin_upload",
         published_date: newsletterForm.publishDate || new Date().toISOString(),
-        uploaded_by: newsletterForm.userId && newsletterForm.userId !== "all" ? newsletterForm.userId : null,
+        uploaded_by: user?.id || null,
       });
 
       if (error) throw error;
 
-      toast.success(`Newsletter uploaded successfully${newsletterForm.userId && newsletterForm.userId !== "all" ? ' for selected user' : ' for all users'}!`);
-      setNewsletterForm({ title: "", description: "", publishDate: "", userId: "all", file: null });
+      toast.success("Newsletter uploaded successfully!");
+      setNewsletterForm({ title: "", description: "", publishDate: "", file: null });
     } catch (error: any) {
       console.error("Error uploading newsletter:", error);
       toast.error(error.message || "Failed to upload newsletter");
@@ -803,23 +805,6 @@ export default function AdminDashboard() {
                     value={newsletterForm.publishDate}
                     onChange={(e) => setNewsletterForm({ ...newsletterForm, publishDate: e.target.value })}
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-user">Select User (Optional)</Label>
-                  <Select value={newsletterForm.userId} onValueChange={(value) => setNewsletterForm({ ...newsletterForm, userId: value })}>
-                    <SelectTrigger id="newsletter-user">
-                      <SelectValue placeholder="All users or select specific user" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Users</SelectItem>
-                      {profiles.map((profile) => (
-                        <SelectItem key={profile.user_id} value={profile.user_id}>
-                          {profile.full_name} ({profile.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <div className="space-y-2">
