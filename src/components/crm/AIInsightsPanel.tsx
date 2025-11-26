@@ -171,24 +171,24 @@ export function AIInsightsPanel({ contactId, contact, onUpdate }: AIInsightsPane
         <CardContent className="space-y-2">
           <Button
             onClick={() => setShowMessageDialog(true)}
-            className="w-full justify-start"
+            className="w-full justify-start gap-2"
             variant="outline"
           >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Generate Personalized Message
+            <MessageSquare className="h-4 w-4 shrink-0" />
+            <span className="truncate">Generate Message</span>
           </Button>
           <Button
             onClick={getRecommendations}
             disabled={loading}
-            className="w-full justify-start"
+            className="w-full justify-start gap-2"
             variant="outline"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
             ) : (
-              <TrendingUp className="h-4 w-4 mr-2" />
+              <TrendingUp className="h-4 w-4 shrink-0" />
             )}
-            Get Smart Recommendations
+            <span className="truncate">Get Recommendations</span>
           </Button>
         </CardContent>
       </Card>
