@@ -213,12 +213,6 @@ const Index = () => {
                   >
                     FlowPulse Investor
                   </Button>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground">Quick Links</h3>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -229,6 +223,12 @@ const Index = () => {
                   >
                     Pricing
                   </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-muted-foreground">Quick Links</h3>
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
@@ -313,17 +313,14 @@ const Index = () => {
                 >
                   FlowPulse Investor
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer py-3 text-base hover:bg-primary/10 focus:bg-primary/10"
+                  onClick={() => navigate('/pricing')}
+                >
+                  Pricing
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <button 
-              onClick={() => navigate('/pricing')}
-              className="relative font-space-grotesk font-semibold text-lg group"
-            >
-              <span className="relative z-10">Pricing</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
-            </button>
 
             <button 
               onClick={() => navigate('/paraplanning')}
