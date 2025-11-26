@@ -19,10 +19,8 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
         <div className="flex-1 flex flex-col w-full md:ml-64">
           {/* Mobile Header with Menu Trigger */}
           <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
-            <SidebarTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
+            <SidebarTrigger>
+              <Menu className="h-5 w-5" />
             </SidebarTrigger>
             <h1 className="text-lg font-semibold">FlowPulse Finance</h1>
           </header>
