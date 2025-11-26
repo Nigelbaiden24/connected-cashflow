@@ -191,6 +191,10 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
          reportCategory = "analysis";
        }
 
+      // Get current Supabase user for audit / RLS
+      const { data: authData } = await supabase.auth.getUser();
+      const uploadedBy = authData?.user?.id ?? null;
+
       // Insert report metadata
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
@@ -200,6 +204,7 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
           file_path: filePath,
           report_type: reportType,
           platform: finalPlatform,
+          uploaded_by: uploadedBy,
           ...(reportCategory && { report_category: reportCategory })
         })
         .select()
@@ -238,7 +243,8 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
       onUploadSuccess?.();
     } catch (error) {
       console.error('Error uploading report:', error);
-      toast.error("Failed to upload report");
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to upload report: ${message}`);
     } finally {
       setUploading(false);
     }
