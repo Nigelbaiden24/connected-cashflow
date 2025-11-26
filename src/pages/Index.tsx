@@ -874,73 +874,14 @@ const Index = () => {
                 Join thousands of professionals using FlowPulse to streamline their operations
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                    >
-                      Request Demo
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px]">
-                    <DialogHeader>
-                      <DialogTitle>Request a Demo</DialogTitle>
-                      <DialogDescription>
-                        Fill out the form below and our team will contact you within 24 hours.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleDemoSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Name *</Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="company">Company</Label>
-                        <Input
-                          id="company"
-                          value={formData.company}
-                          onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="message">Message</Label>
-                        <Textarea
-                          id="message"
-                          value={formData.message}
-                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                          rows={4}
-                        />
-                      </div>
-                      <Button type="submit" className="w-full">Submit Request</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  onClick={() => navigate('/pricing')}
+                >
+                  View Pricing
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
                 <Button size="lg" variant="outline" onClick={() => navigate('/about')}>
                   Learn More
                 </Button>
