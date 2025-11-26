@@ -222,7 +222,7 @@ export default function AdminDashboard() {
         file_path: filePath,
         category: "admin_upload",
         published_date: newsletterForm.publishDate || new Date().toISOString(),
-        user_id: newsletterForm.userId && newsletterForm.userId !== "all" ? newsletterForm.userId : null,
+        uploaded_by: newsletterForm.userId && newsletterForm.userId !== "all" ? newsletterForm.userId : null,
       });
 
       if (error) throw error;
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
         title: commentaryForm.title,
         description: commentaryForm.description,
         file_path: filePath,
-        user_id: commentaryForm.userId && commentaryForm.userId !== "all" ? commentaryForm.userId : null,
+        uploaded_by: commentaryForm.userId && commentaryForm.userId !== "all" ? commentaryForm.userId : null,
       });
 
       if (error) throw error;
@@ -377,7 +377,7 @@ export default function AdminDashboard() {
         description: videoForm.description,
         file_path: filePath,
         category: videoForm.category || "general",
-        user_id: videoForm.userId && videoForm.userId !== "all" ? videoForm.userId : null,
+        uploaded_by: videoForm.userId && videoForm.userId !== "all" ? videoForm.userId : null,
       });
 
       if (error) throw error;
