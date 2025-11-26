@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import paraplanningOffice from "@/assets/paraplanning-office.jpg";
 
 const Paraplanning = () => {
   const navigate = useNavigate();
@@ -144,8 +145,8 @@ const Paraplanning = () => {
             <Button variant="ghost" onClick={() => navigate('/')}>
               Home
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/opportunities')}>
-              Opportunities
+            <Button variant="ghost" asChild>
+              <a href="mailto:support@flowpulse.co.uk">Contact Us</a>
             </Button>
             <Button onClick={() => navigate('/login')}>
               Get Started
@@ -189,6 +190,37 @@ const Paraplanning = () => {
               <Button size="lg" variant="outline" className="text-lg px-8">
                 Learn More
               </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Office Image Section */}
+      <section className="py-24 bg-background/50">
+        <div className="container mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
+              <img 
+                src={paraplanningOffice} 
+                alt="FlowPulse Central London Office - Professional Paraplanning Team" 
+                className="w-full h-auto group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-60" />
+              <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white">
+                <h3 className="text-3xl md:text-4xl font-bold mb-4">
+                  Your Trusted Paraplanning Partner
+                </h3>
+                <p className="text-lg md:text-xl mb-6 max-w-3xl">
+                  Operating from our prestigious Central London office, our dedicated team of 
+                  qualified paraplanners delivers exceptional support to financial advisers across the UK.
+                </p>
+                <Button size="lg" variant="secondary" asChild>
+                  <a href="mailto:support@flowpulse.co.uk" className="inline-flex items-center">
+                    Contact Our Team
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -344,8 +376,8 @@ const Paraplanning = () => {
                 Start Today
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                Schedule Consultation
+              <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+                <a href="mailto:support@flowpulse.co.uk">Schedule Consultation</a>
               </Button>
             </div>
           </div>
@@ -366,7 +398,9 @@ const Paraplanning = () => {
             <div className="flex gap-4">
               <Button variant="ghost" size="sm">Privacy</Button>
               <Button variant="ghost" size="sm">Terms</Button>
-              <Button variant="ghost" size="sm">Contact</Button>
+              <Button variant="ghost" size="sm" asChild>
+                <a href="mailto:support@flowpulse.co.uk">Contact</a>
+              </Button>
             </div>
           </div>
         </div>
