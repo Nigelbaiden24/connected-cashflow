@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X, Home, Briefcase, TrendingUp, Users, FileText, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { TranslatedText } from "./TranslatedText";
 import {
   Sheet,
   SheetContent,
@@ -100,7 +101,7 @@ export function MobileMenu({ platform = "business" }: MobileMenuProps) {
                   }
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{link.title}</span>
+                  <TranslatedText as="span">{link.title}</TranslatedText>
                 </NavLink>
               );
             })}
@@ -114,7 +115,7 @@ export function MobileMenu({ platform = "business" }: MobileMenuProps) {
               }}
             >
               <Settings className="h-4 w-4" />
-              Settings
+              <TranslatedText>Settings</TranslatedText>
             </Button>
             <Button
               variant="ghost"
@@ -122,7 +123,7 @@ export function MobileMenu({ platform = "business" }: MobileMenuProps) {
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" />
-              Logout
+              <TranslatedText>Logout</TranslatedText>
             </Button>
           </div>
         </ScrollArea>

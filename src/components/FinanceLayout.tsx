@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
+import { TranslatedText } from "./TranslatedText";
 
 interface FinanceLayoutProps {
   children: ReactNode;
@@ -22,7 +23,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
             <SidebarTrigger>
               <Menu className="h-5 w-5" />
             </SidebarTrigger>
-            <h1 className="text-lg font-semibold">FlowPulse Finance</h1>
+            <TranslatedText as="h1" className="text-lg font-semibold">FlowPulse Finance</TranslatedText>
           </header>
           
           <main className="flex-1 sidebar-layout-main">

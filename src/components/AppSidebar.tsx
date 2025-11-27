@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { TranslatedText } from "./TranslatedText";
 import {
   Sidebar,
   SidebarContent,
@@ -213,8 +214,8 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-semibold truncate">FlowPulse.io</span>
-              <span className="text-xs text-sidebar-foreground/70 truncate">Wealth Platform</span>
+              <TranslatedText as="span" className="text-sm font-semibold truncate">FlowPulse.io</TranslatedText>
+              <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">Wealth Platform</TranslatedText>
             </div>
           )}
         </div>
@@ -223,7 +224,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
       <SidebarContent>
         <TooltipProvider>
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>AI Tools</SidebarGroupLabel>}
+            {!isCollapsed && <SidebarGroupLabel><TranslatedText>AI Tools</TranslatedText></SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {aiToolsItems.map((item) => (
@@ -238,14 +239,14 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
                           <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -256,7 +257,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
           </SidebarGroup>
 
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>Financial Planning</SidebarGroupLabel>}
+            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Financial Planning</TranslatedText></SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {financialPlanningItems.map((item) => (
@@ -271,14 +272,14 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
                           <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -289,7 +290,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
           </SidebarGroup>
 
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>Practice Management</SidebarGroupLabel>}
+            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Practice Management</TranslatedText></SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {practiceManagementItems.map((item) => (
@@ -304,14 +305,14 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
                           <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{item.title}</span>
+                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -330,14 +331,14 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <p>Languages</p>
+                        <TranslatedText as="p">Languages</TranslatedText>
                       </TooltipContent>
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
                       <NavLink to="/finance/languages" className={`${getNavClassName("/finance/languages")} flex items-center gap-3`}>
                         <Globe className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Languages</span>
+                        <TranslatedText as="span" className="truncate">Languages</TranslatedText>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
@@ -359,7 +360,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 overflow-hidden">
                 <span className="text-sm font-medium truncate">{userEmail}</span>
-                <span className="text-xs text-sidebar-foreground/70 truncate">FlowPulse Advisor</span>
+                <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">FlowPulse Advisor</TranslatedText>
               </div>
             )}
           </div>
@@ -370,7 +371,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             onClick={onLogout}
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
-            {!isCollapsed && <span className="ml-2">Sign Out</span>}
+            {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
           </Button>
         </div>
       </SidebarFooter>

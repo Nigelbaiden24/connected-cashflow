@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { TranslatedText } from "./TranslatedText";
 import {
   Sidebar,
   SidebarContent,
@@ -169,8 +170,8 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-semibold truncate">FlowPulse</span>
-              <span className="text-xs text-sidebar-foreground/70 truncate">Business Platform</span>
+              <TranslatedText as="span" className="text-sm font-semibold truncate">FlowPulse</TranslatedText>
+              <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">Business Platform</TranslatedText>
             </div>
           )}
         </div>
@@ -179,7 +180,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
       <SidebarContent>
         <TooltipProvider>
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>Workspace</SidebarGroupLabel>}
+            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Workspace</TranslatedText></SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {businessToolsItems.map((item) => (
@@ -194,14 +195,14 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 w-full`}>
                           <item.icon className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
-                          <span className="flex-1 truncate min-w-0">{item.title}</span>
+                          <TranslatedText as="span" className="flex-1 truncate min-w-0">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -212,7 +213,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
           </SidebarGroup>
 
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>Business Management</SidebarGroupLabel>}
+            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Business Management</TranslatedText></SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {businessManagementItems.map((item) => (
@@ -227,14 +228,14 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 w-full`}>
                           <item.icon className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
-                          <span className="flex-1 truncate min-w-0">{item.title}</span>
+                          <TranslatedText as="span" className="flex-1 truncate min-w-0">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -245,7 +246,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
           </SidebarGroup>
 
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel>Operations</SidebarGroupLabel>}
+            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Operations</TranslatedText></SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {operationsItems.map((item) => (
@@ -260,14 +261,14 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                           </SidebarMenuButton>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton asChild>
                         <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 w-full`}>
                           <item.icon className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
-                          <span className="flex-1 truncate min-w-0">{item.title}</span>
+                          <TranslatedText as="span" className="flex-1 truncate min-w-0">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -286,14 +287,14 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
                         </SidebarMenuButton>
                       </TooltipTrigger>
                       <TooltipContent side="right">
-                        <p>Languages</p>
+                        <TranslatedText as="p">Languages</TranslatedText>
                       </TooltipContent>
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton asChild>
                       <NavLink to="/business/languages" className={`${getNavClassName("/business/languages")} flex items-center gap-3 w-full`}>
                         <Globe className="h-4 w-4 flex-shrink-0 min-w-[1rem]" />
-                        <span className="flex-1 truncate min-w-0">Languages</span>
+                        <TranslatedText as="span" className="flex-1 truncate min-w-0">Languages</TranslatedText>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
@@ -315,7 +316,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 overflow-hidden">
                 <span className="text-sm font-medium truncate">{userEmail}</span>
-                <span className="text-xs text-sidebar-foreground/70 truncate">Business User</span>
+                <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">Business User</TranslatedText>
               </div>
             )}
           </div>
@@ -326,7 +327,7 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
             onClick={onLogout}
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
-            {!isCollapsed && <span className="ml-2">Sign Out</span>}
+            {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
           </Button>
         </div>
       </SidebarFooter>
