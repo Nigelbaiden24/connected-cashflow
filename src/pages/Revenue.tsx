@@ -432,7 +432,7 @@ const Revenue = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                    <Select value={formData.category || ""} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -506,7 +506,7 @@ const Revenue = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+              <Select value={formData.category || ""} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
