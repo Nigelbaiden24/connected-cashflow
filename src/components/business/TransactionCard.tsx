@@ -48,7 +48,7 @@ export function TransactionCard({ transaction, onEdit, onDelete }: TransactionCa
             </div>
 
             {transaction.category && (
-              <Badge variant="outline" className="bg-gradient-to-r from-primary/5 to-primary/10">
+              <Badge variant="outline" className="bg-primary/5">
                 {transaction.category}
               </Badge>
             )}
