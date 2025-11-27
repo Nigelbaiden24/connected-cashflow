@@ -14,6 +14,7 @@ import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
+import { CustomTableColumnManager, ColumnConfig } from "./crm/CustomTableColumnManager";
 import { AILeadScoringBadge } from "./crm/AILeadScoringBadge";
 import { BulkAIScoring } from "./crm/BulkAIScoring";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
@@ -22,6 +23,7 @@ interface CRMTable {
   id: string;
   name: string;
   columns: string[];
+  columnConfigs?: Record<string, ColumnConfig>;
   rows: Record<string, string>[];
   searchQuery?: string;
   filterStatus?: string;
@@ -43,6 +45,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [tables, setTables] = useState<CRMTable[]>([]);
   const [showAddContact, setShowAddContact] = useState(false);
   const [showColumnManager, setShowColumnManager] = useState(false);
+  const [showCustomTableColumnManager, setShowCustomTableColumnManager] = useState(false);
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>(initialStage || "all");
@@ -169,7 +172,6 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [newTableName, setNewTableName] = useState("");
   const [editingTable, setEditingTable] = useState<string | null>(null);
   const [editTableName, setEditTableName] = useState("");
-  const [newColumnName, setNewColumnName] = useState("");
   const [addingColumnTo, setAddingColumnTo] = useState<string | null>(null);
 
   const addContact = async () => {
@@ -470,8 +472,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
     toast.success("Table renamed");
   };
 
-  const addColumn = (tableId: string) => {
-    if (!newColumnName.trim()) {
+  const addColumn = (tableId: string, columnName: string, config: ColumnConfig) => {
+    if (!columnName.trim()) {
       toast.error("Please enter a column name");
       return;
     }
@@ -481,15 +483,20 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         t.id === tableId
           ? {
               ...t,
-              columns: [...t.columns, newColumnName],
-              rows: t.rows.map((row) => ({ ...row, [newColumnName]: "" })),
+              columns: [...t.columns, columnName],
+              columnConfigs: {
+                ...t.columnConfigs,
+                [columnName]: config
+              },
+              rows: t.rows.map((row) => ({ 
+                ...row, 
+                [columnName]: config.type === "checkbox" ? "false" : "" 
+              })),
             }
           : t
       )
     );
-    setNewColumnName("");
-    setAddingColumnTo(null);
-    toast.success("Column added");
+    toast.success("Column added with type: " + config.type);
   };
 
   const deleteColumn = (tableId: string, columnName: string) => {
@@ -1317,7 +1324,10 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                     Rename Table
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => setAddingColumnTo(table.id)}
+                    onClick={() => {
+                      setAddingColumnTo(table.id);
+                      setShowCustomTableColumnManager(true);
+                    }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Column
@@ -1334,27 +1344,6 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </div>
             </CardHeader>
             <CardContent>
-              {addingColumnTo === table.id && (
-                <div className="flex gap-2 mb-4">
-                  <Input
-                    placeholder="Column name"
-                    value={newColumnName}
-                    onChange={(e) => setNewColumnName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") addColumn(table.id);
-                      if (e.key === "Escape") setAddingColumnTo(null);
-                    }}
-                  />
-                  <Button onClick={() => addColumn(table.id)}>Add</Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setAddingColumnTo(null)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
-
               <div className="border rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
@@ -1398,13 +1387,137 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         </TableCell>
                         {table.columns.map((column) => (
                           <TableCell key={column} className={table.compactView ? "p-2" : "p-4"}>
-                            <Input
-                              value={row[column] || ""}
-                              onChange={(e) =>
-                                updateCell(table.id, row.id, column, e.target.value)
+                            {(() => {
+                              const config = table.columnConfigs?.[column];
+                              const value = row[column] || "";
+                              
+                              if (!config || config.type === "text") {
+                                return (
+                                  <Input
+                                    value={value}
+                                    onChange={(e) =>
+                                      updateCell(table.id, row.id, column, e.target.value)
+                                    }
+                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                  />
+                                );
                               }
-                              className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
-                            />
+                              
+                              if (config.type === "select") {
+                                return (
+                                  <Select
+                                    value={value}
+                                    onValueChange={(val) =>
+                                      updateCell(table.id, row.id, column, val)
+                                    }
+                                  >
+                                    <SelectTrigger className={table.compactView ? "h-6 border-0 text-xs" : "h-8 border-0"}>
+                                      <SelectValue placeholder="Select..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {config.options?.map((option) => (
+                                        <SelectItem key={option} value={option}>
+                                          {option}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                );
+                              }
+                              
+                              if (config.type === "checkbox") {
+                                return (
+                                  <div className="flex justify-center">
+                                    <Checkbox
+                                      checked={value === "true"}
+                                      onCheckedChange={(checked) =>
+                                        updateCell(table.id, row.id, column, checked ? "true" : "false")
+                                      }
+                                      className={table.compactView ? "h-3 w-3" : ""}
+                                    />
+                                  </div>
+                                );
+                              }
+                              
+                              if (config.type === "number" || config.type === "currency" || config.type === "percentage") {
+                                return (
+                                  <Input
+                                    type="number"
+                                    value={value}
+                                    onChange={(e) =>
+                                      updateCell(table.id, row.id, column, e.target.value)
+                                    }
+                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    placeholder={config.type === "currency" ? "£0.00" : config.type === "percentage" ? "0%" : "0"}
+                                  />
+                                );
+                              }
+                              
+                              if (config.type === "date") {
+                                return (
+                                  <Input
+                                    type="date"
+                                    value={value}
+                                    onChange={(e) =>
+                                      updateCell(table.id, row.id, column, e.target.value)
+                                    }
+                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                  />
+                                );
+                              }
+                              
+                              if (config.type === "email") {
+                                return (
+                                  <Input
+                                    type="email"
+                                    value={value}
+                                    onChange={(e) =>
+                                      updateCell(table.id, row.id, column, e.target.value)
+                                    }
+                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    placeholder="email@example.com"
+                                  />
+                                );
+                              }
+                              
+                              if (config.type === "phone") {
+                                return (
+                                  <Input
+                                    type="tel"
+                                    value={value}
+                                    onChange={(e) =>
+                                      updateCell(table.id, row.id, column, e.target.value)
+                                    }
+                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    placeholder="+44"
+                                  />
+                                );
+                              }
+                              
+                              if (config.type === "url") {
+                                return (
+                                  <Input
+                                    type="url"
+                                    value={value}
+                                    onChange={(e) =>
+                                      updateCell(table.id, row.id, column, e.target.value)
+                                    }
+                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    placeholder="https://"
+                                  />
+                                );
+                              }
+                              
+                              return (
+                                <Input
+                                  value={value}
+                                  onChange={(e) =>
+                                    updateCell(table.id, row.id, column, e.target.value)
+                                  }
+                                  className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                />
+                              );
+                            })()}
                           </TableCell>
                         ))}
                         <TableCell className={table.compactView ? "p-2" : "p-4"}>
@@ -1433,9 +1546,29 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </Button>
             </CardContent>
           </Card>
-        );
+          );
         })}
       </div>
+
+      {/* Custom Table Column Manager Dialog */}
+      {addingColumnTo && (
+        <CustomTableColumnManager
+          open={showCustomTableColumnManager}
+          onOpenChange={(open) => {
+            setShowCustomTableColumnManager(open);
+            if (!open) setAddingColumnTo(null);
+          }}
+          onColumnAdded={(columnName, config) => {
+            if (addingColumnTo) {
+              addColumn(addingColumnTo, columnName, config);
+              setAddingColumnTo(null);
+            }
+          }}
+          existingColumns={
+            tables.find(t => t.id === addingColumnTo)?.columns || []
+          }
+        />
+      )}
     </div>
   );
 };
