@@ -10,12 +10,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, Briefcase } from "lucide-react";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DemoRequests } from "@/components/admin/DemoRequests";
 import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
+import { OpportunitiesManagement } from "@/components/admin/OpportunitiesManagement";
 
 interface Profile {
   user_id: string;
@@ -573,7 +574,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-12 gap-2 bg-gradient-to-br from-zinc-950 to-black p-2 backdrop-blur-sm border border-white/10 rounded-xl shadow-2xl">
+          <TabsList className="grid w-full grid-cols-13 gap-2 bg-gradient-to-br from-zinc-950 to-black p-2 backdrop-blur-sm border border-white/10 rounded-xl shadow-2xl">
             <TabsTrigger 
               value="users"
               className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
@@ -657,6 +658,13 @@ export default function AdminDashboard() {
             >
               <TrendingUp className="h-4 w-4 mr-2" />
               Market Trends
+            </TabsTrigger>
+            <TabsTrigger 
+              value="opportunities"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Opportunities
             </TabsTrigger>
           </TabsList>
 
@@ -1354,6 +1362,11 @@ export default function AdminDashboard() {
         {/* Market Trends Tab */}
         <TabsContent value="market-trends">
           <MarketTrendsUpload />
+        </TabsContent>
+
+        {/* Opportunities Tab */}
+        <TabsContent value="opportunities">
+          <OpportunitiesManagement />
         </TabsContent>
       </Tabs>
       </div>
