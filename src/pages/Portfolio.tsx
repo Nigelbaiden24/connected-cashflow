@@ -6,10 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
-import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft } from "lucide-react";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts";
+import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { AssetAllocationChart } from "@/components/AssetAllocationChart";
+import { PortfolioMetricCard } from "@/components/portfolio/PortfolioMetricCard";
+import { cn } from "@/lib/utils";
 
 export default function Portfolio() {
   const navigate = useNavigate();
@@ -110,14 +114,14 @@ export default function Portfolio() {
 
   const getColorForSector = (sector: string) => {
     const colors: Record<string, string> = {
-      'Stocks': "#8884d8",
-      'Bonds': "#82ca9d", 
-      'Property': "#ffc658",
-      'Commodities': "#ff7300",
-      'Cash': "#00c49f",
-      'Other': "#0088fe"
+      'Stocks': "hsl(var(--chart-1))",
+      'Bonds': "hsl(var(--chart-2))", 
+      'Property': "hsl(var(--chart-3))",
+      'Commodities': "hsl(var(--chart-5))",
+      'Cash': "hsl(var(--financial-cyan))",
+      'Other': "hsl(var(--chart-4))"
     };
-    return colors[sector] || "#888888";
+    return colors[sector] || "hsl(var(--muted))";
   };
 
   const selectedClientData = clients.find(c => c.id === selectedClient);
@@ -137,104 +141,101 @@ export default function Portfolio() {
       acc.push({
         name: sector,
         value: holding.current_value || 0,
+        allocation: 0,
         color: getColorForSector(sector)
       });
     }
     return acc;
   }, [] as any[]).map(sector => ({
     ...sector,
-    value: totalPortfolioValue > 0 ? (sector.value / totalPortfolioValue * 100) : 0
+    allocation: totalPortfolioValue > 0 ? ((sector.value / totalPortfolioValue) * 100) : 0,
+    value: sector.value
   }));
 
-  const performanceData = Array.from({ length: 6 }, (_, i) => ({
-    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i],
-    value: totalPortfolioValue * (0.9 + (i * 0.02) + Math.random() * 0.05)
+  const performanceData = Array.from({ length: 12 }, (_, i) => ({
+    month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
+    value: totalPortfolioValue * (0.85 + (i * 0.015) + Math.random() * 0.03)
   }));
 
   const riskMetrics = [
-    { metric: "Beta", value: "1.12", description: "Volatility vs Market" },
-    { metric: "Sharpe Ratio", value: "1.85", description: "Risk-Adjusted Return" },
-    { metric: "Max Drawdown", value: "-8.4%", description: "Largest Peak-to-Trough Loss" },
-    { metric: "Standard Deviation", value: "14.2%", description: "Volatility Measure" }
+    { metric: "Beta", value: "1.12", description: "Volatility vs Market", status: "moderate" },
+    { metric: "Sharpe Ratio", value: "1.85", description: "Risk-Adjusted Return", status: "good" },
+    { metric: "Max Drawdown", value: "-8.4%", description: "Largest Peak-to-Trough Loss", status: "low" },
+    { metric: "Standard Deviation", value: "14.2%", description: "Volatility Measure", status: "moderate" }
   ];
 
+  // Generate sparkline data for metrics
+  const generateTrendData = () => Array.from({ length: 20 }, () => Math.random() * 40 + 5);
+
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading portfolio data...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 space-y-6" ref={contentRef}>
-      <div className="flex justify-between items-center print:hidden">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Portfolio Management</h1>
-            <p className="text-muted-foreground">Individual client portfolio analysis</p>
-          </div>
-        </div>
-        <div className="flex gap-4 items-center">
-          <Select value={selectedClient} onValueChange={setSelectedClient}>
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Select a client" />
-            </SelectTrigger>
-            <SelectContent>
-              {clients.map((client) => (
-                <SelectItem key={client.id} value={client.id}>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    {client.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="p-6 space-y-6" ref={contentRef}>
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 print:hidden">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
               size="sm"
-              onClick={() => toast({
-                title: "Filter Options",
-                description: "Opening portfolio filter options...",
-              })}
+              onClick={() => navigate(-1)}
+              className="gap-2"
             >
-              <Filter className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Portfolio Management
+              </h1>
+              <p className="text-muted-foreground mt-1">Individual client portfolio analysis & insights</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-3 items-center">
+            <Select value={selectedClient} onValueChange={setSelectedClient}>
+              <SelectTrigger className="w-64 bg-card/50 backdrop-blur-sm">
+                <SelectValue placeholder="Select a client" />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      {client.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" size="sm" className="gap-2">
+              <Filter className="h-4 w-4" />
               Filter
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleDownloadPDF}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
+            <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="gap-2">
+              <Download className="h-4 w-4" />
+              PDF
             </Button>
             <Button 
               size="sm"
               disabled={!selectedClient || loading}
               onClick={async () => {
-                if (!selectedClient) {
-                  toast({
-                    title: "No Client Selected",
-                    description: "Please select a client first.",
-                    variant: "destructive",
-                  });
-                  return;
-                }
-                
+                if (!selectedClient) return;
                 setLoading(true);
                 toast({
                   title: "Syncing Data",
-                  description: "Updating portfolio data from market sources...",
+                  description: "Updating portfolio data...",
                 });
-                
                 try {
                   await fetchClientPortfolio(selectedClient);
                   toast({
@@ -242,7 +243,6 @@ export default function Portfolio() {
                     description: "Portfolio data updated successfully.",
                   });
                 } catch (error) {
-                  console.error('Sync error:', error);
                   toast({
                     title: "Sync Failed",
                     description: "Failed to update portfolio data.",
@@ -252,234 +252,333 @@ export default function Portfolio() {
                   setLoading(false);
                 }
               }}
+              className="gap-2"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sync Data
+              <RefreshCw className="h-4 w-4" />
+              Sync
             </Button>
           </div>
         </div>
-      </div>
 
-      {selectedClientData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              {selectedClientData.name}
-            </CardTitle>
-            <CardDescription>
-              {selectedClientData.email} • Risk Profile: {selectedClientData.risk_profile || "Not assessed"}
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Portfolio Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalPortfolioValue)}</div>
-            <div className="flex items-center text-sm">
-              {dayChange >= 0 ? (
-                <TrendingUp className="h-4 w-4 text-success mr-1" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-destructive mr-1" />
-              )}
-              <span className={dayChange >= 0 ? "text-success" : "text-destructive"}>
-                {formatCurrency(Math.abs(dayChange))} ({formatPercent(dayChangePercent)})
-              </span>
-              <span className="text-muted-foreground ml-1">today</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">YTD Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{formatPercent(ytdChangePercent)}</div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <span>{formatCurrency(ytdChange)} gain</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Holdings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{portfolioHoldings.length}</div>
-            <div className="text-sm text-muted-foreground">Active positions</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Worth</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(selectedClientData?.net_worth || 0)}</div>
-            <div className="text-sm text-muted-foreground">Client net worth</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="print:hidden">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="holdings">Holdings</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="risk">Risk Analysis</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Sector Allocation</CardTitle>
-                <CardDescription>Portfolio distribution by sector</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={sectorAllocation}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={120}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {sectorAllocation.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${value}%`} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {sectorAllocation.slice(0, 6).map((sector) => (
-                    <div key={sector.name} className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: sector.color }}
-                      />
-                      <span className="text-sm">{sector.name}: {sector.value.toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Portfolio Performance</CardTitle>
-                <CardDescription>6-month trend</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={performanceData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(value) => `£${(value / 1000000).toFixed(1)}M`} />
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                    <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="holdings" className="space-y-6">
-          <Card>
+        {/* Client Info Card */}
+        {selectedClientData && (
+          <Card className="bg-gradient-to-r from-primary/5 via-primary/10 to-secondary/5 border-primary/20">
             <CardHeader>
-              <CardTitle>Current Holdings</CardTitle>
-              <CardDescription>Individual positions and performance</CardDescription>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">{selectedClientData.name}</CardTitle>
+                    <CardDescription className="text-base mt-1">
+                      {selectedClientData.email}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-sm">
+                  Risk: {selectedClientData.risk_profile || "Not assessed"}
+                </Badge>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {portfolioHoldings.length > 0 ? portfolioHoldings.map((holding) => (
-                  <div key={holding.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <div className="font-semibold">{holding.symbol || holding.asset_name}</div>
-                        <div className="text-sm text-muted-foreground">{holding.asset_name}</div>
-                        <Badge variant="secondary" className="text-xs">{holding.asset_type}</Badge>
-                      </div>
+          </Card>
+        )}
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <PortfolioMetricCard
+            title="Total Portfolio Value"
+            value={formatCurrency(totalPortfolioValue)}
+            change={dayChangePercent}
+            changeLabel="today"
+            icon={<Wallet className="h-5 w-5" />}
+            trend={generateTrendData()}
+            variant="primary"
+          />
+          <PortfolioMetricCard
+            title="YTD Performance"
+            value={formatPercent(ytdChangePercent)}
+            change={ytdChangePercent}
+            changeLabel={formatCurrency(ytdChange)}
+            icon={<TrendingUp className="h-5 w-5" />}
+            trend={generateTrendData()}
+            variant="success"
+          />
+          <PortfolioMetricCard
+            title="Total Holdings"
+            value={portfolioHoldings.length}
+            icon={<PieChart className="h-5 w-5" />}
+            variant="default"
+          />
+          <PortfolioMetricCard
+            title="Net Worth"
+            value={formatCurrency(selectedClientData?.net_worth || 0)}
+            icon={<Activity className="h-5 w-5" />}
+            variant="default"
+          />
+        </div>
+
+        {/* Main Content with Resizable Panels */}
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+          <TabsList className="bg-card/50 backdrop-blur-sm border border-border/50">
+            <TabsTrigger value="overview" className="gap-2">
+              <PieChart className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="holdings" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              Holdings
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="gap-2">
+              <Activity className="h-4 w-4" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="risk" className="gap-2">
+              <Shield className="h-4 w-4" />
+              Risk Analysis
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-4">
+            <ResizablePanelGroup direction="horizontal" className="min-h-[600px] rounded-lg border bg-card/30 backdrop-blur-sm">
+              <ResizablePanel defaultSize={50} minSize={30}>
+                <Card className="h-full border-0 bg-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <PieChart className="h-5 w-5 text-primary" />
+                      Asset Allocation
+                    </CardTitle>
+                    <CardDescription>Portfolio distribution by sector</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <AssetAllocationChart data={sectorAllocation} />
+                    <div className="grid grid-cols-2 gap-3 mt-6">
+                      {sectorAllocation.map((sector) => (
+                        <div 
+                          key={sector.name} 
+                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div
+                            className="w-4 h-4 rounded-full shadow-sm"
+                            style={{ backgroundColor: sector.color }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{sector.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {sector.allocation.toFixed(1)}% • {formatCurrency(sector.value)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="grid grid-cols-4 gap-8 text-right">
-                      <div>
-                        <div className="text-sm text-muted-foreground">Quantity</div>
-                        <div className="font-medium">{holding.quantity?.toLocaleString() || 'N/A'}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">Purchase Price</div>
-                        <div className="font-medium">{holding.purchase_price ? formatCurrency(holding.purchase_price) : 'N/A'}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">Current Value</div>
-                        <div className="font-medium">{formatCurrency(holding.current_value || 0)}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">Allocation</div>
-                        <div className="font-medium">
-                          {totalPortfolioValue > 0 ? ((holding.current_value || 0) / totalPortfolioValue * 100).toFixed(1) : '0.0'}%
+                  </CardContent>
+                </Card>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
+              <ResizablePanel defaultSize={50} minSize={30}>
+                <Card className="h-full border-0 bg-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-primary" />
+                      Performance Trend
+                    </CardTitle>
+                    <CardDescription>12-month portfolio growth</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={400}>
+                      <AreaChart data={performanceData}>
+                        <defs>
+                          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis 
+                          dataKey="month" 
+                          stroke="hsl(var(--muted-foreground))"
+                          style={{ fontSize: '12px' }}
+                        />
+                        <YAxis 
+                          tickFormatter={(value) => `£${(value / 1000000).toFixed(1)}M`}
+                          stroke="hsl(var(--muted-foreground))"
+                          style={{ fontSize: '12px' }}
+                        />
+                        <Tooltip 
+                          formatter={(value) => formatCurrency(value as number)}
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={3}
+                          fill="url(#colorValue)"
+                          animationDuration={1000}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </TabsContent>
+
+          <TabsContent value="holdings" className="space-y-4">
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Current Holdings</CardTitle>
+                <CardDescription>Individual positions and performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {portfolioHoldings.length > 0 ? portfolioHoldings.map((holding, index) => (
+                    <div 
+                      key={holding.id} 
+                      className={cn(
+                        "p-4 border rounded-lg transition-all duration-200 hover:shadow-md hover:border-primary/30",
+                        "bg-gradient-to-r from-card to-card/50"
+                      )}
+                      style={{
+                        animationDelay: `${index * 50}ms`,
+                        animation: 'fade-in 0.3s ease-out'
+                      }}
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-sm font-bold text-primary">
+                              {(holding.symbol || holding.asset_name)?.substring(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="font-semibold text-base">{holding.symbol || holding.asset_name}</div>
+                            <div className="text-sm text-muted-foreground">{holding.asset_name}</div>
+                            <Badge variant="secondary" className="text-xs mt-1">{holding.asset_type}</Badge>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-right">
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Quantity</div>
+                            <div className="font-semibold">{holding.quantity?.toLocaleString() || 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Purchase Price</div>
+                            <div className="font-semibold">{holding.purchase_price ? formatCurrency(holding.purchase_price) : 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Current Value</div>
+                            <div className="font-semibold text-primary">{formatCurrency(holding.current_value || 0)}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Allocation</div>
+                            <div className="font-semibold">
+                              {totalPortfolioValue > 0 ? ((holding.current_value || 0) / totalPortfolioValue * 100).toFixed(1) : '0.0'}%
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    No holdings found for this client
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                  )) : (
+                    <div className="text-center text-muted-foreground py-12">
+                      <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No holdings found for this client</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="performance" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
-              <CardDescription>Historical performance analysis</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `£${(value / 1000000).toFixed(1)}M`} />
-                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                  <Bar dataKey="value" fill="hsl(var(--primary))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="performance" className="space-y-4">
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Performance Metrics</CardTitle>
+                <CardDescription>Historical performance analysis</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={450}>
+                  <BarChart data={performanceData}>
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis 
+                      dataKey="month"
+                      stroke="hsl(var(--muted-foreground))"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `£${(value / 1000000).toFixed(1)}M`}
+                      stroke="hsl(var(--muted-foreground))"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value as number)}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      fill="url(#barGradient)"
+                      radius={[8, 8, 0, 0]}
+                      animationDuration={1000}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="risk" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {riskMetrics.map((metric) => (
-              <Card key={metric.metric}>
-                <CardHeader>
-                  <CardTitle>{metric.metric}</CardTitle>
-                  <CardDescription>{metric.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{metric.value}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="risk" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {riskMetrics.map((metric, index) => (
+                <Card 
+                  key={metric.metric}
+                  className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:shadow-lg transition-all duration-300"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animation: 'fade-in 0.5s ease-out'
+                  }}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{metric.metric}</CardTitle>
+                        <CardDescription className="text-sm">{metric.description}</CardDescription>
+                      </div>
+                      <Shield className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-4xl font-bold">{metric.value}</p>
+                      <Badge 
+                        variant={metric.status === "good" ? "default" : "secondary"}
+                        className="capitalize"
+                      >
+                        {metric.status}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

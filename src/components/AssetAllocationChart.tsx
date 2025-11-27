@@ -42,59 +42,67 @@ export function AssetAllocationChart({ data }: AssetAllocationProps) {
     return null;
   };
 
-  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const CustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const radius = outerRadius + 30;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-    if (percent < 0.05) return null; // Don't show labels for very small slices
+    if (percent < 0.05) return null;
 
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
+      <text
+        x={x}
+        y={y}
+        fill="hsl(var(--foreground))"
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
-        className="text-xs font-medium"
+        className="text-sm font-semibold"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${(percent * 100).toFixed(1)}%`}
       </text>
     );
   };
 
   return (
-    <div className="h-80 w-full">
+    <div className="h-80 w-full relative">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
+          <defs>
+            {data.map((entry, index) => (
+              <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={entry.color} stopOpacity={0.9} />
+                <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
+              </linearGradient>
+            ))}
+          </defs>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            labelLine={false}
+            labelLine={{
+              stroke: "hsl(var(--border))",
+              strokeWidth: 1,
+            }}
             label={CustomLabel}
-            outerRadius={100}
-            innerRadius={40}
+            outerRadius={110}
+            innerRadius={65}
             fill="#8884d8"
             dataKey="value"
-            strokeWidth={2}
-            stroke="white"
+            strokeWidth={3}
+            stroke="hsl(var(--background))"
+            animationBegin={0}
+            animationDuration={800}
           >
             {data.map((entry, index) => (
-              <Cell key={`allocation-cell-${index}`} fill={entry.color} />
+              <Cell 
+                key={`allocation-cell-${index}`} 
+                fill={`url(#gradient-${index})`}
+                className="hover:opacity-80 transition-opacity cursor-pointer"
+              />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend 
-            verticalAlign="bottom" 
-            height={36}
-            formatter={(value, entry: any) => (
-              <span style={{ color: entry.color }}>
-                {value} ({entry.payload.allocation}%)
-              </span>
-            )}
-          />
         </PieChart>
       </ResponsiveContainer>
     </div>
