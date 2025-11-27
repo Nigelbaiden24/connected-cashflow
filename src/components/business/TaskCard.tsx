@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { Clock, Edit, Trash2, Calendar, Flag } from "lucide-react";
-import { format, isToday, isTomorrow, isPast } from "date-fns";
+import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
 
 interface Task {
   id: number;
@@ -35,17 +35,24 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
   };
 
   const getDueDateInfo = (dueDate: string) => {
-    const date = new Date(dueDate);
-    if (isPast(date) && !task.completed) {
-      return { text: "Overdue", variant: "destructive" as const };
+    try {
+      const date = parseISO(dueDate);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      
+      if (isPast(date) && date < now && !task.completed) {
+        return { text: "Overdue", variant: "destructive" as const };
+      }
+      if (isToday(date)) {
+        return { text: "Today", variant: "default" as const };
+      }
+      if (isTomorrow(date)) {
+        return { text: "Tomorrow", variant: "secondary" as const };
+      }
+      return { text: format(date, "MMM dd"), variant: "outline" as const };
+    } catch {
+      return { text: "Invalid date", variant: "outline" as const };
     }
-    if (isToday(date)) {
-      return { text: "Today", variant: "default" as const };
-    }
-    if (isTomorrow(date)) {
-      return { text: "Tomorrow", variant: "secondary" as const };
-    }
-    return { text: format(date, "MMM dd"), variant: "outline" as const };
   };
 
   const dueDateInfo = getDueDateInfo(task.dueDate);
