@@ -19,6 +19,7 @@ import { NotificationsCenter } from "@/components/business/NotificationsCenter";
 import { DocumentHub } from "@/components/business/DocumentHub";
 import { DeadlinesTimeline } from "@/components/business/DeadlinesTimeline";
 import { TimeTrackingSnapshot } from "@/components/business/TimeTrackingSnapshot";
+import { TranslatedText } from "@/components/TranslatedText";
 
 export default function BusinessDashboard() {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ export default function BusinessDashboard() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <Home className="h-5 w-5 text-muted-foreground" />
-                  <h1 className="text-2xl font-bold">Business Dashboard</h1>
+                  <h1 className="text-2xl font-bold"><TranslatedText>Business Dashboard</TranslatedText></h1>
                 </div>
               </div>
             </div>
@@ -73,8 +74,8 @@ export default function BusinessDashboard() {
           <main className="flex-1 w-full space-y-6 p-6 bg-gradient-to-br from-background via-background to-muted/20 overflow-auto">
             {/* Welcome Banner */}
             <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-primary-foreground shadow-lg">
-              <h2 className="text-3xl font-bold mb-2">Welcome to Flowpulse Business Command Center</h2>
-              <p className="text-primary-foreground/90">Your enterprise-grade business automation platform</p>
+              <h2 className="text-3xl font-bold mb-2"><TranslatedText>Welcome to Flowpulse Business Command Center</TranslatedText></h2>
+              <p className="text-primary-foreground/90"><TranslatedText>Your enterprise-grade business automation platform</TranslatedText></p>
             </div>
 
             {/* Global Workload Summary */}
