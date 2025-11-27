@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import React from "react";
 import html2pdf from "html2pdf.js";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -247,6 +248,19 @@ export default function ScenarioAnalysis() {
 
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResults, setSimulationResults] = useState<any>(null);
+  
+  // Custom Scenario Builder State
+  const [customScenario, setCustomScenario] = useState({
+    name: "",
+    marketReturn: -10,
+    duration: 6
+  });
+  const [customScenarioResult, setCustomScenarioResult] = useState<{
+    impact: number;
+    finalValue: number;
+    percentage: number;
+  } | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
   const handleRunSimulation = async () => {
     if (!selectedClient) {
@@ -327,6 +341,69 @@ export default function ScenarioAnalysis() {
         description: "Failed to generate PDF",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleCalculateCustomScenario = async () => {
+    if (!selectedClient) {
+      toast({
+        title: "Client Required",
+        description: "Please select a client first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!customScenario.name.trim()) {
+      toast({
+        title: "Scenario Name Required",
+        description: "Please enter a name for your scenario",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const client = clients.find(c => c.id === selectedClient);
+    if (!client) return;
+
+    setIsCalculating(true);
+    toast({
+      title: "Calculating Impact",
+      description: "Analyzing custom scenario parameters...",
+    });
+
+    // Simulate calculation delay for realism
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      const portfolioValue = client.aum || 100000;
+      const monthlyImpact = (customScenario.marketReturn / 100) / 12;
+      const totalMonths = customScenario.duration;
+      
+      // Calculate compound return over duration
+      const finalValue = portfolioValue * Math.pow(1 + monthlyImpact, totalMonths);
+      const impact = finalValue - portfolioValue;
+      const percentage = ((finalValue - portfolioValue) / portfolioValue) * 100;
+
+      setCustomScenarioResult({
+        impact,
+        finalValue,
+        percentage
+      });
+
+      toast({
+        title: "Calculation Complete",
+        description: `Scenario "${customScenario.name}" analyzed successfully`,
+      });
+    } catch (error) {
+      console.error('Calculation error:', error);
+      toast({
+        title: "Calculation Failed",
+        description: "Unable to calculate scenario impact",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCalculating(false);
     }
   };
 
@@ -575,30 +652,116 @@ export default function ScenarioAnalysis() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-gradient-to-br from-card to-card/50 border-border/50">
               <CardHeader>
-                <CardTitle>Custom Scenario Builder</CardTitle>
-                <CardDescription>Model your own market scenarios</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-primary" />
+                  Custom Scenario Builder
+                </CardTitle>
+                <CardDescription>Model your own market scenarios with precision</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <div className="space-y-2">
-                  <Label>Scenario Name</Label>
-                  <Input placeholder="e.g., Tech Sector Correction" />
+                  <Label htmlFor="scenario-name">Scenario Name</Label>
+                  <Input 
+                    id="scenario-name"
+                    placeholder="e.g., Tech Sector Correction"
+                    value={customScenario.name}
+                    onChange={(e) => setCustomScenario(prev => ({ ...prev, name: e.target.value }))}
+                    className="bg-background/50"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label>Market Return (%)</Label>
-                  <Slider defaultValue={[-10]} min={-50} max={50} step={1} />
-                  <div className="text-sm text-muted-foreground text-right">-10%</div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Market Return</Label>
+                    <Badge 
+                      variant={customScenario.marketReturn >= 0 ? "default" : "destructive"}
+                      className="font-mono"
+                    >
+                      {customScenario.marketReturn > 0 ? '+' : ''}{customScenario.marketReturn}%
+                    </Badge>
+                  </div>
+                  <Slider 
+                    value={[customScenario.marketReturn]} 
+                    onValueChange={(value) => setCustomScenario(prev => ({ ...prev, marketReturn: value[0] }))}
+                    min={-50} 
+                    max={50} 
+                    step={1}
+                    className="cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>-50%</span>
+                    <span>0%</span>
+                    <span>+50%</span>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Duration (Months)</Label>
-                  <Slider defaultValue={[6]} min={1} max={36} step={1} />
-                  <div className="text-sm text-muted-foreground text-right">6 months</div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Duration</Label>
+                    <Badge variant="outline" className="font-mono">
+                      {customScenario.duration} {customScenario.duration === 1 ? 'month' : 'months'}
+                    </Badge>
+                  </div>
+                  <Slider 
+                    value={[customScenario.duration]} 
+                    onValueChange={(value) => setCustomScenario(prev => ({ ...prev, duration: value[0] }))}
+                    min={1} 
+                    max={36} 
+                    step={1}
+                    className="cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>1 month</span>
+                    <span>18 months</span>
+                    <span>36 months</span>
+                  </div>
                 </div>
-                <Button className="w-full">
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Calculate Impact
+                
+                <Button 
+                  className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  onClick={handleCalculateCustomScenario}
+                  disabled={isCalculating || !selectedClient}
+                >
+                  <Calculator className="h-4 w-4" />
+                  {isCalculating ? "Calculating..." : "Calculate Impact"}
                 </Button>
+
+                {customScenarioResult && (
+                  <div className="mt-6 p-4 rounded-lg border bg-gradient-to-br from-muted/50 to-muted/20 space-y-3 animate-fade-in">
+                    <div className="flex items-center justify-between pb-2 border-b">
+                      <span className="text-sm font-medium">Results</span>
+                      <Badge variant={customScenarioResult.percentage >= 0 ? "default" : "destructive"}>
+                        {customScenarioResult.percentage > 0 ? '+' : ''}{customScenarioResult.percentage.toFixed(2)}%
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Portfolio Impact</p>
+                        <p className={`text-lg font-bold ${customScenarioResult.impact >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {formatCurrency(customScenarioResult.impact)}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Final Value</p>
+                        <p className="text-lg font-bold">
+                          {formatCurrency(customScenarioResult.finalValue)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
+                      {customScenarioResult.impact >= 0 ? (
+                        <TrendingUp className="h-3 w-3 text-success" />
+                      ) : (
+                        <TrendingDown className="h-3 w-3 text-destructive" />
+                      )}
+                      <span>Based on {customScenario.duration} month projection</span>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -799,8 +962,8 @@ export default function ScenarioAnalysis() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {cashFlowData.slice(-1).map((year) => (
-              <>
+            {cashFlowData.slice(-1).map((year, yearIndex) => (
+              <React.Fragment key={`cashflow-metrics-${yearIndex}`}>
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium">Annual Income</CardTitle>
@@ -837,7 +1000,7 @@ export default function ScenarioAnalysis() {
                     <p className="text-xs text-muted-foreground mt-1">Annual contribution</p>
                   </CardContent>
                 </Card>
-              </>
+              </React.Fragment>
             ))}
           </div>
         </TabsContent>
