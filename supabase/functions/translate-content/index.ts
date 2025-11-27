@@ -93,7 +93,29 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!aiResponse.ok) {
-      throw new Error(`AI translation failed: ${aiResponse.statusText}`);
+      if (aiResponse.status === 429) {
+        console.error("AI translation rate limited");
+        return new Response(
+          JSON.stringify({ error: "AI translation rate limit exceeded. Please wait a moment and try again." }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      if (aiResponse.status === 402) {
+        console.error("AI translation payment required");
+        return new Response(
+          JSON.stringify({ error: "AI translation credits exhausted. Please top up your Lovable AI balance." }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      throw new Error(`AI translation failed: ${aiResponse.status} ${aiResponse.statusText}`);
     }
 
     const aiData = await aiResponse.json();
