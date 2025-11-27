@@ -229,7 +229,7 @@ const Revenue = () => {
                 subtitle="This month"
                 icon={DollarSign}
                 trend={{ value: parseFloat(revenueGrowth), direction: "up" }}
-                gradient="from-blue-500/20 to-blue-600/20"
+                gradient="from-primary/5 to-primary/10"
               />
               <RevenueMetricCard
                 title="Monthly Recurring"
@@ -237,21 +237,21 @@ const Revenue = () => {
                 subtitle="Subscription revenue"
                 icon={TrendingUp}
                 trend={{ value: parseFloat(recurringGrowth), direction: "up" }}
-                gradient="from-green-500/20 to-green-600/20"
+                gradient="from-success/5 to-success/10"
               />
               <RevenueMetricCard
                 title="Avg. Transaction"
                 value={`£${avgTransaction.toLocaleString()}`}
                 subtitle="Based on current month"
                 icon={CreditCard}
-                gradient="from-purple-500/20 to-purple-600/20"
+                gradient="from-primary/10 to-primary/5"
               />
               <RevenueMetricCard
                 title="Pending Payments"
                 value={`£${pendingAmount.toLocaleString()}`}
                 subtitle={`${recentTransactions.filter(t => t.status === 'pending').length} invoices pending`}
                 icon={Clock}
-                gradient="from-orange-500/20 to-orange-600/20"
+                gradient="from-warning/5 to-warning/10"
               />
             </div>
 
@@ -272,7 +272,7 @@ const Revenue = () => {
                         </div>
                         <div className="text-2xl font-bold mb-1">£{stream.amount.toLocaleString()}</div>
                         <div className={`flex items-center gap-1 text-sm ${
-                          stream.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                          stream.trend === 'up' ? 'text-success' : 'text-warning'
                         }`}>
                           {stream.trend === 'up' ? (
                             <TrendingUp className="h-3 w-3" />
@@ -289,7 +289,7 @@ const Revenue = () => {
             </Card>
 
             {/* Transactions Section */}
-            <Card className="bg-gradient-to-br from-card to-card/50">
+            <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-semibold">Recent Transactions</h3>

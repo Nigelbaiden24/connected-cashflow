@@ -20,11 +20,11 @@ export function RevenueMetricCard({
   subtitle, 
   icon: Icon, 
   trend,
-  gradient = "from-primary/20 to-primary/10"
+  gradient = "from-primary/5 to-primary/10"
 }: RevenueMetricCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 group-hover:opacity-70 transition-opacity`} />
+    <Card className="relative overflow-hidden hover:shadow-lg transition-all duration-300 group bg-card">
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none`} />
       <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
