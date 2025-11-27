@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { MeetingIntegration } from "@/components/MeetingIntegration";
-import { TextToSpeech } from "@/components/TextToSpeech";
 import { MeetingBooker } from "@/components/MeetingBooker";
 import { FileManager } from "@/components/FileManager";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
@@ -706,11 +705,6 @@ const Chat = () => {
                   <div className="whitespace-pre-wrap">{message.content}</div>
                 )}
               </div>
-              {message.type === "assistant" && (
-                <div className="mt-2">
-                  <TextToSpeech text={message.content} />
-                </div>
-              )}
             </div>
 
             {message.type === "user" && (
