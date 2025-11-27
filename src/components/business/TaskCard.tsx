@@ -57,13 +57,8 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
 
   const dueDateInfo = getDueDateInfo(task.dueDate);
 
-  const borderColorClass = 
-    task.priority === 'high' ? 'border-l-destructive' :
-    task.priority === 'medium' ? 'border-l-primary' :
-    'border-l-muted-foreground';
-
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in border-l-4 ${borderColorClass}`}>
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Checkbox 
