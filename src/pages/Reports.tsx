@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
+import { TranslatedText } from "@/components/TranslatedText";
 
 interface Report {
   id: string;
@@ -218,10 +219,10 @@ export default function Reports() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Investment Research
+            <TranslatedText>Investment Research</TranslatedText>
           </h1>
           <p className="text-muted-foreground mt-2">
-            Access comprehensive market analysis and investment insights
+            <TranslatedText>Access comprehensive market analysis and investment insights</TranslatedText>
           </p>
         </div>
         <div className="flex gap-2">
@@ -244,7 +245,7 @@ export default function Reports() {
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent className="max-h-[400px]">
-            <SelectItem value="all">All Reports</SelectItem>
+            <SelectItem value="all"><TranslatedText>All Reports</TranslatedText></SelectItem>
             {reportTypes.map((type) => (
               <SelectItem key={type} value={type}>
                 {type}
@@ -271,11 +272,11 @@ export default function Reports() {
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Reports Available</h3>
+            <h3 className="text-lg font-semibold mb-2"><TranslatedText>No Reports Available</TranslatedText></h3>
             <p className="text-muted-foreground text-center max-w-md">
               {searchQuery 
-                ? `No reports match "${searchQuery}"`
-                : "Research reports and analysis will appear here once they are published."}
+                ? <><TranslatedText>No reports match</TranslatedText> "{searchQuery}"</>
+                : <TranslatedText>Research reports and analysis will appear here once they are published.</TranslatedText>}
             </p>
           </CardContent>
         </Card>
@@ -296,7 +297,7 @@ export default function Reports() {
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold">{category}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {categoryReports.length} report{categoryReports.length !== 1 ? 's' : ''} available
+                      {categoryReports.length} <TranslatedText>report</TranslatedText>{categoryReports.length !== 1 ? 's' : ''} <TranslatedText>available</TranslatedText>
                     </p>
                   </div>
                 </div>
@@ -342,14 +343,14 @@ export default function Reports() {
                               className="flex-1 group/btn hover:bg-primary hover:text-primary-foreground transition-all"
                             >
                               <Eye className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                              View
+                              <TranslatedText>View</TranslatedText>
                             </Button>
                             <Button 
                               onClick={() => downloadReport(report)}
                               className="flex-1 group/btn"
                             >
                               <Download className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                              Download
+                              <TranslatedText>Download</TranslatedText>
                             </Button>
                           </div>
                         </div>
