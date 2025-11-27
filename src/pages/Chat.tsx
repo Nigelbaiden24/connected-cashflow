@@ -128,7 +128,7 @@ const Chat = () => {
 
   const loadConversation = async (conversationId: string) => {
     const { data, error } = await supabase
-      .from('messages')
+      .from('chat_messages')
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
@@ -203,7 +203,7 @@ const Chat = () => {
     }
 
     const { error } = await supabase
-      .from('messages')
+      .from('chat_messages')
       .insert({
         conversation_id: convId,
         type: message.type,

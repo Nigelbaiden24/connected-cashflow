@@ -1163,6 +1163,41 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          category: string | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_compliance_documents: {
         Row: {
           client_id: string | null
