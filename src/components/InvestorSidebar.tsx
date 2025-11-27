@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { TranslatedText } from "./TranslatedText";
 import { 
   FileText,
   BarChart3,
@@ -153,7 +154,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
         <div className="flex items-center gap-2 px-2 py-2">
           <img src={flowpulseLogo} alt="FlowPulse Logo" className="h-8 w-8" />
           {!collapsed && (
-            <span className="font-semibold text-sidebar-foreground">FlowPulse Investor</span>
+            <TranslatedText as="span" className="font-semibold text-sidebar-foreground">FlowPulse Investor</TranslatedText>
           )}
         </div>
       </SidebarHeader>
@@ -161,7 +162,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/70">
-            {!collapsed && "Investment Portal"}
+            {!collapsed && <TranslatedText>Investment Portal</TranslatedText>}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -175,7 +176,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
                         className={getNavClassName(item.url)}
                       >
                         <Icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
+                        {!collapsed && <TranslatedText as="span">{item.title}</TranslatedText>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -189,7 +190,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
                           {navItem}
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                          <p>{item.title}</p>
+                          <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -238,7 +239,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p>Logout</p>
+                  <TranslatedText as="p">Logout</TranslatedText>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

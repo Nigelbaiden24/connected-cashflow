@@ -3,6 +3,7 @@ import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
+import { TranslatedText } from "./TranslatedText";
 
 interface InvestorLayoutProps {
   children: ReactNode;
@@ -21,7 +22,7 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
             <SidebarTrigger>
               <Menu className="h-5 w-5" />
             </SidebarTrigger>
-            <h1 className="text-lg font-semibold">FlowPulse Investor</h1>
+            <TranslatedText as="h1" className="text-lg font-semibold">FlowPulse Investor</TranslatedText>
           </header>
           
           <main className="flex-1 sidebar-layout-main">

@@ -3,6 +3,7 @@ import { BusinessSidebar } from "./BusinessSidebar";
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
+import { TranslatedText } from "./TranslatedText";
 
 interface BusinessLayoutProps {
   children: ReactNode;
@@ -22,7 +23,7 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
             <SidebarTrigger>
               <Menu className="h-5 w-5" />
             </SidebarTrigger>
-            <h1 className="text-lg font-semibold">FlowPulse Business</h1>
+            <TranslatedText as="h1" className="text-lg font-semibold">FlowPulse Business</TranslatedText>
           </header>
           
           <main className="flex-1 sidebar-layout-main">
