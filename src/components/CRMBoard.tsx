@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain, ChevronLeft, ChevronRight, LayoutGrid, Table2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
@@ -56,6 +56,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [showAIPanel, setShowAIPanel] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -403,13 +404,26 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-500";
+        return "bg-destructive";
       case "medium":
-        return "bg-yellow-500";
+        return "bg-warning";
       case "low":
-        return "bg-green-500";
+        return "bg-success";
       default:
-        return "bg-gray-500";
+        return "bg-muted";
+    }
+  };
+
+  const getPriorityGradient = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "from-destructive/20 to-destructive/5";
+      case "medium":
+        return "from-warning/20 to-warning/5";
+      case "low":
+        return "from-success/20 to-success/5";
+      default:
+        return "from-primary/20 to-primary/5";
     }
   };
 
@@ -636,6 +650,27 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h2 className="text-2xl font-bold tracking-tight">CRM Board</h2>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* View Toggle */}
+          <div className="flex items-center border border-border/50 rounded-lg p-1 bg-background">
+            <Button
+              variant={viewMode === "table" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("table")}
+              className="h-7 px-3"
+            >
+              <Table2 className="h-3.5 w-3.5 mr-1.5" />
+              Table
+            </Button>
+            <Button
+              variant={viewMode === "cards" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("cards")}
+              className="h-7 px-3"
+            >
+              <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
+              Cards
+            </Button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -813,11 +848,12 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         existingColumns={customColumns}
       />
 
-      {/* Enhanced Contacts Table */}
-      <Card className="border-border/50 shadow-sm overflow-hidden">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+      {/* Contacts View - Table or Cards */}
+      {viewMode === "table" ? (
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
               <thead>
                 <tr className={compactView ? "bg-gradient-to-r from-muted/40 to-muted/20 border-b h-9" : "bg-gradient-to-r from-muted/40 to-muted/20 border-b"}>
                   <th className="p-0 w-12">
@@ -1251,6 +1287,214 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
           </div>
         </CardContent>
       </Card>
+      ) : (
+        /* Cards View */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {paginatedContacts.map((contact) => (
+            <Card 
+              key={contact.id} 
+              className="border-border/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
+              onClick={() => navigate(isBusiness ? `/business/crm/${contact.id}` : `/finance-crm/${contact.id}`)}
+            >
+              <div className={`h-1 bg-gradient-to-r ${getPriorityGradient(contact.priority)}`} />
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1 flex-1">
+                    <h3 className="font-semibold text-lg leading-none">{contact.name}</h3>
+                    {contact.position && (
+                      <p className="text-sm text-muted-foreground">{contact.position}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedContacts.includes(contact.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedContacts([...selectedContacts, contact.id]);
+                        } else {
+                          setSelectedContacts(selectedContacts.filter((id) => id !== contact.id));
+                        }
+                      }}
+                    />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(isBusiness ? `/business/crm/${contact.id}` : `/finance-crm/${contact.id}`);
+                        }} className="cursor-pointer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteContact(contact.id);
+                          }}
+                          className="text-destructive cursor-pointer"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                {contact.company && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Company:</span>
+                    <span className="font-medium">{contact.company}</span>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  {contact.email && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="truncate">{contact.email}</span>
+                    </div>
+                  )}
+                  {contact.phone && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>{contact.phone}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">
+                      {contact.status || "active"}
+                    </Badge>
+                    <Badge 
+                      variant={contact.priority === "high" ? "destructive" : contact.priority === "medium" ? "default" : "secondary"} 
+                      className="text-xs"
+                    >
+                      {contact.priority || "medium"}
+                    </Badge>
+                  </div>
+                  <AILeadScoringBadge score={contact.ai_lead_score || 0} size="sm" />
+                </div>
+
+                {customColumns.length > 0 && (
+                  <div className="pt-2 border-t space-y-1">
+                    {customColumns.slice(0, 2).map((col) => (
+                      <div key={col.id} className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">{col.column_name}:</span>
+                        <span className="font-medium truncate max-w-[60%]">
+                          {customData[contact.id]?.[col.id] || "—"}
+                        </span>
+                      </div>
+                    ))}
+                    {customColumns.length > 2 && (
+                      <span className="text-xs text-muted-foreground">+{customColumns.length - 2} more</span>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination for both views */}
+      {viewMode === "cards" && (
+        <Card className="border-border/50 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="pageSize-cards" className="text-sm text-muted-foreground">
+                    Show:
+                  </Label>
+                  <Select
+                    value={pageSize.toString()}
+                    onValueChange={(value) => {
+                      setPageSize(Number(value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger id="pageSize-cards" className="w-[80px] h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12">12</SelectItem>
+                      <SelectItem value="24">24</SelectItem>
+                      <SelectItem value="48">48</SelectItem>
+                      <SelectItem value="96">96</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1}-{Math.min(endIndex, filteredContacts.length)} of {filteredContacts.length}
+                </p>
+              </div>
+
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                  </PaginationItem>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  })}
+
+                  <PaginationItem>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="gap-1"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Enhanced Custom Tables */}
       <div className="grid gap-6">
