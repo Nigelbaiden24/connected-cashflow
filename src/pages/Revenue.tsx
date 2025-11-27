@@ -9,11 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock, ArrowLeft, Plus, Search, Filter, ArrowUpDown, BarChart3, X } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Clock, ArrowLeft, Plus, Search, Filter, ArrowUpDown, BarChart3, X, Download, FileText, Calendar as CalendarIcon, RefreshCw, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RevenueMetricCard } from "@/components/business/RevenueMetricCard";
 import { RevenueChart } from "@/components/business/RevenueChart";
 import { TransactionCard } from "@/components/business/TransactionCard";
+import { format, startOfMonth, endOfMonth, startOfYear, subMonths, isWithinInterval, parseISO } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const Revenue = () => {
   const navigate = useNavigate();
@@ -24,6 +29,8 @@ const Revenue = () => {
   const [sortBy, setSortBy] = useState<string>("date");
   const [showFilters, setShowFilters] = useState(false);
   const [deleteTransactionId, setDeleteTransactionId] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
+  const [quickPeriod, setQuickPeriod] = useState<string>("all");
 
   const monthlyData = [
     { month: "January", revenue: 198000, recurring: 42000, transactions: 14 },
@@ -140,8 +147,89 @@ const Revenue = () => {
     setEditDialogOpen(true);
   };
 
+  const handleQuickPeriod = (period: string) => {
+    setQuickPeriod(period);
+    const now = new Date();
+    
+    switch (period) {
+      case "this-month":
+        setDateRange({ from: startOfMonth(now), to: endOfMonth(now) });
+        break;
+      case "last-month":
+        const lastMonth = subMonths(now, 1);
+        setDateRange({ from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) });
+        break;
+      case "this-year":
+        setDateRange({ from: startOfYear(now), to: now });
+        break;
+      case "all":
+      default:
+        setDateRange({ from: undefined, to: undefined });
+        break;
+    }
+  };
+
+  const handleExportCSV = () => {
+    const csvContent = [
+      ["Client", "Amount", "Date", "Status", "Category"],
+      ...filteredAndSortedTransactions.map(t => [
+        t.client,
+        t.amount,
+        t.date,
+        t.status,
+        t.category || "N/A"
+      ])
+    ].map(row => row.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transactions-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    
+    toast({
+      title: "Success",
+      description: "Transactions exported to CSV",
+    });
+  };
+
+  const handlePrint = () => {
+    window.print();
+    toast({
+      title: "Print",
+      description: "Opening print dialog",
+    });
+  };
+
+  const handleRefresh = () => {
+    toast({
+      title: "Refreshed",
+      description: "Transaction data updated",
+    });
+  };
+
   const filteredAndSortedTransactions = useMemo(() => {
     let filtered = recentTransactions;
+
+    // Date range filter
+    if (dateRange.from || dateRange.to) {
+      filtered = filtered.filter(t => {
+        try {
+          const transactionDate = parseISO(t.date);
+          if (dateRange.from && dateRange.to) {
+            return isWithinInterval(transactionDate, { start: dateRange.from, end: dateRange.to });
+          } else if (dateRange.from) {
+            return transactionDate >= dateRange.from;
+          } else if (dateRange.to) {
+            return transactionDate <= dateRange.to;
+          }
+          return true;
+        } catch {
+          return true;
+        }
+      });
+    }
 
     // Search filter
     if (searchQuery) {
@@ -173,12 +261,14 @@ const Revenue = () => {
     return sorted;
   }, [recentTransactions, searchQuery, filterStatus, sortBy]);
 
-  const hasActiveFilters = searchQuery || filterStatus !== "all";
-
   const clearFilters = () => {
     setSearchQuery("");
     setFilterStatus("all");
+    setDateRange({ from: undefined, to: undefined });
+    setQuickPeriod("all");
   };
+
+  const hasActiveFilters = searchQuery || filterStatus !== "all" || dateRange.from || dateRange.to;
 
   const revenueStreams = [
     { name: "Product Sales", amount: 125000, growth: 12.5, trend: "up" },
@@ -212,13 +302,39 @@ const Revenue = () => {
                 </div>
               </div>
 
-              <Button 
-                className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" 
-                onClick={() => setDialogOpen(true)}
-              >
-                <Plus className="h-4 w-4" />
-                Add Transaction
-              </Button>
+              <div className="flex gap-2 flex-wrap">
+                <Button 
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleRefresh}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleExportCSV}
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handlePrint}
+                >
+                  <Printer className="h-4 w-4" />
+                  Print
+                </Button>
+                <Button 
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70" 
+                  onClick={() => setDialogOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Transaction
+                </Button>
+              </div>
             </div>
 
             {/* Metrics */}
@@ -291,11 +407,85 @@ const Revenue = () => {
             {/* Transactions Section */}
             <Card>
               <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                   <h3 className="text-xl font-semibold">Recent Transactions</h3>
-                  <span className="text-sm text-muted-foreground">
-                    {filteredAndSortedTransactions.length} transactions
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-sm">
+                      {filteredAndSortedTransactions.length} transactions
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Quick Period Filters */}
+                <div className="flex gap-2 mb-4 flex-wrap">
+                  <Button
+                    variant={quickPeriod === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleQuickPeriod("all")}
+                  >
+                    All Time
+                  </Button>
+                  <Button
+                    variant={quickPeriod === "this-month" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleQuickPeriod("this-month")}
+                  >
+                    This Month
+                  </Button>
+                  <Button
+                    variant={quickPeriod === "last-month" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleQuickPeriod("last-month")}
+                  >
+                    Last Month
+                  </Button>
+                  <Button
+                    variant={quickPeriod === "this-year" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleQuickPeriod("this-year")}
+                  >
+                    This Year
+                  </Button>
+                  
+                  {/* Custom Date Range */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "gap-2",
+                          (dateRange.from || dateRange.to) && quickPeriod === "all" && "border-primary"
+                        )}
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                        {dateRange.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "MMM dd, yyyy")
+                          )
+                        ) : (
+                          "Custom Range"
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="range"
+                        selected={{ from: dateRange.from, to: dateRange.to }}
+                        onSelect={(range) => {
+                          setDateRange({ from: range?.from, to: range?.to });
+                          setQuickPeriod("all");
+                        }}
+                        initialFocus
+                        numberOfMonths={2}
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {/* Search and Filters */}
