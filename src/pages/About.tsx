@@ -173,6 +173,29 @@ const About = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12 space-y-16">
+        {/* AI-Generated Overview */}
+        <section className="max-w-4xl mx-auto">
+          <Card className="border-2 border-primary/30 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Sparkles className="h-6 w-6 text-blue-600" />
+                Our Mission
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <p className="text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                  {aiContent}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Hero Section with AI Image */}
         <section className="text-center space-y-8 py-12">
           {heroImage && (
@@ -200,29 +223,6 @@ const About = () => {
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             FlowPulse delivers enterprise-grade solutions across financial services, business operations, and investment intelligence.
           </p>
-        </section>
-
-        {/* AI-Generated Overview */}
-        <section className="max-w-4xl mx-auto">
-          <Card className="border-2 border-primary/30 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-emerald-500/10 backdrop-blur shadow-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <Sparkles className="h-6 w-6 text-blue-600" />
-                Our Mission
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : (
-                <p className="text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap">
-                  {aiContent}
-                </p>
-              )}
-            </CardContent>
-          </Card>
         </section>
 
         <Separator className="my-16 bg-gradient-to-r from-transparent via-primary/50 to-transparent h-px" />
