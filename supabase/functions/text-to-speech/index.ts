@@ -12,39 +12,57 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voice = "alloy" } = await req.json();
+    const { text } = await req.json();
     
     if (!text) {
       throw new Error("Text is required");
     }
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) {
-      throw new Error("OPENAI_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     console.log("Generating speech for text:", text.substring(0, 50));
 
-    const response = await fetch("https://api.openai.com/v1/audio/speech", {
+    // Use Lovable AI with TTS model
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "tts-1",
         input: text,
-        voice: voice,
+        voice: "alloy",
         response_format: "mp3",
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("OpenAI API error:", errorData);
-      const errorMessage = errorData.error?.message || "Failed to generate speech";
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Payment required. Please add credits to your Lovable workspace." }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      const errorText = await response.text();
+      console.error("Lovable AI error:", response.status, errorText);
       return new Response(
-        JSON.stringify({ error: errorMessage }),
+        JSON.stringify({ error: "Failed to generate speech" }),
         {
           status: response.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

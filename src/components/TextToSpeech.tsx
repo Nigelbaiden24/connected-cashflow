@@ -3,31 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface TextToSpeechProps {
   text: string;
 }
 
-const voices = [
-  { id: "alloy", name: "Alloy (Neutral)" },
-  { id: "echo", name: "Echo (Male)" },
-  { id: "fable", name: "Fable (British)" },
-  { id: "onyx", name: "Onyx (Deep)" },
-  { id: "nova", name: "Nova (Female)" },
-  { id: "shimmer", name: "Shimmer (Soft)" },
-];
-
 export const TextToSpeech = ({ text }: TextToSpeechProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState("alloy");
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
@@ -41,7 +24,7 @@ export const TextToSpeech = ({ text }: TextToSpeechProps) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("text-to-speech", {
-        body: { text, voice: selectedVoice },
+        body: { text },
       });
 
       if (error) {
@@ -74,8 +57,10 @@ export const TextToSpeech = ({ text }: TextToSpeechProps) => {
       
       toast({
         title: "Text-to-Speech Error",
-        description: errorMessage.includes("quota") || errorMessage.includes("billing")
-          ? "OpenAI quota exceeded. Please check your billing at platform.openai.com"
+        description: errorMessage.includes("Rate limit") 
+          ? "Rate limit exceeded. Please try again later."
+          : errorMessage.includes("Payment required")
+          ? "Please add credits to your Lovable workspace."
           : errorMessage,
         variant: "destructive",
       });
@@ -85,34 +70,20 @@ export const TextToSpeech = ({ text }: TextToSpeechProps) => {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-        <SelectTrigger className="w-[140px] h-8">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {voices.map((voice) => (
-            <SelectItem key={voice.id} value={voice.id}>
-              {voice.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleSpeak}
-        disabled={isLoading || !text}
-        className="h-8 w-8 p-0"
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : isPlaying ? (
-          <VolumeX className="h-4 w-4" />
-        ) : (
-          <Volume2 className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleSpeak}
+      disabled={isLoading || !text}
+      className="h-8 w-8 p-0"
+    >
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : isPlaying ? (
+        <VolumeX className="h-4 w-4" />
+      ) : (
+        <Volume2 className="h-4 w-4" />
+      )}
+    </Button>
   );
 };
