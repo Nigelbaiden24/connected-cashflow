@@ -24,7 +24,15 @@ export function TaskStats({ tasks }: TaskStatsProps) {
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
   const overdueTasks = tasks.filter(t => {
-    return !t.completed && new Date(t.dueDate) < new Date();
+    if (t.completed) return false;
+    try {
+      const dueDate = new Date(t.dueDate);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return dueDate < now;
+    } catch {
+      return false;
+    }
   }).length;
 
   const stats = [
