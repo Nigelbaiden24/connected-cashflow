@@ -158,12 +158,7 @@ const Chat = () => {
 
   const startNewConversation = async () => {
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to save conversations",
-        variant: "destructive",
-      });
-      return null;
+      return null; // Silently allow guest usage
     }
 
     const { data, error } = await supabase
