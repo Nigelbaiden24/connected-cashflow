@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { Users, DollarSign, TrendingUp, Calendar, Briefcase, Target, Filter, Download, Plus, Phone, Mail, Clock, ArrowLeft } from "lucide-react";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from "recharts";
+import { Users, DollarSign, TrendingUp, Calendar, Briefcase, Target, Filter, Download, Plus, Phone, Mail, Clock, ArrowLeft, Activity, Shield, PieChart as PieChartIcon } from "lucide-react";
+import { PracticeMetricCard } from "@/components/practice/PracticeMetricCard";
+import { ActivityFeedCard } from "@/components/practice/ActivityFeedCard";
+import { cn } from "@/lib/utils";
 
 // Practice management data
 const practiceMetrics = {
@@ -51,10 +53,10 @@ const revenueData = [
 ];
 
 const clientSegmentation = [
-  { segment: "High Net Worth", value: 62, color: "#8884d8", clients: 48, aum: 88500000 },
-  { segment: "Mass Affluent", value: 27, color: "#82ca9d", clients: 102, aum: 38600000 },
-  { segment: "Emerging Wealth", value: 8, color: "#ffc658", clients: 95, aum: 11400000 },
-  { segment: "Retirement Focus", value: 3, color: "#ff7300", clients: 44, aum: 4300000 }
+  { segment: "High Net Worth", value: 62, color: "hsl(var(--chart-1))", clients: 48, aum: 88500000 },
+  { segment: "Mass Affluent", value: 27, color: "hsl(var(--chart-2))", clients: 102, aum: 38600000 },
+  { segment: "Emerging Wealth", value: 8, color: "hsl(var(--chart-3))", clients: 95, aum: 11400000 },
+  { segment: "Retirement Focus", value: 3, color: "hsl(var(--chart-5))", clients: 44, aum: 4300000 }
 ];
 
 const upcomingTasks = [
@@ -73,8 +75,6 @@ const recentActivities = [
   { id: 3, type: "trade_execution", client: "Susan Garcia", description: "Year-end tax loss harvesting executed", time: "6 hours ago" },
   { id: 4, type: "compliance", client: "All Clients", description: "Annual compliance audit completed", time: "1 day ago" },
   { id: 5, type: "document_upload", client: "Mark Johnson", description: "2025 financial plan approved and signed", time: "1 day ago" },
-  { id: 6, type: "client_meeting", client: "Rachel Kumar", description: "Quarterly business review meeting held", time: "2 days ago" },
-  { id: 7, type: "trade_execution", client: "David Chen", description: "Portfolio rebalancing to target allocation", time: "3 days ago" }
 ];
 
 const performanceMetrics = [
@@ -88,8 +88,6 @@ const performanceMetrics = [
 
 export default function PracticeManagement() {
   const navigate = useNavigate();
-  const [selectedTimeframe, setSelectedTimeframe] = useState("12months");
-  const [selectedSegment, setSelectedSegment] = useState("all");
   const [activities, setActivities] = useState(recentActivities);
 
   // Auto-update activities every 30 seconds
@@ -98,7 +96,7 @@ export default function PracticeManagement() {
       setActivities(prev => [
         {
           id: Date.now(),
-          type: ['client_meeting', 'new_client', 'trade_execution', 'compliance', 'document_upload'][Math.floor(Math.random() * 5)],
+          type: ['client_meeting', 'new_client', 'trade_execution'][Math.floor(Math.random() * 3)],
           client: 'System Update',
           description: 'Activity auto-refreshed',
           time: 'Just now'
@@ -111,7 +109,6 @@ export default function PracticeManagement() {
   }, []);
 
   const handleExportReport = () => {
-    // Create comprehensive report data
     const reportData = {
       id: `report-${Date.now()}`,
       title: 'Practice Management Report',
@@ -130,10 +127,7 @@ export default function PracticeManagement() {
       }
     };
 
-    // Store report data in sessionStorage to pass to Reports page
     sessionStorage.setItem('exportedReport', JSON.stringify(reportData));
-    
-    // Navigate to reports page
     navigate('/reports');
   };
 
@@ -160,354 +154,445 @@ export default function PracticeManagement() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "excellent": return "text-success";
-      case "good": return "text-primary";
-      case "fair": return "text-warning";
-      case "poor": return "text-destructive";
-      default: return "text-muted-foreground";
+      case "excellent": return "bg-success text-success-foreground";
+      case "good": return "bg-primary text-primary-foreground";
+      case "fair": return "bg-warning text-warning-foreground";
+      case "poor": return "bg-destructive text-destructive-foreground";
+      default: return "bg-muted text-muted-foreground";
     }
   };
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "client_meeting": return Users;
-      case "new_client": return Plus;
-      case "trade_execution": return TrendingUp;
-      case "compliance": return Briefcase;
-      case "document_upload": return Target;
-      default: return Users;
-    }
-  };
+  // Generate sparkline data
+  const generateSparkline = () => Array.from({ length: 20 }, () => Math.random() * 40 + 5);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Practice Management</h1>
-            <p className="text-muted-foreground">Comprehensive business analytics and client management</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Practice Management
+              </h1>
+              <p className="text-muted-foreground mt-1">Comprehensive business analytics and client insights</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Filter className="h-4 w-4" />
+              Filter
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportReport} className="gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <Button size="sm" onClick={() => navigate('/calendar')} className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Schedule
+            </Button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleExportReport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button size="sm" onClick={() => navigate('/calendar')}>
-            <Calendar className="h-4 w-4 mr-2" />
-            Schedule Review
-          </Button>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <PracticeMetricCard
+            title="Total Clients"
+            value={practiceMetrics.totalClients}
+            subtitle="this year"
+            trend="up"
+            trendValue="+79"
+            icon={<Users className="h-5 w-5 text-primary" />}
+            sparkline={generateSparkline()}
+            variant="primary"
+          />
+          <PracticeMetricCard
+            title="Assets Under Management"
+            value={formatCurrency(practiceMetrics.assetsUnderManagement)}
+            subtitle="YTD"
+            trend="up"
+            trendValue={`+${practiceMetrics.growthRate}%`}
+            icon={<DollarSign className="h-5 w-5 text-success" />}
+            sparkline={generateSparkline()}
+            variant="success"
+          />
+          <PracticeMetricCard
+            title="Monthly Revenue"
+            value={formatCurrency(practiceMetrics.monthlyRevenue)}
+            subtitle="YoY"
+            trend="up"
+            trendValue="+34.5%"
+            icon={<TrendingUp className="h-5 w-5 text-chart-3" />}
+            sparkline={generateSparkline()}
+            variant="default"
+          />
+          <PracticeMetricCard
+            title="Client Retention"
+            value={`${practiceMetrics.clientRetention}%`}
+            subtitle="Above industry average"
+            icon={<Target className="h-5 w-5 text-chart-5" />}
+            variant="default"
+          />
         </div>
-      </div>
 
-      {/* Key Performance Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{practiceMetrics.totalClients}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+79 this year</span>
-            </p>
-          </CardContent>
-        </Card>
+        {/* Main Content Tabs */}
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="bg-card/50 backdrop-blur-sm border border-border/50">
+            <TabsTrigger value="overview" className="gap-2">
+              <Activity className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="clients" className="gap-2">
+              <Users className="h-4 w-4" />
+              Clients
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Revenue
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="gap-2">
+              <Clock className="h-4 w-4" />
+              Tasks
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="gap-2">
+              <Shield className="h-4 w-4" />
+              Performance
+            </TabsTrigger>
+          </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assets Under Management</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(practiceMetrics.assetsUnderManagement)}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+{practiceMetrics.growthRate}% YTD</span>
-            </p>
-          </CardContent>
-        </Card>
+          <TabsContent value="overview" className="space-y-4">
+            <ResizablePanelGroup direction="horizontal" className="min-h-[500px] rounded-lg border bg-card/30 backdrop-blur-sm">
+              <ResizablePanel defaultSize={60} minSize={40}>
+                <Card className="h-full border-0 bg-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-primary" />
+                      Client Growth Trend
+                    </CardTitle>
+                    <CardDescription>New client acquisition over time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <ComposedChart data={clientGrowth}>
+                        <defs>
+                          <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis 
+                          dataKey="month" 
+                          stroke="hsl(var(--muted-foreground))"
+                          style={{ fontSize: '12px' }}
+                        />
+                        <YAxis 
+                          stroke="hsl(var(--muted-foreground))"
+                          style={{ fontSize: '12px' }}
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="totalClients" 
+                          stroke="hsl(var(--primary))" 
+                          strokeWidth={3}
+                          fill="url(#growthGradient)"
+                          name="Total Clients"
+                        />
+                        <Bar 
+                          dataKey="newClients" 
+                          fill="hsl(var(--chart-5))" 
+                          opacity={0.6}
+                          radius={[4, 4, 0, 0]}
+                          name="New Clients"
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              </ResizablePanel>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(practiceMetrics.monthlyRevenue)}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">+34.5% YoY growth</span>
-            </p>
-          </CardContent>
-        </Card>
+              <ResizableHandle withHandle />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Client Retention</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{practiceMetrics.clientRetention}%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-success">Above industry average</span>
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+              <ResizablePanel defaultSize={40} minSize={30}>
+                <ActivityFeedCard activities={activities} />
+              </ResizablePanel>
+            </ResizablePanelGroup>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Business Overview</TabsTrigger>
-          <TabsTrigger value="clients">Client Analytics</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue Analysis</TabsTrigger>
-          <TabsTrigger value="tasks">Task Management</TabsTrigger>
-          <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Client Growth */}
-            <Card>
+            {/* Client Segmentation */}
+            <Card className="bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>Client Growth Trend</CardTitle>
-                <CardDescription>New client acquisition over time</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChartIcon className="h-5 w-5 text-primary" />
+                  Client Segmentation by AUM
+                </CardTitle>
+                <CardDescription>Distribution of clients across wealth segments</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={clientGrowth}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="totalClients" stroke="hsl(var(--primary))" strokeWidth={2} name="Total Clients" />
-                    <Bar dataKey="newClients" fill="hsl(var(--muted-foreground))" opacity={0.3} name="New Clients" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activities */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activities</CardTitle>
-                <CardDescription>Latest practice activities and updates</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {activities.slice(0, 5).map((activity) => {
-                    const ActivityIcon = getActivityIcon(activity.type);
-                    return (
-                      <div key={activity.id} className="flex items-start gap-3">
-                        <div className="p-2 rounded-full bg-primary/10 text-primary">
-                          <ActivityIcon className="h-4 w-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{activity.client}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {activity.type.replace('_', ' ')}
-                            </Badge>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <defs>
+                        {clientSegmentation.map((entry, index) => (
+                          <linearGradient key={`gradient-${index}`} id={`segmentGradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={entry.color} stopOpacity={0.9} />
+                            <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <Pie
+                        data={clientSegmentation}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={110}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="hsl(var(--background))"
+                        strokeWidth={3}
+                      >
+                        {clientSegmentation.map((entry, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={`url(#segmentGradient-${index})`}
+                            className="hover:opacity-80 transition-opacity cursor-pointer"
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => `${value}%`} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  
+                  <div className="space-y-4">
+                    {clientSegmentation.map((segment, index) => (
+                      <div 
+                        key={segment.segment}
+                        className="p-4 rounded-lg border border-border/50 hover:bg-muted/30 transition-all duration-200"
+                        style={{
+                          animationDelay: `${index * 100}ms`,
+                          animation: 'fade-in 0.5s ease-out'
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-4 h-4 rounded-full shadow-sm"
+                              style={{ backgroundColor: segment.color }}
+                            />
+                            <div>
+                              <div className="font-semibold">{segment.segment}</div>
+                              <div className="text-sm text-muted-foreground">{segment.clients} clients</div>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{activity.description}</p>
-                          <p className="text-xs text-muted-foreground">{activity.time}</p>
+                          <div className="text-right">
+                            <div className="font-bold text-lg">{formatCurrency(segment.aum)}</div>
+                            <div className="text-sm text-muted-foreground">{segment.value}%</div>
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </TabsContent>
 
-          {/* Client Segmentation */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Client Segmentation by AUM</CardTitle>
-              <CardDescription>Distribution of clients across wealth segments</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={clientSegmentation}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
+          <TabsContent value="clients" className="space-y-4">
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Client Analytics Dashboard</CardTitle>
+                <CardDescription>Detailed client metrics and insights</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    { label: "Average Client Value", value: formatCurrency(practiceMetrics.averageClientValue), change: "+8.7% vs last year", trend: "up" },
+                    { label: "Client Acquisition Cost", value: "£2,280", subtitle: "Average cost per new client" },
+                    { label: "Lifetime Value", value: "£168K", subtitle: "Projected client lifetime value" }
+                  ].map((metric, index) => (
+                    <div 
+                      key={metric.label}
+                      className="p-6 rounded-lg border bg-gradient-to-br from-card to-card/50 hover:shadow-md transition-all duration-200"
+                      style={{
+                        animationDelay: `${index * 100}ms`,
+                        animation: 'fade-in 0.5s ease-out'
+                      }}
                     >
-                      {clientSegmentation.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${value}%`} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="space-y-4">
-                  {clientSegmentation.map((segment) => (
-                    <div key={segment.segment} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: segment.color }}
-                        />
-                        <div>
-                          <div className="font-medium">{segment.segment}</div>
-                          <div className="text-sm text-muted-foreground">{segment.clients} clients</div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">{formatCurrency(segment.aum)}</div>
-                        <div className="text-sm text-muted-foreground">{segment.value}%</div>
+                      <div className="text-sm text-muted-foreground mb-2">{metric.label}</div>
+                      <div className="text-3xl font-bold mb-1">{metric.value}</div>
+                      <div className={cn(
+                        "text-sm",
+                        metric.trend === "up" ? "text-success" : "text-muted-foreground"
+                      )}>
+                        {metric.change || metric.subtitle}
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="clients" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Client Analytics Dashboard</CardTitle>
-              <CardDescription>Detailed client metrics and insights</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="p-4 rounded-lg bg-background border">
-                  <div className="text-sm text-muted-foreground">Average Client Value</div>
-                  <div className="text-2xl font-bold">{formatCurrency(practiceMetrics.averageClientValue)}</div>
-                  <div className="text-sm text-success">+8.7% vs last year</div>
-                </div>
-                <div className="p-4 rounded-lg bg-background border">
-                  <div className="text-sm text-muted-foreground">Client Acquisition Cost</div>
-                  <div className="text-2xl font-bold">£2,280</div>
-                  <div className="text-sm text-muted-foreground">Average cost per new client</div>
-                </div>
-                <div className="p-4 rounded-lg bg-background border">
-                  <div className="text-sm text-muted-foreground">Lifetime Value</div>
-                  <div className="text-2xl font-bold">£168K</div>
-                  <div className="text-sm text-muted-foreground">Projected client lifetime value</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="revenue" className="space-y-4">
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Revenue Analysis</CardTitle>
+                <CardDescription>Monthly revenue breakdown and trends</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={revenueData}>
+                    <defs>
+                      <linearGradient id="feesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                      </linearGradient>
+                      <linearGradient id="commissionsGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--chart-5))" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="hsl(var(--chart-5))" stopOpacity={0.6} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="hsl(var(--muted-foreground))"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `£${(value / 1000).toFixed(0)}K`}
+                      stroke="hsl(var(--muted-foreground))"
+                      style={{ fontSize: '12px' }}
+                    />
+                    <Tooltip 
+                      formatter={(value) => formatCurrency(value as number)}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                      }}
+                    />
+                    <Bar 
+                      dataKey="fees" 
+                      stackId="a" 
+                      fill="url(#feesGradient)"
+                      radius={[0, 0, 0, 0]}
+                      name="Management Fees"
+                    />
+                    <Bar 
+                      dataKey="commissions" 
+                      stackId="a" 
+                      fill="url(#commissionsGradient)"
+                      radius={[8, 8, 0, 0]}
+                      name="Commissions"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="revenue" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Analysis</CardTitle>
-              <CardDescription>Monthly revenue breakdown and trends</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}K`} />
-                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                  <Bar dataKey="fees" stackId="a" fill="hsl(var(--primary))" name="Management Fees" />
-                  <Bar dataKey="commissions" stackId="a" fill="hsl(var(--muted-foreground))" name="Commissions" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="tasks" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Task Management</CardTitle>
-              <CardDescription>Upcoming client tasks and deadlines</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {upcomingTasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2 rounded-full ${
-                        task.priority === "high" ? "bg-destructive/20 text-destructive" :
-                        task.priority === "medium" ? "bg-warning/20 text-warning" : "bg-muted/20 text-muted-foreground"
-                      }`}>
-                        <Clock className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{task.task}</div>
-                        <div className="text-sm text-muted-foreground">Client: {task.client}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className={getPriorityColor(task.priority)}>
-                        {task.priority}
-                      </Badge>
-                      <div className="text-sm text-muted-foreground">{task.due}</div>
-                      <Button size="sm" variant="outline">
-                        {task.type === "meeting" ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Metrics</CardTitle>
-              <CardDescription>Key performance indicators and targets</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {performanceMetrics.map((metric) => (
-                  <div key={metric.metric} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-medium">{metric.metric}</h3>
-                        <div className="text-sm text-muted-foreground">
-                          Target: {metric.target}{metric.unit}
+          <TabsContent value="tasks" className="space-y-4">
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle>Task Management</CardTitle>
+                <CardDescription>Upcoming client tasks and deadlines</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {upcomingTasks.map((task, index) => (
+                    <div 
+                      key={task.id}
+                      className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg hover:bg-muted/30 hover:border-primary/30 transition-all duration-200"
+                      style={{
+                        animationDelay: `${index * 50}ms`,
+                        animation: 'fade-in 0.3s ease-out'
+                      }}
+                    >
+                      <div className="flex items-center gap-4 mb-3 lg:mb-0">
+                        <div className={cn(
+                          "p-2 rounded-full",
+                          task.priority === "high" ? "bg-destructive/20 text-destructive" :
+                          task.priority === "medium" ? "bg-warning/20 text-warning" : 
+                          "bg-muted/20 text-muted-foreground"
+                        )}>
+                          <Clock className="h-4 w-4" />
                         </div>
+                        <div>
+                          <div className="font-semibold">{task.task}</div>
+                          <div className="text-sm text-muted-foreground">Client: {task.client}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline" className={getPriorityColor(task.priority)}>
+                          {task.priority}
+                        </Badge>
+                        <div className="text-sm text-muted-foreground">{task.due}</div>
+                        <Button size="sm" variant="outline">
+                          {task.type === "meeting" ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {performanceMetrics.map((metric, index) => (
+                <Card 
+                  key={metric.metric}
+                  className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:shadow-lg transition-all duration-300"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animation: 'fade-in 0.5s ease-out'
+                  }}
+                >
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{metric.metric}</CardTitle>
+                        <CardDescription className="text-sm mt-1">
+                          Target: {metric.target}{metric.unit}
+                        </CardDescription>
                       </div>
                       <Badge className={getStatusColor(metric.status)}>
                         {metric.status}
                       </Badge>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-2xl font-bold">{metric.value}{metric.unit}</span>
-                      </div>
-                      <Progress 
-                        value={metric.unit === "%" ? metric.value : (metric.value / metric.target) * 100} 
-                        className="h-2"
-                      />
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="text-4xl font-bold">
+                      {metric.value}{metric.unit}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                    <Progress 
+                      value={metric.unit === "%" ? metric.value : (metric.value / metric.target) * 100} 
+                      className="h-2"
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
