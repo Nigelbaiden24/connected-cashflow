@@ -57,13 +57,13 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
 
   const dueDateInfo = getDueDateInfo(task.dueDate);
 
+  const borderColorClass = 
+    task.priority === 'high' ? 'border-l-destructive' :
+    task.priority === 'medium' ? 'border-l-primary' :
+    'border-l-muted-foreground';
+
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in border-l-4" 
-          style={{ 
-            borderLeftColor: task.priority === 'high' ? 'hsl(var(--destructive))' : 
-                            task.priority === 'medium' ? 'hsl(var(--primary))' : 
-                            'hsl(var(--muted))'
-          }}>
+    <Card className={`group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-fade-in border-l-4 ${borderColorClass}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Checkbox 
@@ -118,7 +118,7 @@ export function TaskCard({ task, onToggle, onEdit, onDelete }: TaskCardProps) {
                 {dueDateInfo.text}
               </Badge>
 
-              <Badge variant="outline" className="gap-1 bg-gradient-to-r from-primary/5 to-primary/10">
+              <Badge variant="outline" className="gap-1 bg-primary/5">
                 {task.project}
               </Badge>
 
