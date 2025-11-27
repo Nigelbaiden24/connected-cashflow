@@ -29,6 +29,9 @@ interface CRMTable {
   filterStatus?: string;
   selectedRows?: string[];
   compactView?: boolean;
+  viewMode?: "table" | "cards";
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 interface CRMBoardProps {
@@ -582,8 +585,20 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
     setTables(tables.map(t => t.id === tableId ? { ...t, compactView: !t.compactView } : t));
   };
 
+  const toggleTableViewMode = (tableId: string) => {
+    setTables(tables.map(t => t.id === tableId ? { ...t, viewMode: t.viewMode === "table" ? "cards" : "table" } : t));
+  };
+
   const updateTableSearch = (tableId: string, query: string) => {
     setTables(tables.map(t => t.id === tableId ? { ...t, searchQuery: query } : t));
+  };
+
+  const updateTableFilter = (tableId: string, filter: string) => {
+    setTables(tables.map(t => t.id === tableId ? { ...t, filterStatus: filter } : t));
+  };
+
+  const updateTableSort = (tableId: string, sortBy: string, sortOrder: "asc" | "desc") => {
+    setTables(tables.map(t => t.id === tableId ? { ...t, sortBy, sortOrder } : t));
   };
 
   const toggleRowSelection = (tableId: string, rowId: string) => {
@@ -630,13 +645,31 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   };
 
   const getFilteredTableRows = (table: CRMTable) => {
-    return table.rows.filter(row => {
+    let filtered = table.rows.filter(row => {
       const searchMatch = !table.searchQuery || 
         Object.values(row).some(val => 
           String(val).toLowerCase().includes(table.searchQuery!.toLowerCase())
         );
-      return searchMatch;
+      
+      const filterMatch = !table.filterStatus || table.filterStatus === "all" ||
+        Object.values(row).some(val => 
+          String(val).toLowerCase() === table.filterStatus!.toLowerCase()
+        );
+      
+      return searchMatch && filterMatch;
     });
+
+    // Apply sorting
+    if (table.sortBy && table.columns.includes(table.sortBy)) {
+      filtered = [...filtered].sort((a, b) => {
+        const aVal = String(a[table.sortBy!] || "");
+        const bVal = String(b[table.sortBy!] || "");
+        const comparison = aVal.localeCompare(bVal);
+        return table.sortOrder === "asc" ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
   };
 
   return (
@@ -1504,122 +1537,218 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
           
           return (
           <Card key={table.id} className="border-border/50 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 bg-gradient-to-r from-muted/20 to-transparent border-b">
-              <div className="flex items-center gap-2">
-                <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
-                {editingTable === table.id ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={editTableName}
-                      onChange={(e) => setEditTableName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") renameTable(table.id);
-                        if (e.key === "Escape") setEditingTable(null);
-                      }}
-                      className="h-8 w-48"
-                      autoFocus
-                    />
-                    <Button size="sm" onClick={() => renameTable(table.id)}>
-                      Save
-                    </Button>
-                  </div>
-                ) : (
-                  <CardTitle>{table.name}</CardTitle>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search..."
-                    value={table.searchQuery || ""}
-                    onChange={(e) => updateTableSearch(table.id, e.target.value)}
-                    className="pl-9 w-48 h-8"
-                  />
+            <CardHeader className="space-y-4 bg-gradient-to-r from-muted/20 to-transparent border-b">
+              {/* Table Title Row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
+                  {editingTable === table.id ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={editTableName}
+                        onChange={(e) => setEditTableName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") renameTable(table.id);
+                          if (e.key === "Escape") setEditingTable(null);
+                        }}
+                        className="h-8 w-48"
+                        autoFocus
+                      />
+                      <Button size="sm" onClick={() => renameTable(table.id)}>
+                        Save
+                      </Button>
+                    </div>
+                  ) : (
+                    <CardTitle>{table.name}</CardTitle>
+                  )}
                 </div>
-                {selectedRows.length > 0 && (
-                  <Button variant="destructive" size="sm" onClick={() => deleteSelectedRows(table.id)}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete ({selectedRows.length})
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => toggleTableCompactView(table.id)}
-                  title={table.compactView ? "Expand view" : "Compact view"}
-                >
-                  {table.compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
-                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setEditingTable(table.id);
-                      setEditTableName(table.name);
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setEditingTable(table.id);
+                        setEditTableName(table.name);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Rename Table
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => deleteTable(table.id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Table
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Enhanced Toolbar */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* View Toggle */}
+                <div className="flex items-center border border-border/50 rounded-lg p-1 bg-background">
+                  <Button
+                    variant={(table.viewMode || "table") === "table" ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => toggleTableViewMode(table.id)}
+                    className="h-7 px-3"
+                  >
+                    <Table2 className="h-3.5 w-3.5 mr-1.5" />
+                    Table
+                  </Button>
+                  <Button
+                    variant={(table.viewMode || "table") === "cards" ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => toggleTableViewMode(table.id)}
+                    className="h-7 px-3"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
+                    Cards
+                  </Button>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search..."
+                    value={table.searchQuery || ""}
+                    onChange={(e) => updateTableSearch(table.id, e.target.value)}
+                    className="pl-9 w-48 h-9 border-border/50 focus-visible:ring-primary/20"
+                  />
+                </div>
+
+                {/* Filter */}
+                {table.columns.length > 0 && (
+                  <Select 
+                    value={table.filterStatus || "all"} 
+                    onValueChange={(value) => updateTableFilter(table.id, value)}
+                  >
+                    <SelectTrigger className="w-40 h-9 border-border/50">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      <SelectItem value="all">All Items</SelectItem>
+                      {/* Add dynamic filter options based on column values */}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* Sort */}
+                {table.columns.length > 0 && (
+                  <Select 
+                    value={`${table.sortBy || table.columns[0]}-${table.sortOrder || "asc"}`}
+                    onValueChange={(value) => {
+                      const [field, order] = value.split('-');
+                      updateTableSort(table.id, field, order as "asc" | "desc");
                     }}
                   >
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Rename Table
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setAddingColumnTo(table.id);
-                      setShowCustomTableColumnManager(true);
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Column
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => deleteTable(table.id)}
-                    className="text-destructive"
+                    <SelectTrigger className="w-48 h-9 border-border/50">
+                      <SelectValue placeholder="Sort by..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background">
+                      {table.columns.map(col => (
+                        <div key={col}>
+                          <SelectItem value={`${col}-asc`}>{col} (A-Z)</SelectItem>
+                          <SelectItem value={`${col}-desc`}>{col} (Z-A)</SelectItem>
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* Delete Selected */}
+                {selectedRows.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={() => deleteSelectedRows(table.id)}
+                    className="shadow-sm hover:shadow-md transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Table
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    Delete ({selectedRows.length})
+                  </Button>
+                )}
+
+                {/* Add Column */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setAddingColumnTo(table.id);
+                    setShowCustomTableColumnManager(true);
+                  }}
+                  className="shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <Columns className="h-4 w-4 mr-2" />
+                  Add Column
+                </Button>
+
+                {/* Compact View */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => toggleTableCompactView(table.id)}
+                  title={table.compactView ? "Expand view" : "Compact view"}
+                  className="shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  {table.compactView ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+                </Button>
+
+                {/* Add Row */}
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => addRow(table.id)}
+                  className="shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Row
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className={table.compactView ? "h-8" : ""}>
-                      <TableHead className={table.compactView ? "w-12 p-2" : "w-12 p-4"}>
-                        <Checkbox
-                          checked={selectedRows.length === filteredRows.length && filteredRows.length > 0}
-                          onCheckedChange={() => toggleAllRowsSelection(table.id)}
-                          className={table.compactView ? "h-3 w-3" : ""}
-                        />
-                      </TableHead>
-                      {table.columns.map((column) => (
-                        <TableHead key={column} className={table.compactView ? "relative group p-2 text-xs" : "relative group p-4"}>
-                          <div className="flex items-center justify-between">
-                            <span>{column}</span>
-                            {table.columns.length > 1 && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={table.compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100"}
-                                onClick={() => deleteColumn(table.id, column)}
-                              >
-                                <Trash2 className={table.compactView ? "h-2.5 w-2.5" : "h-3 w-3"} />
-                              </Button>
-                            )}
-                          </div>
+              {(table.viewMode || "table") === "table" ? (
+                /* Table View */
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className={table.compactView ? "h-8" : ""}>
+                        <TableHead className={table.compactView ? "w-12 p-2" : "w-12 p-4"}>
+                          <Checkbox
+                            checked={selectedRows.length === filteredRows.length && filteredRows.length > 0}
+                            onCheckedChange={() => toggleAllRowsSelection(table.id)}
+                            className={table.compactView ? "h-3 w-3" : ""}
+                          />
                         </TableHead>
-                      ))}
-                      <TableHead className="w-12"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                        {table.columns.map((column) => (
+                          <TableHead key={column} className={table.compactView ? "relative group p-2 text-xs" : "relative group p-4"}>
+                            <div className="flex items-center justify-between">
+                              <span>{column}</span>
+                              {table.columns.length > 1 && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={table.compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100"}
+                                  onClick={() => deleteColumn(table.id, column)}
+                                >
+                                  <Trash2 className={table.compactView ? "h-2.5 w-2.5" : "h-3 w-3"} />
+                                </Button>
+                              )}
+                            </div>
+                          </TableHead>
+                        ))}
+                        <TableHead className="w-12"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                     {filteredRows.map((row) => (
                       <TableRow key={row.id} className={table.compactView ? "group h-8" : "group"}>
                         <TableCell className={table.compactView ? "p-2" : "p-4"}>
@@ -1779,15 +1908,90 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                   </TableBody>
                 </Table>
               </div>
+              ) : (
+                /* Cards View */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredRows.map((row) => (
+                    <Card key={row.id} className="border-border/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+                      <div className="h-1 bg-gradient-to-r from-primary/20 to-primary/5" />
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1 flex-1">
+                            <h3 className="font-semibold text-base leading-none">
+                              {row[table.columns[0]] || "Untitled"}
+                            </h3>
+                            {table.columns[1] && row[table.columns[1]] && (
+                              <p className="text-sm text-muted-foreground">{row[table.columns[1]]}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={selectedRows.includes(row.id)}
+                              onCheckedChange={() => toggleRowSelection(table.id, row.id)}
+                            />
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => deleteRow(table.id, row.id)}
+                                  className="text-destructive cursor-pointer"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
 
-              <Button
-                variant="outline"
-                className="w-full mt-4"
-                onClick={() => addRow(table.id)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Row
-              </Button>
+                        <div className="space-y-2 pt-2 border-t">
+                          {table.columns.slice(2, 5).map((column) => {
+                            const config = table.columnConfigs?.[column];
+                            const value = row[column] || "";
+                            
+                            return (
+                              <div key={column} className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground font-medium">{column}:</span>
+                                <span className="truncate max-w-[60%]">
+                                  {config?.type === "checkbox" 
+                                    ? (value === "true" ? "✓" : "—")
+                                    : (value || "—")}
+                                </span>
+                              </div>
+                            );
+                          })}
+                          {table.columns.length > 5 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{table.columns.length - 5} more fields
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {filteredRows.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No items found. {table.searchQuery && "Try adjusting your search or filters."}
+                </div>
+              )}
+
+              {(table.viewMode || "table") === "table" && (
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={() => addRow(table.id)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Row
+                </Button>
+              )}
             </CardContent>
           </Card>
           );
