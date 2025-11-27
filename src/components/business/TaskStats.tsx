@@ -41,7 +41,7 @@ export function TaskStats({ tasks }: TaskStatsProps) {
       value: totalTasks,
       subtitle: "All tasks",
       icon: Target,
-      gradient: "from-blue-500/20 to-blue-600/20",
+      gradient: "from-primary/5 to-primary/10",
       trend: null
     },
     {
@@ -49,7 +49,7 @@ export function TaskStats({ tasks }: TaskStatsProps) {
       value: pendingTasks,
       subtitle: "Need attention",
       icon: Clock,
-      gradient: "from-orange-500/20 to-orange-600/20",
+      gradient: "from-warning/5 to-warning/10",
       trend: null
     },
     {
@@ -57,7 +57,7 @@ export function TaskStats({ tasks }: TaskStatsProps) {
       value: completedTasks,
       subtitle: `${completionRate}% completion`,
       icon: CheckCircle2,
-      gradient: "from-green-500/20 to-green-600/20",
+      gradient: "from-success/5 to-success/10",
       trend: completionRate >= 50 ? "up" : "down"
     },
     {
@@ -65,7 +65,7 @@ export function TaskStats({ tasks }: TaskStatsProps) {
       value: highPriorityPending,
       subtitle: "Urgent tasks",
       icon: AlertCircle,
-      gradient: "from-red-500/20 to-red-600/20",
+      gradient: "from-warning/10 to-warning/20",
       trend: null
     }
   ];
@@ -76,7 +76,7 @@ export function TaskStats({ tasks }: TaskStatsProps) {
       value: overdueTasks,
       subtitle: "Past deadline",
       icon: AlertCircle,
-      gradient: "from-destructive/20 to-destructive/30",
+      gradient: "from-warning/10 to-warning/20",
       trend: null
     });
   }
@@ -86,8 +86,8 @@ export function TaskStats({ tasks }: TaskStatsProps) {
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="overflow-hidden hover:shadow-lg transition-all duration-300">
-            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-50`} />
+          <Card key={index} className="relative overflow-hidden hover:shadow-lg transition-all duration-300 bg-card">
+            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-20 pointer-events-none`} />
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <Icon className="h-4 w-4 text-muted-foreground" />
