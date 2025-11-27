@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { TranslatedText } from "@/components/TranslatedText";
 
 const InvestorDashboard = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -169,9 +170,9 @@ const InvestorDashboard = () => {
     <div className="p-6 space-y-6 investor-theme">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Investment Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight"><TranslatedText>Investment Dashboard</TranslatedText></h1>
         <p className="text-muted-foreground mt-2">
-          Welcome to your global investment portal
+          <TranslatedText>Welcome to your global investment portal</TranslatedText>
         </p>
       </div>
 
@@ -180,12 +181,12 @@ const InvestorDashboard = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold">AI Insights of the Day</h2>
+            <h2 className="text-2xl font-bold"><TranslatedText>AI Insights of the Day</TranslatedText></h2>
           </div>
           <div className="flex items-center gap-2">
             {lastRefreshed && (
               <span className="text-xs text-muted-foreground">
-                Last updated: {lastRefreshed.toLocaleTimeString()}
+                <TranslatedText>Last updated</TranslatedText>: {lastRefreshed.toLocaleTimeString()}
               </span>
             )}
             <Button
@@ -205,7 +206,7 @@ const InvestorDashboard = () => {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">Real-time intelligence powered by advanced AI</p>
+        <p className="text-sm text-muted-foreground"><TranslatedText>Real-time intelligence powered by advanced AI</TranslatedText></p>
         
         {isLoading && !aiInsightsText ? (
           <div className="grid md:grid-cols-3 gap-4">
@@ -242,7 +243,7 @@ const InvestorDashboard = () => {
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
             <CardContent className="pt-6">
               <p className="text-muted-foreground text-center py-8">
-                Click refresh to get today's AI insights
+                <TranslatedText>Click refresh to get today's AI insights</TranslatedText>
               </p>
             </CardContent>
           </Card>
@@ -254,9 +255,9 @@ const InvestorDashboard = () => {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Globe className="h-5 w-5 text-primary" />
-            <CardTitle>Macro Overview</CardTitle>
+            <CardTitle><TranslatedText>Macro Overview</TranslatedText></CardTitle>
           </div>
-          <CardDescription>Key economic indicators</CardDescription>
+          <CardDescription><TranslatedText>Key economic indicators</TranslatedText></CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
@@ -289,9 +290,9 @@ const InvestorDashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-primary" />
-              <CardTitle>Top Movers</CardTitle>
+              <CardTitle><TranslatedText>Top Movers</TranslatedText></CardTitle>
             </div>
-            <CardDescription>Most active stocks today</CardDescription>
+            <CardDescription><TranslatedText>Most active stocks today</TranslatedText></CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -326,9 +327,9 @@ const InvestorDashboard = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-primary" />
-              <CardTitle>Your Watchlist Today</CardTitle>
+              <CardTitle><TranslatedText>Your Watchlist Today</TranslatedText></CardTitle>
             </div>
-            <CardDescription>Quick view of your tracked assets</CardDescription>
+            <CardDescription><TranslatedText>Quick view of your tracked assets</TranslatedText></CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -362,9 +363,9 @@ const InvestorDashboard = () => {
         <CardHeader>
           <div className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            <CardTitle>Sector Heatmap</CardTitle>
+            <CardTitle><TranslatedText>Sector Heatmap</TranslatedText></CardTitle>
           </div>
-          <CardDescription>Performance overview across all sectors (30-day)</CardDescription>
+          <CardDescription><TranslatedText>Performance overview across all sectors (30-day)</TranslatedText></CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -385,7 +386,7 @@ const InvestorDashboard = () => {
           {selectedSector && (
             <div className="mt-4 p-4 rounded-lg border bg-accent/50">
               <p className="text-sm text-muted-foreground">
-                Selected sector: <span className="font-semibold text-foreground">{selectedSector}</span>
+                <TranslatedText>Selected sector</TranslatedText>: <span className="font-semibold text-foreground">{selectedSector}</span>
               </p>
             </div>
           )}

@@ -18,6 +18,7 @@ import { AISummaryPanel } from "@/components/dashboard/AISummaryPanel";
 import { QuickLinks } from "@/components/dashboard/QuickLinks";
 import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
 import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
+import { TranslatedText } from "@/components/TranslatedText";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -78,28 +79,28 @@ const Dashboard = () => {
 
   const metrics = [
     {
-      title: "Active Clients",
+      titleKey: "Active Clients",
       value: clients.filter(c => c.status === 'active').length.toString(),
       change: "+12%",
       trend: "up",
       icon: Users,
     },
     {
-      title: "Total AUM",
+      titleKey: "Total AUM",
       value: formatCurrencyShort(totalAUM),
       change: "+3%",
       trend: "up",
       icon: DollarSign,
     },
     {
-      title: "Portfolio Holdings",
+      titleKey: "Portfolio Holdings",
       value: clients.reduce((sum, client) => sum + (client.portfolio_holdings?.length || 0), 0).toString(),
       change: "+8%",
       trend: "up",
       icon: MessageSquare,
     },
     {
-      title: "Avg Client Value",
+      titleKey: "Avg Client Value",
       value: clients.length > 0 ? formatCurrencyShort(totalAUM / clients.length) : "£0",
       change: "-2%",
       trend: "down",
@@ -158,15 +159,17 @@ const Dashboard = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <TranslatedText>Back</TranslatedText>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">AI Assistant: {botName}</p>
+            <h1 className="text-3xl font-bold tracking-tight"><TranslatedText>Dashboard</TranslatedText></h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              <TranslatedText>AI Assistant</TranslatedText>: {botName}
+            </p>
           </div>
         </div>
         <Badge variant="secondary" className="text-sm">
-          Live Data
+          <TranslatedText>Live Data</TranslatedText>
         </Badge>
       </div>
 
@@ -177,10 +180,10 @@ const Dashboard = () => {
         {/* Key Metrics Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {metrics.map((metric) => (
-            <Card key={metric.title}>
+            <Card key={metric.titleKey}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {metric.title}
+                  <TranslatedText>{metric.titleKey}</TranslatedText>
                 </CardTitle>
                 <metric.icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -195,7 +198,7 @@ const Dashboard = () => {
                   <span className={metric.trend === "up" ? "text-success" : "text-destructive"}>
                     {metric.change}
                   </span>
-                  <span className="ml-1">from last month</span>
+                  <span className="ml-1"><TranslatedText>from last month</TranslatedText></span>
                 </div>
               </CardContent>
             </Card>
@@ -240,9 +243,9 @@ const Dashboard = () => {
         {/* Recent Queries - Collapsible */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent AI Queries</CardTitle>
+            <CardTitle><TranslatedText>Recent AI Queries</TranslatedText></CardTitle>
             <CardDescription>
-              Latest advisor interactions with the AI assistant
+              <TranslatedText>Latest advisor interactions with the AI assistant</TranslatedText>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -257,7 +260,7 @@ const Dashboard = () => {
                       {query.query}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      by {query.advisor} • {query.time}
+                      <TranslatedText>by</TranslatedText> {query.advisor} • {query.time}
                     </p>
                   </div>
                   <Badge
@@ -265,7 +268,7 @@ const Dashboard = () => {
                       query.status === "resolved" ? "default" : "secondary"
                     }
                   >
-                    {query.status}
+                    <TranslatedText>{query.status}</TranslatedText>
                   </Badge>
                 </div>
               ))}
