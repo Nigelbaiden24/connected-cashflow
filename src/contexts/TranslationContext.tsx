@@ -13,10 +13,13 @@ const TranslationContext = createContext<TranslationContextType | undefined>(und
 // In-memory cache for translations
 const translationCache: Record<string, Record<string, string>> = {};
 
+// Pending texts queue for batching requests
+const pendingTexts: Set<string> = new Set();
+let batchTimeout: number | null = null;
+
 export function TranslationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState("en");
   const [isTranslating, setIsTranslating] = useState(false);
-  const [pendingTranslations, setPendingTranslations] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -73,10 +76,7 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
     setLanguageState(lang);
     localStorage.setItem("preferredLanguage", lang);
     
-    // Clear pending translations when language changes
-    setPendingTranslations(new Set());
-    
-    // Trigger a re-render by forcing state update
+    // Notify listeners that language changed
     window.dispatchEvent(new Event("languagechange"));
   };
 
@@ -125,20 +125,18 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
       return translationCache[language][text];
     }
 
-    // Queue for translation
-    if (!pendingTranslations.has(text)) {
-      setPendingTranslations(prev => {
-        const newSet = new Set(prev);
-        newSet.add(text);
-        
-        // Batch translate after a short delay
-        setTimeout(() => {
-          translateBatch(Array.from(newSet));
-          setPendingTranslations(new Set());
-        }, 100);
-        
-        return newSet;
-      });
+    // Queue for translation (batched to avoid rate limits)
+    if (!pendingTexts.has(text)) {
+      pendingTexts.add(text);
+    }
+
+    if (batchTimeout === null) {
+      batchTimeout = window.setTimeout(() => {
+        const textsToProcess = Array.from(pendingTexts);
+        pendingTexts.clear();
+        batchTimeout = null;
+        translateBatch(textsToProcess);
+      }, 150);
     }
 
     // Return original text while waiting for translation
