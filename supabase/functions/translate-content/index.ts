@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
     const languageName = LANGUAGE_NAMES[targetLanguage] || targetLanguage;
 
     // Use Lovable AI to translate
-    const aiResponse = await fetch("https://api.lovable.app/v1/ai/chat", {
+    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
@@ -87,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
             content: JSON.stringify(texts)
           }
         ],
-        model: "claude-3-5-sonnet-20241022",
+        model: "google/gemini-2.5-flash",
         temperature: 0.3,
       }),
     });
