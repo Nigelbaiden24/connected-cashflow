@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
+import { TranslatedText } from "@/components/TranslatedText";
 
 const CRM = () => {
   const navigate = useNavigate();
@@ -43,10 +44,10 @@ const CRM = () => {
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            CRM
+            <TranslatedText>CRM</TranslatedText>
           </h1>
           <p className="text-muted-foreground text-sm">
-            Customer Relationship Management
+            <TranslatedText>Customer Relationship Management</TranslatedText>
           </p>
         </div>
         <div className="flex gap-2">
@@ -55,7 +56,7 @@ const CRM = () => {
             className="shadow-sm hover:shadow-md transition-all duration-200"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Bulk Import
+            <TranslatedText>Bulk Import</TranslatedText>
           </Button>
           <Button
             variant="outline"
@@ -64,7 +65,7 @@ const CRM = () => {
             className="gap-2 hover:bg-accent/50 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <TranslatedText>Back</TranslatedText>
           </Button>
         </div>
       </div>
@@ -74,7 +75,7 @@ const CRM = () => {
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Contacts
+              <TranslatedText>Total Contacts</TranslatedText>
             </CardTitle>
             <div className="p-2 rounded-lg bg-primary/10">
               <Users className="h-4 w-4 text-primary" />
@@ -84,7 +85,7 @@ const CRM = () => {
             <div className="text-3xl font-bold tracking-tight">{totalContacts}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              {activeContacts} active relationships
+              {activeContacts} <TranslatedText>active relationships</TranslatedText>
             </p>
           </CardContent>
         </Card>
@@ -92,7 +93,7 @@ const CRM = () => {
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Conversion Rate
+              <TranslatedText>Conversion Rate</TranslatedText>
             </CardTitle>
             <div className="p-2 rounded-lg bg-chart-1/10">
               <TrendingUp className="h-4 w-4 text-chart-1" />
@@ -101,7 +102,7 @@ const CRM = () => {
           <CardContent className="space-y-1">
             <div className="text-3xl font-bold tracking-tight">24.5%</div>
             <p className="text-xs text-muted-foreground">
-              From leads to clients
+              <TranslatedText>From leads to clients</TranslatedText>
             </p>
           </CardContent>
         </Card>
@@ -109,7 +110,7 @@ const CRM = () => {
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pipeline Value
+              <TranslatedText>Pipeline Value</TranslatedText>
             </CardTitle>
             <div className="p-2 rounded-lg bg-chart-2/10">
               <DollarSign className="h-4 w-4 text-chart-2" />
@@ -118,7 +119,7 @@ const CRM = () => {
           <CardContent className="space-y-1">
             <div className="text-3xl font-bold tracking-tight">£125K</div>
             <p className="text-xs text-muted-foreground">
-              Potential revenue
+              <TranslatedText>Potential revenue</TranslatedText>
             </p>
           </CardContent>
         </Card>
