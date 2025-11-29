@@ -12,7 +12,8 @@ import {
   Phone,
   Settings,
   ChevronDown,
-  DollarSign
+  DollarSign,
+  LineChart
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -57,6 +58,7 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
   const saasItems = [
     { id: "login", label: "Flowpulse Finance", icon: TrendingUp },
     { id: "business-dashboard", label: "Flowpulse Business", icon: Building2 },
+    { id: "investor-dashboard", label: "Flowpulse Investor", icon: LineChart },
     { id: "pricing", label: "Pricing", icon: DollarSign },
   ];
 
@@ -93,6 +95,8 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
       navigate("/pricing");
     } else if (id === "business-dashboard") {
       navigate("/business-login");
+    } else if (id === "investor-dashboard") {
+      navigate("/investor-login");
     } else {
       onNavigate(id);
     }
@@ -121,25 +125,16 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
               Home
             </button>
 
-            {/* Saas Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 text-base font-bold text-muted-foreground transition-colors hover:text-primary">
-                Saas
-                <ChevronDown className="h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-background border z-50">
-                {saasItems.map((item) => (
-                  <DropdownMenuItem
-                    key={item.id}
-                    onClick={() => handleSaasClick(item.id)}
-                    className="cursor-pointer"
-                  >
-                    <item.icon className="h-4 w-4 mr-2" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Direct SaaS Links */}
+            {saasItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleSaasClick(item.id)}
+                className="flex items-center gap-2 text-base font-bold text-muted-foreground transition-colors hover:text-primary"
+              >
+                {item.label}
+              </button>
+            ))}
 
             {/* Recruitment Dropdown */}
             <DropdownMenu>
@@ -211,23 +206,20 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 Home
               </button>
 
-              {/* Saas Section */}
-              <div className="pl-2">
-                <p className="text-xs font-semibold text-muted-foreground mb-2">Saas</p>
-                {saasItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      handleSaasClick(item.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground mb-2"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+              {/* Direct SaaS Links */}
+              {saasItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    handleSaasClick(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </button>
+              ))}
 
               {/* Recruitment Section */}
               <div className="pl-2">
