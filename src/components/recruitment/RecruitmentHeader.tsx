@@ -125,16 +125,33 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
               Home
             </button>
 
-            {/* Direct SaaS Links */}
-            {saasItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleSaasClick(item.id)}
-                className="flex items-center gap-2 text-base font-bold text-muted-foreground transition-colors hover:text-primary"
-              >
-                {item.label}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate("/login")}
+              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
+            >
+              Flowpulse Finance
+            </button>
+
+            <button
+              onClick={() => navigate("/business-login")}
+              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
+            >
+              Flowpulse Business
+            </button>
+
+            <button
+              onClick={() => navigate("/investor-login")}
+              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
+            >
+              Flowpulse Investor
+            </button>
+
+            <button
+              onClick={() => navigate("/pricing")}
+              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
+            >
+              Pricing
+            </button>
 
             {/* Recruitment Dropdown */}
             <DropdownMenu>
@@ -206,20 +223,49 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 Home
               </button>
 
-              {/* Direct SaaS Links */}
-              {saasItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    handleSaasClick(item.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </button>
-              ))}
+              <button
+                onClick={() => {
+                  navigate("/login");
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              >
+                <TrendingUp className="h-4 w-4" />
+                Flowpulse Finance
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate("/business-login");
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              >
+                <Building2 className="h-4 w-4" />
+                Flowpulse Business
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate("/investor-login");
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              >
+                <LineChart className="h-4 w-4" />
+                Flowpulse Investor
+              </button>
+
+              <button
+                onClick={() => {
+                  navigate("/pricing");
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+              >
+                <DollarSign className="h-4 w-4" />
+                Pricing
+              </button>
 
               {/* Recruitment Section */}
               <div className="pl-2">
