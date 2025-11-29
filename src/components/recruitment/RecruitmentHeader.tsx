@@ -12,8 +12,7 @@ import {
   Phone,
   Settings,
   ChevronDown,
-  DollarSign,
-  LineChart
+  DollarSign
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -58,7 +57,6 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
   const saasItems = [
     { id: "login", label: "Flowpulse Finance", icon: TrendingUp },
     { id: "business-dashboard", label: "Flowpulse Business", icon: Building2 },
-    { id: "investor-dashboard", label: "Flowpulse Investor", icon: LineChart },
     { id: "pricing", label: "Pricing", icon: DollarSign },
   ];
 
@@ -95,8 +93,6 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
       navigate("/pricing");
     } else if (id === "business-dashboard") {
       navigate("/business-login");
-    } else if (id === "investor-dashboard") {
-      navigate("/investor-login");
     } else {
       onNavigate(id);
     }
@@ -125,33 +121,25 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
               Home
             </button>
 
-            <button
-              onClick={() => navigate("/login")}
-              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
-            >
-              Flowpulse Finance
-            </button>
-
-            <button
-              onClick={() => navigate("/business-login")}
-              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
-            >
-              Flowpulse Business
-            </button>
-
-            <button
-              onClick={() => navigate("/investor-login")}
-              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
-            >
-              Flowpulse Investor
-            </button>
-
-            <button
-              onClick={() => navigate("/pricing")}
-              className="text-base font-bold text-muted-foreground transition-colors hover:text-primary"
-            >
-              Pricing
-            </button>
+            {/* Saas Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 text-base font-bold text-muted-foreground transition-colors hover:text-primary">
+                Saas
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-background border z-50">
+                {saasItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.id}
+                    onClick={() => handleSaasClick(item.id)}
+                    className="cursor-pointer"
+                  >
+                    <item.icon className="h-4 w-4 mr-2" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Recruitment Dropdown */}
             <DropdownMenu>
@@ -223,49 +211,23 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 Home
               </button>
 
-              <button
-                onClick={() => {
-                  navigate("/login");
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-              >
-                <TrendingUp className="h-4 w-4" />
-                Flowpulse Finance
-              </button>
-
-              <button
-                onClick={() => {
-                  navigate("/business-login");
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-              >
-                <Building2 className="h-4 w-4" />
-                Flowpulse Business
-              </button>
-
-              <button
-                onClick={() => {
-                  navigate("/investor-login");
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-              >
-                <LineChart className="h-4 w-4" />
-                Flowpulse Investor
-              </button>
-
-              <button
-                onClick={() => {
-                  navigate("/pricing");
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
-              >
-                <DollarSign className="h-4 w-4" />
-                Pricing
-              </button>
+              {/* Saas Section */}
+              <div className="pl-2">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Saas</p>
+                {saasItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      handleSaasClick(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground mb-2"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
 
               {/* Recruitment Section */}
               <div className="pl-2">
