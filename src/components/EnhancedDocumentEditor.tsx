@@ -17,6 +17,7 @@ import { HeaderSection } from "@/hooks/useDocumentSections";
 import { DraggableImage } from "@/components/DraggableImage";
 import { DraggableSection } from "@/components/DraggableSection";
 import { DraggableShape } from "@/components/DraggableShape";
+import { SignatureField } from "@/components/SignatureField";
 
 interface EnhancedDocumentEditorProps {
   sections: HeaderSection[];
@@ -35,6 +36,11 @@ interface EnhancedDocumentEditorProps {
   onShapeRemove?: (id: string) => void;
   onShapeColorChange?: (id: string, color: string) => void;
   currentPageId?: string;
+  signatureFields?: Array<{ id: string; x: number; y: number; width: number; height: number; signed: boolean; pageId: string }>;
+  onSignaturePositionChange?: (id: string, x: number, y: number) => void;
+  onSignatureSizeChange?: (id: string, width: number, height: number) => void;
+  onSignatureRemove?: (id: string) => void;
+  onSignatureSign?: (id: string) => void;
 }
 
 export function EnhancedDocumentEditor({
@@ -54,6 +60,11 @@ export function EnhancedDocumentEditor({
   onShapeRemove,
   onShapeColorChange,
   currentPageId = "page-1",
+  signatureFields = [],
+  onSignaturePositionChange,
+  onSignatureSizeChange,
+  onSignatureRemove,
+  onSignatureSign,
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [editTextColor, setEditTextColor] = useState("#000000");
@@ -235,6 +246,23 @@ export function EnhancedDocumentEditor({
           onSizeChange={(id, width, height) => onShapeSizeChange?.(id, width, height)}
           onRemove={(id) => onShapeRemove?.(id)}
           onColorChange={(id, color) => onShapeColorChange?.(id, color)}
+        />
+      ))}
+
+      {/* Signature Fields */}
+      {signatureFields.map((field) => (
+        <SignatureField
+          key={field.id}
+          id={field.id}
+          x={field.x}
+          y={field.y}
+          width={field.width}
+          height={field.height}
+          signed={field.signed}
+          onPositionChange={(id, x, y) => onSignaturePositionChange?.(id, x, y)}
+          onSizeChange={(id, width, height) => onSignatureSizeChange?.(id, width, height)}
+          onRemove={(id) => onSignatureRemove?.(id)}
+          onSign={(id) => onSignatureSign?.(id)}
         />
       ))}
 
