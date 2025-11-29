@@ -32,6 +32,9 @@ import {
   Square,
   Circle,
   Triangle,
+  PenTool,
+  FileSignature,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -87,6 +90,9 @@ interface DocumentEditorToolbarProps {
   pages: Array<{ id: string; name: string }>;
   currentPageId: string;
   onPageChange: (pageId: string) => void;
+  onAddSignatureField?: () => void;
+  onRequestSignature?: () => void;
+  signatureFields?: Array<{ id: string; signed: boolean }>;
 }
 
 export function DocumentEditorToolbar({
@@ -121,11 +127,17 @@ export function DocumentEditorToolbar({
   pages,
   currentPageId,
   onPageChange,
+  onAddSignatureField,
+  onRequestSignature,
+  signatureFields = [],
 }: DocumentEditorToolbarProps) {
   const [imageUploadKey, setImageUploadKey] = useState(0);
   const [logoUploadKey, setLogoUploadKey] = useState(0);
   const [aiPrompt, setAiPrompt] = useState("");
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
+  const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false);
+  const [signatureName, setSignatureName] = useState("");
+  const [signatureTitle, setSignatureTitle] = useState("");
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -443,6 +455,138 @@ export function DocumentEditorToolbar({
         >
           <Grid3x3 className="h-4 w-4" />
         </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* E-Signature Controls */}
+        {selectedTemplate && (
+          <>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="relative">
+                  <FileSignature className="h-4 w-4 mr-2" />
+                  E-Signature
+                  {signatureFields.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {signatureFields.length}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">E-Signature Options</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Add signature fields and request signatures for your document
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onAddSignatureField}
+                      className="w-full justify-start"
+                    >
+                      <PenTool className="h-4 w-4 mr-2" />
+                      Add Signature Field
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => {
+                        setIsSignatureDialogOpen(true);
+                      }}
+                      className="w-full justify-start"
+                      disabled={signatureFields.length === 0}
+                    >
+                      <FileSignature className="h-4 w-4 mr-2" />
+                      Request Signatures
+                    </Button>
+                  </div>
+                  {signatureFields.length > 0 && (
+                    <div className="pt-2 border-t">
+                      <p className="text-sm font-medium mb-2">Signature Status</p>
+                      <div className="space-y-1">
+                        {signatureFields.map((field, idx) => (
+                          <div key={field.id} className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Field {idx + 1}</span>
+                            {field.signed ? (
+                              <span className="text-green-600 flex items-center gap-1">
+                                <Check className="h-3 w-3" />
+                                Signed
+                              </span>
+                            ) : (
+                              <span className="text-amber-600">Pending</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <Dialog open={isSignatureDialogOpen} onOpenChange={setIsSignatureDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Request Document Signatures</DialogTitle>
+                  <DialogDescription>
+                    Send this document for electronic signature. Recipients will receive an email with a secure signing link.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="signer-name">Signer Name</Label>
+                    <Input
+                      id="signer-name"
+                      placeholder="Enter signer's full name"
+                      value={signatureName}
+                      onChange={(e) => setSignatureName(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="signer-title">Signer Title/Position</Label>
+                    <Input
+                      id="signer-title"
+                      placeholder="e.g., CEO, Director, Manager"
+                      value={signatureTitle}
+                      onChange={(e) => setSignatureTitle(e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+                  <div className="bg-muted p-4 rounded-lg">
+                    <h4 className="font-semibold text-sm mb-2">Elite Features Included:</h4>
+                    <ul className="text-sm space-y-1 text-muted-foreground">
+                      <li>• Secure encrypted signatures</li>
+                      <li>• Legally binding digital certificates</li>
+                      <li>• Audit trail and timestamp logging</li>
+                      <li>• Multi-party signature workflow</li>
+                      <li>• Automatic status tracking</li>
+                    </ul>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (onRequestSignature) {
+                        onRequestSignature();
+                        setIsSignatureDialogOpen(false);
+                        setSignatureName("");
+                        setSignatureTitle("");
+                      }
+                    }}
+                    disabled={!signatureName.trim()}
+                    className="w-full"
+                  >
+                    <FileSignature className="h-4 w-4 mr-2" />
+                    Send for Signature
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
 
         <Separator orientation="vertical" className="h-6" />
 

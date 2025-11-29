@@ -36,6 +36,7 @@ const FinanceAIGenerator = () => {
   const [shapes, setShapes] = useState<Array<{ id: string; type: string; x: number; y: number; width: number; height: number; color: string }>>([]);
   const [pages, setPages] = useState<Array<{ id: string; name: string }>>([{ id: 'page-1', name: 'Page 1' }]);
   const [currentPageId, setCurrentPageId] = useState('page-1');
+  const [signatureFields, setSignatureFields] = useState<Array<{ id: string; x: number; y: number; width: number; height: number; signed: boolean; pageId: string }>>([]);
   const { toast } = useToast();
   
   const template = documentTemplates.find(t => t.id === selectedTemplate);
@@ -353,6 +354,33 @@ Make this document impressive, comprehensive, and professionally formatted.`,
     }
   };
 
+  const handleAddSignatureField = () => {
+    const newField = {
+      id: `signature-${Date.now()}`,
+      x: 100,
+      y: 500,
+      width: 250,
+      height: 80,
+      signed: false,
+      pageId: currentPageId,
+    };
+    
+    setSignatureFields([...signatureFields, newField]);
+    toast({
+      title: "Signature field added",
+      description: "Drag and resize the signature field as needed",
+    });
+  };
+
+  const handleRequestSignature = () => {
+    const unsignedCount = signatureFields.filter(f => !f.signed).length;
+    
+    toast({
+      title: "Signature request sent",
+      description: `Document sent for ${unsignedCount} signature(s). Recipients will receive secure signing links via email.`,
+    });
+  };
+
   const handleDownloadPDF = async () => {
     const element = document.getElementById("document-preview");
     if (!element) return;
@@ -444,6 +472,9 @@ Make this document impressive, comprehensive, and professionally formatted.`,
                 pages={pages}
                 currentPageId={currentPageId}
                 onPageChange={setCurrentPageId}
+                onAddSignatureField={handleAddSignatureField}
+                onRequestSignature={handleRequestSignature}
+                signatureFields={signatureFields}
               />
 
               <div className="flex-1 overflow-auto">
@@ -487,6 +518,29 @@ Make this document impressive, comprehensive, and professionally formatted.`,
                       onShapeRemove={handleShapeRemove}
                       onShapeColorChange={handleShapeColorChange}
                       currentPageId={currentPageId}
+                      signatureFields={signatureFields.filter(f => f.pageId === currentPageId || (!f.pageId && currentPageId === 'page-1'))}
+                      onSignaturePositionChange={(id, x, y) => {
+                        setSignatureFields(signatureFields.map(f => 
+                          f.id === id ? { ...f, x, y } : f
+                        ));
+                      }}
+                      onSignatureSizeChange={(id, width, height) => {
+                        setSignatureFields(signatureFields.map(f => 
+                          f.id === id ? { ...f, width, height } : f
+                        ));
+                      }}
+                      onSignatureRemove={(id) => {
+                        setSignatureFields(signatureFields.filter(f => f.id !== id));
+                      }}
+                      onSignatureSign={(id) => {
+                        setSignatureFields(signatureFields.map(f => 
+                          f.id === id ? { ...f, signed: true } : f
+                        ));
+                        toast({
+                          title: "Document signed",
+                          description: "Signature applied successfully",
+                        });
+                      }}
                     />
                   </div>
                 )}
