@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, GripVertical, FileSignature, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -61,7 +61,7 @@ export function SignatureField({
     setIsResizing(false);
   };
 
-  useState(() => {
+  useEffect(() => {
     if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
@@ -70,7 +70,7 @@ export function SignatureField({
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  });
+  }, [isDragging, isResizing]);
 
   return (
     <div
@@ -86,8 +86,14 @@ export function SignatureField({
         height: `${height}px`,
       }}
       onMouseDown={handleMouseDown}
+      onClick={(e) => {
+        if (!signed && onSign && !(e.target as HTMLElement).classList.contains('resize-handle')) {
+          e.stopPropagation();
+          onSign(id);
+        }
+      }}
     >
-      <div className="h-full flex flex-col items-center justify-center p-3">
+      <div className="h-full flex flex-col items-center justify-center p-3 pointer-events-none">
         {signed ? (
           <div className="text-center">
             <Check className="h-6 w-6 text-green-600 mx-auto mb-2" />
