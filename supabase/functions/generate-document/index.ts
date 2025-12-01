@@ -179,6 +179,14 @@ MARKETING MATERIALS (2-3 pages):
 - INJECT personality while maintaining professionalism
 - DELIVER documents that clients would pay $2,000+ for
 
+🔴 CRITICAL REQUIREMENT - EVERY PAGE MUST HAVE CONTENT:
+- Each page in the "pages" array MUST contain a "sections" array with at least 2-4 sections
+- NEVER create empty pages - every page needs actual content sections
+- Distribute content logically across all pages you create
+- Each section must have meaningful title and content (250-500 words for body sections)
+- If creating 3 pages, ALL 3 pages must have populated sections arrays
+- If creating 5 pages, ALL 5 pages must have populated sections arrays
+
 Your output must be a valid JSON object that can be parsed directly. Make every document a masterpiece that exceeds expectations.`
           },
           ...messages

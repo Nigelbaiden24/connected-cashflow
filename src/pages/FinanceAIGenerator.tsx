@@ -209,6 +209,19 @@ Create an exceptional document that demonstrates world-class design and content 
       plan.pages.forEach((page: any, pageIdx: number) => {
         sectionYOffset = 100; // Reset for each page
         
+        // Validate page has sections
+        if (!page.sections || page.sections.length === 0) {
+          console.warn(`Page ${pageIdx + 1} has no sections, creating default content`);
+          page.sections = [
+            {
+              title: "Content Section",
+              content: "This section contains important information. Please review and update as needed.",
+              sectionType: "standard",
+              order: 0
+            }
+          ];
+        }
+        
         page.sections.forEach((section: any, sectionIdx: number) => {
           const styling = section.styling || {};
           const sectionType = section.sectionType || "standard";
@@ -252,6 +265,9 @@ Create an exceptional document that demonstrates world-class design and content 
 
       setSections(allNewSections);
       saveToHistory();
+
+      console.log(`Created ${allNewSections.length} sections across ${plan.pages.length} pages`);
+      allNewSections.forEach(s => console.log(`Section on ${s.pageId}: ${s.title}`));
 
       toast({
         title: "🎯 Elite document complete!",
