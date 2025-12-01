@@ -235,7 +235,7 @@ Create an exceptional document that demonstrates world-class design and content 
             isCustom: true,
             pageId: newPages[pageIdx].id,
             styling: {
-              backgroundColor: styling.backgroundColor || (sectionType === "highlighted" ? plan.documentColors?.highlightColor : "transparent"),
+              backgroundColor: styling.backgroundColor || "#ffffff",
               textColor: styling.textColor || plan.documentColors?.textColor || "#1f2937",
               fontSize: styling.fontSize || "medium",
               fontWeight: styling.fontWeight || (sectionType === "hero" ? "bold" : "medium"),

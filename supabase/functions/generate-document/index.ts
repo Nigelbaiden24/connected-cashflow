@@ -78,6 +78,8 @@ CREATIVE ENERGY:
   Primary: #831843 (deep magenta) | Accent: #ec4899 (hot pink) | Highlight: #f9a8d4
 
 Styling rules:
+- **CRITICAL**: All content sections MUST have white (#ffffff) backgrounds by default
+- Only use colored backgrounds if the user explicitly requests them in their prompt
 - Apply gradients for hero sections: linear-gradient(135deg, primary, accent)
 - Use accent colors for charts, statistics, and key metrics
 - Implement shadow depth for elevation: 0 10px 40px rgba(0,0,0,0.15)
