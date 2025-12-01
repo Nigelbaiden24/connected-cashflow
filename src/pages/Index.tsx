@@ -638,7 +638,10 @@ const Index = () => {
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                  onClick={() => navigate('/pricing')}
+                  onClick={() => {
+                    navigate('/pricing');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
                 >
                   View Pricing
                   <ArrowRight className="ml-2 h-5 w-5" />
