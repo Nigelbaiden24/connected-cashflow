@@ -152,105 +152,101 @@ const BusinessAIGenerator = () => {
     if (!template) return;
 
     toast({
-      title: "AI is planning your document...",
-      description: "Analyzing your request and structuring the document",
+      title: "🎨 Elite AI is crafting your document...",
+      description: "Analyzing requirements and designing premium content",
     });
 
     try {
-      // First, ask AI to plan the document structure
-      const { data: planData, error: planError } = await supabase.functions.invoke("business-chat", {
+      const { data: aiResponse, error: aiError } = await supabase.functions.invoke("generate-document", {
         body: {
-          message: `You are an expert business document designer with expertise in corporate communications and visual presentation.
-
-USER REQUEST: "${prompt}"
-
-Create a comprehensive, visually striking business document plan in JSON format:
-
-REQUIRED JSON STRUCTURE:
-{
-  "needsMultiplePages": boolean,
-  "numberOfPages": number (create 2-5 pages for substantial business content),
-  "documentColors": {
-    "backgroundColor": "professional hex color (use modern palettes like #f4f6f9, #ffffff, or industry-appropriate colors)",
-    "textColor": "readable hex color with good contrast",
-    "accentColor": "bold brand-style accent color"
-  },
-  "pages": [
-    {
-      "pageName": "strategic page title",
-      "sections": [
-        {
-          "title": "impactful section heading",
-          "content": "Detailed, persuasive business content. Write 200-400 words per section with specific examples, metrics, market insights, and strategic recommendations.",
-          "order": number,
-          "layout": "full-width" | "two-column" | "highlighted"
-        }
-      ]
-    }
-  ]
-}
-
-BUSINESS DOCUMENT STANDARDS:
-- Professional color schemes aligned with corporate branding (navy, slate, emerald, burgundy)
-- Multi-page structure: Cover/Executive Summary → Key Points → Detailed Analysis → Recommendations → Appendix
-- Rich content with quantitative data, market analysis, competitive insights
-- Varied section layouts for visual interest and information hierarchy
-- Each section 200-400 words with specific business value
-- Include actionable recommendations and clear next steps
-
-Create an executive-level document that demonstrates strategic thinking and professional polish.`,
+          messages: [
+            {
+              role: "user",
+              content: `USER REQUEST: "${prompt}"
+              
+Create an exceptional document that demonstrates world-class design and content quality. Use intelligent color selection, varied layouts, and comprehensive content.`
+            }
+          ],
         },
       });
 
-      if (planError) throw planError;
+      if (aiError) throw aiError;
 
-      // Parse the AI response to extract JSON
-      const responseText = planData.response || planData.choices?.[0]?.message?.content || "";
+      const responseText = aiResponse?.choices?.[0]?.message?.content || "";
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Could not parse document plan");
+      if (!jsonMatch) throw new Error("Could not parse AI response");
       
       const plan = JSON.parse(jsonMatch[0]);
 
       toast({
-        title: "Building your document...",
-        description: `Creating ${plan.numberOfPages} page(s) with structured content`,
+        title: "✨ Building premium document...",
+        description: `Creating ${plan.numberOfPages || plan.pages?.length || 1} page(s) with elite styling`,
       });
 
-      // Apply colors
+      // Apply sophisticated color scheme
       if (plan.documentColors) {
-        setBackgroundColor(plan.documentColors.backgroundColor);
-        setTextColor(plan.documentColors.textColor);
+        setBackgroundColor(plan.documentColors.backgroundColor || "#ffffff");
+        setTextColor(plan.documentColors.textColor || "#1f2937");
+        if (plan.documentColors.primaryColor) {
+          setBackgroundColor(plan.documentColors.primaryColor);
+        }
       }
 
-      // Create pages if needed
+      // Create pages with rich styling
       const newPages = plan.pages.map((p: any, idx: number) => ({
         id: `page-${idx + 1}`,
-        name: p.pageName || `Page ${idx + 1}`
+        name: p.pageName || `Page ${idx + 1}`,
+        backgroundColor: p.backgroundColor || plan.documentColors?.backgroundColor
       }));
       
       setPages(newPages);
       setCurrentPageId(newPages[0].id);
 
-      // Create sections across all pages
+      // Create sophisticated sections with enhanced styling
       const allNewSections: any[] = [];
+      let sectionYOffset = 100;
+
       plan.pages.forEach((page: any, pageIdx: number) => {
+        sectionYOffset = 100; // Reset for each page
+        
         page.sections.forEach((section: any, sectionIdx: number) => {
+          const styling = section.styling || {};
+          const sectionType = section.sectionType || "standard";
+          
+          // Calculate dynamic height based on content and section type
+          const contentLength = (section.content || "").length;
+          let baseHeight = Math.max(150, Math.min(400, Math.ceil(contentLength / 4)));
+          
+          if (sectionType === "hero") baseHeight = Math.max(250, baseHeight);
+          if (sectionType === "callout") baseHeight = Math.max(120, baseHeight * 0.7);
+
           const newSection = {
-            id: `ai-section-${pageIdx}-${sectionIdx}-${Date.now()}`,
+            id: `elite-section-${pageIdx}-${sectionIdx}-${Date.now()}`,
             title: section.title,
             content: section.content,
-            type: "body",
+            type: sectionType === "hero" ? "heading" : "body",
             editable: true,
-            placeholder: "AI generated content",
+            placeholder: "Elite AI generated content",
             order: section.order || sectionIdx,
             x: 50,
-            y: 100 + (sectionIdx * 180),
-            width: 600,
-            height: 150,
+            y: sectionYOffset,
+            width: section.layout === "two-column" ? 400 : 700,
+            height: baseHeight,
             isCustom: true,
             pageId: newPages[pageIdx].id,
+            styling: {
+              backgroundColor: styling.backgroundColor || (sectionType === "highlighted" ? plan.documentColors?.highlightColor : "transparent"),
+              textColor: styling.textColor || plan.documentColors?.textColor || "#1f2937",
+              fontSize: styling.fontSize || "medium",
+              fontWeight: styling.fontWeight || (sectionType === "hero" ? "bold" : "medium"),
+              padding: styling.padding || "medium",
+              borderColor: styling.borderColor || plan.documentColors?.accentColor,
+              borderStyle: styling.borderStyle || (sectionType === "callout" ? "solid" : "none"),
+            }
           };
+          
           allNewSections.push(newSection);
+          sectionYOffset += baseHeight + 40; // Add spacing between sections
         });
       });
 
@@ -258,14 +254,14 @@ Create an executive-level document that demonstrates strategic thinking and prof
       saveToHistory();
 
       toast({
-        title: "Document complete!",
-        description: `Created ${plan.numberOfPages} page(s) with ${allNewSections.length} sections`,
+        title: "🎯 Elite document complete!",
+        description: `Created ${plan.numberOfPages || plan.pages?.length} premium page(s) with ${allNewSections.length} styled sections`,
       });
     } catch (error) {
-      console.error("Error generating document:", error);
+      console.error("Error generating elite document:", error);
       toast({
         title: "Generation failed",
-        description: "Could not generate document. Please try again with a clearer prompt.",
+        description: "Could not generate document. Please try again with a more specific prompt.",
         variant: "destructive",
       });
     }
