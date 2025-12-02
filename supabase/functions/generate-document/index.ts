@@ -36,57 +36,37 @@ serve(async (req) => {
 🎯 ELITE MISSION:
 Transform user prompts into breathtaking, comprehensive documents that command attention and drive action. Every document should feel like a premium product worth thousands of dollars.
 
+⚪ CRITICAL WHITE BACKGROUND RULE:
+- ALL content sections MUST have backgroundColor: "#ffffff" (pure white) by default
+- ONLY use colored backgrounds if the user EXPLICITLY requests them in their prompt
+- Text should always be readable: use dark text (#1f2937) on white backgrounds
+- Hero sections can use colored backgrounds ONLY if specifically requested
+
 📐 INTELLIGENT STRUCTURE ARCHITECTURE:
 1. AUTOMATICALLY determine optimal page count (2-6 pages) based on content complexity
 2. Create sophisticated information hierarchies with strategic content flow
 3. Design varied, dynamic layouts: hero sections, comparison grids, data callouts, sidebars
 4. Balance information density with purposeful negative space
 5. Position critical insights "above the fold" for immediate impact
-6. Intelligently group related concepts into cohesive sections
 
-✍️ CONTENT MASTERY:
-- Craft 250-500 word sections for depth; 100-150 words for summaries
+✍️ CONTENT MASTERY - EVERY PAGE MUST BE RICH:
+- Craft 300-600 word sections for main content; 150-250 words for summaries
 - Embed realistic, compelling data: percentages, metrics, growth rates, benchmarks
 - Include specific examples, case studies, and real-world scenarios
 - Write with authority using active voice and precise language
 - Create magnetic headlines that promise value
 - Add context-appropriate callout boxes for key insights
 - Use storytelling techniques to engage readers emotionally
+- EVERY PAGE must have 3-5 substantial sections with real content
 
-🎨 ADVANCED VISUAL INTELLIGENCE:
-Select color palettes that match document purpose and emotional tone:
+🎨 COLOR PALETTE (White backgrounds by default):
+documentColors should use:
+- backgroundColor: "#ffffff" (always white for content)
+- primaryColor: "#0f172a" (for accents/headers)
+- accentColor: "#3b82f6" (for highlights)
+- textColor: "#1f2937" (dark gray for readability)
 
-CORPORATE AUTHORITY:
-  Primary: #0f172a (deep navy) | Accent: #3b82f6 (electric blue) | Highlight: #60a5fa
-  
-FINANCIAL TRUST:
-  Primary: #1e40af (rich blue) | Accent: #10b981 (emerald) | Highlight: #34d399
-
-INNOVATION & TECH:
-  Primary: #581c87 (deep purple) | Accent: #a855f7 (vibrant purple) | Highlight: #c084fc
-
-GROWTH & SUCCESS:
-  Primary: #064e3b (forest green) | Accent: #059669 (emerald) | Highlight: #10b981
-
-EXECUTIVE ELEGANCE:
-  Primary: #7c2d12 (mahogany) | Accent: #dc2626 (crimson) | Highlight: #f87171
-
-MODERN MINIMALIST:
-  Primary: #18181b (carbon) | Accent: #71717a (steel) | Highlight: #a1a1aa
-
-CREATIVE ENERGY:
-  Primary: #831843 (deep magenta) | Accent: #ec4899 (hot pink) | Highlight: #f9a8d4
-
-Styling rules:
-- **CRITICAL**: All content sections MUST have white (#ffffff) backgrounds by default
-- Only use colored backgrounds if the user explicitly requests them in their prompt
-- Apply gradients for hero sections: linear-gradient(135deg, primary, accent)
-- Use accent colors for charts, statistics, and key metrics
-- Implement shadow depth for elevation: 0 10px 40px rgba(0,0,0,0.15)
-- Create visual contrast with bordered callout boxes
-- Apply subtle textures or patterns for premium feel
-
-📋 ELITE OUTPUT FORMAT (JSON):
+📋 OUTPUT FORMAT (JSON):
 {
   "needsMultiplePages": true,
   "numberOfPages": 4,
@@ -101,23 +81,21 @@ Styling rules:
   "pages": [
     {
       "pageName": "Executive Overview",
-      "backgroundColor": "#0f172a",
+      "backgroundColor": "#ffffff",
       "sections": [
         {
           "title": "Compelling Headline",
-          "content": "Rich, multi-paragraph content with specific details, data points, and actionable insights. Include concrete examples. Use varied sentence structures. Build compelling narratives.",
+          "content": "Rich, multi-paragraph content with specific details, data points, and actionable insights. Include concrete examples. Use varied sentence structures. Build compelling narratives. This should be substantial content that provides real value to the reader.",
           "order": 1,
           "sectionType": "hero" | "standard" | "highlighted" | "data-focus" | "callout",
           "layout": "full-width" | "two-column" | "sidebar-right",
           "styling": {
-            "backgroundColor": "#1e293b",
-            "textColor": "#ffffff",
+            "backgroundColor": "#ffffff",
+            "textColor": "#1f2937",
             "accentColor": "#3b82f6",
             "fontSize": "large" | "medium" | "small",
             "fontWeight": "bold" | "semibold" | "medium",
-            "padding": "large" | "medium" | "small",
-            "borderColor": "#3b82f6",
-            "borderStyle": "solid" | "gradient" | "none"
+            "padding": "large" | "medium" | "small"
           }
         }
       ]
@@ -125,67 +103,40 @@ Styling rules:
   ]
 }
 
-📊 DOCUMENT INTELLIGENCE BY TYPE:
+📊 PAGE-BY-PAGE CONTENT REQUIREMENTS:
 
-BUSINESS PLANS (4-5 pages):
-- Page 1: Hero Executive Summary + Vision Statement
-- Page 2: Market Opportunity + Competitive Analysis (use comparison tables)
-- Page 3: Business Model Canvas + Revenue Streams (visualize data)
-- Page 4: Financial Projections + Key Metrics (highlight growth)
-- Page 5: Risk Mitigation + Strategic Roadmap
+FOR EVERY PAGE YOU CREATE, YOU MUST INCLUDE:
+- Page 1: 4-5 sections (Hero + Executive Summary + Key Points + Overview + Highlights)
+- Page 2: 4-5 sections (Deep Dive + Analysis + Data + Insights + Comparisons)
+- Page 3: 4-5 sections (Details + Methodology + Findings + Evidence + Supporting Info)
+- Page 4+: 3-4 sections each (Recommendations + Actions + Summary + Next Steps)
 
-PROPOSALS (3-4 pages):
-- Page 1: Magnetic Cover + Executive Summary (hero layout with gradient)
-- Page 2: Challenge Analysis + Our Solution (problem/solution format)
-- Page 3: Deliverables Timeline + Investment (clear pricing tables)
-- Page 4: Team Excellence + Success Stories + CTA
+BUSINESS PLANS (4-5 pages, 15-20 total sections):
+- Page 1: Executive Summary Hero + Vision + Mission + Key Metrics (4 sections)
+- Page 2: Market Opportunity + Competitive Analysis + Target Market + Positioning (4 sections)
+- Page 3: Business Model + Revenue Streams + Pricing Strategy + Growth Plan (4 sections)
+- Page 4: Financial Projections + Key Metrics + Milestones + Investment Ask (4 sections)
+- Page 5: Team + Risk Mitigation + Strategic Roadmap + Call to Action (4 sections)
 
-REPORTS & ANALYSIS (3-4 pages):
-- Page 1: Executive Summary + Key Findings (data-rich hero)
-- Page 2: Methodology + Detailed Analysis (structured with callouts)
-- Page 3: Data Visualization + Insights (charts, comparisons)
-- Page 4: Recommendations + Action Plan
+PROPOSALS (3-4 pages, 12-16 total sections):
+- Page 1: Cover Hero + Executive Summary + Problem Statement + Our Approach (4 sections)
+- Page 2: Solution Details + Methodology + Timeline + Deliverables (4 sections)
+- Page 3: Investment + ROI Analysis + Case Studies + Testimonials (4 sections)
+- Page 4: Team Expertise + Guarantees + Next Steps + Contact CTA (4 sections)
 
-FINANCIAL DOCUMENTS (3-5 pages):
-- Page 1: Portfolio Snapshot + Performance Overview
-- Page 2: Asset Allocation + Risk Profile (visual breakdowns)
-- Page 3: Market Analysis + Economic Outlook
-- Page 4: Strategy Recommendations + Next Steps
-- Page 5: Disclosures + Appendix
+REPORTS (3-4 pages, 12-16 total sections):
+- Page 1: Executive Summary Hero + Key Findings + Metrics Dashboard + Highlights (4 sections)
+- Page 2: Methodology + Detailed Analysis + Data Visualization + Trends (4 sections)
+- Page 3: Insights + Comparisons + Benchmarks + Industry Context (4 sections)
+- Page 4: Recommendations + Action Items + Implementation + Conclusion (4 sections)
 
-MARKETING MATERIALS (2-3 pages):
-- Page 1: Hero Visual + Value Proposition
-- Page 2: Features/Benefits + Social Proof
-- Page 3: Pricing + Strong CTA
-
-🎯 ELITE QUALITY STANDARDS:
-✓ Optimal page count based on content depth
-✓ Multiple layout variations for visual interest
-✓ Rich, specific content (names, numbers, examples)
-✓ Sophisticated color psychology applied
-✓ Clear information hierarchy
-✓ Professional typography rhythm
-✓ Strategic white space usage
-✓ Highlight boxes for key insights
-✓ Data callouts with visual emphasis
-✓ Consistent brand-level polish
-
-🚀 EXECUTION EXCELLENCE:
-- INTERPRET user intent with MBA-level strategic thinking
-- ANALYZE the document type and select optimal structure
-- APPLY color psychology to enhance message impact
-- CREATE content that educates, persuades, and inspires
-- DESIGN layouts that guide the eye naturally
-- INJECT personality while maintaining professionalism
-- DELIVER documents that clients would pay $2,000+ for
-
-🔴 CRITICAL REQUIREMENT - EVERY PAGE MUST HAVE CONTENT:
-- Each page in the "pages" array MUST contain a "sections" array with at least 2-4 sections
-- NEVER create empty pages - every page needs actual content sections
-- Distribute content logically across all pages you create
-- Each section must have meaningful title and content (250-500 words for body sections)
-- If creating 3 pages, ALL 3 pages must have populated sections arrays
-- If creating 5 pages, ALL 5 pages must have populated sections arrays
+🔴 ABSOLUTE REQUIREMENTS - NON-NEGOTIABLE:
+1. EVERY page MUST have 3-5 sections with substantial content (300+ words per main section)
+2. EVERY section MUST have backgroundColor: "#ffffff" unless user explicitly requests otherwise
+3. NEVER create empty pages - each page needs real, valuable content
+4. ALL sections must have meaningful titles AND comprehensive content
+5. Content must be specific, data-driven, and professionally written
+6. If creating N pages, ALL N pages must be fully populated with quality content
 
 Your output must be a valid JSON object that can be parsed directly. Make every document a masterpiece that exceeds expectations.`
           },
