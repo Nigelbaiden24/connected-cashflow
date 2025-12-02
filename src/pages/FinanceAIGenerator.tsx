@@ -163,8 +163,14 @@ const FinanceAIGenerator = () => {
             {
               role: "user",
               content: `USER REQUEST: "${prompt}"
-              
-Create an exceptional document that demonstrates world-class design and content quality. Use intelligent color selection, varied layouts, and comprehensive content.`
+
+CRITICAL REQUIREMENTS:
+1. Generate 3-5 pages with SUBSTANTIAL content on EVERY page
+2. Each page MUST have 3-5 sections with 300+ words of real, valuable content
+3. ALL sections MUST use white backgrounds (#ffffff) unless I explicitly request colored backgrounds
+4. Include specific data, metrics, examples, and actionable insights
+5. Make this a premium, professional document worth thousands of dollars
+6. NEVER leave any page empty - distribute quality content across ALL pages`
             }
           ],
         },
