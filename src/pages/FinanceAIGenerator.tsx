@@ -214,20 +214,15 @@ ELITE DOCUMENT REQUIREMENTS:
         description: `Creating ${plan.numberOfPages || plan.pages?.length || 1} page(s) with elite styling`,
       });
 
-      // Apply sophisticated color scheme
-      if (plan.documentColors) {
-        setBackgroundColor(plan.documentColors.backgroundColor || "#ffffff");
-        setTextColor(plan.documentColors.textColor || "#1f2937");
-        if (plan.documentColors.primaryColor) {
-          setBackgroundColor(plan.documentColors.primaryColor);
-        }
-      }
+      // Always use white background for document
+      setBackgroundColor("#ffffff");
+      setTextColor(plan.documentColors?.textColor || "#1f2937");
 
-      // Create pages with rich styling
+      // Create pages with WHITE backgrounds only
       const newPages = plan.pages.map((p: any, idx: number) => ({
         id: `page-${idx + 1}`,
         name: p.pageName || `Page ${idx + 1}`,
-        backgroundColor: p.backgroundColor || plan.documentColors?.backgroundColor
+        backgroundColor: "#ffffff"
       }));
       
       setPages(newPages);
@@ -279,13 +274,13 @@ ELITE DOCUMENT REQUIREMENTS:
             isCustom: true,
             pageId: newPages[pageIdx].id,
             styling: {
-              backgroundColor: styling.backgroundColor || "#ffffff",
-              textColor: styling.textColor || plan.documentColors?.textColor || "#1f2937",
+              backgroundColor: "#ffffff",
+              textColor: styling.textColor || "#1f2937",
               fontSize: styling.fontSize || "medium",
               fontWeight: styling.fontWeight || (sectionType === "hero" ? "bold" : "medium"),
               padding: styling.padding || "medium",
-              borderColor: styling.borderColor || plan.documentColors?.accentColor,
-              borderStyle: styling.borderStyle || (sectionType === "callout" ? "solid" : "none"),
+              borderColor: "#e5e7eb",
+              borderStyle: sectionType === "callout" ? "solid" : "none",
             }
           };
           

@@ -189,7 +189,34 @@ Make every document a masterpiece that exceeds expectations.`
     const content = data.choices?.[0]?.message?.content;
     if (content) {
       try {
-        const parsedContent = JSON.parse(content);
+        // Sanitize JSON string before parsing
+        let sanitized = content
+          // Fix bad escape sequences
+          .replace(/\\(?!["\\/bfnrtu])/g, '\\\\')
+          // Remove control characters except valid whitespace
+          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+          // Fix unescaped newlines/tabs inside strings
+          .replace(/\n/g, '\\n')
+          .replace(/\r/g, '\\r')
+          .replace(/\t/g, '\\t');
+        
+        const parsedContent = JSON.parse(sanitized);
+        
+        // Ensure all sections have white backgrounds
+        if (parsedContent.pages) {
+          parsedContent.pages = parsedContent.pages.map((page: any) => ({
+            ...page,
+            backgroundColor: "#ffffff",
+            sections: (page.sections || []).map((section: any) => ({
+              ...section,
+              styling: {
+                ...section.styling,
+                backgroundColor: "#ffffff"
+              }
+            }))
+          }));
+        }
+        
         console.log("Parsed document with", parsedContent.pages?.length || 0, "pages");
         return new Response(JSON.stringify(parsedContent), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
