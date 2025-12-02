@@ -182,7 +182,44 @@ CRITICAL REQUIREMENTS:
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("Could not parse AI response");
       
-      const plan = JSON.parse(jsonMatch[0]);
+      // Sanitize JSON string to fix common issues
+      let jsonString = jsonMatch[0];
+      // Remove control characters that break JSON parsing
+      jsonString = jsonString.replace(/[\x00-\x1F\x7F]/g, (char) => {
+        if (char === '\n') return '\\n';
+        if (char === '\r') return '\\r';
+        if (char === '\t') return '\\t';
+        return '';
+      });
+      // Fix unescaped quotes inside strings
+      jsonString = jsonString.replace(/(?<!\\)"/g, (match, offset, string) => {
+        // Check if this is likely a structural quote (start/end of key/value)
+        const before = string.slice(Math.max(0, offset - 10), offset);
+        const after = string.slice(offset + 1, offset + 10);
+        // If it's after a colon/comma/bracket or before a colon/comma/bracket, keep it
+        if (/[:\[{,]\s*$/.test(before) || /^\s*[:\],}]/.test(after)) {
+          return match;
+        }
+        return match;
+      });
+      
+      let plan;
+      try {
+        plan = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error("Initial JSON parse failed, attempting recovery:", parseError);
+        // Try to extract a simpler structure if complex parse fails
+        const simpleMatch = jsonString.match(/"pages"\s*:\s*\[([\s\S]*?)\]/);
+        if (simpleMatch) {
+          // Create a minimal valid structure
+          plan = {
+            pages: [{ pageName: "Page 1", sections: [{ title: "Generated Content", content: "Content generation encountered formatting issues. Please try again with a simpler prompt.", sectionType: "standard" }] }],
+            documentColors: { backgroundColor: "#ffffff", textColor: "#1f2937", primaryColor: "#0f172a", accentColor: "#3b82f6" }
+          };
+        } else {
+          throw parseError;
+        }
+      }
 
       toast({
         title: "✨ Building premium document...",

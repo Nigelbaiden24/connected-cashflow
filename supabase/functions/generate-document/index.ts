@@ -138,11 +138,23 @@ REPORTS (3-4 pages, 12-16 total sections):
 5. Content must be specific, data-driven, and professionally written
 6. If creating N pages, ALL N pages must be fully populated with quality content
 
-Your output must be a valid JSON object that can be parsed directly. Make every document a masterpiece that exceeds expectations.`
+Your output must be a valid JSON object that can be parsed directly by JSON.parse(). 
+
+⚠️ CRITICAL JSON FORMATTING RULES:
+- Do NOT include any text before or after the JSON object
+- Do NOT use markdown code blocks
+- Escape all special characters in string values (newlines as \\n, tabs as \\t, quotes as \\")
+- Do NOT include control characters in strings
+- Ensure all strings are properly quoted
+- Do NOT include trailing commas
+- Keep content concise - avoid extremely long paragraphs that may cause parsing issues
+
+Make every document a masterpiece that exceeds expectations.`
           },
           ...messages
         ],
         stream: false,
+        response_format: { type: "json_object" },
       }),
     });
 
