@@ -185,6 +185,24 @@ Make every document a masterpiece that exceeds expectations.`
     const data = await response.json();
     console.log("Document generation completed successfully");
 
+    // Parse the JSON content from the AI response and return it directly
+    const content = data.choices?.[0]?.message?.content;
+    if (content) {
+      try {
+        const parsedContent = JSON.parse(content);
+        console.log("Parsed document with", parsedContent.pages?.length || 0, "pages");
+        return new Response(JSON.stringify(parsedContent), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (parseError) {
+        console.error("Failed to parse AI response as JSON:", parseError);
+        // Return raw response if parsing fails
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
