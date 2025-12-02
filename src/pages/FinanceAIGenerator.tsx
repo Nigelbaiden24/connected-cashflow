@@ -164,13 +164,14 @@ const FinanceAIGenerator = () => {
               role: "user",
               content: `USER REQUEST: "${prompt}"
 
-CRITICAL REQUIREMENTS:
-1. Generate 3-5 pages with SUBSTANTIAL content on EVERY page
-2. Each page MUST have 3-5 sections with 300+ words of real, valuable content
-3. ALL sections MUST use white backgrounds (#ffffff) unless I explicitly request colored backgrounds
-4. Include specific data, metrics, examples, and actionable insights
-5. Make this a premium, professional document worth thousands of dollars
-6. NEVER leave any page empty - distribute quality content across ALL pages`
+ELITE DOCUMENT REQUIREMENTS:
+1. Generate 3-5 pages with SUBSTANTIAL, EXPERT-LEVEL content on EVERY page
+2. Each page MUST have 3-5 sections with 300-600 words of rich, valuable, professional content
+3. ALL sections MUST use WHITE BACKGROUNDS (#ffffff) - this is MANDATORY unless user explicitly requests colors
+4. Include specific data points, percentages, metrics, case studies, and actionable insights
+5. Write like a McKinsey consultant - authoritative, data-driven, strategic
+6. NEVER leave any page empty - distribute premium quality content across ALL pages
+7. Every section styling.backgroundColor MUST be "#ffffff"`
             }
           ],
         },
@@ -178,47 +179,34 @@ CRITICAL REQUIREMENTS:
 
       if (aiError) throw aiError;
 
-      const responseText = aiResponse?.choices?.[0]?.message?.content || "";
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error("Could not parse AI response");
-      
-      // Sanitize JSON string to fix common issues
-      let jsonString = jsonMatch[0];
-      // Remove control characters that break JSON parsing
-      jsonString = jsonString.replace(/[\x00-\x1F\x7F]/g, (char) => {
-        if (char === '\n') return '\\n';
-        if (char === '\r') return '\\r';
-        if (char === '\t') return '\\t';
-        return '';
-      });
-      // Fix unescaped quotes inside strings
-      jsonString = jsonString.replace(/(?<!\\)"/g, (match, offset, string) => {
-        // Check if this is likely a structural quote (start/end of key/value)
-        const before = string.slice(Math.max(0, offset - 10), offset);
-        const after = string.slice(offset + 1, offset + 10);
-        // If it's after a colon/comma/bracket or before a colon/comma/bracket, keep it
-        if (/[:\[{,]\s*$/.test(before) || /^\s*[:\],}]/.test(after)) {
-          return match;
-        }
-        return match;
-      });
-      
+      // Handle response - the edge function returns parsed JSON directly
       let plan;
-      try {
-        plan = JSON.parse(jsonString);
-      } catch (parseError) {
-        console.error("Initial JSON parse failed, attempting recovery:", parseError);
-        // Try to extract a simpler structure if complex parse fails
-        const simpleMatch = jsonString.match(/"pages"\s*:\s*\[([\s\S]*?)\]/);
-        if (simpleMatch) {
-          // Create a minimal valid structure
-          plan = {
-            pages: [{ pageName: "Page 1", sections: [{ title: "Generated Content", content: "Content generation encountered formatting issues. Please try again with a simpler prompt.", sectionType: "standard" }] }],
-            documentColors: { backgroundColor: "#ffffff", textColor: "#1f2937", primaryColor: "#0f172a", accentColor: "#3b82f6" }
-          };
-        } else {
-          throw parseError;
+      
+      // Check if response is already parsed JSON
+      if (aiResponse && typeof aiResponse === 'object' && !aiResponse.choices) {
+        // Direct JSON response from edge function
+        plan = aiResponse;
+      } else if (aiResponse?.choices?.[0]?.message?.content) {
+        // Standard chat completion response
+        const responseText = aiResponse.choices[0].message.content;
+        try {
+          plan = JSON.parse(responseText);
+        } catch {
+          // Try to extract JSON from response
+          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            plan = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error("Could not parse AI response as JSON");
+          }
         }
+      } else {
+        throw new Error("Invalid AI response format");
+      }
+
+      // Validate the plan structure
+      if (!plan.pages || !Array.isArray(plan.pages) || plan.pages.length === 0) {
+        throw new Error("AI response missing pages array");
       }
 
       toast({
