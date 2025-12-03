@@ -536,7 +536,16 @@ ELITE DOCUMENT REQUIREMENTS:
                     <EnhancedDocumentEditor
                       sections={currentPageSections}
                       onSectionsChange={(newSections) => {
-                        setSections(newSections);
+                        // Preserve sections from other pages when updating current page
+                        const otherPageSections = sections.filter(s => {
+                          const sectionPageId = (s as any).pageId;
+                          // Keep sections that belong to OTHER pages
+                          if (currentPageId === 'page-1') {
+                            return sectionPageId && sectionPageId !== 'page-1';
+                          }
+                          return sectionPageId !== currentPageId;
+                        });
+                        setSections([...otherPageSections, ...newSections]);
                         saveToHistory();
                       }}
                       onContentChange={(id, content) => {
