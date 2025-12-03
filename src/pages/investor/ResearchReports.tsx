@@ -178,10 +178,19 @@ const ResearchReports = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredReports.map((report) => (
-            <Card key={report.id} className="hover:shadow-lg transition-all">
+            <Card key={report.id} className="hover:shadow-lg transition-all overflow-hidden">
+              {report.thumbnail_url && (
+                <div className="relative h-40 overflow-hidden">
+                  <img 
+                    src={report.thumbnail_url} 
+                    alt={report.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              )}
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <FileText className="h-8 w-8 text-primary" />
+                  {!report.thumbnail_url && <FileText className="h-8 w-8 text-primary" />}
                   <Badge variant="outline">{report.report_type}</Badge>
                 </div>
                 <CardTitle className="text-lg mt-2">{report.title}</CardTitle>
