@@ -308,8 +308,16 @@ export default function Reports() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {categoryReports.map((report) => (
                     <Card key={report.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
-                      <div className={`relative h-48 bg-gradient-to-br ${colorClass} opacity-10 flex items-center justify-center`}>
-                        <FileText className="h-20 w-20 text-foreground opacity-20" />
+                      <div className={`relative h-48 ${report.thumbnail_url ? '' : `bg-gradient-to-br ${colorClass} opacity-10`} flex items-center justify-center overflow-hidden`}>
+                        {report.thumbnail_url ? (
+                          <img 
+                            src={report.thumbnail_url} 
+                            alt={report.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <FileText className="h-20 w-20 text-foreground opacity-20" />
+                        )}
                         <Badge variant="secondary" className="absolute top-4 right-4 text-xs">
                           {report.report_type}
                         </Badge>

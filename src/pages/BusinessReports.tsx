@@ -154,8 +154,16 @@ export default function BusinessReports() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredReports.map((report) => (
             <Card key={report.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-              <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                <FileText className="h-20 w-20 text-primary/40" />
+              <div className="relative h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center overflow-hidden">
+                {report.thumbnail_url ? (
+                  <img 
+                    src={report.thumbnail_url} 
+                    alt={report.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <FileText className="h-20 w-20 text-primary/40" />
+                )}
                 <Badge className="absolute top-4 right-4">{report.report_type}</Badge>
               </div>
               <CardContent className="p-6">

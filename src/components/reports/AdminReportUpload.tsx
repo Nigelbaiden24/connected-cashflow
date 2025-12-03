@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, ImageIcon, X } from "lucide-react";
 
 interface Profile {
   user_id: string;
@@ -25,6 +25,8 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [reportType, setReportType] = useState("");
@@ -155,6 +157,23 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
     }
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setThumbnailFile(selectedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+  };
+
   const handleUpload = async () => {
     if (!file || !title || !reportType) {
       toast.error("Please fill in all required fields");
@@ -174,6 +193,26 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
+
+      // Upload thumbnail if provided
+      let thumbnailUrl: string | null = null;
+      if (thumbnailFile) {
+        const thumbExt = thumbnailFile.name.split('.').pop();
+        const thumbFileName = `thumbnails/${Date.now()}-${Math.random().toString(36).substring(7)}.${thumbExt}`;
+        
+        const { error: thumbUploadError } = await supabase.storage
+          .from('reports')
+          .upload(thumbFileName, thumbnailFile);
+
+        if (thumbUploadError) {
+          console.error('Thumbnail upload error:', thumbUploadError);
+        } else {
+          const { data: thumbUrlData } = supabase.storage
+            .from('reports')
+            .getPublicUrl(thumbFileName);
+          thumbnailUrl = thumbUrlData.publicUrl;
+        }
+      }
 
       // Determine platform and category based on section
       let finalPlatform: "finance" | "business" | "investor" = "finance";
@@ -205,6 +244,7 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
           report_type: reportType,
           platform: finalPlatform,
           uploaded_by: uploadedBy,
+          thumbnail_url: thumbnailUrl,
           ...(reportCategory && { report_category: reportCategory })
         })
         .select()
@@ -253,6 +293,8 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
 
    const resetForm = () => {
      setFile(null);
+     setThumbnailFile(null);
+     setThumbnailPreview(null);
      setTitle("");
      setDescription("");
      setReportType("");
@@ -284,6 +326,50 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
               accept=".pdf"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="thumbnail">Thumbnail Image (Optional)</Label>
+            {thumbnailPreview ? (
+              <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+                <img 
+                  src={thumbnailPreview} 
+                  alt="Thumbnail preview" 
+                  className="w-full h-full object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-1 right-1 h-6 w-6"
+                  onClick={removeThumbnail}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  id="thumbnail"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('thumbnail')?.click()}
+                  className="gap-2"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  Add Thumbnail
+                </Button>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              This image will be displayed as the report cover in user listings
+            </p>
           </div>
 
           <div className="space-y-2">
