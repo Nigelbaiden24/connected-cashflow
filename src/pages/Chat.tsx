@@ -5,19 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, Files } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { DocumentUpload } from "@/components/DocumentUpload";
-import { MultiDocumentUpload } from "@/components/MultiDocumentUpload";
-import { DocumentExportMenu } from "@/components/DocumentExportMenu";
 import { MeetingIntegration } from "@/components/MeetingIntegration";
 import { MeetingBooker } from "@/components/MeetingBooker";
 import { FileManager } from "@/components/FileManager";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
-import { exportDocument, detectExportFormat, ExportContent } from "@/utils/documentExporter";
-import { ParsedDocument, compareDocuments } from "@/utils/documentParser";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useBusinessChat } from "@/hooks/useBusinessChat";
 import { useLocation } from "react-router-dom";
@@ -34,11 +30,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 interface Message {
   id: string;
@@ -79,9 +70,6 @@ const Chat = () => {
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
   const [user, setUser] = useState<any>(null);
   const [showMeetingIntegration, setShowMeetingIntegration] = useState(false);
-  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
-  const [parsedDocuments, setParsedDocuments] = useState<ParsedDocument[]>([]);
-  const [lastAIResponse, setLastAIResponse] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { streamChat: streamFinanceChat, isStreaming: isFinanceStreaming } = useStreamingChat();
@@ -344,7 +332,7 @@ const Chat = () => {
 
             if (convId) {
               await saveMessage(finalMessage, convId);
-              setLastAIResponse(streamedContent);
+              
               if (messages.length === 1) {
                 const title = currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : '');
                 await supabase.from('conversations').update({ title }).eq('id', convId);
@@ -394,7 +382,7 @@ const Chat = () => {
         };
 
         setMessages(prev => [...prev, aiResponse]);
-        setLastAIResponse(aiResponse.content);
+        
         if (convId) {
           await saveMessage(aiResponse, convId);
           
@@ -443,33 +431,6 @@ const Chat = () => {
       title: "Document processed",
       description: `Text extracted via ${type === 'ocr' ? 'OCR' : 'file upload'}. Review and send.`,
     });
-  };
-
-  const handleDocumentsParsed = (docs: ParsedDocument[], summary: string) => {
-    setParsedDocuments(docs);
-    setInput(summary);
-    setShowDocumentUpload(false);
-    toast({
-      title: "Documents ready",
-      description: `${docs.length} document(s) analyzed. Review the summary and send to start analysis.`,
-    });
-  };
-
-  const handleAutoExport = async (content: string) => {
-    const format = detectExportFormat(content);
-    if (format) {
-      const exportData: ExportContent = {
-        title: 'AI Generated Document',
-        content: lastAIResponse || content,
-        generatedBy: `${botName} - FlowPulse Elite Document AI`,
-        date: new Date(),
-      };
-      await exportDocument(exportData, format);
-      toast({
-        title: "Document exported",
-        description: `Downloaded as ${format.toUpperCase()}`,
-      });
-    }
   };
 
   const handleVoiceTranscription = (text: string) => {
@@ -644,28 +605,8 @@ const Chat = () => {
             />
             <Button variant="outline" size="sm" onClick={handleGenerateReport}>
               <Download className="h-4 w-4 mr-2" />
-              PDF
+              Generate PDF Report
             </Button>
-            <DocumentExportMenu 
-              content={lastAIResponse || messages.filter(m => m.type === 'assistant').map(m => m.content).join('\n\n')}
-              title={`${botName} Analysis Report`}
-              disabled={messages.length <= 1}
-            />
-            <Popover open={showDocumentUpload} onOpenChange={setShowDocumentUpload}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Files className="h-4 w-4 mr-2" />
-                  Multi-Doc
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-96" align="end">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Multi-Document Analysis</h4>
-                  <p className="text-sm text-muted-foreground">Upload multiple documents for cross-analysis, comparison, and data extraction.</p>
-                  <MultiDocumentUpload onDocumentsParsed={handleDocumentsParsed} />
-                </div>
-              </PopoverContent>
-            </Popover>
             <Button 
               variant="outline" 
               size="sm" 
