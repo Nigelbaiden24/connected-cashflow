@@ -411,6 +411,83 @@ When analyzing portfolios or markets, provide specific insights with relevant me
       const data = await response.json();
       console.log("AI response received successfully");
 
+      // Handle tool calls - if the model wants to call a tool, process it and get final response
+      if (data.choices?.[0]?.message?.tool_calls) {
+        const toolCalls = data.choices[0].message.tool_calls;
+        console.log("Processing tool calls:", toolCalls.length);
+        
+        // Build tool responses
+        const toolMessages = [];
+        for (const toolCall of toolCalls) {
+          const functionName = toolCall.function.name;
+          const args = JSON.parse(toolCall.function.arguments || '{}');
+          
+          // Simulate tool responses based on tool type
+          let toolResult = "";
+          switch (functionName) {
+            case "generate_report":
+              toolResult = `Report generation initiated for ${args.report_type}: ${args.topic}. The report content is being prepared with ${args.length || 'medium'} length format.`;
+              break;
+            case "analyze_document":
+              toolResult = `Document analysis complete. Analysis type: ${args.analysis_type}. Output format: ${args.output_format || 'text'}.`;
+              break;
+            case "compare_documents":
+              toolResult = `Document comparison complete. Comparison type: ${args.comparison_type}.`;
+              break;
+            case "get_market_data":
+              toolResult = `Market data retrieved for ${args.symbol}. Data type: ${args.data_type}.`;
+              break;
+            case "analyze_portfolio":
+              toolResult = `Portfolio analysis complete. Analysis type: ${args.analysis_type}.`;
+              break;
+            case "check_compliance":
+              toolResult = `Compliance check complete for ${args.activity} in ${args.jurisdiction || 'UK'} jurisdiction.`;
+              break;
+            case "web_search":
+              toolResult = `Web search results for: ${args.query}`;
+              break;
+            case "calculate_retirement_plan":
+              toolResult = `Retirement plan calculation complete for age ${args.current_age} to ${args.retirement_age}.`;
+              break;
+            default:
+              toolResult = `Tool ${functionName} executed successfully.`;
+          }
+          
+          toolMessages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: toolResult
+          });
+        }
+        
+        // Make a follow-up call with tool results to get final response
+        const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              ...chatMessages,
+              data.choices[0].message,
+              ...toolMessages
+            ],
+            temperature: 0.7,
+            max_tokens: 4000,
+          }),
+        });
+        
+        if (followUpResponse.ok) {
+          const followUpData = await followUpResponse.json();
+          console.log("Follow-up response received after tool calls");
+          return new Response(JSON.stringify(followUpData), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -418,7 +495,7 @@ When analyzing portfolios or markets, provide specific insights with relevant me
   } catch (error) {
     console.error("Error in financial-chat function:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error occurred" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

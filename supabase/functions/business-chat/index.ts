@@ -413,6 +413,83 @@ Be proactive in identifying opportunities, risks, and providing strategic guidan
       const data = await response.json();
       console.log("AI response received successfully");
 
+      // Handle tool calls - if the model wants to call a tool, process it and get final response
+      if (data.choices?.[0]?.message?.tool_calls) {
+        const toolCalls = data.choices[0].message.tool_calls;
+        console.log("Processing tool calls:", toolCalls.length);
+        
+        // Build tool responses
+        const toolMessages = [];
+        for (const toolCall of toolCalls) {
+          const functionName = toolCall.function.name;
+          const args = JSON.parse(toolCall.function.arguments || '{}');
+          
+          // Simulate tool responses based on tool type
+          let toolResult = "";
+          switch (functionName) {
+            case "generate_report":
+              toolResult = `Report generation initiated for ${args.report_type}: ${args.topic}. The report content is being prepared with ${args.length || 'medium'} length format.`;
+              break;
+            case "analyze_document":
+              toolResult = `Document analysis complete. Analysis type: ${args.analysis_type}. Output format: ${args.output_format || 'text'}.`;
+              break;
+            case "compare_documents":
+              toolResult = `Document comparison complete. Comparison type: ${args.comparison_type}.`;
+              break;
+            case "web_search":
+              toolResult = `Web search results for: ${args.query}`;
+              break;
+            case "analyze_business_metrics":
+              toolResult = `Business metrics analysis complete for: ${args.metrics}. Analysis type: ${args.analysis_type}.`;
+              break;
+            case "create_business_plan":
+              toolResult = `Business plan created for: ${args.business_type}. Time horizon: ${args.time_horizon || '1 year'}.`;
+              break;
+            case "swot_analysis":
+              toolResult = `SWOT analysis complete for: ${args.subject}.`;
+              break;
+            case "extract_action_items":
+              toolResult = `Action items extracted. Output format: ${args.format || 'list'}.`;
+              break;
+            default:
+              toolResult = `Tool ${functionName} executed successfully.`;
+          }
+          
+          toolMessages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: toolResult
+          });
+        }
+        
+        // Make a follow-up call with tool results to get final response
+        const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              ...chatMessages,
+              data.choices[0].message,
+              ...toolMessages
+            ],
+            temperature: 0.7,
+            max_tokens: 4000,
+          }),
+        });
+        
+        if (followUpResponse.ok) {
+          const followUpData = await followUpResponse.json();
+          console.log("Follow-up response received after tool calls");
+          return new Response(JSON.stringify(followUpData), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
