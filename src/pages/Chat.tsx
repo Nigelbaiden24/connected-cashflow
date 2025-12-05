@@ -88,13 +88,17 @@ const Chat = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        loadConversations();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+      if (currentUser) {
+        // Load conversations with the fetched user
+        await loadConversationsForUser(currentUser.id);
         // Auto-create conversation for logged-in users
         if (!currentConversationId) {
-          await startNewConversation();
+          const newConvId = await startNewConversationForUser(currentUser.id);
+          if (newConvId) {
+            setCurrentConversationId(newConvId);
+          }
         }
       }
     };
@@ -109,13 +113,11 @@ const Chat = () => {
     localStorage.setItem('useStreaming', String(useStreaming));
   }, [useStreaming]);
 
-  const loadConversations = async () => {
-    if (!user) return;
-
+  const loadConversationsForUser = async (userId: string) => {
     const { data, error } = await supabase
       .from('conversations')
       .select('id, title, updated_at')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('updated_at', { ascending: false });
 
     if (error) {
@@ -123,6 +125,11 @@ const Chat = () => {
     } else if (data) {
       setConversations(data);
     }
+  };
+
+  const loadConversations = async () => {
+    if (!user) return;
+    await loadConversationsForUser(user.id);
   };
 
   const loadConversation = async (conversationId: string) => {
@@ -155,14 +162,10 @@ const Chat = () => {
     }
   };
 
-  const startNewConversation = async () => {
-    if (!user) {
-      return null; // Silently allow guest usage
-    }
-
+  const startNewConversationForUser = async (userId: string) => {
     const { data, error } = await supabase
       .from('conversations')
-      .insert({ user_id: user.id, title: 'New Conversation' })
+      .insert({ user_id: userId, title: 'New Conversation' })
       .select()
       .single();
 
@@ -170,18 +173,29 @@ const Chat = () => {
       console.error('Error creating conversation:', error);
       return null;
     } else if (data) {
-      setCurrentConversationId(data.id);
       setMessages([{
         id: "1",
         type: "assistant",
-        content: `Hello! I'm ${botName}, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?`,
+        content: `Hello! I'm ${botName}, your AI assistant. I can help you with ${isBusinessPlatform ? 'business planning, operations, analytics, and strategy' : 'market data, client information, compliance checks, and more'}. How can I assist you today?`,
         timestamp: new Date(),
         category: "general",
       }]);
-      loadConversations();
+      await loadConversationsForUser(userId);
       return data.id;
     }
     return null;
+  };
+
+  const startNewConversation = async () => {
+    if (!user) {
+      return null; // Silently allow guest usage
+    }
+
+    const newConvId = await startNewConversationForUser(user.id);
+    if (newConvId) {
+      setCurrentConversationId(newConvId);
+    }
+    return newConvId;
   };
 
   const saveMessage = async (message: Message, conversationId?: string) => {
