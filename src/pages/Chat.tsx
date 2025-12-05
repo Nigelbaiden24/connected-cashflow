@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -19,6 +19,18 @@ import { useBusinessChat } from "@/hooks/useBusinessChat";
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { 
+  exportDocument, 
+  parseDocumentFromResponse, 
+  detectDocumentIntent,
+  DocumentContent 
+} from "@/utils/documentGenerator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +49,8 @@ interface Message {
   content: string;
   timestamp: Date;
   category?: "market" | "client" | "compliance" | "general";
+  isDocumentResponse?: boolean;
+  documentTitle?: string;
 }
 
 const Chat = () => {
@@ -280,8 +294,29 @@ const Chat = () => {
 
   const quickActions = isBusinessPlatform ? businessQuickActions : financeQuickActions;
 
+  // Handle document download from AI response
+  const handleDocumentDownload = (messageContent: string, format: string) => {
+    const doc = parseDocumentFromResponse(messageContent);
+    if (doc) {
+      exportDocument(doc, format);
+      toast({
+        title: "Document Downloaded",
+        description: `Your ${format.toUpperCase()} file has been generated and downloaded.`,
+      });
+    } else {
+      toast({
+        title: "Export Error",
+        description: "Could not parse document content. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
+
+    // Detect if user wants a document
+    const documentIntent = detectDocumentIntent(input);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -336,13 +371,24 @@ const Chat = () => {
             );
           },
           onDone: async () => {
+            // Check if this is a document response
+            const parsedDoc = parseDocumentFromResponse(streamedContent);
+            const isDocResponse = documentIntent.wantsDocument && streamedContent.length > 200;
+            
             const finalMessage: Message = {
               id: tempId,
               type: "assistant",
               content: streamedContent || "I apologize, but I couldn't generate a response. Please try again.",
               timestamp: new Date(),
               category: categorizeMessage(streamedContent),
+              isDocumentResponse: isDocResponse,
+              documentTitle: parsedDoc?.title || documentIntent.documentType || 'Document',
             };
+
+            // Update message with document flag
+            setMessages(prev => 
+              prev.map(m => m.id === tempId ? finalMessage : m)
+            );
 
             if (convId) {
               await saveMessage(finalMessage, convId);
@@ -357,7 +403,7 @@ const Chat = () => {
             setIsLoading(false);
             toast({
               title: "Response complete",
-              description: "AI analysis finished",
+              description: isDocResponse ? "Document ready for download!" : "AI analysis finished",
             });
           },
           onError: (error) => {
@@ -387,12 +433,18 @@ const Chat = () => {
 
         if (error) throw error;
 
+        const responseContent = data.choices?.[0]?.message?.content || "I apologize, but I couldn't generate a response. Please try again.";
+        const parsedDoc = parseDocumentFromResponse(responseContent);
+        const isDocResponse = documentIntent.wantsDocument && responseContent.length > 200;
+
         const aiResponse: Message = {
           id: Date.now().toString(),
           type: "assistant",
-          content: data.choices?.[0]?.message?.content || "I apologize, but I couldn't generate a response. Please try again.",
+          content: responseContent,
           timestamp: new Date(),
-          category: categorizeMessage(data.choices?.[0]?.message?.content || ""),
+          category: categorizeMessage(responseContent),
+          isDocumentResponse: isDocResponse,
+          documentTitle: parsedDoc?.title || documentIntent.documentType || 'Document',
         };
 
         setMessages(prev => [...prev, aiResponse]);
@@ -409,7 +461,7 @@ const Chat = () => {
         
         toast({
           title: "Response received",
-          description: "AI analysis complete",
+          description: isDocResponse ? "Document ready for download!" : "AI analysis complete",
         });
         setIsLoading(false);
       }
@@ -693,6 +745,36 @@ const Chat = () => {
                 <span className="text-xs text-muted-foreground">
                   {message.timestamp.toLocaleTimeString()}
                 </span>
+                {message.type === "assistant" && message.content.length > 50 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-5 px-1.5 text-xs">
+                        <Download className="h-3 w-3 mr-1" />
+                        Export
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'pdf')}>
+                        <FileDown className="h-3 w-3 mr-2" /> PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'docx')}>
+                        <FileType className="h-3 w-3 mr-2" /> Word
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'xlsx')}>
+                        <FileSpreadsheet className="h-3 w-3 mr-2" /> Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'pptx')}>
+                        <Presentation className="h-3 w-3 mr-2" /> PowerPoint
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'md')}>
+                        <FileText className="h-3 w-3 mr-2" /> Markdown
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'txt')}>
+                        <FileText className="h-3 w-3 mr-2" /> Text
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
               <div className="text-sm">
                 {message.type === "assistant" ? (
@@ -714,6 +796,71 @@ const Chat = () => {
                     >
                       {message.content}
                     </ReactMarkdown>
+                    
+                    {/* Document Download Buttons */}
+                    {message.isDocumentResponse && (
+                      <div className="mt-4 p-3 bg-background/50 rounded-lg border border-border">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">
+                          📄 Download "{message.documentTitle}" as:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDocumentDownload(message.content, 'pdf')}
+                            className="h-7 text-xs"
+                          >
+                            <FileDown className="h-3 w-3 mr-1" />
+                            PDF
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDocumentDownload(message.content, 'docx')}
+                            className="h-7 text-xs"
+                          >
+                            <FileType className="h-3 w-3 mr-1" />
+                            Word
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDocumentDownload(message.content, 'xlsx')}
+                            className="h-7 text-xs"
+                          >
+                            <FileSpreadsheet className="h-3 w-3 mr-1" />
+                            Excel
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDocumentDownload(message.content, 'pptx')}
+                            className="h-7 text-xs"
+                          >
+                            <Presentation className="h-3 w-3 mr-1" />
+                            PowerPoint
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDocumentDownload(message.content, 'md')}
+                            className="h-7 text-xs"
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            Markdown
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDocumentDownload(message.content, 'txt')}
+                            className="h-7 text-xs"
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            Text
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="whitespace-pre-wrap">{message.content}</div>
@@ -754,7 +901,7 @@ const Chat = () => {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about markets, clients, compliance, upload documents, or use voice..."
+            placeholder="Generate a report, create a document, analyze data, or ask anything..."
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
             className="flex-1"
           />
@@ -763,7 +910,7 @@ const Chat = () => {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          💬 Voice recording | 📄 Document upload (OCR) | 📊 Generate PDF reports | Financial analysis powered by FlowPulse.io
+          💬 Voice | 📄 Document Analysis (OCR) | 📊 Generate Reports (PDF, Word, Excel, PowerPoint) | 🚀 Elite Document AI by FlowPulse.io
         </p>
       </div>
     </div>
