@@ -579,25 +579,36 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col relative ai-chat-gradient dark:ai-chat-gradient-dark min-h-screen">
+      {/* Floating Particles Background */}
+      <div className="ai-floating-particles" />
+      
       {/* Header */}
-      <div className="border-b p-4">
-        <div className="flex items-center justify-between">
+      <div className="ai-header-gradient backdrop-blur-xl p-4 sticky top-0 z-20">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="gap-2"
+              className="gap-2 hover:bg-primary/10"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
-            <div>
-              <h1 className="text-xl font-semibold">{botName} - FlowPulse AI Assistant</h1>
-              <p className="text-sm text-muted-foreground">
-                Your intelligent financial advisor with voice, document analysis & reporting
-              </p>
+            <div className="flex items-center gap-3">
+              {/* AI Avatar Orb */}
+              <div className="ai-orb h-12 w-12 rounded-full flex items-center justify-center">
+                <Bot className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-purple-500 to-cyan-500 bg-clip-text text-transparent">
+                  {botName} - FlowPulse Elite AI
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Enterprise-grade document intelligence & reporting
+                </p>
+              </div>
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -605,14 +616,16 @@ const Chat = () => {
             <MeetingBooker />
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="ai-glass-card border-primary/20 hover:border-primary/50 hover:bg-primary/5">
                   <History className="h-4 w-4 mr-2" />
                   History
                 </Button>
               </SheetTrigger>
-              <SheetContent>
+              <SheetContent className="ai-glass-card">
                 <SheetHeader>
-                  <SheetTitle>Conversation History</SheetTitle>
+                  <SheetTitle className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                    Conversation History
+                  </SheetTitle>
                   <SheetDescription>
                     View and load your previous conversations
                   </SheetDescription>
@@ -620,8 +633,7 @@ const Chat = () => {
                 <div className="mt-6 space-y-2">
                   <Button
                     onClick={startNewConversation}
-                    className="w-full justify-start"
-                    variant="outline"
+                    className="w-full justify-start bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     New Conversation
@@ -639,7 +651,11 @@ const Chat = () => {
                             key={conv.id}
                             onClick={() => loadConversation(conv.id)}
                             variant={currentConversationId === conv.id ? "secondary" : "ghost"}
-                            className="w-full justify-start text-left"
+                            className={`w-full justify-start text-left transition-all ${
+                              currentConversationId === conv.id 
+                                ? 'bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30' 
+                                : 'hover:bg-primary/5'
+                            }`}
                           >
                             <div className="flex-1 truncate">
                               <div className="font-medium truncate">{conv.title}</div>
@@ -655,7 +671,7 @@ const Chat = () => {
                 </div>
               </SheetContent>
             </Sheet>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ai-glass-card px-3 py-1 rounded-lg">
               <Switch
                 id="streaming-mode"
                 checked={useStreaming}
@@ -667,9 +683,9 @@ const Chat = () => {
               placeholder="Bot name"
               value={botName}
               onChange={(e) => setBotName(e.target.value)}
-              className="w-32"
+              className="w-32 ai-glass-card border-primary/20 focus:border-primary/50"
             />
-            <Button variant="outline" size="sm" onClick={handleGenerateReport}>
+            <Button variant="outline" size="sm" onClick={handleGenerateReport} className="ai-glass-card border-primary/20 hover:border-primary/50 hover:bg-primary/5">
               <Download className="h-4 w-4 mr-2" />
               Generate PDF Report
             </Button>
@@ -677,6 +693,7 @@ const Chat = () => {
               variant="outline" 
               size="sm" 
               onClick={() => setShowMeetingIntegration(!showMeetingIntegration)}
+              className="ai-glass-card border-primary/20 hover:border-primary/50 hover:bg-primary/5"
             >
               <Video className="h-4 w-4 mr-2" />
               {showMeetingIntegration ? "Hide Meetings" : "Join Meeting"}
@@ -687,90 +704,88 @@ const Chat = () => {
 
       {/* Meeting Integration Panel */}
       {showMeetingIntegration && (
-        <div className="border-b p-4">
+        <div className="border-b border-border/30 p-4 ai-glass-card">
           <MeetingIntegration onMeetingJoined={handleMeetingJoined} />
         </div>
       )}
 
       {/* Quick Actions */}
-      <div className="border-b p-4">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className="p-4 border-b border-border/30">
+        <div className="flex gap-3 overflow-x-auto pb-2">
           {quickActions.map((action) => (
-            <Button
+            <button
               key={action.label}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2 whitespace-nowrap"
+              className="ai-quick-action flex items-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium"
               onClick={() => handleQuickAction(action.query)}
             >
-              <action.icon className="h-4 w-4" />
-              {action.label}
-            </Button>
+              <action.icon className="h-4 w-4 text-primary" />
+              <span>{action.label}</span>
+            </button>
           ))}
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
+      <div className="flex-1 overflow-y-auto p-4 space-y-6 pb-40">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-3 ${
+            className={`flex gap-4 animate-fade-in ${
               message.type === "user" ? "justify-end" : "justify-start"
             }`}
           >
             {message.type === "assistant" && (
-              <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Bot className="h-4 w-4" />
+              <div className="ai-orb flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full shadow-lg">
+                <Bot className="h-5 w-5 text-white" />
               </div>
             )}
             
             <div
-              className={`rounded-lg px-3 py-2 max-w-[70%] ${
+              className={`rounded-2xl px-4 py-3 max-w-[75%] shadow-lg transition-all ${
                 message.type === "user"
-                  ? "bg-primary text-primary-foreground ml-auto"
-                  : "bg-muted"
+                  ? "ai-message-user-gradient text-white ml-auto"
+                  : "ai-message-gradient ai-glass-card"
               }`}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-2">
                 {message.type === "assistant" && message.category && (
                   <Badge
                     variant="secondary"
-                    className={`text-xs h-5 ${getCategoryColor(message.category)}`}
+                    className={`text-xs h-5 ${getCategoryColor(message.category)} rounded-full`}
                   >
                     {getCategoryIcon(message.category)}
                     <span className="ml-1 capitalize">{message.category}</span>
                   </Badge>
                 )}
-                <span className="text-xs text-muted-foreground">
+                <span className={`text-xs ${message.type === "user" ? "text-white/70" : "text-muted-foreground"}`}>
                   {message.timestamp.toLocaleTimeString()}
                 </span>
                 {message.type === "assistant" && message.content.length > 50 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-5 px-1.5 text-xs">
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs hover:bg-primary/10 rounded-full">
                         <Download className="h-3 w-3 mr-1" />
                         Export
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'pdf')}>
-                        <FileDown className="h-3 w-3 mr-2" /> PDF
+                    <DropdownMenuContent align="start" className="ai-glass-card border-primary/20">
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'pdf')} className="hover:bg-primary/10">
+                        <FileDown className="h-3 w-3 mr-2 text-red-500" /> PDF
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'docx')}>
-                        <FileType className="h-3 w-3 mr-2" /> Word
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'docx')} className="hover:bg-primary/10">
+                        <FileType className="h-3 w-3 mr-2 text-blue-500" /> Word
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'xlsx')}>
-                        <FileSpreadsheet className="h-3 w-3 mr-2" /> Excel
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'xlsx')} className="hover:bg-primary/10">
+                        <FileSpreadsheet className="h-3 w-3 mr-2 text-green-500" /> Excel
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'pptx')}>
-                        <Presentation className="h-3 w-3 mr-2" /> PowerPoint
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'pptx')} className="hover:bg-primary/10">
+                        <Presentation className="h-3 w-3 mr-2 text-orange-500" /> PowerPoint
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'md')}>
-                        <FileText className="h-3 w-3 mr-2" /> Markdown
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'md')} className="hover:bg-primary/10">
+                        <FileText className="h-3 w-3 mr-2 text-purple-500" /> Markdown
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'txt')}>
-                        <FileText className="h-3 w-3 mr-2" /> Text
+                      <DropdownMenuItem onClick={() => handleDocumentDownload(message.content, 'txt')} className="hover:bg-primary/10">
+                        <FileText className="h-3 w-3 mr-2 text-gray-500" /> Text
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -782,16 +797,16 @@ const Chat = () => {
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
-                        h2: ({node, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 text-foreground" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="text-base font-bold mt-3 mb-2 text-foreground bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent" {...props} />,
                         h3: ({node, ...props}) => <h3 className="text-sm font-semibold mt-2 mb-1 text-foreground" {...props} />,
                         ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1 my-2 text-foreground" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1 my-2 text-foreground" {...props} />,
                         p: ({node, ...props}) => <p className="my-1 text-foreground leading-relaxed" {...props} />,
-                        strong: ({node, ...props}) => <strong className="font-semibold text-foreground" {...props} />,
-                        table: ({node, ...props}) => <div className="overflow-x-auto my-2"><table className="border-collapse border border-border w-full" {...props} /></div>,
-                        th: ({node, ...props}) => <th className="border border-border p-2 bg-muted font-semibold text-left text-foreground" {...props} />,
-                        td: ({node, ...props}) => <td className="border border-border p-2 text-foreground" {...props} />,
-                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-primary pl-3 italic my-2 text-muted-foreground" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-semibold text-primary" {...props} />,
+                        table: ({node, ...props}) => <div className="overflow-x-auto my-2"><table className="border-collapse border border-primary/20 w-full rounded-lg overflow-hidden" {...props} /></div>,
+                        th: ({node, ...props}) => <th className="border border-primary/20 p-2 bg-gradient-to-r from-primary/10 to-purple-500/10 font-semibold text-left text-foreground" {...props} />,
+                        td: ({node, ...props}) => <td className="border border-primary/20 p-2 text-foreground" {...props} />,
+                        blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-gradient-to-b from-primary to-purple-500 pl-3 italic my-2 text-muted-foreground bg-primary/5 py-2 rounded-r-lg" {...props} />,
                       }}
                     >
                       {message.content}
@@ -799,63 +814,64 @@ const Chat = () => {
                     
                     {/* Document Download Buttons */}
                     {message.isDocumentResponse && (
-                      <div className="mt-4 p-3 bg-background/50 rounded-lg border border-border">
-                        <p className="text-xs font-medium text-muted-foreground mb-2">
-                          📄 Download "{message.documentTitle}" as:
+                      <div className="mt-4 p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl border border-primary/20">
+                        <p className="text-xs font-semibold text-foreground mb-3 flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-primary" />
+                          Download "{message.documentTitle}" as:
                         </p>
                         <div className="flex flex-wrap gap-2">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDocumentDownload(message.content, 'pdf')}
-                            className="h-7 text-xs"
+                            className="h-8 text-xs rounded-lg bg-gradient-to-r from-red-500/10 to-red-600/10 border-red-500/30 hover:border-red-500/50 hover:bg-red-500/20"
                           >
-                            <FileDown className="h-3 w-3 mr-1" />
+                            <FileDown className="h-3 w-3 mr-1 text-red-500" />
                             PDF
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDocumentDownload(message.content, 'docx')}
-                            className="h-7 text-xs"
+                            className="h-8 text-xs rounded-lg bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/20"
                           >
-                            <FileType className="h-3 w-3 mr-1" />
+                            <FileType className="h-3 w-3 mr-1 text-blue-500" />
                             Word
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDocumentDownload(message.content, 'xlsx')}
-                            className="h-7 text-xs"
+                            className="h-8 text-xs rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/10 border-green-500/30 hover:border-green-500/50 hover:bg-green-500/20"
                           >
-                            <FileSpreadsheet className="h-3 w-3 mr-1" />
+                            <FileSpreadsheet className="h-3 w-3 mr-1 text-green-500" />
                             Excel
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDocumentDownload(message.content, 'pptx')}
-                            className="h-7 text-xs"
+                            className="h-8 text-xs rounded-lg bg-gradient-to-r from-orange-500/10 to-orange-600/10 border-orange-500/30 hover:border-orange-500/50 hover:bg-orange-500/20"
                           >
-                            <Presentation className="h-3 w-3 mr-1" />
+                            <Presentation className="h-3 w-3 mr-1 text-orange-500" />
                             PowerPoint
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDocumentDownload(message.content, 'md')}
-                            className="h-7 text-xs"
+                            className="h-8 text-xs rounded-lg bg-gradient-to-r from-purple-500/10 to-purple-600/10 border-purple-500/30 hover:border-purple-500/50 hover:bg-purple-500/20"
                           >
-                            <FileText className="h-3 w-3 mr-1" />
+                            <FileText className="h-3 w-3 mr-1 text-purple-500" />
                             Markdown
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleDocumentDownload(message.content, 'txt')}
-                            className="h-7 text-xs"
+                            className="h-8 text-xs rounded-lg bg-gradient-to-r from-gray-500/10 to-gray-600/10 border-gray-500/30 hover:border-gray-500/50 hover:bg-gray-500/20"
                           >
-                            <FileText className="h-3 w-3 mr-1" />
+                            <FileText className="h-3 w-3 mr-1 text-gray-500" />
                             Text
                           </Button>
                         </div>
@@ -869,23 +885,23 @@ const Chat = () => {
             </div>
 
             {message.type === "user" && (
-              <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-background border">
-                <User className="h-4 w-4" />
+              <div className="flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full bg-gradient-to-r from-primary to-purple-500 shadow-lg">
+                <User className="h-5 w-5 text-white" />
               </div>
             )}
           </div>
         ))}
         
         {isLoading && (
-          <div className="flex gap-3 justify-start">
-            <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Bot className="h-4 w-4" />
+          <div className="flex gap-4 justify-start animate-fade-in">
+            <div className="ai-orb flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full">
+              <Bot className="h-5 w-5 text-white" />
             </div>
-            <div className="rounded-lg px-3 py-2 bg-muted">
-              <div className="flex space-x-1">
-                <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-pulse"></div>
-                <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-pulse delay-100"></div>
-                <div className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-pulse delay-200"></div>
+            <div className="ai-message-gradient ai-glass-card rounded-2xl px-4 py-3">
+              <div className="ai-typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
               </div>
             </div>
           </div>
@@ -893,25 +909,34 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 border-t p-4 bg-background z-10 md:left-64">
-        <div className="flex gap-2 mb-2">
-          <VoiceRecorder onTranscription={handleVoiceTranscription} />
-          <DocumentUpload onTextExtracted={handleDocumentText} />
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Generate a report, create a document, analyze data, or ask anything..."
-            onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1"
-          />
-          <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
+      {/* Input - Fixed at bottom with glass effect */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-20 md:left-64">
+        <div className="ai-glass-card rounded-2xl p-4 shadow-2xl border border-primary/20 ai-glow-border">
+          <div className="flex gap-3 mb-3 relative z-10">
+            <VoiceRecorder onTranscription={handleVoiceTranscription} />
+            <DocumentUpload onTextExtracted={handleDocumentText} />
+            <div className="flex-1 ai-input-glow rounded-xl overflow-hidden">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Generate reports, analyze documents, create business plans..."
+                onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                className="flex-1 border-0 bg-background/50 focus:bg-background transition-all h-11 text-base rounded-xl"
+              />
+            </div>
+            <Button 
+              onClick={handleSend} 
+              disabled={isLoading || !input.trim()}
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg hover:shadow-primary/25 transition-all"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground text-center relative z-10">
+            <span className="bg-gradient-to-r from-primary via-purple-500 to-cyan-500 bg-clip-text text-transparent font-medium">{botName}</span>
+            {" "}• Enterprise-grade AI for reports, documents, analysis & insights
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          💬 Voice | 📄 Document Analysis (OCR) | 📊 Generate Reports (PDF, Word, Excel, PowerPoint) | 🚀 Elite Document AI by FlowPulse.io
-        </p>
       </div>
     </div>
   );
