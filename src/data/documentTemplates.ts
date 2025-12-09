@@ -214,27 +214,62 @@ export const documentTemplates: DocumentTemplate[] = [
     description: "Comprehensive financial planning document with projections and strategies",
     thumbnail: "/thumbnails/financial-plan-thumb.png",
     sections: [
+      // Hero Header Section
+      {
+        id: "hero-header",
+        type: "body",
+        placeholder: "",
+        defaultContent: "",
+        className: "relative -mx-8 -mt-8 mb-8 px-10 py-16 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-t-lg overflow-hidden before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_70%_30%,rgba(120,80,200,0.3),transparent_50%)] after:absolute after:inset-0 after:bg-[radial-gradient(circle_at_20%_80%,rgba(80,120,220,0.2),transparent_50%)]",
+        editable: false
+      },
+      {
+        id: "badge",
+        type: "subheading",
+        placeholder: "{{badge}}",
+        defaultContent: "◆ FINANCIAL STRATEGY DOCUMENT",
+        className: "relative z-10 -mt-12 mb-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-widest text-emerald-400 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full uppercase",
+        editable: true
+      },
       {
         id: "title",
         type: "heading",
         placeholder: "{{title}}",
         defaultContent: "Financial Plan 2025",
-        className: "text-5xl font-bold text-primary mb-3 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent",
+        className: "relative z-10 text-6xl font-bold mb-4 bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent tracking-tight leading-tight",
         editable: true
       },
       {
         id: "subtitle",
         type: "subheading",
         placeholder: "{{subtitle}}",
-        defaultContent: "Strategic Wealth Management",
-        className: "text-2xl text-muted-foreground mb-8",
+        defaultContent: "Strategic Wealth Management & Growth Optimization",
+        className: "relative z-10 text-xl text-white/80 mb-8 font-light max-w-2xl leading-relaxed",
         editable: true
       },
       {
-        id: "divider-1",
-        type: "divider",
+        id: "header-meta",
+        type: "body",
+        placeholder: "{{header_meta}}",
+        defaultContent: "Prepared: December 2024  •  Version 1.0  •  Confidential",
+        className: "relative z-10 text-sm text-white/50 pt-6 border-t border-white/10 font-medium tracking-wide",
+        editable: true
+      },
+      // Executive Summary Section
+      {
+        id: "executive-section-header",
+        type: "body",
         placeholder: "",
-        className: "my-8 border-t-2 border-gradient-to-r from-primary via-chart-2 to-chart-3",
+        defaultContent: "",
+        className: "flex items-center gap-4 mt-10 mb-6",
+        editable: false
+      },
+      {
+        id: "executive-icon",
+        type: "body",
+        placeholder: "",
+        defaultContent: "📊",
+        className: "flex items-center justify-center w-14 h-14 text-2xl bg-gradient-to-br from-primary to-chart-2 rounded-2xl shadow-lg shadow-primary/30",
         editable: false
       },
       {
@@ -242,62 +277,179 @@ export const documentTemplates: DocumentTemplate[] = [
         type: "subheading",
         placeholder: "{{section1_heading}}",
         defaultContent: "Executive Summary",
-        className: "text-3xl font-bold text-primary mb-4",
+        className: "text-3xl font-bold text-foreground relative after:absolute after:-bottom-2 after:left-0 after:w-16 after:h-1 after:bg-gradient-to-r after:from-primary after:to-chart-2 after:rounded-full",
         editable: true
       },
       {
         id: "executive-summary",
         type: "body",
         placeholder: "{{executive_summary}}",
-        defaultContent: "This comprehensive financial plan outlines strategic recommendations...",
-        className: "text-lg leading-relaxed mb-8 text-foreground bg-muted/30 p-6 rounded-lg",
+        defaultContent: "This comprehensive financial plan outlines strategic recommendations designed to optimize your wealth management strategy, maximize returns while managing risk, and ensure long-term financial security for you and your family.",
+        className: "text-lg leading-relaxed text-muted-foreground bg-gradient-to-br from-muted/50 to-muted/20 p-8 rounded-2xl border-l-4 border-primary relative before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary/5 before:to-transparent before:rounded-2xl",
+        editable: true
+      },
+      // Key Metrics Section
+      {
+        id: "metrics-section",
+        type: "body",
+        placeholder: "",
+        defaultContent: "",
+        className: "-mx-8 my-10 px-10 py-12 bg-gradient-to-br from-slate-900 via-purple-900/90 to-slate-900 relative overflow-hidden before:absolute before:inset-0 before:bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]",
+        editable: false
+      },
+      {
+        id: "metrics-title",
+        type: "subheading",
+        placeholder: "{{metrics_title}}",
+        defaultContent: "Key Financial Objectives",
+        className: "relative z-10 -mt-8 text-2xl font-bold text-white text-center mb-8",
         editable: true
       },
       {
-        id: "chart-area-1",
-        type: "image",
-        placeholder: "{{chart1}}",
-        defaultContent: "",
-        className: "w-full h-80 bg-gradient-to-br from-chart-1/10 via-chart-2/10 to-chart-3/10 rounded-xl flex items-center justify-center my-8 border-2 border-primary/20 shadow-lg",
+        id: "metric-1",
+        type: "body",
+        placeholder: "{{metric1}}",
+        defaultContent: "💰 $2.5M • Target Net Worth",
+        className: "relative z-10 text-center p-6 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 mb-4 text-xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent",
         editable: true
+      },
+      {
+        id: "metric-2",
+        type: "body",
+        placeholder: "{{metric2}}",
+        defaultContent: "📈 12.5% • Annual ROI Target",
+        className: "relative z-10 text-center p-6 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 mb-4 text-xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent",
+        editable: true
+      },
+      {
+        id: "metric-3",
+        type: "body",
+        placeholder: "{{metric3}}",
+        defaultContent: "🎯 2045 • Retirement Goal",
+        className: "relative z-10 text-center p-6 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 text-xl font-bold bg-gradient-to-r from-pink-500 to-orange-400 bg-clip-text text-transparent",
+        editable: true
+      },
+      // Financial Goals Section
+      {
+        id: "goals-section-header",
+        type: "body",
+        placeholder: "",
+        defaultContent: "",
+        className: "flex items-center gap-4 mt-12 mb-6",
+        editable: false
+      },
+      {
+        id: "goals-icon",
+        type: "body",
+        placeholder: "",
+        defaultContent: "🎯",
+        className: "flex items-center justify-center w-14 h-14 text-2xl bg-gradient-to-br from-chart-2 to-chart-3 rounded-2xl shadow-lg shadow-chart-2/30",
+        editable: false
       },
       {
         id: "goals-heading",
         type: "subheading",
         placeholder: "{{section2_heading}}",
         defaultContent: "Financial Goals",
-        className: "text-3xl font-bold text-chart-2 mb-4 mt-10",
+        className: "text-3xl font-bold text-foreground relative after:absolute after:-bottom-2 after:left-0 after:w-16 after:h-1 after:bg-gradient-to-r after:from-chart-2 after:to-chart-3 after:rounded-full",
         editable: true
       },
       {
         id: "goals",
         type: "bullet-list",
         placeholder: "{{goals}}",
-        defaultContent: "Achieve 8% annual portfolio growth\nBuild emergency fund of 6 months expenses\nRetirement savings target of £2M by 2045\nProperty investment diversification",
-        className: "space-y-3 mb-8 text-lg",
+        defaultContent: "Achieve 12% annual portfolio growth through diversified investments\nBuild emergency fund covering 12 months of expenses\nRetirement savings target of £2M by 2045\nProperty investment diversification across 3 markets\nTax-efficient wealth transfer planning",
+        className: "space-y-4 mb-8 text-lg [&_li]:relative [&_li]:pl-8 [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-2 [&_li]:before:w-3 [&_li]:before:h-3 [&_li]:before:bg-gradient-to-r [&_li]:before:from-primary [&_li]:before:to-chart-2 [&_li]:before:rounded-full [&_li]:text-muted-foreground",
         editable: true
+      },
+      // Investment Strategy Section
+      {
+        id: "strategy-section-header",
+        type: "body",
+        placeholder: "",
+        defaultContent: "",
+        className: "flex items-center gap-4 mt-12 mb-6",
+        editable: false
+      },
+      {
+        id: "strategy-icon",
+        type: "body",
+        placeholder: "",
+        defaultContent: "🚀",
+        className: "flex items-center justify-center w-14 h-14 text-2xl bg-gradient-to-br from-chart-3 to-chart-4 rounded-2xl shadow-lg shadow-chart-3/30",
+        editable: false
       },
       {
         id: "strategy-heading",
         type: "subheading",
         placeholder: "{{section3_heading}}",
         defaultContent: "Investment Strategy",
-        className: "text-3xl font-bold text-chart-3 mb-4 mt-10",
+        className: "text-3xl font-bold text-foreground relative after:absolute after:-bottom-2 after:left-0 after:w-16 after:h-1 after:bg-gradient-to-r after:from-chart-3 after:to-chart-4 after:rounded-full",
         editable: true
       },
       {
-        id: "strategy",
+        id: "strategy-card-1",
         type: "body",
-        placeholder: "{{strategy}}",
-        defaultContent: "Our recommended investment approach balances growth and risk management...",
-        className: "text-lg leading-relaxed mb-8 text-foreground",
+        placeholder: "{{portfolio_allocation}}",
+        defaultContent: "01 PORTFOLIO ALLOCATION\n\nOur recommended allocation balances growth and stability: 60% Equities (diversified across sectors and geographies), 25% Fixed Income (government and corporate bonds), 10% Alternative Investments (real estate, commodities), 5% Cash reserves for opportunities.",
+        className: "relative p-8 bg-white rounded-2xl border border-border shadow-lg mb-6 before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-primary before:to-chart-2 before:rounded-t-2xl overflow-hidden",
+        editable: true
+      },
+      {
+        id: "strategy-card-2",
+        type: "body",
+        placeholder: "{{risk_management}}",
+        defaultContent: "02 RISK MANAGEMENT\n\nComprehensive risk mitigation through: Portfolio diversification across asset classes, Regular rebalancing (quarterly reviews), Stop-loss mechanisms on high-volatility positions, Insurance coverage optimization, and Currency hedging for international exposure.",
+        className: "relative p-8 bg-white rounded-2xl border border-border shadow-lg mb-6 before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-cyan-500 before:to-blue-500 before:rounded-t-2xl overflow-hidden",
+        editable: true
+      },
+      // Action Plan Section
+      {
+        id: "action-section-header",
+        type: "body",
+        placeholder: "",
+        defaultContent: "",
+        className: "flex items-center gap-4 mt-12 mb-6",
+        editable: false
+      },
+      {
+        id: "action-icon",
+        type: "body",
+        placeholder: "",
+        defaultContent: "✅",
+        className: "flex items-center justify-center w-14 h-14 text-2xl bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg shadow-emerald-500/30",
+        editable: false
+      },
+      {
+        id: "action-heading",
+        type: "subheading",
+        placeholder: "{{section4_heading}}",
+        defaultContent: "Action Plan",
+        className: "text-3xl font-bold text-foreground relative after:absolute after:-bottom-2 after:left-0 after:w-16 after:h-1 after:bg-gradient-to-r after:from-emerald-500 after:to-teal-500 after:rounded-full",
+        editable: true
+      },
+      {
+        id: "action-plan",
+        type: "body",
+        placeholder: "{{action_plan}}",
+        defaultContent: "Next Steps & Recommendations\n\nImmediate actions to implement this financial strategy: Schedule comprehensive portfolio review meeting, Complete risk tolerance reassessment, Initiate tax-loss harvesting analysis, Review and update beneficiary designations, Set up automated investment contributions, and Establish quarterly performance review cadence.",
+        className: "relative p-10 bg-gradient-to-br from-primary via-purple-600 to-chart-2 rounded-3xl text-white overflow-hidden before:absolute before:top-0 before:right-0 before:w-64 before:h-64 before:bg-white/10 before:rounded-full before:-translate-y-1/2 before:translate-x-1/2 after:absolute after:bottom-0 after:left-0 after:w-48 after:h-48 after:bg-white/5 after:rounded-full after:translate-y-1/2 after:-translate-x-1/2 [&]:text-lg [&]:leading-relaxed",
+        editable: true
+      },
+      // Footer
+      {
+        id: "footer",
+        type: "body",
+        placeholder: "{{footer}}",
+        defaultContent: "📋 FlowPulse Financial Advisory • Confidential Document • © 2024 All Rights Reserved",
+        className: "mt-12 pt-8 border-t border-border text-center text-sm text-muted-foreground",
         editable: true
       }
     ],
     styles: {
-      primaryColor: "hsl(221 83% 53%)",
+      primaryColor: "hsl(262 83% 58%)",
       secondaryColor: "hsl(217 91% 60%)",
-      accentColor: "hsl(199 89% 48%)",
+      accentColor: "hsl(280 85% 65%)",
       backgroundColor: "hsl(0 0% 100%)"
     }
   },
