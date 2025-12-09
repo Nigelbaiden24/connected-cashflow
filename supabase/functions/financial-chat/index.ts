@@ -65,13 +65,45 @@ serve(async (req) => {
 - "I am unable to create PDFs/Word/Excel/PowerPoint"
 - "I can only provide text"
 - "I don't have the ability to create downloadable files"
+- "I cannot add contacts to the CRM"
 
 ✅ WHAT YOU MUST DO INSTEAD:
-You ARE a full document generation engine. When users ask for documents (PDF, Word, Excel, PowerPoint, etc.):
+You ARE a full document generation engine AND CRM automation system. When users ask for documents (PDF, Word, Excel, PowerPoint, etc.):
 1. IMMEDIATELY generate the COMPLETE document content in full detail
 2. Structure it professionally with proper sections, headings, tables, and formatting
 3. The frontend will automatically convert your output to downloadable files
 4. NEVER refuse or say you cannot do it - just generate the content
+
+═══════════════════════════════════════════════════════════════
+CRM AUTOMATION - ADDING CONTACTS
+═══════════════════════════════════════════════════════════════
+
+When users ask to add a contact, lead, or client to the CRM, you MUST:
+1. Extract all contact information from their message
+2. Format the contact data using this EXACT structure in your response:
+
+**Name:** [Full name]
+**Email:** [Email address if provided]
+**Phone:** [Phone number if provided]
+**Company:** [Company name if provided]
+**Position:** [Job title if provided]
+**Status:** [lead/prospect/client - default to lead]
+**Priority:** [low/medium/high - default to medium]
+**Notes:** [Any additional notes]
+
+3. Confirm what information you captured
+4. The frontend will automatically show a button to save the contact to the CRM
+
+Example response when user says "Add John Smith from Acme Corp to CRM, email john@acme.com":
+"I'll add this contact to your CRM:
+
+**Name:** John Smith
+**Email:** john@acme.com
+**Company:** Acme Corp
+**Status:** lead
+**Priority:** medium
+
+Click the 'Add to CRM' button below to save this contact."
 
 ═══════════════════════════════════════════════════════════════
 PART 1: DOCUMENT INTELLIGENCE & GENERATION ENGINE
@@ -384,6 +416,58 @@ When analyzing portfolios or markets, provide specific insights with relevant me
                   }
                 },
                 required: ["documents", "comparison_type"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "add_crm_contact",
+              description: "Add a new contact to the CRM system. Use this when users want to add, create, or save a new contact, lead, or client to the CRM.",
+              parameters: {
+                type: "object",
+                properties: {
+                  name: {
+                    type: "string",
+                    description: "Full name of the contact (required)"
+                  },
+                  email: {
+                    type: "string",
+                    description: "Email address of the contact"
+                  },
+                  phone: {
+                    type: "string",
+                    description: "Phone number of the contact"
+                  },
+                  company: {
+                    type: "string",
+                    description: "Company or organization name"
+                  },
+                  position: {
+                    type: "string",
+                    description: "Job title or position"
+                  },
+                  status: {
+                    type: "string",
+                    enum: ["lead", "prospect", "client", "inactive"],
+                    description: "Contact status in the pipeline"
+                  },
+                  priority: {
+                    type: "string",
+                    enum: ["low", "medium", "high"],
+                    description: "Priority level of the contact"
+                  },
+                  notes: {
+                    type: "string",
+                    description: "Additional notes about the contact"
+                  },
+                  tags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Tags or labels for the contact"
+                  }
+                },
+                required: ["name"]
               }
             }
           }
