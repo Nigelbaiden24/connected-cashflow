@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -51,6 +51,23 @@ interface Message {
   category?: "market" | "client" | "compliance" | "general";
   isDocumentResponse?: boolean;
   documentTitle?: string;
+  crmAction?: CRMContactAction;
+}
+
+interface CRMContactAction {
+  type: 'add_contact';
+  contact: {
+    name: string;
+    email?: string;
+    phone?: string;
+    company?: string;
+    position?: string;
+    status?: string;
+    priority?: string;
+    notes?: string;
+    tags?: string[];
+  };
+  saved?: boolean;
 }
 
 const Chat = () => {
@@ -263,6 +280,12 @@ const Chat = () => {
       query: "Create a weekly market analysis report",
       category: "general" as const,
     },
+    {
+      label: "Add Contact",
+      icon: UserPlus,
+      query: "Add a new contact to CRM: ",
+      category: "client" as const,
+    },
   ];
 
   const businessQuickActions = [
@@ -290,9 +313,110 @@ const Chat = () => {
       query: "Analyze my business KPIs and suggest improvements",
       category: "general" as const,
     },
+    {
+      label: "Add Contact",
+      icon: UserPlus,
+      query: "Add a new contact to CRM: ",
+      category: "client" as const,
+    },
   ];
 
   const quickActions = isBusinessPlatform ? businessQuickActions : financeQuickActions;
+
+  // Detect CRM intent from user message
+  const detectCRMIntent = (message: string): boolean => {
+    const crmKeywords = [
+      'add contact', 'add a contact', 'create contact', 'new contact',
+      'add lead', 'create lead', 'new lead',
+      'add client', 'new client', 'create client',
+      'save contact', 'add to crm', 'add them to crm',
+      'add this person', 'save this contact', 'add to contacts'
+    ];
+    const lower = message.toLowerCase();
+    return crmKeywords.some(keyword => lower.includes(keyword));
+  };
+
+  // Parse CRM contact data from AI response
+  const parseCRMContactFromResponse = (content: string): CRMContactAction['contact'] | null => {
+    try {
+      // Look for JSON block in response
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[1]);
+        if (parsed.name) return parsed;
+      }
+
+      // Look for structured contact data markers
+      const contactMarker = content.match(/\[CRM_CONTACT\]([\s\S]*?)\[\/CRM_CONTACT\]/);
+      if (contactMarker) {
+        const parsed = JSON.parse(contactMarker[1]);
+        if (parsed.name) return parsed;
+      }
+
+      // Try to extract from markdown-style structured data
+      const nameMatch = content.match(/\*\*Name\*\*[:\s]*([^\n*]+)/i) || content.match(/Name[:\s]*([^\n]+)/i);
+      if (nameMatch) {
+        const contact: CRMContactAction['contact'] = {
+          name: nameMatch[1].trim()
+        };
+        
+        const emailMatch = content.match(/\*\*Email\*\*[:\s]*([^\n*]+)/i) || content.match(/Email[:\s]*([^\n]+)/i);
+        if (emailMatch) contact.email = emailMatch[1].trim();
+        
+        const phoneMatch = content.match(/\*\*Phone\*\*[:\s]*([^\n*]+)/i) || content.match(/Phone[:\s]*([^\n]+)/i);
+        if (phoneMatch) contact.phone = phoneMatch[1].trim();
+        
+        const companyMatch = content.match(/\*\*Company\*\*[:\s]*([^\n*]+)/i) || content.match(/Company[:\s]*([^\n]+)/i);
+        if (companyMatch) contact.company = companyMatch[1].trim();
+        
+        const positionMatch = content.match(/\*\*Position\*\*[:\s]*([^\n*]+)/i) || content.match(/Position[:\s]*([^\n]+)/i) || content.match(/\*\*Title\*\*[:\s]*([^\n*]+)/i);
+        if (positionMatch) contact.position = positionMatch[1].trim();
+        
+        const statusMatch = content.match(/\*\*Status\*\*[:\s]*([^\n*]+)/i) || content.match(/Status[:\s]*([^\n]+)/i);
+        if (statusMatch) contact.status = statusMatch[1].trim().toLowerCase();
+        
+        const priorityMatch = content.match(/\*\*Priority\*\*[:\s]*([^\n*]+)/i) || content.match(/Priority[:\s]*([^\n]+)/i);
+        if (priorityMatch) contact.priority = priorityMatch[1].trim().toLowerCase();
+        
+        const notesMatch = content.match(/\*\*Notes\*\*[:\s]*([^\n*]+)/i) || content.match(/Notes[:\s]*([^\n]+)/i);
+        if (notesMatch) contact.notes = notesMatch[1].trim();
+
+        return contact;
+      }
+
+      return null;
+    } catch (e) {
+      console.error('Error parsing CRM contact:', e);
+      return null;
+    }
+  };
+
+  // Save contact to CRM
+  const saveCRMContact = async (contact: CRMContactAction['contact']): Promise<boolean> => {
+    try {
+      const { error } = await supabase.from('crm_contacts').insert({
+        name: contact.name,
+        email: contact.email || null,
+        phone: contact.phone || null,
+        company: contact.company || null,
+        position: contact.position || null,
+        status: contact.status || 'lead',
+        priority: contact.priority || 'medium',
+        notes: contact.notes || null,
+        tags: contact.tags || [],
+        user_id: user?.id || null,
+      });
+
+      if (error) {
+        console.error('Error saving CRM contact:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Error saving CRM contact:', e);
+      return false;
+    }
+  };
 
   // Handle document download from AI response
   const handleDocumentDownload = (messageContent: string, format: string) => {
@@ -312,11 +436,35 @@ const Chat = () => {
     }
   };
 
+  // Handle saving CRM contact from message
+  const handleSaveCRMContact = async (messageId: string, contact: CRMContactAction['contact']) => {
+    const success = await saveCRMContact(contact);
+    if (success) {
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, crmAction: { ...m.crmAction!, saved: true } }
+          : m
+      ));
+      toast({
+        title: "Contact Added!",
+        description: `${contact.name} has been added to your CRM.`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to save contact. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
     // Detect if user wants a document
     const documentIntent = detectDocumentIntent(input);
+    // Detect if user wants to add a CRM contact
+    const crmIntent = detectCRMIntent(input);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -375,6 +523,19 @@ const Chat = () => {
             const parsedDoc = parseDocumentFromResponse(streamedContent);
             const isDocResponse = documentIntent.wantsDocument && streamedContent.length > 200;
             
+            // Check for CRM contact data
+            let crmAction: CRMContactAction | undefined;
+            if (crmIntent) {
+              const contactData = parseCRMContactFromResponse(streamedContent);
+              if (contactData) {
+                crmAction = {
+                  type: 'add_contact',
+                  contact: contactData,
+                  saved: false,
+                };
+              }
+            }
+            
             const finalMessage: Message = {
               id: tempId,
               type: "assistant",
@@ -383,9 +544,10 @@ const Chat = () => {
               category: categorizeMessage(streamedContent),
               isDocumentResponse: isDocResponse,
               documentTitle: parsedDoc?.title || documentIntent.documentType || 'Document',
+              crmAction,
             };
 
-            // Update message with document flag
+            // Update message with document flag and CRM action
             setMessages(prev => 
               prev.map(m => m.id === tempId ? finalMessage : m)
             );
@@ -403,7 +565,7 @@ const Chat = () => {
             setIsLoading(false);
             toast({
               title: "Response complete",
-              description: isDocResponse ? "Document ready for download!" : "AI analysis finished",
+              description: crmAction ? "Contact ready to add to CRM!" : (isDocResponse ? "Document ready for download!" : "AI analysis finished"),
             });
           },
           onError: (error) => {
@@ -437,6 +599,19 @@ const Chat = () => {
         const parsedDoc = parseDocumentFromResponse(responseContent);
         const isDocResponse = documentIntent.wantsDocument && responseContent.length > 200;
 
+        // Check for CRM contact data in non-streaming response
+        let crmAction: CRMContactAction | undefined;
+        if (crmIntent) {
+          const contactData = parseCRMContactFromResponse(responseContent);
+          if (contactData) {
+            crmAction = {
+              type: 'add_contact',
+              contact: contactData,
+              saved: false,
+            };
+          }
+        }
+
         const aiResponse: Message = {
           id: Date.now().toString(),
           type: "assistant",
@@ -445,6 +620,7 @@ const Chat = () => {
           category: categorizeMessage(responseContent),
           isDocumentResponse: isDocResponse,
           documentTitle: parsedDoc?.title || documentIntent.documentType || 'Document',
+          crmAction,
         };
 
         setMessages(prev => [...prev, aiResponse]);
@@ -461,7 +637,7 @@ const Chat = () => {
         
         toast({
           title: "Response received",
-          description: isDocResponse ? "Document ready for download!" : "AI analysis complete",
+          description: crmAction ? "Contact ready to add to CRM!" : (isDocResponse ? "Document ready for download!" : "AI analysis complete"),
         });
         setIsLoading(false);
       }
@@ -875,6 +1051,70 @@ const Chat = () => {
                             Text
                           </Button>
                         </div>
+                      </div>
+                    )}
+
+                    {/* CRM Contact Card */}
+                    {message.crmAction && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl border border-emerald-500/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                            <UserPlus className="h-4 w-4 text-emerald-500" />
+                            Contact Ready to Add
+                          </p>
+                          {message.crmAction.saved ? (
+                            <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30">
+                              <Check className="h-3 w-3 mr-1" />
+                              Added to CRM
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                          <div>
+                            <span className="text-muted-foreground">Name:</span>
+                            <span className="ml-2 font-medium text-foreground">{message.crmAction.contact.name}</span>
+                          </div>
+                          {message.crmAction.contact.email && (
+                            <div>
+                              <span className="text-muted-foreground">Email:</span>
+                              <span className="ml-2 font-medium text-foreground">{message.crmAction.contact.email}</span>
+                            </div>
+                          )}
+                          {message.crmAction.contact.phone && (
+                            <div>
+                              <span className="text-muted-foreground">Phone:</span>
+                              <span className="ml-2 font-medium text-foreground">{message.crmAction.contact.phone}</span>
+                            </div>
+                          )}
+                          {message.crmAction.contact.company && (
+                            <div>
+                              <span className="text-muted-foreground">Company:</span>
+                              <span className="ml-2 font-medium text-foreground">{message.crmAction.contact.company}</span>
+                            </div>
+                          )}
+                          {message.crmAction.contact.position && (
+                            <div>
+                              <span className="text-muted-foreground">Position:</span>
+                              <span className="ml-2 font-medium text-foreground">{message.crmAction.contact.position}</span>
+                            </div>
+                          )}
+                          {message.crmAction.contact.status && (
+                            <div>
+                              <span className="text-muted-foreground">Status:</span>
+                              <span className="ml-2 font-medium text-foreground capitalize">{message.crmAction.contact.status}</span>
+                            </div>
+                          )}
+                        </div>
+                        {!message.crmAction.saved && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveCRMContact(message.id, message.crmAction!.contact)}
+                            className="w-full h-9 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+                          >
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Add to CRM
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
