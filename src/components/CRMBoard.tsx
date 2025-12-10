@@ -60,6 +60,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [goToPageInput, setGoToPageInput] = useState("");
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -1315,6 +1316,53 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </PaginationItem>
+
+                {/* Go to Page Input */}
+                {totalPages > 5 && (
+                  <PaginationItem className="ml-4">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="goToPage" className="text-sm text-muted-foreground whitespace-nowrap">
+                        Go to:
+                      </Label>
+                      <Input
+                        id="goToPage"
+                        type="number"
+                        min={1}
+                        max={totalPages}
+                        value={goToPageInput}
+                        onChange={(e) => setGoToPageInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const page = parseInt(goToPageInput);
+                            if (page >= 1 && page <= totalPages) {
+                              setCurrentPage(page);
+                              setGoToPageInput("");
+                            } else {
+                              toast.error(`Please enter a page between 1 and ${totalPages}`);
+                            }
+                          }
+                        }}
+                        placeholder={`1-${totalPages}`}
+                        className="w-20 h-9"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const page = parseInt(goToPageInput);
+                          if (page >= 1 && page <= totalPages) {
+                            setCurrentPage(page);
+                            setGoToPageInput("");
+                          } else {
+                            toast.error(`Please enter a page between 1 and ${totalPages}`);
+                          }
+                        }}
+                      >
+                        Go
+                      </Button>
+                    </div>
+                  </PaginationItem>
+                )}
               </PaginationContent>
             </Pagination>
           </div>
