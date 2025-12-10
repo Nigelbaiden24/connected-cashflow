@@ -546,16 +546,32 @@ const Chat = () => {
   // Search CRM contacts
   const searchCRMContacts = async (query: string): Promise<CRMSearchResult[]> => {
     try {
+      // Build the query safely - escape special characters
+      const searchTerm = query.replace(/[%_]/g, '\\$&');
+      
       const { data, error } = await supabase
         .from('crm_contacts')
         .select('id, name, email, company, status, phone')
-        .or(`name.ilike.%${query}%,email.ilike.%${query}%,company.ilike.%${query}%`)
+        .or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,company.ilike.%${searchTerm}%`)
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase search error:', error);
+        toast({
+          title: "Search Error",
+          description: "Failed to search contacts. Please try again.",
+          variant: "destructive",
+        });
+        return [];
+      }
       return data || [];
     } catch (e) {
       console.error('Error searching CRM:', e);
+      toast({
+        title: "Search Error",
+        description: "An error occurred while searching.",
+        variant: "destructive",
+      });
       return [];
     }
   };
