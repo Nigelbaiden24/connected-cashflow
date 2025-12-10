@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check, ExternalLink, MessageSquare, Edit2, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -52,6 +52,10 @@ interface Message {
   isDocumentResponse?: boolean;
   documentTitle?: string;
   crmAction?: CRMContactAction;
+  crmSearchResults?: CRMSearchResult[];
+  crmNavigate?: CRMNavigateAction;
+  crmInteraction?: CRMInteractionAction;
+  crmUpdate?: CRMUpdateAction;
 }
 
 interface CRMContactAction {
@@ -67,6 +71,40 @@ interface CRMContactAction {
     notes?: string;
     tags?: string[];
   };
+  saved?: boolean;
+}
+
+interface CRMSearchResult {
+  id: string;
+  name: string;
+  email?: string;
+  company?: string;
+  status?: string;
+  phone?: string;
+}
+
+interface CRMNavigateAction {
+  action: 'view';
+  contact_id: string;
+  contact_name: string;
+}
+
+interface CRMInteractionAction {
+  action: 'add_interaction';
+  contact_id?: string;
+  contact_name: string;
+  interaction_type: string;
+  subject: string;
+  description?: string;
+  outcome?: string;
+  saved?: boolean;
+}
+
+interface CRMUpdateAction {
+  action: 'update';
+  contact_id?: string;
+  contact_name: string;
+  updates: Record<string, string>;
   saved?: boolean;
 }
 
@@ -269,9 +307,9 @@ const Chat = () => {
       category: "compliance" as const,
     },
     {
-      label: "Client Search",
+      label: "Find Contact",
       icon: Search,
-      query: "Help me find clients with conservative risk profiles",
+      query: "Search CRM for ",
       category: "client" as const,
     },
     {
@@ -286,6 +324,12 @@ const Chat = () => {
       query: "Add a new contact to CRM: ",
       category: "client" as const,
     },
+    {
+      label: "Add Note",
+      icon: MessageSquare,
+      query: "Add a note to ",
+      category: "client" as const,
+    },
   ];
 
   const businessQuickActions = [
@@ -296,10 +340,10 @@ const Chat = () => {
       category: "general" as const,
     },
     {
-      label: "Market Research",
+      label: "Find Contact",
       icon: Search,
-      query: "Help me research market trends and competitors in my industry",
-      category: "market" as const,
+      query: "Search CRM for ",
+      category: "client" as const,
     },
     {
       label: "Business Plan",
@@ -308,15 +352,21 @@ const Chat = () => {
       category: "general" as const,
     },
     {
-      label: "KPI Analysis",
-      icon: TrendingUp,
-      query: "Analyze my business KPIs and suggest improvements",
-      category: "general" as const,
-    },
-    {
       label: "Add Contact",
       icon: UserPlus,
       query: "Add a new contact to CRM: ",
+      category: "client" as const,
+    },
+    {
+      label: "Add Note",
+      icon: MessageSquare,
+      query: "Add a note to ",
+      category: "client" as const,
+    },
+    {
+      label: "Open CRM",
+      icon: Users,
+      query: "Show me all my CRM contacts",
       category: "client" as const,
     },
   ];
@@ -334,6 +384,40 @@ const Chat = () => {
     ];
     const lower = message.toLowerCase();
     return crmKeywords.some(keyword => lower.includes(keyword));
+  };
+
+  // Detect CRM search intent
+  const detectCRMSearchIntent = (message: string): boolean => {
+    const searchKeywords = [
+      'find contact', 'search contact', 'lookup contact', 'look up',
+      'find in crm', 'search crm', 'show me contact', 'show contact',
+      'find lead', 'search lead', 'find client', 'search client',
+      'who is', 'find me', 'look for'
+    ];
+    const lower = message.toLowerCase();
+    return searchKeywords.some(keyword => lower.includes(keyword));
+  };
+
+  // Detect CRM view/open intent
+  const detectCRMViewIntent = (message: string): boolean => {
+    const viewKeywords = [
+      'open contact', 'view contact', 'show profile', 'open profile',
+      'go to contact', 'navigate to', 'open record', 'view record',
+      'show details', 'open their profile', 'view their profile'
+    ];
+    const lower = message.toLowerCase();
+    return viewKeywords.some(keyword => lower.includes(keyword));
+  };
+
+  // Detect CRM note/interaction intent
+  const detectCRMInteractionIntent = (message: string): boolean => {
+    const interactionKeywords = [
+      'add note', 'log call', 'log meeting', 'add update', 'add interaction',
+      'record note', 'write note', 'save note', 'add a note',
+      'log activity', 'update notes', 'add to notes'
+    ];
+    const lower = message.toLowerCase();
+    return interactionKeywords.some(keyword => lower.includes(keyword));
   };
 
   // Parse CRM contact data from AI response
@@ -391,6 +475,108 @@ const Chat = () => {
     }
   };
 
+  // Parse CRM search results from AI response
+  const parseCRMSearchResults = (content: string): CRMSearchResult[] | null => {
+    try {
+      const searchMatch = content.match(/\[CRM_SEARCH_RESULTS\]([\s\S]*?)\[\/CRM_SEARCH_RESULTS\]/);
+      if (searchMatch) {
+        const parsed = JSON.parse(searchMatch[1]);
+        if (parsed.results && Array.isArray(parsed.results)) {
+          return parsed.results;
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('Error parsing CRM search results:', e);
+      return null;
+    }
+  };
+
+  // Parse CRM navigate action from AI response
+  const parseCRMNavigateAction = (content: string): CRMNavigateAction | null => {
+    try {
+      const navMatch = content.match(/\[CRM_NAVIGATE\]([\s\S]*?)\[\/CRM_NAVIGATE\]/);
+      if (navMatch) {
+        const parsed = JSON.parse(navMatch[1]);
+        if (parsed.action === 'view' && (parsed.contact_id || parsed.contact_name)) {
+          return parsed;
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('Error parsing CRM navigate action:', e);
+      return null;
+    }
+  };
+
+  // Parse CRM interaction action from AI response
+  const parseCRMInteractionAction = (content: string): CRMInteractionAction | null => {
+    try {
+      const interactionMatch = content.match(/\[CRM_INTERACTION\]([\s\S]*?)\[\/CRM_INTERACTION\]/);
+      if (interactionMatch) {
+        const parsed = JSON.parse(interactionMatch[1]);
+        if (parsed.action === 'add_interaction' && parsed.subject) {
+          return { ...parsed, saved: false };
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('Error parsing CRM interaction action:', e);
+      return null;
+    }
+  };
+
+  // Parse CRM update action from AI response
+  const parseCRMUpdateAction = (content: string): CRMUpdateAction | null => {
+    try {
+      const updateMatch = content.match(/\[CRM_UPDATE\]([\s\S]*?)\[\/CRM_UPDATE\]/);
+      if (updateMatch) {
+        const parsed = JSON.parse(updateMatch[1]);
+        if (parsed.action === 'update' && parsed.updates) {
+          return { ...parsed, saved: false };
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('Error parsing CRM update action:', e);
+      return null;
+    }
+  };
+
+  // Search CRM contacts
+  const searchCRMContacts = async (query: string): Promise<CRMSearchResult[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('crm_contacts')
+        .select('id, name, email, company, status, phone')
+        .or(`name.ilike.%${query}%,email.ilike.%${query}%,company.ilike.%${query}%`)
+        .limit(10);
+
+      if (error) throw error;
+      return data || [];
+    } catch (e) {
+      console.error('Error searching CRM:', e);
+      return [];
+    }
+  };
+
+  // Find contact by name
+  const findContactByName = async (name: string): Promise<CRMSearchResult | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('crm_contacts')
+        .select('id, name, email, company, status, phone')
+        .ilike('name', `%${name}%`)
+        .limit(1)
+        .single();
+
+      if (error) return null;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  };
+
   // Save contact to CRM
   const saveCRMContact = async (contact: CRMContactAction['contact']): Promise<boolean> => {
     try {
@@ -415,6 +601,103 @@ const Chat = () => {
     } catch (e) {
       console.error('Error saving CRM contact:', e);
       return false;
+    }
+  };
+
+  // Save CRM interaction
+  const saveCRMInteraction = async (interaction: CRMInteractionAction): Promise<boolean> => {
+    try {
+      let contactId = interaction.contact_id;
+      
+      // If no contact_id, try to find by name
+      if (!contactId && interaction.contact_name) {
+        const contact = await findContactByName(interaction.contact_name);
+        if (contact) contactId = contact.id;
+      }
+
+      if (!contactId) {
+        toast({
+          title: "Contact Not Found",
+          description: `Could not find contact "${interaction.contact_name}". Please try searching first.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const { error } = await supabase.from('crm_interactions').insert({
+        contact_id: contactId,
+        interaction_type: interaction.interaction_type,
+        subject: interaction.subject,
+        description: interaction.description || null,
+        outcome: interaction.outcome || null,
+      });
+
+      if (error) {
+        console.error('Error saving CRM interaction:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Error saving CRM interaction:', e);
+      return false;
+    }
+  };
+
+  // Update CRM contact
+  const updateCRMContact = async (update: CRMUpdateAction): Promise<boolean> => {
+    try {
+      let contactId = update.contact_id;
+      
+      // If no contact_id, try to find by name
+      if (!contactId && update.contact_name) {
+        const contact = await findContactByName(update.contact_name);
+        if (contact) contactId = contact.id;
+      }
+
+      if (!contactId) {
+        toast({
+          title: "Contact Not Found",
+          description: `Could not find contact "${update.contact_name}". Please try searching first.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const { error } = await supabase
+        .from('crm_contacts')
+        .update(update.updates)
+        .eq('id', contactId);
+
+      if (error) {
+        console.error('Error updating CRM contact:', error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error('Error updating CRM contact:', e);
+      return false;
+    }
+  };
+
+  // Navigate to CRM contact
+  const navigateToCRMContact = async (action: CRMNavigateAction) => {
+    let contactId = action.contact_id;
+    
+    // If no contact_id, try to find by name
+    if (!contactId && action.contact_name) {
+      const contact = await findContactByName(action.contact_name);
+      if (contact) contactId = contact.id;
+    }
+
+    if (contactId) {
+      const crmPath = isBusinessPlatform ? `/business/crm/${contactId}` : `/finance-crm/${contactId}`;
+      navigate(crmPath);
+    } else {
+      toast({
+        title: "Contact Not Found",
+        description: `Could not find contact "${action.contact_name}".`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -453,6 +736,71 @@ const Chat = () => {
       toast({
         title: "Error",
         description: "Failed to save contact. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle saving CRM interaction from message
+  const handleSaveCRMInteraction = async (messageId: string, interaction: CRMInteractionAction) => {
+    const success = await saveCRMInteraction(interaction);
+    if (success) {
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, crmInteraction: { ...m.crmInteraction!, saved: true } }
+          : m
+      ));
+      toast({
+        title: "Interaction Logged!",
+        description: `${interaction.interaction_type} has been added to ${interaction.contact_name}'s profile.`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to save interaction. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle CRM update from message
+  const handleCRMUpdate = async (messageId: string, update: CRMUpdateAction) => {
+    const success = await updateCRMContact(update);
+    if (success) {
+      setMessages(prev => prev.map(m => 
+        m.id === messageId 
+          ? { ...m, crmUpdate: { ...m.crmUpdate!, saved: true } }
+          : m
+      ));
+      toast({
+        title: "Contact Updated!",
+        description: `${update.contact_name}'s information has been updated.`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to update contact. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle navigating to CRM contact
+  const handleCRMNavigate = async (contactId: string, contactName: string) => {
+    let targetId = contactId;
+    
+    if (!targetId && contactName) {
+      const contact = await findContactByName(contactName);
+      if (contact) targetId = contact.id;
+    }
+
+    if (targetId) {
+      const crmPath = isBusinessPlatform ? `/business/crm/${targetId}` : `/finance-crm/${targetId}`;
+      navigate(crmPath);
+    } else {
+      toast({
+        title: "Contact Not Found",
+        description: `Could not find contact "${contactName}".`,
         variant: "destructive",
       });
     }
@@ -525,16 +873,28 @@ const Chat = () => {
             
             // Check for CRM contact data
             let crmAction: CRMContactAction | undefined;
-            if (crmIntent) {
-              const contactData = parseCRMContactFromResponse(streamedContent);
-              if (contactData) {
-                crmAction = {
-                  type: 'add_contact',
-                  contact: contactData,
-                  saved: false,
-                };
-              }
+            let crmSearchResults: CRMSearchResult[] | undefined;
+            let crmNavigate: CRMNavigateAction | undefined;
+            let crmInteraction: CRMInteractionAction | undefined;
+            let crmUpdate: CRMUpdateAction | undefined;
+
+            // Parse all CRM actions from response
+            const contactData = parseCRMContactFromResponse(streamedContent);
+            if (contactData) {
+              crmAction = { type: 'add_contact', contact: contactData, saved: false };
             }
+            
+            const searchResults = parseCRMSearchResults(streamedContent);
+            if (searchResults) crmSearchResults = searchResults;
+            
+            const navAction = parseCRMNavigateAction(streamedContent);
+            if (navAction) crmNavigate = navAction;
+            
+            const interactionAction = parseCRMInteractionAction(streamedContent);
+            if (interactionAction) crmInteraction = interactionAction;
+            
+            const updateAction = parseCRMUpdateAction(streamedContent);
+            if (updateAction) crmUpdate = updateAction;
             
             const finalMessage: Message = {
               id: tempId,
@@ -545,6 +905,10 @@ const Chat = () => {
               isDocumentResponse: isDocResponse,
               documentTitle: parsedDoc?.title || documentIntent.documentType || 'Document',
               crmAction,
+              crmSearchResults,
+              crmNavigate,
+              crmInteraction,
+              crmUpdate,
             };
 
             // Update message with document flag and CRM action
@@ -599,18 +963,29 @@ const Chat = () => {
         const parsedDoc = parseDocumentFromResponse(responseContent);
         const isDocResponse = documentIntent.wantsDocument && responseContent.length > 200;
 
-        // Check for CRM contact data in non-streaming response
+        // Check for all CRM actions in non-streaming response
         let crmAction: CRMContactAction | undefined;
-        if (crmIntent) {
-          const contactData = parseCRMContactFromResponse(responseContent);
-          if (contactData) {
-            crmAction = {
-              type: 'add_contact',
-              contact: contactData,
-              saved: false,
-            };
-          }
+        let crmSearchResults: CRMSearchResult[] | undefined;
+        let crmNavigate: CRMNavigateAction | undefined;
+        let crmInteraction: CRMInteractionAction | undefined;
+        let crmUpdate: CRMUpdateAction | undefined;
+
+        const contactData = parseCRMContactFromResponse(responseContent);
+        if (contactData) {
+          crmAction = { type: 'add_contact', contact: contactData, saved: false };
         }
+        
+        const searchResults = parseCRMSearchResults(responseContent);
+        if (searchResults) crmSearchResults = searchResults;
+        
+        const navAction = parseCRMNavigateAction(responseContent);
+        if (navAction) crmNavigate = navAction;
+        
+        const interactionAction = parseCRMInteractionAction(responseContent);
+        if (interactionAction) crmInteraction = interactionAction;
+        
+        const updateAction = parseCRMUpdateAction(responseContent);
+        if (updateAction) crmUpdate = updateAction;
 
         const aiResponse: Message = {
           id: Date.now().toString(),
@@ -621,6 +996,10 @@ const Chat = () => {
           isDocumentResponse: isDocResponse,
           documentTitle: parsedDoc?.title || documentIntent.documentType || 'Document',
           crmAction,
+          crmSearchResults,
+          crmNavigate,
+          crmInteraction,
+          crmUpdate,
         };
 
         setMessages(prev => [...prev, aiResponse]);
@@ -1113,6 +1492,123 @@ const Chat = () => {
                           >
                             <UserPlus className="h-4 w-4 mr-2" />
                             Add to CRM
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* CRM Search Results */}
+                    {message.crmSearchResults && message.crmSearchResults.length > 0 && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl border border-blue-500/30">
+                        <p className="text-xs font-semibold text-foreground flex items-center gap-2 mb-3">
+                          <Users className="h-4 w-4 text-blue-500" />
+                          CRM Search Results ({message.crmSearchResults.length})
+                        </p>
+                        <div className="space-y-2">
+                          {message.crmSearchResults.map((contact) => (
+                            <div key={contact.id} className="flex items-center justify-between p-2 bg-background/50 rounded-lg">
+                              <div className="text-xs">
+                                <span className="font-medium">{contact.name}</span>
+                                {contact.company && <span className="text-muted-foreground ml-2">@ {contact.company}</span>}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleCRMNavigate(contact.id, contact.name)}
+                                className="h-7 text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Open
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CRM Navigate Action */}
+                    {message.crmNavigate && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/30">
+                        <p className="text-xs font-semibold text-foreground flex items-center gap-2 mb-3">
+                          <ExternalLink className="h-4 w-4 text-purple-500" />
+                          Open Contact Profile
+                        </p>
+                        <Button
+                          size="sm"
+                          onClick={() => handleCRMNavigate(message.crmNavigate!.contact_id, message.crmNavigate!.contact_name)}
+                          className="w-full h-9 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Open {message.crmNavigate.contact_name}'s Profile
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* CRM Interaction Action */}
+                    {message.crmInteraction && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl border border-amber-500/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                            <MessageSquare className="h-4 w-4 text-amber-500" />
+                            Log {message.crmInteraction.interaction_type} to {message.crmInteraction.contact_name}
+                          </p>
+                          {message.crmInteraction.saved && (
+                            <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+                              <Check className="h-3 w-3 mr-1" />
+                              Logged
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs mb-3">
+                          <p className="font-medium">{message.crmInteraction.subject}</p>
+                          {message.crmInteraction.description && (
+                            <p className="text-muted-foreground mt-1">{message.crmInteraction.description}</p>
+                          )}
+                        </div>
+                        {!message.crmInteraction.saved && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveCRMInteraction(message.id, message.crmInteraction!)}
+                            className="w-full h-9 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Log Interaction
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* CRM Update Action */}
+                    {message.crmUpdate && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-cyan-500/10 to-sky-500/10 rounded-xl border border-cyan-500/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                            <Edit2 className="h-4 w-4 text-cyan-500" />
+                            Update {message.crmUpdate.contact_name}
+                          </p>
+                          {message.crmUpdate.saved && (
+                            <Badge className="bg-cyan-500/20 text-cyan-600 border-cyan-500/30">
+                              <Check className="h-3 w-3 mr-1" />
+                              Updated
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs mb-3 space-y-1">
+                          {Object.entries(message.crmUpdate.updates).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="text-muted-foreground capitalize">{key}:</span>
+                              <span className="ml-2 font-medium">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {!message.crmUpdate.saved && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleCRMUpdate(message.id, message.crmUpdate!)}
+                            className="w-full h-9 rounded-lg bg-gradient-to-r from-cyan-500 to-sky-500 hover:from-cyan-600 hover:to-sky-600 text-white"
+                          >
+                            <Edit2 className="h-4 w-4 mr-2" />
+                            Apply Update
                           </Button>
                         )}
                       </div>

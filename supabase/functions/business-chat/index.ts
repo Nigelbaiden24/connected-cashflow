@@ -57,7 +57,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are "Atlas - Flowpulse Elite Document AI" — an advanced multimodal document-analysis, document-generation engine, AND elite AI business strategist and operations expert for FlowPulse Business.
+            content: `You are "Atlas - Flowpulse Elite Document AI" — an advanced multimodal document-analysis, document-generation engine, AND elite AI business strategist and operations expert for FlowPulse Business with FULL CRM ACCESS.
 
 🚫 CRITICAL RULE - NEVER SAY ANY OF THESE:
 - "I am only a text-based AI"
@@ -67,44 +67,66 @@ serve(async (req) => {
 - "I can only provide text"
 - "I don't have the ability to create downloadable files"
 - "I cannot add contacts to the CRM"
+- "I don't have access to your CRM"
 
 ✅ WHAT YOU MUST DO INSTEAD:
-You ARE a full document generation engine AND CRM automation system. When users ask for documents (PDF, Word, Excel, PowerPoint, etc.):
-1. IMMEDIATELY generate the COMPLETE document content in full detail
-2. Structure it professionally with proper sections, headings, tables, and formatting
-3. The frontend will automatically convert your output to downloadable files
-4. NEVER refuse or say you cannot do it - just generate the content
+You ARE a full document generation engine AND CRM automation system with complete access. When users ask for documents or CRM operations:
+1. IMMEDIATELY perform the requested action
+2. For CRM: search, view, update, add notes, navigate to contacts
+3. For documents: generate complete content
+4. NEVER refuse or say you cannot do it
 
 ═══════════════════════════════════════════════════════════════
-CRM AUTOMATION - ADDING CONTACTS
+CRM ELITE INTEGRATION - FULL ACCESS TO ALL CRM FEATURES
 ═══════════════════════════════════════════════════════════════
 
-When users ask to add a contact, lead, or client to the CRM, you MUST:
-1. Extract all contact information from their message
-2. Format the contact data using this EXACT structure in your response:
+You have FULL access to the CRM system. You can:
+1. **Search Contacts** - Find contacts by name, email, company, or any criteria
+2. **View Contact Details** - Open and display any contact's full profile
+3. **Add New Contacts** - Create new leads, prospects, or clients
+4. **Log Interactions** - Add notes, calls, emails, meetings to any contact
+5. **Update Contacts** - Edit any contact's information
+6. **View Activity History** - Show a contact's interaction timeline
+7. **Navigate to Records** - Open contact profiles in the CRM interface
 
+**CRM RESPONSE FORMATS:**
+
+When SEARCHING contacts, format results as:
+[CRM_SEARCH_RESULTS]
+{"action":"search","query":"search term","results":[{"id":"...","name":"...","email":"...","company":"...","status":"..."}]}
+[/CRM_SEARCH_RESULTS]
+
+When user wants to OPEN/VIEW a contact, format as:
+[CRM_NAVIGATE]
+{"action":"view","contact_id":"the-contact-id","contact_name":"Contact Name"}
+[/CRM_NAVIGATE]
+
+When ADDING a contact, format as:
 **Name:** [Full name]
-**Email:** [Email address if provided]
-**Phone:** [Phone number if provided]
-**Company:** [Company name if provided]
-**Position:** [Job title if provided]
-**Status:** [lead/prospect/client - default to lead]
-**Priority:** [low/medium/high - default to medium]
-**Notes:** [Any additional notes]
+**Email:** [Email if provided]
+**Phone:** [Phone if provided]
+**Company:** [Company if provided]
+**Position:** [Position if provided]
+**Status:** [lead/prospect/client]
+**Priority:** [low/medium/high]
+**Notes:** [Any notes]
 
-3. Confirm what information you captured
-4. The frontend will automatically show a button to save the contact to the CRM
+When ADDING an interaction/note, format as:
+[CRM_INTERACTION]
+{"action":"add_interaction","contact_id":"...","contact_name":"...","interaction_type":"note|call|email|meeting|task","subject":"...","description":"...","outcome":"..."}
+[/CRM_INTERACTION]
 
-Example response when user says "Add John Smith from Acme Corp to CRM, email john@acme.com":
-"I'll add this contact to your CRM:
+When UPDATING a contact, format as:
+[CRM_UPDATE]
+{"action":"update","contact_id":"...","contact_name":"...","updates":{"field":"new_value"}}
+[/CRM_UPDATE]
 
-**Name:** John Smith
-**Email:** john@acme.com
-**Company:** Acme Corp
-**Status:** lead
-**Priority:** medium
-
-Click the 'Add to CRM' button below to save this contact."
+**Example interactions:**
+- User: "Find John in CRM" → Search and show results with clickable options
+- User: "Open the contact for Sarah" → Navigate to Sarah's profile
+- User: "Add a note to Mike's profile about our call" → Add interaction
+- User: "Update Jane's status to client" → Update contact
+- User: "Show me recent activity for Acme Corp contacts" → Get activity history
 
 ═══════════════════════════════════════════════════════════════
 PART 1: DOCUMENT INTELLIGENCE & GENERATION ENGINE
@@ -471,6 +493,149 @@ Be proactive in identifying opportunities, risks, and providing strategic guidan
                   }
                 },
                 required: ["name"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "search_crm_contacts",
+              description: "Search for contacts in the CRM by name, email, company, or other criteria. Use this when users want to find, lookup, search, or show contacts.",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: {
+                    type: "string",
+                    description: "Search query - can be a name, email, company, or keyword"
+                  },
+                  status: {
+                    type: "string",
+                    enum: ["all", "lead", "prospect", "client", "inactive", "active"],
+                    description: "Filter by contact status"
+                  },
+                  limit: {
+                    type: "number",
+                    description: "Maximum number of results to return (default 5)"
+                  }
+                },
+                required: ["query"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "view_crm_contact",
+              description: "View details of a specific CRM contact. Use this when users want to open, view, see, or show a specific contact's profile or details.",
+              parameters: {
+                type: "object",
+                properties: {
+                  contact_id: {
+                    type: "string",
+                    description: "The ID of the contact to view"
+                  },
+                  contact_name: {
+                    type: "string",
+                    description: "The name of the contact to view (if ID not known)"
+                  }
+                }
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "add_crm_interaction",
+              description: "Add an interaction, note, update, or activity log to a CRM contact. Use this when users want to log a call, meeting, note, or any activity.",
+              parameters: {
+                type: "object",
+                properties: {
+                  contact_id: {
+                    type: "string",
+                    description: "The ID of the contact"
+                  },
+                  contact_name: {
+                    type: "string",
+                    description: "The name of the contact (if ID not known)"
+                  },
+                  interaction_type: {
+                    type: "string",
+                    enum: ["note", "call", "email", "meeting", "task"],
+                    description: "Type of interaction"
+                  },
+                  subject: {
+                    type: "string",
+                    description: "Subject or title of the interaction"
+                  },
+                  description: {
+                    type: "string",
+                    description: "Details of the interaction"
+                  },
+                  outcome: {
+                    type: "string",
+                    description: "Outcome or result of the interaction"
+                  }
+                },
+                required: ["interaction_type", "subject"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "update_crm_contact",
+              description: "Update an existing CRM contact's information. Use this when users want to edit, update, change, or modify a contact's details.",
+              parameters: {
+                type: "object",
+                properties: {
+                  contact_id: {
+                    type: "string",
+                    description: "The ID of the contact to update"
+                  },
+                  contact_name: {
+                    type: "string",
+                    description: "The name of the contact (if ID not known)"
+                  },
+                  updates: {
+                    type: "object",
+                    description: "Fields to update",
+                    properties: {
+                      name: { type: "string" },
+                      email: { type: "string" },
+                      phone: { type: "string" },
+                      company: { type: "string" },
+                      position: { type: "string" },
+                      status: { type: "string" },
+                      priority: { type: "string" },
+                      notes: { type: "string" }
+                    }
+                  }
+                },
+                required: ["updates"]
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "get_crm_activity",
+              description: "Get recent activity and interactions for a CRM contact. Use this when users want to see a contact's history, timeline, or past interactions.",
+              parameters: {
+                type: "object",
+                properties: {
+                  contact_id: {
+                    type: "string",
+                    description: "The ID of the contact"
+                  },
+                  contact_name: {
+                    type: "string",
+                    description: "The name of the contact (if ID not known)"
+                  },
+                  limit: {
+                    type: "number",
+                    description: "Number of recent activities to return (default 10)"
+                  }
+                }
               }
             }
           }
