@@ -29,6 +29,7 @@ import {
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import MonteCarloSimulations from "@/components/scenario/MonteCarloSimulations";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
@@ -491,122 +492,13 @@ export default function ScenarioAnalysis() {
           <TabsTrigger value="retirement">Retirement</TabsTrigger>
         </TabsList>
 
-        {/* Monte Carlo Simulation */}
+        {/* Monte Carlo Simulation - Elite Dropdown System */}
         <TabsContent value="monte-carlo" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-success">87%</div>
-                <p className="text-xs text-muted-foreground mt-1">10,000 simulations</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Median Outcome</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{formatCurrency(1050000)}</div>
-                <p className="text-xs text-muted-foreground mt-1">in 30 years</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Best Case (90%)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-success">{formatCurrency(5985000)}</div>
-                <p className="text-xs text-muted-foreground mt-1">90th percentile</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Worst Case (10%)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-warning">{formatCurrency(240000)}</div>
-                <p className="text-xs text-muted-foreground mt-1">10th percentile</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Monte Carlo Projection Range</CardTitle>
-              <CardDescription>Portfolio value projections across 10,000 simulations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={monteCarloData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" label={{ value: 'Years', position: 'insideBottom', offset: -5 }} />
-                    <YAxis 
-                      label={{ value: 'Portfolio Value (£)', angle: -90, position: 'insideLeft' }}
-                      tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => formatCurrency(value)}
-                      labelFormatter={(label) => `Year ${label}`}
-                    />
-                    <Legend />
-                    <Area type="monotone" dataKey="p90" stackId="1" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.1} name="90th Percentile" />
-                    <Area type="monotone" dataKey="p75" stackId="2" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} name="75th Percentile" />
-                    <Area type="monotone" dataKey="p50" stackId="3" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.4} name="Median" strokeWidth={2} />
-                    <Area type="monotone" dataKey="p25" stackId="4" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.2} name="25th Percentile" />
-                    <Area type="monotone" dataKey="p10" stackId="5" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.1} name="10th Percentile" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Simulation Parameters</CardTitle>
-              <CardDescription>Adjust assumptions for scenario modeling</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Expected Annual Return (%)</Label>
-                  <Input type="number" defaultValue="7.0" step="0.1" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Annual Volatility (%)</Label>
-                  <Input type="number" defaultValue="15.0" step="0.1" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Initial Investment (£)</Label>
-                  <Input type="number" defaultValue="100000" step="1000" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Monthly Contribution (£)</Label>
-                  <Input type="number" defaultValue="2500" step="100" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Time Horizon (Years)</Label>
-                  <Input type="number" defaultValue="30" step="1" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Number of Simulations</Label>
-                  <Select defaultValue="10000">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1000">1,000</SelectItem>
-                      <SelectItem value="5000">5,000</SelectItem>
-                      <SelectItem value="10000">10,000</SelectItem>
-                      <SelectItem value="50000">50,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <MonteCarloSimulations 
+            selectedClient={selectedClient}
+            clients={clients}
+            formatCurrency={formatCurrency}
+          />
         </TabsContent>
 
         {/* What-If Scenarios */}
