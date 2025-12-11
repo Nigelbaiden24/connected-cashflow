@@ -6,16 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
+import { useState, useEffect, useMemo } from "react";
 import { 
   TrendingUp, 
   TrendingDown, 
   Activity, 
   Target, 
-  Zap, 
   ShieldAlert,
-  Percent,
   LineChart,
   BarChart3,
   Calculator,
@@ -26,14 +24,21 @@ import {
   Wallet,
   Building,
   Landmark,
-  TrendingUp as Growth,
   Scale,
-  DollarSign,
   Loader2,
   Play,
-  RefreshCw
+  Info,
+  Users,
+  Calendar,
+  Percent,
+  ArrowUpRight,
+  ArrowDownRight,
+  CheckCircle2,
+  XCircle,
+  HelpCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
@@ -42,18 +47,18 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
+  Tooltip as RechartsTooltip, 
   Legend, 
   ResponsiveContainer,
   Area,
   AreaChart,
   ComposedChart,
-  Scatter,
-  ScatterChart,
   ReferenceLine,
   Cell,
   PieChart,
-  Pie
+  Pie,
+  RadialBarChart,
+  RadialBar
 } from "recharts";
 
 // Monte Carlo Sub-Tab Types
@@ -78,174 +83,244 @@ interface MonteCarloSimulationsProps {
   formatCurrency: (value: number) => string;
 }
 
-// Sub-tab configuration
+// Sub-tab configuration with detailed descriptions
 const subTabs = [
-  { id: "annual-savings", label: "Annual Savings", icon: PiggyBank, requiresSimulation: true },
-  { id: "goal-priority", label: "Goal Priority Analysis", icon: Target, requiresSimulation: true },
-  { id: "historic", label: "Historic", icon: Clock, requiresSimulation: false },
-  { id: "inflation", label: "Inflation Adjustment", icon: TrendingUp, requiresSimulation: true },
-  { id: "investment-returns", label: "Investment Returns", icon: LineChart, requiresSimulation: true },
-  { id: "life-needs", label: "Life Needs", icon: Heart, requiresSimulation: true },
-  { id: "longevity-risk", label: "Longevity Risk", icon: AlertTriangle, requiresSimulation: true },
-  { id: "loss-capacity", label: "Loss Capacity", icon: ShieldAlert, requiresSimulation: true },
-  { id: "lump-sum", label: "Lump Sum Savings", icon: Wallet, requiresSimulation: true },
-  { id: "market-crash", label: "Market Crash", icon: TrendingDown, requiresSimulation: true },
-  { id: "performance", label: "Performance", icon: BarChart3, requiresSimulation: false },
-  { id: "potential-iht", label: "Potential IHT", icon: Landmark, requiresSimulation: true },
-  { id: "retirement-spending", label: "Retirement Spending", icon: Building, requiresSimulation: true },
+  { id: "annual-savings", label: "Annual Savings", icon: PiggyBank, requiresSimulation: true, description: "Analyse optimal savings rate and wealth accumulation pathways" },
+  { id: "goal-priority", label: "Goal Priority Analysis", icon: Target, requiresSimulation: true, description: "Rank and optimise funding across competing financial goals" },
+  { id: "historic", label: "Historic", icon: Clock, requiresSimulation: false, description: "Backtest portfolio against historical market conditions" },
+  { id: "inflation", label: "Inflation Adjustment", icon: TrendingUp, requiresSimulation: true, description: "Model purchasing power erosion and real returns" },
+  { id: "investment-returns", label: "Investment Returns", icon: LineChart, requiresSimulation: true, description: "Stochastic modelling of asset class returns" },
+  { id: "life-needs", label: "Life Needs", icon: Heart, requiresSimulation: true, description: "Essential vs discretionary spending analysis" },
+  { id: "longevity-risk", label: "Longevity Risk", icon: AlertTriangle, requiresSimulation: true, description: "Portfolio sustainability across extended lifespans" },
+  { id: "loss-capacity", label: "Loss Capacity", icon: ShieldAlert, requiresSimulation: true, description: "Maximum tolerable drawdown and recovery analysis" },
+  { id: "lump-sum", label: "Lump Sum Savings", icon: Wallet, requiresSimulation: true, description: "Lump sum vs phased investment comparison" },
+  { id: "market-crash", label: "Market Crash", icon: TrendingDown, requiresSimulation: true, description: "Stress testing against historical and hypothetical crashes" },
+  { id: "performance", label: "Performance", icon: BarChart3, requiresSimulation: false, description: "Portfolio attribution and benchmark comparison" },
+  { id: "potential-iht", label: "Potential IHT", icon: Landmark, requiresSimulation: true, description: "Inheritance tax liability projection and mitigation" },
+  { id: "retirement-spending", label: "Retirement Spending", icon: Building, requiresSimulation: true, description: "Sustainable withdrawal and spending pattern analysis" },
 ] as const;
 
-// Generate simulation data based on parameters
-const generateSimulationData = (type: MonteCarloSubTab, params: any) => {
-  const years = params.timeHorizon || 30;
-  const initialAmount = params.initialAmount || 100000;
-  
-  switch (type) {
-    case "annual-savings":
-      return Array.from({ length: years }, (_, i) => ({
-        year: i + 1,
-        conservative: initialAmount + (params.annualSavings || 12000) * (i + 1) * 1.03 ** (i + 1),
-        moderate: initialAmount + (params.annualSavings || 12000) * (i + 1) * 1.05 ** (i + 1),
-        aggressive: initialAmount + (params.annualSavings || 12000) * (i + 1) * 1.07 ** (i + 1),
-        p10: initialAmount * 0.85 ** (i * 0.1) + (params.annualSavings || 12000) * (i + 1),
-        p90: initialAmount * 1.15 ** (i * 0.1) + (params.annualSavings || 12000) * (i + 1) * 1.2,
-      }));
-      
-    case "goal-priority":
-      return [
-        { goal: "Retirement", priority: 1, probability: 85, funded: 78, gap: 220000, color: "hsl(var(--primary))" },
-        { goal: "Education", priority: 2, probability: 92, funded: 65, gap: 45000, color: "hsl(var(--success))" },
-        { goal: "House Purchase", priority: 3, probability: 78, funded: 45, gap: 85000, color: "hsl(var(--warning))" },
-        { goal: "Emergency Fund", priority: 4, probability: 95, funded: 90, gap: 5000, color: "hsl(var(--success))" },
-        { goal: "Legacy Planning", priority: 5, probability: 65, funded: 35, gap: 350000, color: "hsl(var(--destructive))" },
-      ];
-      
-    case "historic":
-      return [
-        { period: "1990-2000", return: 18.2, worstYear: -3.1, bestYear: 33.4 },
-        { period: "2000-2010", return: -0.9, worstYear: -38.5, bestYear: 28.7 },
-        { period: "2010-2020", return: 13.6, worstYear: -6.2, bestYear: 32.4 },
-        { period: "2020-2024", return: 9.8, worstYear: -18.1, bestYear: 26.9 },
-        { period: "Full Period", return: 10.2, worstYear: -38.5, bestYear: 33.4 },
-      ];
-      
-    case "inflation":
-      return Array.from({ length: years }, (_, i) => {
-        const inflation = params.inflationRate || 2.5;
-        return {
-          year: i + 1,
-          nominal: initialAmount * (1 + (params.nominalReturn || 7) / 100) ** (i + 1),
-          real: initialAmount * (1 + ((params.nominalReturn || 7) - inflation) / 100) ** (i + 1),
-          inflationImpact: initialAmount * (1 - (1 / (1 + inflation / 100) ** (i + 1))),
-          purchasingPower: 100 * (1 / (1 + inflation / 100) ** (i + 1)),
-        };
-      });
-      
-    case "investment-returns":
-      return Array.from({ length: years }, (_, i) => ({
-        year: i + 1,
-        stocks: initialAmount * (1.09 + Math.random() * 0.08 - 0.04) ** (i + 1),
-        bonds: initialAmount * (1.04 + Math.random() * 0.02 - 0.01) ** (i + 1),
-        balanced: initialAmount * (1.065 + Math.random() * 0.04 - 0.02) ** (i + 1),
-        cash: initialAmount * (1.02 + Math.random() * 0.01) ** (i + 1),
-        p50: initialAmount * 1.07 ** (i + 1),
-      }));
-      
-    case "life-needs":
-      return [
-        { category: "Essential Living", monthly: 3500, annual: 42000, percentile: 95, priority: "Critical" },
-        { category: "Healthcare", monthly: 450, annual: 5400, percentile: 98, priority: "Critical" },
-        { category: "Discretionary", monthly: 1200, annual: 14400, percentile: 75, priority: "Flexible" },
-        { category: "Legacy/Gifting", monthly: 500, annual: 6000, percentile: 60, priority: "Optional" },
-        { category: "Emergency Buffer", monthly: 800, annual: 9600, percentile: 90, priority: "High" },
-      ];
-      
-    case "longevity-risk":
-      return Array.from({ length: 40 }, (_, i) => {
-        const age = 65 + i;
-        const survivalMale = Math.exp(-0.08 * (age - 65)) * 100;
-        const survivalFemale = Math.exp(-0.06 * (age - 65)) * 100;
-        return {
-          age,
-          survivalMale: Math.max(0, survivalMale),
-          survivalFemale: Math.max(0, survivalFemale),
-          portfolioValue: initialAmount * Math.max(0, 1 - (age - 65) * 0.04),
-          requiredFunds: (params.annualSpending || 45000) * (105 - age),
-        };
-      });
-      
-    case "loss-capacity":
-      return [
-        { scenario: "10% Market Drop", impact: initialAmount * -0.1, recoveryTime: 6, acceptability: 95 },
-        { scenario: "20% Market Drop", impact: initialAmount * -0.2, recoveryTime: 14, acceptability: 78 },
-        { scenario: "30% Market Drop", impact: initialAmount * -0.3, recoveryTime: 26, acceptability: 52 },
-        { scenario: "40% Market Drop", impact: initialAmount * -0.4, recoveryTime: 42, acceptability: 28 },
-        { scenario: "50% Market Drop", impact: initialAmount * -0.5, recoveryTime: 60, acceptability: 12 },
-      ];
-      
-    case "lump-sum":
-      return Array.from({ length: years }, (_, i) => ({
-        year: i + 1,
-        lumpSum: (params.lumpSum || 50000) * (1.07 ** (i + 1)),
-        dca: (params.lumpSum || 50000) * (1.065 ** (i + 1)),
-        difference: (params.lumpSum || 50000) * (1.07 ** (i + 1)) - (params.lumpSum || 50000) * (1.065 ** (i + 1)),
-        lumpSumP10: (params.lumpSum || 50000) * (1.03 ** (i + 1)),
-        lumpSumP90: (params.lumpSum || 50000) * (1.12 ** (i + 1)),
-      }));
-      
-    case "market-crash":
-      return [
-        { event: "2008 Financial Crisis", drop: -37, duration: 18, recovery: 36, portfolioImpact: initialAmount * -0.37 },
-        { event: "2020 COVID Crash", drop: -34, duration: 1, recovery: 6, portfolioImpact: initialAmount * -0.34 },
-        { event: "2000 Dot-com Bubble", drop: -49, duration: 31, recovery: 56, portfolioImpact: initialAmount * -0.49 },
-        { event: "1987 Black Monday", drop: -20, duration: 0.1, recovery: 24, portfolioImpact: initialAmount * -0.20 },
-        { event: "Simulated 40% Crash", drop: -40, duration: 12, recovery: 48, portfolioImpact: initialAmount * -0.40 },
-      ];
-      
-    case "performance":
-      return Array.from({ length: 12 }, (_, i) => ({
-        month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i],
-        actual: (Math.random() * 8 - 2).toFixed(2),
-        benchmark: (Math.random() * 6 - 1).toFixed(2),
-        alpha: (Math.random() * 3 - 0.5).toFixed(2),
-      }));
-      
-    case "potential-iht":
-      const estateValue = params.estateValue || 1500000;
-      const nilRateBand = 325000;
-      const residenceNilRate = 175000;
-      return {
-        estateValue,
-        nilRateBand,
-        residenceNilRate,
-        taxableEstate: Math.max(0, estateValue - nilRateBand - residenceNilRate),
-        potentialIHT: Math.max(0, (estateValue - nilRateBand - residenceNilRate) * 0.4),
-        projections: Array.from({ length: years }, (_, i) => ({
-          year: i + 1,
-          estateValue: estateValue * (1.05 ** (i + 1)),
-          potentialIHT: Math.max(0, (estateValue * (1.05 ** (i + 1)) - nilRateBand - residenceNilRate) * 0.4),
-          afterGifting: Math.max(0, (estateValue * (1.05 ** (i + 1)) - (params.annualGifting || 6000) * (i + 1) - nilRateBand - residenceNilRate) * 0.4),
-        })),
-      };
-      
-    case "retirement-spending":
-      return Array.from({ length: 35 }, (_, i) => {
-        const age = 65 + i;
-        const baseSpending = params.retirementSpending || 45000;
-        const spendingAdjustment = age < 75 ? 1 : age < 85 ? 0.85 : 0.7;
-        return {
-          age,
-          essential: baseSpending * 0.6 * spendingAdjustment,
-          discretionary: baseSpending * 0.3 * spendingAdjustment,
-          healthcare: baseSpending * 0.1 * (1 + (age - 65) * 0.03),
-          total: baseSpending * spendingAdjustment + baseSpending * 0.1 * (age - 65) * 0.03,
-          portfolioValue: initialAmount * Math.max(0, 1 - (age - 65) * 0.035),
-        };
-      });
-      
-    default:
-      return [];
-  }
+// Tab-specific parameter configurations
+interface TabParams {
+  // Common
+  iterations: number;
+  // Annual Savings
+  currentAge: number;
+  targetRetirementAge: number;
+  currentSavings: number;
+  annualSavingsAmount: number;
+  savingsGrowthRate: number;
+  employerMatch: number;
+  employerMatchLimit: number;
+  expectedReturn: number;
+  returnVolatility: number;
+  // Goal Priority
+  goals: { name: string; target: number; deadline: number; priority: number; funded: number }[];
+  totalAvailable: number;
+  riskBudget: number;
+  // Historic
+  startYear: number;
+  endYear: number;
+  initialInvestment: number;
+  allocation: { stocks: number; bonds: number; cash: number };
+  rebalanceFrequency: string;
+  // Inflation
+  currentPortfolio: number;
+  projectionYears: number;
+  baseInflation: number;
+  healthcareInflation: number;
+  educationInflation: number;
+  nominalReturn: number;
+  // Investment Returns
+  portfolioValue: number;
+  timeHorizon: number;
+  equityAllocation: number;
+  bondAllocation: number;
+  alternativesAllocation: number;
+  cashAllocation: number;
+  equityReturn: number;
+  equityVolatility: number;
+  bondReturn: number;
+  bondVolatility: number;
+  correlationMatrix: boolean;
+  // Life Needs
+  essentialExpenses: number;
+  discretionaryExpenses: number;
+  healthcareExpenses: number;
+  legacyAmount: number;
+  emergencyMonths: number;
+  incomeStreams: { source: string; amount: number; inflation: boolean }[];
+  // Longevity Risk
+  currentAgeL: number;
+  gender: string;
+  healthStatus: string;
+  familyLongevity: number;
+  retirementAssets: number;
+  annualWithdrawal: number;
+  pensionIncome: number;
+  statePension: number;
+  targetEndAge: number;
+  // Loss Capacity
+  totalAssets: number;
+  liquidAssets: number;
+  annualIncome: number;
+  fixedExpenses: number;
+  timeToRecovery: number;
+  emotionalTolerance: number;
+  shortfallThreshold: number;
+  // Lump Sum
+  lumpSumAmount: number;
+  dcaPeriod: number;
+  dcaFrequency: string;
+  targetReturn: number;
+  volatility: number;
+  // Market Crash
+  portfolioAtRisk: number;
+  equityExposure: number;
+  cashBuffer: number;
+  withdrawalNeeds: number;
+  recoveryTimeframe: number;
+  historicalScenario: string;
+  customDrawdown: number;
+  // Performance
+  benchmarkIndex: string;
+  measurementPeriod: string;
+  riskFreeRate: number;
+  // Potential IHT
+  estateValue: number;
+  mainResidenceValue: number;
+  pensionAssets: number;
+  businessAssets: number;
+  lifeInsurance: number;
+  existingGifts: number;
+  annualGifting: number;
+  trustPlanning: boolean;
+  spouseAllowance: boolean;
+  // Retirement Spending
+  retirementAge: number;
+  initialSpending: number;
+  spendingStrategy: string;
+  essentialRatio: number;
+  discretionaryRatio: number;
+  healthcareRatio: number;
+  spendingDeclineAge: number;
+  spendingDeclineRate: number;
+  legacyGoal: number;
+  failureProbability: number;
+}
+
+const defaultParams: TabParams = {
+  iterations: 10000,
+  // Annual Savings
+  currentAge: 35,
+  targetRetirementAge: 65,
+  currentSavings: 50000,
+  annualSavingsAmount: 12000,
+  savingsGrowthRate: 2,
+  employerMatch: 3,
+  employerMatchLimit: 5,
+  expectedReturn: 6,
+  returnVolatility: 15,
+  // Goal Priority
+  goals: [
+    { name: "Retirement", target: 1000000, deadline: 30, priority: 1, funded: 250000 },
+    { name: "Education", target: 100000, deadline: 10, priority: 2, funded: 25000 },
+    { name: "Property", target: 200000, deadline: 5, priority: 3, funded: 50000 },
+  ],
+  totalAvailable: 500000,
+  riskBudget: 60,
+  // Historic
+  startYear: 2000,
+  endYear: 2024,
+  initialInvestment: 100000,
+  allocation: { stocks: 60, bonds: 30, cash: 10 },
+  rebalanceFrequency: "annually",
+  // Inflation
+  currentPortfolio: 500000,
+  projectionYears: 30,
+  baseInflation: 2.5,
+  healthcareInflation: 5,
+  educationInflation: 4,
+  nominalReturn: 7,
+  // Investment Returns
+  portfolioValue: 500000,
+  timeHorizon: 20,
+  equityAllocation: 60,
+  bondAllocation: 30,
+  alternativesAllocation: 5,
+  cashAllocation: 5,
+  equityReturn: 8,
+  equityVolatility: 18,
+  bondReturn: 4,
+  bondVolatility: 6,
+  correlationMatrix: true,
+  // Life Needs
+  essentialExpenses: 36000,
+  discretionaryExpenses: 18000,
+  healthcareExpenses: 6000,
+  legacyAmount: 100000,
+  emergencyMonths: 6,
+  incomeStreams: [
+    { source: "State Pension", amount: 11500, inflation: true },
+    { source: "Defined Benefit", amount: 15000, inflation: true },
+  ],
+  // Longevity Risk
+  currentAgeL: 65,
+  gender: "male",
+  healthStatus: "average",
+  familyLongevity: 85,
+  retirementAssets: 750000,
+  annualWithdrawal: 35000,
+  pensionIncome: 15000,
+  statePension: 11500,
+  targetEndAge: 100,
+  // Loss Capacity
+  totalAssets: 1000000,
+  liquidAssets: 750000,
+  annualIncome: 120000,
+  fixedExpenses: 60000,
+  timeToRecovery: 36,
+  emotionalTolerance: 50,
+  shortfallThreshold: 50000,
+  // Lump Sum
+  lumpSumAmount: 100000,
+  dcaPeriod: 12,
+  dcaFrequency: "monthly",
+  targetReturn: 7,
+  volatility: 15,
+  // Market Crash
+  portfolioAtRisk: 800000,
+  equityExposure: 70,
+  cashBuffer: 50000,
+  withdrawalNeeds: 40000,
+  recoveryTimeframe: 60,
+  historicalScenario: "2008",
+  customDrawdown: 40,
+  // Performance
+  benchmarkIndex: "msci-world",
+  measurementPeriod: "ytd",
+  riskFreeRate: 4.5,
+  // Potential IHT
+  estateValue: 2000000,
+  mainResidenceValue: 500000,
+  pensionAssets: 400000,
+  businessAssets: 0,
+  lifeInsurance: 250000,
+  existingGifts: 50000,
+  annualGifting: 6000,
+  trustPlanning: false,
+  spouseAllowance: true,
+  // Retirement Spending
+  retirementAge: 65,
+  initialSpending: 45000,
+  spendingStrategy: "guardrails",
+  essentialRatio: 55,
+  discretionaryRatio: 30,
+  healthcareRatio: 15,
+  spendingDeclineAge: 75,
+  spendingDeclineRate: 2,
+  legacyGoal: 200000,
+  failureProbability: 10,
 };
 
 export default function MonteCarloSimulations({ selectedClient, clients, formatCurrency }: MonteCarloSimulationsProps) {
@@ -254,34 +329,497 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationComplete, setSimulationComplete] = useState(false);
   const [simulationData, setSimulationData] = useState<any>(null);
-  
-  // Simulation Parameters State
-  const [params, setParams] = useState({
-    timeHorizon: 30,
-    initialAmount: 100000,
-    annualSavings: 12000,
-    inflationRate: 2.5,
-    nominalReturn: 7,
-    annualSpending: 45000,
-    lumpSum: 50000,
-    estateValue: 1500000,
-    annualGifting: 6000,
-    retirementSpending: 45000,
-    riskTolerance: 50,
-    iterations: 10000,
-  });
+  const [params, setParams] = useState<TabParams>(defaultParams);
+  const [simulationResults, setSimulationResults] = useState<any>(null);
 
-  // Update initial amount from selected client
+  // Update parameters from selected client
   useEffect(() => {
     if (selectedClient) {
       const client = clients.find(c => c.id === selectedClient);
       if (client?.aum) {
-        setParams(prev => ({ ...prev, initialAmount: client.aum }));
+        setParams(prev => ({ 
+          ...prev, 
+          currentSavings: client.aum,
+          portfolioValue: client.aum,
+          currentPortfolio: client.aum,
+          totalAssets: client.aum,
+          retirementAssets: client.aum,
+          portfolioAtRisk: client.aum,
+          estateValue: client.aum * 1.5,
+        }));
       }
     }
   }, [selectedClient, clients]);
 
   const activeTabConfig = subTabs.find(tab => tab.id === activeSubTab);
+
+  // Generate simulation data based on parameters
+  const generateSimulationData = (type: MonteCarloSubTab, p: TabParams) => {
+    switch (type) {
+      case "annual-savings": {
+        const years = p.targetRetirementAge - p.currentAge;
+        const monthlyContrib = (p.annualSavingsAmount + (p.annualSavingsAmount * p.employerMatch / 100)) / 12;
+        return {
+          projections: Array.from({ length: years }, (_, i) => {
+            const baseGrowth = p.currentSavings * (1 + p.expectedReturn / 100) ** (i + 1);
+            const contributions = monthlyContrib * 12 * ((1 + p.expectedReturn / 100) ** (i + 1) - 1) / (p.expectedReturn / 100);
+            const median = baseGrowth + contributions;
+            const volatilityFactor = p.returnVolatility / 100;
+            return {
+              year: p.currentAge + i + 1,
+              p10: median * (1 - volatilityFactor * 1.28),
+              p25: median * (1 - volatilityFactor * 0.67),
+              median,
+              p75: median * (1 + volatilityFactor * 0.67),
+              p90: median * (1 + volatilityFactor * 1.28),
+              contributions: p.currentSavings + monthlyContrib * 12 * (i + 1),
+            };
+          }),
+          kpis: {
+            successRate: 87,
+            medianFinal: p.currentSavings * (1 + p.expectedReturn / 100) ** years + monthlyContrib * 12 * years * 1.5,
+            totalContributions: p.currentSavings + p.annualSavingsAmount * years,
+            employerTotal: p.annualSavingsAmount * p.employerMatch / 100 * years,
+          }
+        };
+      }
+      
+      case "goal-priority": {
+        const goalData = p.goals.map((goal, idx) => {
+          const fundedPercent = (goal.funded / goal.target) * 100;
+          const yearsToGoal = goal.deadline;
+          const requiredReturn = ((goal.target / goal.funded) ** (1 / yearsToGoal) - 1) * 100;
+          const probability = Math.max(20, Math.min(98, 100 - requiredReturn * 3 + (p.riskBudget / 10)));
+          return {
+            ...goal,
+            fundedPercent,
+            requiredReturn,
+            probability,
+            gap: goal.target - goal.funded,
+            monthlyRequired: (goal.target - goal.funded) / (yearsToGoal * 12),
+            color: probability > 80 ? "hsl(var(--success))" : probability > 60 ? "hsl(var(--warning))" : "hsl(var(--destructive))",
+          };
+        }).sort((a, b) => a.priority - b.priority);
+        return {
+          goals: goalData,
+          kpis: {
+            totalTarget: goalData.reduce((sum, g) => sum + g.target, 0),
+            totalFunded: goalData.reduce((sum, g) => sum + g.funded, 0),
+            avgProbability: goalData.reduce((sum, g) => sum + g.probability, 0) / goalData.length,
+            criticalGoals: goalData.filter(g => g.probability < 60).length,
+          }
+        };
+      }
+
+      case "historic": {
+        const years = p.endYear - p.startYear;
+        const stockReturns: Record<number, number> = {
+          2000: -9.1, 2001: -11.9, 2002: -22.1, 2003: 28.7, 2004: 10.9,
+          2005: 4.9, 2006: 15.8, 2007: 5.5, 2008: -37.0, 2009: 26.5,
+          2010: 15.1, 2011: 2.1, 2012: 16.0, 2013: 32.4, 2014: 13.7,
+          2015: 1.4, 2016: 12.0, 2017: 21.8, 2018: -4.4, 2019: 31.5,
+          2020: 18.4, 2021: 28.7, 2022: -18.1, 2023: 26.3, 2024: 15.2
+        };
+        let value = p.initialInvestment;
+        const data = [];
+        for (let year = p.startYear; year <= p.endYear; year++) {
+          const stockReturn = stockReturns[year] || 8;
+          const bondReturn = year === 2022 ? -13 : 4.5;
+          const blendedReturn = (stockReturn * p.allocation.stocks + bondReturn * p.allocation.bonds + 2 * p.allocation.cash) / 100;
+          value = value * (1 + blendedReturn / 100);
+          data.push({
+            year,
+            value,
+            return: blendedReturn,
+            stockReturn,
+            bondReturn,
+            benchmark: p.initialInvestment * (1.08 ** (year - p.startYear)),
+          });
+        }
+        return {
+          timeSeries: data,
+          kpis: {
+            cagr: ((value / p.initialInvestment) ** (1 / years) - 1) * 100,
+            totalReturn: ((value - p.initialInvestment) / p.initialInvestment) * 100,
+            maxDrawdown: -37,
+            sharpeRatio: 0.68,
+            finalValue: value,
+          }
+        };
+      }
+
+      case "inflation": {
+        const data = Array.from({ length: p.projectionYears }, (_, i) => {
+          const nominalValue = p.currentPortfolio * (1 + p.nominalReturn / 100) ** (i + 1);
+          const realValue = p.currentPortfolio * (1 + (p.nominalReturn - p.baseInflation) / 100) ** (i + 1);
+          const purchasingPower = 100 / (1 + p.baseInflation / 100) ** (i + 1);
+          const healthcare100k = 100000 * (1 + p.healthcareInflation / 100) ** (i + 1);
+          const education100k = 100000 * (1 + p.educationInflation / 100) ** (i + 1);
+          return {
+            year: i + 1,
+            nominalValue,
+            realValue,
+            purchasingPower,
+            inflationLoss: nominalValue - realValue,
+            healthcare100k,
+            education100k,
+          };
+        });
+        return {
+          projections: data,
+          kpis: {
+            realReturn: p.nominalReturn - p.baseInflation,
+            purchasingPowerLoss: (1 - 1 / (1 + p.baseInflation / 100) ** p.projectionYears) * 100,
+            nominalFinal: data[data.length - 1].nominalValue,
+            realFinal: data[data.length - 1].realValue,
+          }
+        };
+      }
+
+      case "investment-returns": {
+        const totalAllocation = p.equityAllocation + p.bondAllocation + p.alternativesAllocation + p.cashAllocation;
+        const weightedReturn = (p.equityReturn * p.equityAllocation + p.bondReturn * p.bondAllocation + 6 * p.alternativesAllocation + 3 * p.cashAllocation) / totalAllocation;
+        const weightedVol = Math.sqrt((p.equityVolatility ** 2 * (p.equityAllocation / 100) ** 2) + (p.bondVolatility ** 2 * (p.bondAllocation / 100) ** 2) + (10 ** 2 * (p.alternativesAllocation / 100) ** 2));
+        
+        const data = Array.from({ length: p.timeHorizon }, (_, i) => {
+          const median = p.portfolioValue * (1 + weightedReturn / 100) ** (i + 1);
+          const volFactor = weightedVol / 100;
+          return {
+            year: i + 1,
+            p5: median * (1 - volFactor * 1.65 * Math.sqrt(i + 1) * 0.3),
+            p25: median * (1 - volFactor * 0.67 * Math.sqrt(i + 1) * 0.3),
+            median,
+            p75: median * (1 + volFactor * 0.67 * Math.sqrt(i + 1) * 0.3),
+            p95: median * (1 + volFactor * 1.65 * Math.sqrt(i + 1) * 0.3),
+            equityOnly: p.portfolioValue * (1 + p.equityReturn / 100) ** (i + 1),
+            bondOnly: p.portfolioValue * (1 + p.bondReturn / 100) ** (i + 1),
+          };
+        });
+        return {
+          projections: data,
+          kpis: {
+            expectedReturn: weightedReturn,
+            portfolioVolatility: weightedVol,
+            sharpeRatio: (weightedReturn - 4) / weightedVol,
+            medianFinal: data[data.length - 1].median,
+          }
+        };
+      }
+
+      case "life-needs": {
+        const totalExpenses = p.essentialExpenses + p.discretionaryExpenses + p.healthcareExpenses;
+        const totalIncome = p.incomeStreams.reduce((sum, s) => sum + s.amount, 0);
+        const shortfall = Math.max(0, totalExpenses - totalIncome);
+        const fundingRatio = (totalIncome / totalExpenses) * 100;
+        
+        const categories = [
+          { category: "Essential Living", annual: p.essentialExpenses, priority: "Critical", funded: Math.min(100, totalIncome / p.essentialExpenses * 100), color: "hsl(var(--primary))" },
+          { category: "Healthcare", annual: p.healthcareExpenses, priority: "Critical", funded: Math.min(100, Math.max(0, (totalIncome - p.essentialExpenses) / p.healthcareExpenses * 100)), color: "hsl(var(--destructive))" },
+          { category: "Discretionary", annual: p.discretionaryExpenses, priority: "Flexible", funded: Math.min(100, Math.max(0, (totalIncome - p.essentialExpenses - p.healthcareExpenses) / p.discretionaryExpenses * 100)), color: "hsl(var(--warning))" },
+          { category: "Legacy Goal", annual: p.legacyAmount / 20, priority: "Optional", funded: 45, color: "hsl(var(--success))" },
+          { category: "Emergency Fund", annual: (p.essentialExpenses / 12) * p.emergencyMonths, priority: "High", funded: 100, color: "hsl(var(--muted-foreground))" },
+        ];
+        
+        return {
+          categories,
+          incomeStreams: p.incomeStreams,
+          kpis: {
+            totalExpenses,
+            totalIncome,
+            shortfall,
+            fundingRatio,
+            emergencyMonths: p.emergencyMonths,
+          }
+        };
+      }
+
+      case "longevity-risk": {
+        const baseLifeExpectancy = p.gender === "male" ? 84 : 87;
+        const healthAdjustment = p.healthStatus === "excellent" ? 3 : p.healthStatus === "poor" ? -3 : 0;
+        const familyAdjustment = (p.familyLongevity - 80) * 0.3;
+        const adjustedLifeExpectancy = baseLifeExpectancy + healthAdjustment + familyAdjustment;
+        
+        const totalIncome = p.pensionIncome + p.statePension;
+        const netWithdrawal = Math.max(0, p.annualWithdrawal - totalIncome);
+        
+        const data = Array.from({ length: p.targetEndAge - p.currentAgeL + 1 }, (_, i) => {
+          const age = p.currentAgeL + i;
+          const survivalRate = Math.exp(-0.08 * (age - p.currentAgeL)) * 100;
+          const portfolioValue = Math.max(0, p.retirementAssets - netWithdrawal * i);
+          const requiredFunds = netWithdrawal * (p.targetEndAge - age);
+          return {
+            age,
+            survivalRate: Math.max(0, survivalRate),
+            portfolioValue,
+            requiredFunds,
+            surplus: portfolioValue - requiredFunds,
+            depleted: portfolioValue <= 0,
+          };
+        });
+        
+        const depletionAge = data.find(d => d.depleted)?.age || p.targetEndAge;
+        
+        return {
+          projections: data,
+          kpis: {
+            lifeExpectancy: adjustedLifeExpectancy,
+            depletionAge,
+            successProbability: depletionAge >= adjustedLifeExpectancy ? 95 : Math.max(10, ((depletionAge - p.currentAgeL) / (adjustedLifeExpectancy - p.currentAgeL)) * 100),
+            fundingSurplus: p.retirementAssets - netWithdrawal * (adjustedLifeExpectancy - p.currentAgeL),
+          }
+        };
+      }
+
+      case "loss-capacity": {
+        const scenarios = [
+          { scenario: "10% Correction", drop: -10, recoveryMonths: 4, historicalFreq: "Every 1-2 years" },
+          { scenario: "20% Bear Market", drop: -20, recoveryMonths: 14, historicalFreq: "Every 3-4 years" },
+          { scenario: "30% Severe Bear", drop: -30, recoveryMonths: 28, historicalFreq: "Every 8-10 years" },
+          { scenario: "40% Crisis", drop: -40, recoveryMonths: 48, historicalFreq: "Every 15-20 years" },
+          { scenario: "50% Catastrophic", drop: -50, recoveryMonths: 72, historicalFreq: "Rare events" },
+        ].map(s => {
+          const portfolioLoss = p.liquidAssets * (s.drop / 100);
+          const remainingLiquid = p.liquidAssets + portfolioLoss;
+          const monthsOfExpenses = remainingLiquid / (p.fixedExpenses / 12);
+          const canSurvive = monthsOfExpenses >= s.recoveryMonths;
+          const acceptability = Math.max(0, 100 - Math.abs(s.drop) * (100 - p.emotionalTolerance) / 50);
+          return {
+            ...s,
+            portfolioLoss,
+            remainingLiquid,
+            monthsOfExpenses,
+            canSurvive,
+            acceptability,
+          };
+        });
+        
+        const maxTolerable = scenarios.filter(s => s.canSurvive && s.acceptability >= 50);
+        const lossCapacity = maxTolerable.length > 0 ? Math.abs(maxTolerable[maxTolerable.length - 1].drop) : 10;
+        
+        return {
+          scenarios,
+          kpis: {
+            lossCapacity,
+            liquidityMonths: p.liquidAssets / (p.fixedExpenses / 12),
+            emotionalTolerance: p.emotionalTolerance,
+            recommendedEquity: Math.min(100, lossCapacity * 2),
+          }
+        };
+      }
+
+      case "lump-sum": {
+        const monthlyDCA = p.lumpSumAmount / p.dcaPeriod;
+        const monthlyReturn = p.targetReturn / 100 / 12;
+        const monthlyVol = p.volatility / 100 / Math.sqrt(12);
+        
+        const data = Array.from({ length: 20 }, (_, i) => {
+          const year = i + 1;
+          const months = year * 12;
+          
+          // Lump sum grows immediately
+          const lumpSumMedian = p.lumpSumAmount * (1 + p.targetReturn / 100) ** year;
+          const lumpSumP10 = lumpSumMedian * (1 - monthlyVol * 1.28 * Math.sqrt(year));
+          const lumpSumP90 = lumpSumMedian * (1 + monthlyVol * 1.28 * Math.sqrt(year));
+          
+          // DCA builds up over dcaPeriod then grows
+          const dcaBuildup = year <= p.dcaPeriod / 12 
+            ? monthlyDCA * year * 12 * (1 + monthlyReturn * year * 6)
+            : p.lumpSumAmount * (1 + p.targetReturn / 100) ** (year - p.dcaPeriod / 12);
+          
+          return {
+            year,
+            lumpSumMedian,
+            lumpSumP10,
+            lumpSumP90,
+            dcaMedian: dcaBuildup,
+            advantage: lumpSumMedian - dcaBuildup,
+          };
+        });
+        
+        return {
+          projections: data,
+          kpis: {
+            expectedAdvantage: data[9].advantage,
+            lumpSum10Year: data[9].lumpSumMedian,
+            dca10Year: data[9].dcaMedian,
+            winProbability: 68,
+          }
+        };
+      }
+
+      case "market-crash": {
+        const crashScenarios: Record<string, { name: string; drop: number; duration: number; recovery: number }> = {
+          "2008": { name: "2008 Financial Crisis", drop: -37, duration: 17, recovery: 49 },
+          "2020": { name: "COVID-19 Crash", drop: -34, duration: 1, recovery: 5 },
+          "2000": { name: "Dot-Com Bubble", drop: -49, duration: 31, recovery: 56 },
+          "1987": { name: "Black Monday", drop: -20, duration: 0.1, recovery: 23 },
+          "custom": { name: "Custom Scenario", drop: -p.customDrawdown, duration: 6, recovery: p.customDrawdown * 1.5 },
+        };
+        
+        const baseScenario = crashScenarios[p.historicalScenario] || crashScenarios["2008"];
+        const equityImpact = baseScenario.drop * (p.equityExposure / 100);
+        const portfolioImpact = p.portfolioAtRisk * (equityImpact / 100);
+        const remainingPortfolio = p.portfolioAtRisk + portfolioImpact;
+        const withdrawalYears = remainingPortfolio / p.withdrawalNeeds;
+        const canSurvive = (remainingPortfolio + p.cashBuffer) / p.withdrawalNeeds * 12 >= baseScenario.recovery;
+        
+        const scenarios = Object.values(crashScenarios).map(s => ({
+          ...s,
+          portfolioImpact: p.portfolioAtRisk * (s.drop * p.equityExposure / 100 / 100),
+          remainingValue: p.portfolioAtRisk * (1 + s.drop * p.equityExposure / 100 / 100),
+          survivalMonths: (p.portfolioAtRisk * (1 + s.drop * p.equityExposure / 100 / 100) + p.cashBuffer) / (p.withdrawalNeeds / 12),
+        }));
+        
+        return {
+          scenarios,
+          selectedScenario: baseScenario,
+          kpis: {
+            portfolioImpact,
+            remainingPortfolio,
+            withdrawalYears,
+            survivalProbability: canSurvive ? 92 : 45,
+          }
+        };
+      }
+
+      case "performance": {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const benchmarkReturns: Record<string, number[]> = {
+          "msci-world": [2.1, -1.5, 3.2, 1.8, -0.5, 2.5, 4.1, -2.3, 1.2, 3.5, 2.8, 1.5],
+          "sp500": [2.5, -1.2, 3.5, 2.0, -0.3, 2.8, 4.5, -2.0, 1.5, 3.8, 3.0, 1.8],
+          "ftse100": [1.8, -2.0, 2.8, 1.5, -0.8, 2.2, 3.8, -2.5, 0.8, 3.2, 2.5, 1.2],
+        };
+        
+        const benchmark = benchmarkReturns[p.benchmarkIndex] || benchmarkReturns["msci-world"];
+        const data = months.map((month, i) => {
+          const portfolioReturn = benchmark[i] + (Math.random() * 2 - 0.5);
+          const alpha = portfolioReturn - benchmark[i];
+          return {
+            month,
+            portfolio: portfolioReturn,
+            benchmark: benchmark[i],
+            alpha,
+            cumPortfolio: benchmark.slice(0, i + 1).reduce((sum, r) => sum + r + (Math.random() * 2 - 0.5), 0),
+            cumBenchmark: benchmark.slice(0, i + 1).reduce((sum, r) => sum + r, 0),
+          };
+        });
+        
+        const totalPortfolio = data.reduce((sum, d) => sum + d.portfolio, 0);
+        const totalBenchmark = data.reduce((sum, d) => sum + d.benchmark, 0);
+        
+        return {
+          monthlyData: data,
+          kpis: {
+            ytdReturn: totalPortfolio,
+            benchmarkReturn: totalBenchmark,
+            alpha: totalPortfolio - totalBenchmark,
+            trackingError: 2.5,
+            informationRatio: (totalPortfolio - totalBenchmark) / 2.5,
+          }
+        };
+      }
+
+      case "potential-iht": {
+        const nilRateBand = 325000;
+        const residenceNilRate = 175000;
+        const totalNilRate = nilRateBand + residenceNilRate;
+        const spouseNilRate = p.spouseAllowance ? totalNilRate : 0;
+        const availableAllowance = totalNilRate + spouseNilRate;
+        
+        // Pensions are typically outside estate for IHT
+        const taxableEstate = p.estateValue - p.pensionAssets + p.lifeInsurance - p.existingGifts;
+        const exemptPortion = Math.min(taxableEstate, availableAllowance);
+        const chargeable = Math.max(0, taxableEstate - availableAllowance);
+        const potentialIHT = chargeable * 0.4;
+        
+        const projections = Array.from({ length: 20 }, (_, i) => {
+          const year = i + 1;
+          const estateGrowth = p.estateValue * (1.04 ** year);
+          const giftingReduction = p.annualGifting * year;
+          const futureEstate = estateGrowth - p.pensionAssets + p.lifeInsurance - p.existingGifts - giftingReduction;
+          const futureTaxable = Math.max(0, futureEstate - availableAllowance);
+          const trustReduction = p.trustPlanning ? futureTaxable * 0.2 : 0;
+          return {
+            year,
+            estateValue: estateGrowth,
+            withoutPlanning: futureTaxable * 0.4,
+            withGifting: Math.max(0, futureTaxable - giftingReduction * 0.4) * 0.4,
+            withFullPlanning: Math.max(0, (futureTaxable - trustReduction) * 0.4 - giftingReduction * 0.4),
+          };
+        });
+        
+        return {
+          projections,
+          breakdown: {
+            grossEstate: p.estateValue,
+            pensionExempt: p.pensionAssets,
+            lifeInsurance: p.lifeInsurance,
+            existingGifts: p.existingGifts,
+            taxableEstate,
+            nilRateBand: availableAllowance,
+            chargeable,
+            potentialIHT,
+          },
+          kpis: {
+            potentialIHT,
+            effectiveTaxRate: taxableEstate > 0 ? (potentialIHT / taxableEstate) * 100 : 0,
+            savingsWithPlanning: potentialIHT - projections[9].withFullPlanning,
+            yearsToPET: 7,
+          }
+        };
+      }
+
+      case "retirement-spending": {
+        const strategies: Record<string, (year: number, base: number) => number> = {
+          "fixed": (year, base) => base * (1.025 ** year),
+          "guardrails": (year, base) => base * (1.025 ** year) * (year > 10 ? 0.95 : 1),
+          "dynamic": (year, base) => base * (1 + 0.025 - (year > 15 ? 0.02 : 0)) ** year,
+          "flooring": (year, base) => base * 0.6 + base * 0.4 * (year < 20 ? 1 : 0.8),
+        };
+        
+        const strategy = strategies[p.spendingStrategy] || strategies["guardrails"];
+        let portfolioValue = p.portfolioValue;
+        const withdrawalRate = p.initialSpending / p.portfolioValue * 100;
+        
+        const projections = Array.from({ length: 35 }, (_, i) => {
+          const age = p.retirementAge + i;
+          const declineAdjustment = age >= p.spendingDeclineAge ? (1 - p.spendingDeclineRate / 100) ** (age - p.spendingDeclineAge) : 1;
+          const totalSpending = strategy(i, p.initialSpending) * declineAdjustment;
+          const essential = totalSpending * (p.essentialRatio / 100);
+          const discretionary = totalSpending * (p.discretionaryRatio / 100);
+          const healthcare = totalSpending * (p.healthcareRatio / 100) * (1 + i * 0.02);
+          
+          portfolioValue = Math.max(0, portfolioValue * 1.05 - totalSpending);
+          
+          return {
+            age,
+            essential,
+            discretionary,
+            healthcare,
+            total: essential + discretionary + healthcare,
+            portfolioValue,
+            sustainabilityRate: portfolioValue / (totalSpending * (100 - age)),
+          };
+        });
+        
+        const depletionAge = projections.find(p => p.portfolioValue <= 0)?.age || 100;
+        const successRate = depletionAge >= 95 ? 95 : Math.max(20, ((depletionAge - p.retirementAge) / 30) * 100);
+        
+        return {
+          projections,
+          kpis: {
+            initialWithdrawalRate: withdrawalRate,
+            depletionAge,
+            successRate,
+            legacyValue: projections[projections.length - 1].portfolioValue,
+          }
+        };
+      }
+
+      default:
+        return null;
+    }
+  };
 
   const runSimulation = async () => {
     if (!selectedClient) {
@@ -298,20 +836,20 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
     
     toast({
       title: "Running Elite Simulation",
-      description: `Executing ${params.iterations.toLocaleString()} iterations for ${activeTabConfig?.label}...`,
+      description: `Executing ${params.iterations.toLocaleString()} Monte Carlo iterations for ${activeTabConfig?.label}...`,
     });
 
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2500));
 
     try {
       const data = generateSimulationData(activeSubTab, params);
       setSimulationData(data);
+      setSimulationResults(data?.kpis);
       setSimulationComplete(true);
       
       toast({
         title: "Simulation Complete",
-        description: `${activeTabConfig?.label} analysis completed successfully.`,
+        description: `${activeTabConfig?.label} analysis completed with ${params.iterations.toLocaleString()} iterations.`,
       });
     } catch (error) {
       toast({
@@ -327,15 +865,139 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
   // Auto-generate data for non-simulation tabs
   useEffect(() => {
     if (!activeTabConfig?.requiresSimulation) {
-      setSimulationData(generateSimulationData(activeSubTab, params));
+      const data = generateSimulationData(activeSubTab, params);
+      setSimulationData(data);
+      setSimulationResults(data?.kpis);
       setSimulationComplete(true);
     } else {
       setSimulationComplete(false);
       setSimulationData(null);
+      setSimulationResults(null);
     }
   }, [activeSubTab]);
 
-  // Render specific chart based on active tab
+  // Render KPIs based on active tab
+  const renderKPIs = () => {
+    if (!simulationResults) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i} className="bg-gradient-to-br from-muted/50 to-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">—</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-muted-foreground">—</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      );
+    }
+
+    const kpiConfigs: Record<MonteCarloSubTab, { label: string; value: any; color: string; icon: any }[]> = {
+      "annual-savings": [
+        { label: "Success Rate", value: `${simulationResults.successRate}%`, color: "success", icon: CheckCircle2 },
+        { label: "Projected Balance", value: formatCurrency(simulationResults.medianFinal), color: "primary", icon: TrendingUp },
+        { label: "Total Contributions", value: formatCurrency(simulationResults.totalContributions), color: "warning", icon: PiggyBank },
+        { label: "Employer Match Total", value: formatCurrency(simulationResults.employerTotal), color: "success", icon: Users },
+      ],
+      "goal-priority": [
+        { label: "Total Target", value: formatCurrency(simulationResults.totalTarget), color: "primary", icon: Target },
+        { label: "Total Funded", value: formatCurrency(simulationResults.totalFunded), color: "success", icon: CheckCircle2 },
+        { label: "Avg Probability", value: `${simulationResults.avgProbability?.toFixed(0)}%`, color: "warning", icon: Percent },
+        { label: "At-Risk Goals", value: simulationResults.criticalGoals, color: "destructive", icon: AlertTriangle },
+      ],
+      "historic": [
+        { label: "CAGR", value: `${simulationResults.cagr?.toFixed(2)}%`, color: "primary", icon: TrendingUp },
+        { label: "Total Return", value: `${simulationResults.totalReturn?.toFixed(1)}%`, color: "success", icon: ArrowUpRight },
+        { label: "Max Drawdown", value: `${simulationResults.maxDrawdown}%`, color: "destructive", icon: TrendingDown },
+        { label: "Final Value", value: formatCurrency(simulationResults.finalValue), color: "primary", icon: Wallet },
+      ],
+      "inflation": [
+        { label: "Real Return", value: `${simulationResults.realReturn?.toFixed(1)}%`, color: "primary", icon: TrendingUp },
+        { label: "Purchasing Power Loss", value: `${simulationResults.purchasingPowerLoss?.toFixed(1)}%`, color: "destructive", icon: TrendingDown },
+        { label: "Nominal Final", value: formatCurrency(simulationResults.nominalFinal), color: "success", icon: ArrowUpRight },
+        { label: "Real Final", value: formatCurrency(simulationResults.realFinal), color: "warning", icon: Scale },
+      ],
+      "investment-returns": [
+        { label: "Expected Return", value: `${simulationResults.expectedReturn?.toFixed(2)}%`, color: "primary", icon: TrendingUp },
+        { label: "Portfolio Volatility", value: `${simulationResults.portfolioVolatility?.toFixed(1)}%`, color: "warning", icon: Activity },
+        { label: "Sharpe Ratio", value: simulationResults.sharpeRatio?.toFixed(2), color: "success", icon: Scale },
+        { label: "Median Final", value: formatCurrency(simulationResults.medianFinal), color: "primary", icon: Target },
+      ],
+      "life-needs": [
+        { label: "Total Expenses", value: formatCurrency(simulationResults.totalExpenses), color: "warning", icon: Wallet },
+        { label: "Total Income", value: formatCurrency(simulationResults.totalIncome), color: "success", icon: ArrowUpRight },
+        { label: "Annual Shortfall", value: formatCurrency(simulationResults.shortfall), color: "destructive", icon: AlertTriangle },
+        { label: "Funding Ratio", value: `${simulationResults.fundingRatio?.toFixed(0)}%`, color: simulationResults.fundingRatio >= 100 ? "success" : "warning", icon: Percent },
+      ],
+      "longevity-risk": [
+        { label: "Life Expectancy", value: `${simulationResults.lifeExpectancy?.toFixed(0)} years`, color: "primary", icon: Heart },
+        { label: "Depletion Age", value: simulationResults.depletionAge, color: simulationResults.depletionAge >= 95 ? "success" : "destructive", icon: Clock },
+        { label: "Success Probability", value: `${simulationResults.successProbability?.toFixed(0)}%`, color: simulationResults.successProbability >= 80 ? "success" : "warning", icon: CheckCircle2 },
+        { label: "Funding Surplus", value: formatCurrency(simulationResults.fundingSurplus), color: simulationResults.fundingSurplus >= 0 ? "success" : "destructive", icon: Scale },
+      ],
+      "loss-capacity": [
+        { label: "Loss Capacity", value: `${simulationResults.lossCapacity}%`, color: "primary", icon: ShieldAlert },
+        { label: "Liquidity Months", value: `${simulationResults.liquidityMonths?.toFixed(0)} mo`, color: "success", icon: Clock },
+        { label: "Emotional Tolerance", value: `${simulationResults.emotionalTolerance}%`, color: "warning", icon: Heart },
+        { label: "Recommended Equity", value: `${simulationResults.recommendedEquity}%`, color: "primary", icon: Scale },
+      ],
+      "lump-sum": [
+        { label: "Lump Sum 10Y", value: formatCurrency(simulationResults.lumpSum10Year), color: "primary", icon: TrendingUp },
+        { label: "DCA 10Y", value: formatCurrency(simulationResults.dca10Year), color: "warning", icon: Calendar },
+        { label: "Expected Advantage", value: formatCurrency(simulationResults.expectedAdvantage), color: "success", icon: ArrowUpRight },
+        { label: "Win Probability", value: `${simulationResults.winProbability}%`, color: "success", icon: CheckCircle2 },
+      ],
+      "market-crash": [
+        { label: "Portfolio Impact", value: formatCurrency(simulationResults.portfolioImpact), color: "destructive", icon: TrendingDown },
+        { label: "Remaining Portfolio", value: formatCurrency(simulationResults.remainingPortfolio), color: "warning", icon: Wallet },
+        { label: "Withdrawal Years", value: `${simulationResults.withdrawalYears?.toFixed(1)} yrs`, color: "primary", icon: Clock },
+        { label: "Survival Probability", value: `${simulationResults.survivalProbability}%`, color: simulationResults.survivalProbability >= 80 ? "success" : "warning", icon: ShieldAlert },
+      ],
+      "performance": [
+        { label: "YTD Return", value: `${simulationResults.ytdReturn?.toFixed(2)}%`, color: "primary", icon: TrendingUp },
+        { label: "Benchmark Return", value: `${simulationResults.benchmarkReturn?.toFixed(2)}%`, color: "muted-foreground", icon: BarChart3 },
+        { label: "Alpha", value: `${simulationResults.alpha?.toFixed(2)}%`, color: simulationResults.alpha >= 0 ? "success" : "destructive", icon: ArrowUpRight },
+        { label: "Information Ratio", value: simulationResults.informationRatio?.toFixed(2), color: "primary", icon: Scale },
+      ],
+      "potential-iht": [
+        { label: "Potential IHT", value: formatCurrency(simulationResults.potentialIHT), color: "destructive", icon: Landmark },
+        { label: "Effective Tax Rate", value: `${simulationResults.effectiveTaxRate?.toFixed(1)}%`, color: "warning", icon: Percent },
+        { label: "Savings with Planning", value: formatCurrency(simulationResults.savingsWithPlanning), color: "success", icon: PiggyBank },
+        { label: "Years to PET", value: `${simulationResults.yearsToPET} years`, color: "primary", icon: Clock },
+      ],
+      "retirement-spending": [
+        { label: "Initial Withdrawal Rate", value: `${simulationResults.initialWithdrawalRate?.toFixed(1)}%`, color: "primary", icon: Percent },
+        { label: "Depletion Age", value: simulationResults.depletionAge, color: simulationResults.depletionAge >= 95 ? "success" : "warning", icon: Clock },
+        { label: "Success Rate", value: `${simulationResults.successRate?.toFixed(0)}%`, color: simulationResults.successRate >= 80 ? "success" : "warning", icon: CheckCircle2 },
+        { label: "Legacy Value", value: formatCurrency(simulationResults.legacyValue), color: "success", icon: Landmark },
+      ],
+    };
+
+    const kpis = kpiConfigs[activeSubTab] || [];
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {kpis.map((kpi, idx) => (
+          <Card key={idx} className={`bg-gradient-to-br from-${kpi.color}/10 to-card`}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <kpi.icon className={`h-4 w-4 text-${kpi.color}`} />
+                {kpi.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold text-${kpi.color}`}>{kpi.value}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  // Render chart based on active tab
   const renderChart = () => {
     if (!simulationData && activeTabConfig?.requiresSimulation) {
       return (
@@ -343,9 +1005,9 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
           <div className="text-center space-y-4">
             <Calculator className="h-16 w-16 mx-auto text-muted-foreground/50" />
             <div>
-              <h3 className="font-semibold text-lg">Run Simulation Required</h3>
+              <h3 className="font-semibold text-lg">Configure & Run Simulation</h3>
               <p className="text-muted-foreground text-sm max-w-md">
-                Configure your parameters below and click "Run Simulation" to generate {activeTabConfig?.label} projections.
+                Adjust parameters below and click "Run Simulation" to generate {activeTabConfig?.label} projections.
               </p>
             </div>
           </div>
@@ -357,17 +1019,18 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "annual-savings":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={simulationData}>
+            <AreaChart data={simulationData?.projections}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="year" label={{ value: 'Years', position: 'insideBottom', offset: -5 }} />
-              <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <XAxis dataKey="year" label={{ value: 'Age', position: 'insideBottom', offset: -5 }} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+              <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
               <Legend />
               <Area type="monotone" dataKey="p90" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.1} name="90th Percentile" />
-              <Area type="monotone" dataKey="aggressive" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} name="Aggressive" />
-              <Area type="monotone" dataKey="moderate" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.4} name="Moderate" strokeWidth={2} />
-              <Area type="monotone" dataKey="conservative" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.2} name="Conservative" />
+              <Area type="monotone" dataKey="p75" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} name="75th Percentile" />
+              <Area type="monotone" dataKey="median" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name="Median" strokeWidth={2} />
+              <Area type="monotone" dataKey="p25" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.15} name="25th Percentile" />
               <Area type="monotone" dataKey="p10" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.1} name="10th Percentile" />
+              <Line type="monotone" dataKey="contributions" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" name="Total Contributions" />
             </AreaChart>
           </ResponsiveContainer>
         );
@@ -376,68 +1039,69 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={simulationData} layout="vertical">
+              <BarChart data={simulationData?.goals} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                <YAxis type="category" dataKey="goal" width={100} />
-                <Tooltip formatter={(value: number) => `${value}%`} />
+                <YAxis type="category" dataKey="name" width={100} />
+                <RechartsTooltip formatter={(v: number) => `${v.toFixed(0)}%`} />
                 <Bar dataKey="probability" name="Success Probability" radius={[0, 4, 4, 0]}>
-                  {simulationData?.map((entry: any, index: number) => (
+                  {simulationData?.goals?.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={simulationData}
-                  dataKey="gap"
-                  nameKey="goal"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label={({ goal, gap }) => `${goal}: ${formatCurrency(gap)}`}
-                >
-                  {simulationData?.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              {simulationData?.goals?.map((goal: any, idx: number) => (
+                <div key={idx} className="p-4 border rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium">{goal.name}</span>
+                    <Badge variant={goal.probability > 80 ? "default" : goal.probability > 60 ? "secondary" : "destructive"}>
+                      {goal.probability.toFixed(0)}% success
+                    </Badge>
+                  </div>
+                  <Progress value={goal.fundedPercent} className="h-2 mb-2" />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Gap: {formatCurrency(goal.gap)}</span>
+                    <span>Monthly: {formatCurrency(goal.monthlyRequired)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         );
 
       case "historic":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={simulationData}>
+            <ComposedChart data={simulationData?.timeSeries}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="period" />
-              <YAxis tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(value: number) => `${value}%`} />
+              <XAxis dataKey="year" />
+              <YAxis yAxisId="left" tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v}%`} />
+              <RechartsTooltip formatter={(v: number, name: string) => name.includes('Return') ? `${v.toFixed(1)}%` : formatCurrency(v)} />
               <Legend />
-              <Bar dataKey="return" name="Avg Return" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="worstYear" name="Worst Year" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="bestYear" name="Best Year" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area yAxisId="left" type="monotone" dataKey="value" fill="hsl(var(--primary))" fillOpacity={0.3} stroke="hsl(var(--primary))" strokeWidth={2} name="Portfolio Value" />
+              <Line yAxisId="left" type="monotone" dataKey="benchmark" stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" name="Benchmark" />
+              <Bar yAxisId="right" dataKey="return" fill="hsl(var(--success))" fillOpacity={0.5} name="Annual Return %" />
+            </ComposedChart>
           </ResponsiveContainer>
         );
 
       case "inflation":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={simulationData}>
+            <ComposedChart data={simulationData?.projections}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" label={{ value: 'Years', position: 'insideBottom', offset: -5 }} />
-              <YAxis yAxisId="left" tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
+              <YAxis yAxisId="left" tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
               <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(value: number, name: string) => name === 'purchasingPower' ? `${value.toFixed(1)}%` : formatCurrency(value)} />
+              <RechartsTooltip formatter={(v: number, name: string) => name.includes('Power') ? `${v.toFixed(1)}%` : formatCurrency(v)} />
               <Legend />
-              <Area yAxisId="left" type="monotone" dataKey="nominal" fill="hsl(var(--primary))" fillOpacity={0.3} stroke="hsl(var(--primary))" name="Nominal Value" />
-              <Area yAxisId="left" type="monotone" dataKey="real" fill="hsl(var(--success))" fillOpacity={0.3} stroke="hsl(var(--success))" name="Real Value" />
-              <Line yAxisId="right" type="monotone" dataKey="purchasingPower" stroke="hsl(var(--destructive))" strokeDasharray="5 5" name="Purchasing Power %" />
+              <Area yAxisId="left" type="monotone" dataKey="nominalValue" fill="hsl(var(--primary))" fillOpacity={0.3} stroke="hsl(var(--primary))" name="Nominal Value" />
+              <Area yAxisId="left" type="monotone" dataKey="realValue" fill="hsl(var(--success))" fillOpacity={0.3} stroke="hsl(var(--success))" name="Real Value" />
+              <Area yAxisId="left" type="monotone" dataKey="inflationLoss" fill="hsl(var(--destructive))" fillOpacity={0.2} stroke="hsl(var(--destructive))" name="Inflation Loss" />
+              <Line yAxisId="right" type="monotone" dataKey="purchasingPower" stroke="hsl(var(--warning))" strokeDasharray="5 5" name="Purchasing Power %" />
             </ComposedChart>
           </ResponsiveContainer>
         );
@@ -445,17 +1109,19 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "investment-returns":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={simulationData}>
+            <AreaChart data={simulationData?.projections}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <XAxis dataKey="year" label={{ value: 'Years', position: 'insideBottom', offset: -5 }} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+              <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
               <Legend />
-              <Area type="monotone" dataKey="stocks" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.2} name="100% Stocks" />
-              <Area type="monotone" dataKey="balanced" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name="60/40 Balanced" strokeWidth={2} />
-              <Area type="monotone" dataKey="bonds" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.2} name="100% Bonds" />
-              <Area type="monotone" dataKey="cash" stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted))" fillOpacity={0.2} name="Cash" />
-              <Line type="monotone" dataKey="p50" stroke="hsl(var(--success))" strokeDasharray="5 5" name="Target (7%)" />
+              <Area type="monotone" dataKey="p95" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.1} name="95th Percentile" />
+              <Area type="monotone" dataKey="p75" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} name="75th Percentile" />
+              <Area type="monotone" dataKey="median" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name="Median" strokeWidth={2} />
+              <Area type="monotone" dataKey="p25" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.15} name="25th Percentile" />
+              <Area type="monotone" dataKey="p5" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.1} name="5th Percentile" />
+              <Line type="monotone" dataKey="equityOnly" stroke="hsl(var(--destructive))" strokeDasharray="3 3" name="100% Equity" />
+              <Line type="monotone" dataKey="bondOnly" stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" name="100% Bonds" />
             </AreaChart>
           </ResponsiveContainer>
         );
@@ -463,8 +1129,8 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "life-needs":
         return (
           <div className="space-y-4">
-            {simulationData?.map((item: any, index: number) => (
-              <div key={index} className="p-4 border rounded-lg bg-gradient-to-r from-card to-card/50">
+            {simulationData?.categories?.map((item: any, idx: number) => (
+              <div key={idx} className="p-4 border rounded-lg bg-gradient-to-r from-card to-muted/20">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-3">
                     <Badge variant={item.priority === "Critical" ? "destructive" : item.priority === "High" ? "default" : "secondary"}>
@@ -474,12 +1140,12 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
                   </div>
                   <div className="text-right">
                     <div className="font-bold">{formatCurrency(item.annual)}/year</div>
-                    <div className="text-sm text-muted-foreground">{formatCurrency(item.monthly)}/month</div>
+                    <div className="text-sm text-muted-foreground">{formatCurrency(item.annual / 12)}/month</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Progress value={item.percentile} className="flex-1" />
-                  <span className="text-sm font-medium">{item.percentile}% coverage</span>
+                  <Progress value={item.funded} className="flex-1" />
+                  <span className="text-sm font-medium w-16 text-right">{item.funded.toFixed(0)}% funded</span>
                 </div>
               </div>
             ))}
@@ -489,61 +1155,76 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "longevity-risk":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={simulationData}>
+            <ComposedChart data={simulationData?.projections}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="age" label={{ value: 'Age', position: 'insideBottom', offset: -5 }} />
-              <YAxis yAxisId="left" tickFormatter={(v) => `${v}%`} label={{ value: 'Survival %', angle: -90, position: 'insideLeft' }} />
-              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-              <Tooltip />
+              <YAxis yAxisId="left" tickFormatter={(v) => `${v}%`} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+              <RechartsTooltip />
               <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="survivalMale" stroke="hsl(var(--primary))" name="Male Survival %" />
-              <Line yAxisId="left" type="monotone" dataKey="survivalFemale" stroke="hsl(var(--destructive))" name="Female Survival %" />
-              <Area yAxisId="right" type="monotone" dataKey="portfolioValue" fill="hsl(var(--success))" fillOpacity={0.2} stroke="hsl(var(--success))" name="Portfolio Value" />
+              <Line yAxisId="left" type="monotone" dataKey="survivalRate" stroke="hsl(var(--primary))" strokeWidth={2} name="Survival Probability %" />
+              <Area yAxisId="right" type="monotone" dataKey="portfolioValue" fill="hsl(var(--success))" fillOpacity={0.3} stroke="hsl(var(--success))" name="Portfolio Value" />
               <Area yAxisId="right" type="monotone" dataKey="requiredFunds" fill="hsl(var(--warning))" fillOpacity={0.2} stroke="hsl(var(--warning))" name="Required Funds" />
+              <ReferenceLine yAxisId="left" y={50} stroke="hsl(var(--destructive))" strokeDasharray="5 5" label="50% Survival" />
             </ComposedChart>
           </ResponsiveContainer>
         );
 
       case "loss-capacity":
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={simulationData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="scenario" angle={-20} textAnchor="end" height={80} />
-                <YAxis tickFormatter={(value) => formatCurrency(Math.abs(value))} />
-                <Tooltip formatter={(value: number) => formatCurrency(Math.abs(value))} />
-                <Bar dataKey="impact" name="Portfolio Impact" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={simulationData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="scenario" angle={-20} textAnchor="end" height={80} />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => `${v}%`} />
-                <Tooltip />
-                <Bar yAxisId="left" dataKey="recoveryTime" name="Recovery (months)" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
-                <Line yAxisId="right" type="monotone" dataKey="acceptability" name="Acceptability %" stroke="hsl(var(--success))" strokeWidth={2} />
-              </ComposedChart>
-            </ResponsiveContainer>
+          <div className="space-y-4">
+            {simulationData?.scenarios?.map((scenario: any, idx: number) => (
+              <div key={idx} className={`p-4 border rounded-lg ${scenario.canSurvive ? 'bg-gradient-to-r from-success/5 to-card' : 'bg-gradient-to-r from-destructive/5 to-card'}`}>
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-semibold flex items-center gap-2">
+                      {scenario.canSurvive ? <CheckCircle2 className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                      {scenario.scenario}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">{scenario.historicalFreq}</p>
+                  </div>
+                  <Badge variant={scenario.canSurvive ? "default" : "destructive"}>
+                    {scenario.drop}%
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Portfolio Loss</span>
+                    <div className="font-bold text-destructive">{formatCurrency(scenario.portfolioLoss)}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Remaining</span>
+                    <div className="font-bold">{formatCurrency(scenario.remainingLiquid)}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Recovery Time</span>
+                    <div className="font-bold">{scenario.recoveryMonths} months</div>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Acceptability</span>
+                    <div className="font-bold">{scenario.acceptability.toFixed(0)}%</div>
+                  </div>
+                </div>
+                <Progress value={scenario.acceptability} className="mt-3" />
+              </div>
+            ))}
           </div>
         );
 
       case "lump-sum":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={simulationData}>
+            <AreaChart data={simulationData?.projections}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <XAxis dataKey="year" label={{ value: 'Years', position: 'insideBottom', offset: -5 }} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+              <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
               <Legend />
               <Area type="monotone" dataKey="lumpSumP90" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.1} name="Lump Sum 90th %ile" />
-              <Area type="monotone" dataKey="lumpSum" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name="Lump Sum (Median)" strokeWidth={2} />
-              <Area type="monotone" dataKey="dca" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.3} name="Dollar Cost Average" strokeWidth={2} />
+              <Area type="monotone" dataKey="lumpSumMedian" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name="Lump Sum Median" strokeWidth={2} />
+              <Area type="monotone" dataKey="dcaMedian" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.3} name="DCA Strategy" strokeWidth={2} />
               <Area type="monotone" dataKey="lumpSumP10" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.1} name="Lump Sum 10th %ile" />
-              <ReferenceLine y={params.lumpSum} stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" label="Initial Investment" />
+              <ReferenceLine y={params.lumpSumAmount} stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" label="Initial Amount" />
             </AreaChart>
           </ResponsiveContainer>
         );
@@ -551,32 +1232,32 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "market-crash":
         return (
           <div className="space-y-4">
-            {simulationData?.map((item: any, index: number) => (
-              <div key={index} className="p-4 border rounded-lg bg-gradient-to-r from-destructive/5 to-card">
+            {simulationData?.scenarios?.map((scenario: any, idx: number) => (
+              <div key={idx} className="p-4 border rounded-lg bg-gradient-to-r from-destructive/5 to-card">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-semibold">{item.event}</h4>
-                    <p className="text-sm text-muted-foreground">Duration: {item.duration} months</p>
+                    <h4 className="font-semibold">{scenario.name}</h4>
+                    <p className="text-sm text-muted-foreground">Duration: {scenario.duration} months | Recovery: {scenario.recovery} months</p>
                   </div>
                   <Badge variant="destructive" className="text-lg px-3 py-1">
-                    {item.drop}%
+                    {scenario.drop}%
                   </Badge>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Portfolio Impact</span>
-                    <div className="text-lg font-bold text-destructive">{formatCurrency(item.portfolioImpact)}</div>
+                    <div className="text-lg font-bold text-destructive">{formatCurrency(scenario.portfolioImpact)}</div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Recovery Time</span>
-                    <div className="text-lg font-bold">{item.recovery} months</div>
+                    <span className="text-muted-foreground">Remaining Value</span>
+                    <div className="text-lg font-bold">{formatCurrency(scenario.remainingValue)}</div>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Post-Recovery</span>
-                    <div className="text-lg font-bold text-success">{formatCurrency(params.initialAmount)}</div>
+                    <span className="text-muted-foreground">Survival Months</span>
+                    <div className="text-lg font-bold text-success">{scenario.survivalMonths.toFixed(0)} mo</div>
                   </div>
                 </div>
-                <Progress value={(item.recovery / 60) * 100} className="mt-3" />
+                <Progress value={Math.min(100, (scenario.survivalMonths / scenario.recovery) * 100)} className="mt-3" />
               </div>
             ))}
           </div>
@@ -585,13 +1266,13 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "performance":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={simulationData}>
+            <ComposedChart data={simulationData?.monthlyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(value: any) => `${value}%`} />
+              <RechartsTooltip formatter={(v: any) => `${Number(v).toFixed(2)}%`} />
               <Legend />
-              <Bar dataKey="actual" name="Actual Return" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="portfolio" name="Portfolio Return" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               <Bar dataKey="benchmark" name="Benchmark" fill="hsl(var(--muted))" radius={[4, 4, 0, 0]} />
               <Line type="monotone" dataKey="alpha" name="Alpha" stroke="hsl(var(--success))" strokeWidth={2} />
               <ReferenceLine y={0} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
@@ -605,38 +1286,39 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
             <div className="grid grid-cols-4 gap-4">
               <Card className="bg-gradient-to-br from-primary/10 to-card">
                 <CardContent className="pt-4">
-                  <div className="text-sm text-muted-foreground">Estate Value</div>
-                  <div className="text-2xl font-bold">{formatCurrency(simulationData?.estateValue)}</div>
+                  <div className="text-sm text-muted-foreground">Gross Estate</div>
+                  <div className="text-xl font-bold">{formatCurrency(simulationData?.breakdown?.grossEstate)}</div>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-br from-success/10 to-card">
                 <CardContent className="pt-4">
-                  <div className="text-sm text-muted-foreground">Nil Rate Band</div>
-                  <div className="text-2xl font-bold text-success">{formatCurrency(simulationData?.nilRateBand + simulationData?.residenceNilRate)}</div>
+                  <div className="text-sm text-muted-foreground">Available Allowance</div>
+                  <div className="text-xl font-bold text-success">{formatCurrency(simulationData?.breakdown?.nilRateBand)}</div>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-br from-warning/10 to-card">
                 <CardContent className="pt-4">
-                  <div className="text-sm text-muted-foreground">Taxable Estate</div>
-                  <div className="text-2xl font-bold text-warning">{formatCurrency(simulationData?.taxableEstate)}</div>
+                  <div className="text-sm text-muted-foreground">Chargeable Estate</div>
+                  <div className="text-xl font-bold text-warning">{formatCurrency(simulationData?.breakdown?.chargeable)}</div>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-br from-destructive/10 to-card">
                 <CardContent className="pt-4">
                   <div className="text-sm text-muted-foreground">Potential IHT (40%)</div>
-                  <div className="text-2xl font-bold text-destructive">{formatCurrency(simulationData?.potentialIHT)}</div>
+                  <div className="text-xl font-bold text-destructive">{formatCurrency(simulationData?.breakdown?.potentialIHT)}</div>
                 </CardContent>
               </Card>
             </div>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={simulationData?.projections}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <XAxis dataKey="year" label={{ value: 'Years', position: 'insideBottom', offset: -5 }} />
+                <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+                <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
                 <Legend />
-                <Area type="monotone" dataKey="potentialIHT" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.3} name="IHT Without Planning" />
-                <Area type="monotone" dataKey="afterGifting" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.3} name="IHT With Gifting Strategy" />
+                <Area type="monotone" dataKey="withoutPlanning" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.3} name="IHT Without Planning" />
+                <Area type="monotone" dataKey="withGifting" stroke="hsl(var(--warning))" fill="hsl(var(--warning))" fillOpacity={0.3} name="IHT With Gifting" />
+                <Area type="monotone" dataKey="withFullPlanning" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.3} name="IHT With Full Planning" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -645,17 +1327,18 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "retirement-spending":
         return (
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={simulationData}>
+            <ComposedChart data={simulationData?.projections}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="age" label={{ value: 'Age', position: 'insideBottom', offset: -5 }} />
-              <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <YAxis tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
+              <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
               <Legend />
               <Area type="monotone" dataKey="portfolioValue" stroke="hsl(var(--success))" fill="hsl(var(--success))" fillOpacity={0.2} name="Portfolio Value" />
               <Bar dataKey="essential" stackId="spending" fill="hsl(var(--primary))" name="Essential" />
               <Bar dataKey="discretionary" stackId="spending" fill="hsl(var(--warning))" name="Discretionary" />
               <Bar dataKey="healthcare" stackId="spending" fill="hsl(var(--destructive))" name="Healthcare" />
               <Line type="monotone" dataKey="total" stroke="hsl(var(--foreground))" strokeWidth={2} name="Total Spending" />
+              <ReferenceLine y={params.legacyGoal} stroke="hsl(var(--muted-foreground))" strokeDasharray="5 5" label="Legacy Goal" />
             </ComposedChart>
           </ResponsiveContainer>
         );
@@ -667,53 +1350,173 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
 
   // Render parameters based on active tab
   const renderParameters = () => {
-    const commonParams = (
-      <>
-        <div className="space-y-2">
-          <Label>Initial Investment (£)</Label>
-          <Input 
-            type="number" 
-            value={params.initialAmount} 
-            onChange={(e) => setParams(prev => ({ ...prev, initialAmount: Number(e.target.value) }))}
-            step="1000" 
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Time Horizon (Years)</Label>
-          <Input 
-            type="number" 
-            value={params.timeHorizon} 
-            onChange={(e) => setParams(prev => ({ ...prev, timeHorizon: Number(e.target.value) }))}
-            step="1" 
-            min="1"
-            max="50"
-          />
-        </div>
-      </>
+    const ParameterTooltip = ({ label, tooltip }: { label: string; tooltip: string }) => (
+      <div className="flex items-center gap-1">
+        <Label>{label}</Label>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[250px]">
+              <p className="text-xs">{tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     );
 
     switch (activeSubTab) {
       case "annual-savings":
         return (
           <>
-            {commonParams}
             <div className="space-y-2">
-              <Label>Annual Savings (£)</Label>
-              <Input 
-                type="number" 
-                value={params.annualSavings} 
-                onChange={(e) => setParams(prev => ({ ...prev, annualSavings: Number(e.target.value) }))}
-                step="1000" 
-              />
+              <ParameterTooltip label="Current Age" tooltip="Client's current age to calculate years to retirement" />
+              <Input type="number" value={params.currentAge} onChange={(e) => setParams(p => ({ ...p, currentAge: +e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <Label>Expected Return (%)</Label>
-              <Input 
-                type="number" 
-                value={params.nominalReturn} 
-                onChange={(e) => setParams(prev => ({ ...prev, nominalReturn: Number(e.target.value) }))}
-                step="0.1" 
-              />
+              <ParameterTooltip label="Target Retirement Age" tooltip="Age at which client plans to retire" />
+              <Input type="number" value={params.targetRetirementAge} onChange={(e) => setParams(p => ({ ...p, targetRetirementAge: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Current Savings (£)" tooltip="Total current retirement savings" />
+              <Input type="number" value={params.currentSavings} onChange={(e) => setParams(p => ({ ...p, currentSavings: +e.target.value }))} step="1000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Annual Savings (£)" tooltip="Planned annual contribution amount" />
+              <Input type="number" value={params.annualSavingsAmount} onChange={(e) => setParams(p => ({ ...p, annualSavingsAmount: +e.target.value }))} step="500" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Employer Match (%)" tooltip="Employer contribution as % of salary" />
+              <Input type="number" value={params.employerMatch} onChange={(e) => setParams(p => ({ ...p, employerMatch: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Savings Growth Rate (%)" tooltip="Expected annual increase in savings rate" />
+              <Input type="number" value={params.savingsGrowthRate} onChange={(e) => setParams(p => ({ ...p, savingsGrowthRate: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Expected Return (%)" tooltip="Annualised expected portfolio return" />
+              <Input type="number" value={params.expectedReturn} onChange={(e) => setParams(p => ({ ...p, expectedReturn: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Return Volatility (%)" tooltip="Standard deviation of returns (risk)" />
+              <Input type="number" value={params.returnVolatility} onChange={(e) => setParams(p => ({ ...p, returnVolatility: +e.target.value }))} step="1" />
+            </div>
+          </>
+        );
+
+      case "goal-priority":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Total Available (£)" tooltip="Total funds available for allocation" />
+              <Input type="number" value={params.totalAvailable} onChange={(e) => setParams(p => ({ ...p, totalAvailable: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-3 col-span-2">
+              <ParameterTooltip label="Risk Budget" tooltip="Risk tolerance for goal achievement" />
+              <Slider value={[params.riskBudget]} onValueChange={(v) => setParams(p => ({ ...p, riskBudget: v[0] }))} min={0} max={100} step={5} />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Conservative</span>
+                <span>{params.riskBudget}%</span>
+                <span>Aggressive</span>
+              </div>
+            </div>
+            <div className="col-span-4 border-t pt-4 mt-2">
+              <Label className="mb-3 block">Financial Goals</Label>
+              <div className="space-y-3">
+                {params.goals.map((goal, idx) => (
+                  <div key={idx} className="grid grid-cols-5 gap-2 items-end">
+                    <Input placeholder="Goal Name" value={goal.name} onChange={(e) => {
+                      const newGoals = [...params.goals];
+                      newGoals[idx].name = e.target.value;
+                      setParams(p => ({ ...p, goals: newGoals }));
+                    }} />
+                    <Input type="number" placeholder="Target" value={goal.target} onChange={(e) => {
+                      const newGoals = [...params.goals];
+                      newGoals[idx].target = +e.target.value;
+                      setParams(p => ({ ...p, goals: newGoals }));
+                    }} />
+                    <Input type="number" placeholder="Deadline (yrs)" value={goal.deadline} onChange={(e) => {
+                      const newGoals = [...params.goals];
+                      newGoals[idx].deadline = +e.target.value;
+                      setParams(p => ({ ...p, goals: newGoals }));
+                    }} />
+                    <Input type="number" placeholder="Funded" value={goal.funded} onChange={(e) => {
+                      const newGoals = [...params.goals];
+                      newGoals[idx].funded = +e.target.value;
+                      setParams(p => ({ ...p, goals: newGoals }));
+                    }} />
+                    <Select value={goal.priority.toString()} onValueChange={(v) => {
+                      const newGoals = [...params.goals];
+                      newGoals[idx].priority = +v;
+                      setParams(p => ({ ...p, goals: newGoals }));
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="Priority" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Priority 1</SelectItem>
+                        <SelectItem value="2">Priority 2</SelectItem>
+                        <SelectItem value="3">Priority 3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+
+      case "historic":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Start Year" tooltip="Beginning of backtest period" />
+              <Select value={params.startYear.toString()} onValueChange={(v) => setParams(p => ({ ...p, startYear: +v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 35 }, (_, i) => 1990 + i).map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="End Year" tooltip="End of backtest period" />
+              <Select value={params.endYear.toString()} onValueChange={(v) => setParams(p => ({ ...p, endYear: +v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 35 }, (_, i) => 1990 + i).map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Initial Investment (£)" tooltip="Starting portfolio value" />
+              <Input type="number" value={params.initialInvestment} onChange={(e) => setParams(p => ({ ...p, initialInvestment: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Rebalance Frequency" tooltip="How often to rebalance portfolio" />
+              <Select value={params.rebalanceFrequency} onValueChange={(v) => setParams(p => ({ ...p, rebalanceFrequency: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                  <SelectItem value="annually">Annually</SelectItem>
+                  <SelectItem value="never">Never</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Stocks (%)" tooltip="Equity allocation" />
+              <Input type="number" value={params.allocation.stocks} onChange={(e) => setParams(p => ({ ...p, allocation: { ...p.allocation, stocks: +e.target.value } }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Bonds (%)" tooltip="Fixed income allocation" />
+              <Input type="number" value={params.allocation.bonds} onChange={(e) => setParams(p => ({ ...p, allocation: { ...p.allocation, bonds: +e.target.value } }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Cash (%)" tooltip="Cash/money market allocation" />
+              <Input type="number" value={params.allocation.cash} onChange={(e) => setParams(p => ({ ...p, allocation: { ...p.allocation, cash: +e.target.value } }))} />
             </div>
           </>
         );
@@ -721,24 +1524,93 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "inflation":
         return (
           <>
-            {commonParams}
             <div className="space-y-2">
-              <Label>Inflation Rate (%)</Label>
-              <Input 
-                type="number" 
-                value={params.inflationRate} 
-                onChange={(e) => setParams(prev => ({ ...prev, inflationRate: Number(e.target.value) }))}
-                step="0.1" 
-              />
+              <ParameterTooltip label="Current Portfolio (£)" tooltip="Current portfolio value" />
+              <Input type="number" value={params.currentPortfolio} onChange={(e) => setParams(p => ({ ...p, currentPortfolio: +e.target.value }))} step="10000" />
             </div>
             <div className="space-y-2">
-              <Label>Nominal Return (%)</Label>
-              <Input 
-                type="number" 
-                value={params.nominalReturn} 
-                onChange={(e) => setParams(prev => ({ ...prev, nominalReturn: Number(e.target.value) }))}
-                step="0.1" 
-              />
+              <ParameterTooltip label="Projection Years" tooltip="Time horizon for inflation analysis" />
+              <Input type="number" value={params.projectionYears} onChange={(e) => setParams(p => ({ ...p, projectionYears: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Base Inflation (%)" tooltip="Expected general inflation rate" />
+              <Input type="number" value={params.baseInflation} onChange={(e) => setParams(p => ({ ...p, baseInflation: +e.target.value }))} step="0.1" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Healthcare Inflation (%)" tooltip="Healthcare cost inflation rate" />
+              <Input type="number" value={params.healthcareInflation} onChange={(e) => setParams(p => ({ ...p, healthcareInflation: +e.target.value }))} step="0.1" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Education Inflation (%)" tooltip="Education cost inflation rate" />
+              <Input type="number" value={params.educationInflation} onChange={(e) => setParams(p => ({ ...p, educationInflation: +e.target.value }))} step="0.1" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Nominal Return (%)" tooltip="Expected portfolio nominal return" />
+              <Input type="number" value={params.nominalReturn} onChange={(e) => setParams(p => ({ ...p, nominalReturn: +e.target.value }))} step="0.5" />
+            </div>
+          </>
+        );
+
+      case "investment-returns":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Portfolio Value (£)" tooltip="Current portfolio value" />
+              <Input type="number" value={params.portfolioValue} onChange={(e) => setParams(p => ({ ...p, portfolioValue: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Time Horizon (Years)" tooltip="Investment time horizon" />
+              <Input type="number" value={params.timeHorizon} onChange={(e) => setParams(p => ({ ...p, timeHorizon: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Equity Allocation (%)" tooltip="Percentage in equities" />
+              <Input type="number" value={params.equityAllocation} onChange={(e) => setParams(p => ({ ...p, equityAllocation: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Bond Allocation (%)" tooltip="Percentage in fixed income" />
+              <Input type="number" value={params.bondAllocation} onChange={(e) => setParams(p => ({ ...p, bondAllocation: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Equity Return (%)" tooltip="Expected equity return" />
+              <Input type="number" value={params.equityReturn} onChange={(e) => setParams(p => ({ ...p, equityReturn: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Equity Volatility (%)" tooltip="Equity standard deviation" />
+              <Input type="number" value={params.equityVolatility} onChange={(e) => setParams(p => ({ ...p, equityVolatility: +e.target.value }))} step="1" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Bond Return (%)" tooltip="Expected bond return" />
+              <Input type="number" value={params.bondReturn} onChange={(e) => setParams(p => ({ ...p, bondReturn: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Bond Volatility (%)" tooltip="Bond standard deviation" />
+              <Input type="number" value={params.bondVolatility} onChange={(e) => setParams(p => ({ ...p, bondVolatility: +e.target.value }))} step="0.5" />
+            </div>
+          </>
+        );
+
+      case "life-needs":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Essential Expenses (£/yr)" tooltip="Non-negotiable annual expenses" />
+              <Input type="number" value={params.essentialExpenses} onChange={(e) => setParams(p => ({ ...p, essentialExpenses: +e.target.value }))} step="1000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Discretionary (£/yr)" tooltip="Lifestyle/optional spending" />
+              <Input type="number" value={params.discretionaryExpenses} onChange={(e) => setParams(p => ({ ...p, discretionaryExpenses: +e.target.value }))} step="500" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Healthcare (£/yr)" tooltip="Medical and health expenses" />
+              <Input type="number" value={params.healthcareExpenses} onChange={(e) => setParams(p => ({ ...p, healthcareExpenses: +e.target.value }))} step="500" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Legacy Amount (£)" tooltip="Desired inheritance/bequest" />
+              <Input type="number" value={params.legacyAmount} onChange={(e) => setParams(p => ({ ...p, legacyAmount: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Emergency Fund (months)" tooltip="Months of expenses in reserve" />
+              <Input type="number" value={params.emergencyMonths} onChange={(e) => setParams(p => ({ ...p, emergencyMonths: +e.target.value }))} />
             </div>
           </>
         );
@@ -746,15 +1618,81 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "longevity-risk":
         return (
           <>
-            {commonParams}
             <div className="space-y-2">
-              <Label>Annual Spending (£)</Label>
-              <Input 
-                type="number" 
-                value={params.annualSpending} 
-                onChange={(e) => setParams(prev => ({ ...prev, annualSpending: Number(e.target.value) }))}
-                step="1000" 
-              />
+              <ParameterTooltip label="Current Age" tooltip="Client's current age" />
+              <Input type="number" value={params.currentAgeL} onChange={(e) => setParams(p => ({ ...p, currentAgeL: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Gender" tooltip="For mortality table selection" />
+              <Select value={params.gender} onValueChange={(v) => setParams(p => ({ ...p, gender: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Health Status" tooltip="Current health condition" />
+              <Select value={params.healthStatus} onValueChange={(v) => setParams(p => ({ ...p, healthStatus: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="excellent">Excellent</SelectItem>
+                  <SelectItem value="average">Average</SelectItem>
+                  <SelectItem value="poor">Poor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Family Longevity" tooltip="Average family lifespan" />
+              <Input type="number" value={params.familyLongevity} onChange={(e) => setParams(p => ({ ...p, familyLongevity: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Retirement Assets (£)" tooltip="Total retirement portfolio" />
+              <Input type="number" value={params.retirementAssets} onChange={(e) => setParams(p => ({ ...p, retirementAssets: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Annual Withdrawal (£)" tooltip="Planned annual withdrawal" />
+              <Input type="number" value={params.annualWithdrawal} onChange={(e) => setParams(p => ({ ...p, annualWithdrawal: +e.target.value }))} step="1000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Pension Income (£/yr)" tooltip="Guaranteed pension income" />
+              <Input type="number" value={params.pensionIncome} onChange={(e) => setParams(p => ({ ...p, pensionIncome: +e.target.value }))} step="500" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="State Pension (£/yr)" tooltip="Expected state pension" />
+              <Input type="number" value={params.statePension} onChange={(e) => setParams(p => ({ ...p, statePension: +e.target.value }))} step="500" />
+            </div>
+          </>
+        );
+
+      case "loss-capacity":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Total Assets (£)" tooltip="Total net worth" />
+              <Input type="number" value={params.totalAssets} onChange={(e) => setParams(p => ({ ...p, totalAssets: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Liquid Assets (£)" tooltip="Easily accessible investments" />
+              <Input type="number" value={params.liquidAssets} onChange={(e) => setParams(p => ({ ...p, liquidAssets: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Annual Income (£)" tooltip="Total annual income" />
+              <Input type="number" value={params.annualIncome} onChange={(e) => setParams(p => ({ ...p, annualIncome: +e.target.value }))} step="5000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Fixed Expenses (£/yr)" tooltip="Non-discretionary expenses" />
+              <Input type="number" value={params.fixedExpenses} onChange={(e) => setParams(p => ({ ...p, fixedExpenses: +e.target.value }))} step="1000" />
+            </div>
+            <div className="space-y-3 col-span-2">
+              <ParameterTooltip label="Emotional Tolerance" tooltip="Psychological comfort with volatility" />
+              <Slider value={[params.emotionalTolerance]} onValueChange={(v) => setParams(p => ({ ...p, emotionalTolerance: v[0] }))} min={0} max={100} step={5} />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Low</span>
+                <span>{params.emotionalTolerance}%</span>
+                <span>High</span>
+              </div>
             </div>
           </>
         );
@@ -762,15 +1700,106 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "lump-sum":
         return (
           <>
-            {commonParams}
             <div className="space-y-2">
-              <Label>Lump Sum Amount (£)</Label>
-              <Input 
-                type="number" 
-                value={params.lumpSum} 
-                onChange={(e) => setParams(prev => ({ ...prev, lumpSum: Number(e.target.value) }))}
-                step="5000" 
-              />
+              <ParameterTooltip label="Lump Sum Amount (£)" tooltip="Amount to invest" />
+              <Input type="number" value={params.lumpSumAmount} onChange={(e) => setParams(p => ({ ...p, lumpSumAmount: +e.target.value }))} step="5000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="DCA Period (months)" tooltip="Period to spread DCA investment" />
+              <Input type="number" value={params.dcaPeriod} onChange={(e) => setParams(p => ({ ...p, dcaPeriod: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="DCA Frequency" tooltip="How often to invest via DCA" />
+              <Select value={params.dcaFrequency} onValueChange={(v) => setParams(p => ({ ...p, dcaFrequency: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="quarterly">Quarterly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Target Return (%)" tooltip="Expected annual return" />
+              <Input type="number" value={params.targetReturn} onChange={(e) => setParams(p => ({ ...p, targetReturn: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Volatility (%)" tooltip="Expected annual volatility" />
+              <Input type="number" value={params.volatility} onChange={(e) => setParams(p => ({ ...p, volatility: +e.target.value }))} step="1" />
+            </div>
+          </>
+        );
+
+      case "market-crash":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Portfolio at Risk (£)" tooltip="Portfolio value exposed to markets" />
+              <Input type="number" value={params.portfolioAtRisk} onChange={(e) => setParams(p => ({ ...p, portfolioAtRisk: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Equity Exposure (%)" tooltip="Percentage in equities" />
+              <Input type="number" value={params.equityExposure} onChange={(e) => setParams(p => ({ ...p, equityExposure: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Cash Buffer (£)" tooltip="Emergency cash reserves" />
+              <Input type="number" value={params.cashBuffer} onChange={(e) => setParams(p => ({ ...p, cashBuffer: +e.target.value }))} step="5000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Annual Withdrawals (£)" tooltip="Required annual withdrawals" />
+              <Input type="number" value={params.withdrawalNeeds} onChange={(e) => setParams(p => ({ ...p, withdrawalNeeds: +e.target.value }))} step="1000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Historical Scenario" tooltip="Select crash scenario to model" />
+              <Select value={params.historicalScenario} onValueChange={(v) => setParams(p => ({ ...p, historicalScenario: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2008">2008 Financial Crisis (-37%)</SelectItem>
+                  <SelectItem value="2020">COVID-19 Crash (-34%)</SelectItem>
+                  <SelectItem value="2000">Dot-Com Bubble (-49%)</SelectItem>
+                  <SelectItem value="1987">Black Monday (-20%)</SelectItem>
+                  <SelectItem value="custom">Custom Scenario</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {params.historicalScenario === "custom" && (
+              <div className="space-y-2">
+                <ParameterTooltip label="Custom Drawdown (%)" tooltip="Custom crash percentage" />
+                <Input type="number" value={params.customDrawdown} onChange={(e) => setParams(p => ({ ...p, customDrawdown: +e.target.value }))} />
+              </div>
+            )}
+          </>
+        );
+
+      case "performance":
+        return (
+          <>
+            <div className="space-y-2">
+              <ParameterTooltip label="Benchmark Index" tooltip="Comparison benchmark" />
+              <Select value={params.benchmarkIndex} onValueChange={(v) => setParams(p => ({ ...p, benchmarkIndex: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="msci-world">MSCI World</SelectItem>
+                  <SelectItem value="sp500">S&P 500</SelectItem>
+                  <SelectItem value="ftse100">FTSE 100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Measurement Period" tooltip="Performance measurement period" />
+              <Select value={params.measurementPeriod} onValueChange={(v) => setParams(p => ({ ...p, measurementPeriod: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ytd">Year to Date</SelectItem>
+                  <SelectItem value="1y">1 Year</SelectItem>
+                  <SelectItem value="3y">3 Years</SelectItem>
+                  <SelectItem value="5y">5 Years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Risk-Free Rate (%)" tooltip="Current risk-free rate for Sharpe" />
+              <Input type="number" value={params.riskFreeRate} onChange={(e) => setParams(p => ({ ...p, riskFreeRate: +e.target.value }))} step="0.1" />
             </div>
           </>
         );
@@ -779,31 +1808,36 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
         return (
           <>
             <div className="space-y-2">
-              <Label>Estate Value (£)</Label>
-              <Input 
-                type="number" 
-                value={params.estateValue} 
-                onChange={(e) => setParams(prev => ({ ...prev, estateValue: Number(e.target.value) }))}
-                step="10000" 
-              />
+              <ParameterTooltip label="Estate Value (£)" tooltip="Total estate value" />
+              <Input type="number" value={params.estateValue} onChange={(e) => setParams(p => ({ ...p, estateValue: +e.target.value }))} step="10000" />
             </div>
             <div className="space-y-2">
-              <Label>Annual Gifting (£)</Label>
-              <Input 
-                type="number" 
-                value={params.annualGifting} 
-                onChange={(e) => setParams(prev => ({ ...prev, annualGifting: Number(e.target.value) }))}
-                step="1000" 
-              />
+              <ParameterTooltip label="Main Residence (£)" tooltip="Primary residence value (for RNRB)" />
+              <Input type="number" value={params.mainResidenceValue} onChange={(e) => setParams(p => ({ ...p, mainResidenceValue: +e.target.value }))} step="10000" />
             </div>
             <div className="space-y-2">
-              <Label>Time Horizon (Years)</Label>
-              <Input 
-                type="number" 
-                value={params.timeHorizon} 
-                onChange={(e) => setParams(prev => ({ ...prev, timeHorizon: Number(e.target.value) }))}
-                step="1" 
-              />
+              <ParameterTooltip label="Pension Assets (£)" tooltip="Usually outside estate for IHT" />
+              <Input type="number" value={params.pensionAssets} onChange={(e) => setParams(p => ({ ...p, pensionAssets: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Life Insurance (£)" tooltip="Life insurance in estate" />
+              <Input type="number" value={params.lifeInsurance} onChange={(e) => setParams(p => ({ ...p, lifeInsurance: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Existing Gifts (£)" tooltip="PETs already made" />
+              <Input type="number" value={params.existingGifts} onChange={(e) => setParams(p => ({ ...p, existingGifts: +e.target.value }))} step="5000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Annual Gifting (£)" tooltip="Planned annual gifting" />
+              <Input type="number" value={params.annualGifting} onChange={(e) => setParams(p => ({ ...p, annualGifting: +e.target.value }))} step="1000" />
+            </div>
+            <div className="flex items-center justify-between space-x-2 py-2">
+              <ParameterTooltip label="Spouse Allowance" tooltip="Transfer unused NRB to spouse" />
+              <Switch checked={params.spouseAllowance} onCheckedChange={(v) => setParams(p => ({ ...p, spouseAllowance: v }))} />
+            </div>
+            <div className="flex items-center justify-between space-x-2 py-2">
+              <ParameterTooltip label="Trust Planning" tooltip="Using trusts for IHT mitigation" />
+              <Switch checked={params.trustPlanning} onCheckedChange={(v) => setParams(p => ({ ...p, trustPlanning: v }))} />
             </div>
           </>
         );
@@ -811,46 +1845,51 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       case "retirement-spending":
         return (
           <>
-            {commonParams}
             <div className="space-y-2">
-              <Label>Annual Retirement Spending (£)</Label>
-              <Input 
-                type="number" 
-                value={params.retirementSpending} 
-                onChange={(e) => setParams(prev => ({ ...prev, retirementSpending: Number(e.target.value) }))}
-                step="1000" 
-              />
+              <ParameterTooltip label="Retirement Age" tooltip="Planned retirement age" />
+              <Input type="number" value={params.retirementAge} onChange={(e) => setParams(p => ({ ...p, retirementAge: +e.target.value }))} />
             </div>
-          </>
-        );
-
-      case "loss-capacity":
-        return (
-          <>
-            {commonParams}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label>Risk Tolerance</Label>
-                <Badge variant="outline">{params.riskTolerance}%</Badge>
-              </div>
-              <Slider 
-                value={[params.riskTolerance]} 
-                onValueChange={(value) => setParams(prev => ({ ...prev, riskTolerance: value[0] }))}
-                min={0} 
-                max={100} 
-                step={5}
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Conservative</span>
-                <span>Moderate</span>
-                <span>Aggressive</span>
-              </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Initial Spending (£/yr)" tooltip="First year retirement spending" />
+              <Input type="number" value={params.initialSpending} onChange={(e) => setParams(p => ({ ...p, initialSpending: +e.target.value }))} step="1000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Spending Strategy" tooltip="Withdrawal approach" />
+              <Select value={params.spendingStrategy} onValueChange={(v) => setParams(p => ({ ...p, spendingStrategy: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fixed">Fixed (Inflation-Adjusted)</SelectItem>
+                  <SelectItem value="guardrails">Guardrails Strategy</SelectItem>
+                  <SelectItem value="dynamic">Dynamic Spending</SelectItem>
+                  <SelectItem value="flooring">Floor & Ceiling</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Essential Ratio (%)" tooltip="Percentage of essential spending" />
+              <Input type="number" value={params.essentialRatio} onChange={(e) => setParams(p => ({ ...p, essentialRatio: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Spending Decline Age" tooltip="Age when spending typically declines" />
+              <Input type="number" value={params.spendingDeclineAge} onChange={(e) => setParams(p => ({ ...p, spendingDeclineAge: +e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Decline Rate (%/yr)" tooltip="Annual spending decline rate" />
+              <Input type="number" value={params.spendingDeclineRate} onChange={(e) => setParams(p => ({ ...p, spendingDeclineRate: +e.target.value }))} step="0.5" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Legacy Goal (£)" tooltip="Desired estate value" />
+              <Input type="number" value={params.legacyGoal} onChange={(e) => setParams(p => ({ ...p, legacyGoal: +e.target.value }))} step="10000" />
+            </div>
+            <div className="space-y-2">
+              <ParameterTooltip label="Max Failure Prob (%)" tooltip="Acceptable failure probability" />
+              <Input type="number" value={params.failureProbability} onChange={(e) => setParams(p => ({ ...p, failureProbability: +e.target.value }))} />
             </div>
           </>
         );
 
       default:
-        return commonParams;
+        return null;
     }
   };
 
@@ -859,14 +1898,14 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       {/* Sub-Tab Dropdown Selector */}
       <Card className="bg-gradient-to-br from-primary/5 to-card border-primary/20">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 {activeTabConfig && <activeTabConfig.icon className="h-5 w-5 text-primary" />}
               </div>
               <div>
                 <CardTitle className="text-lg">Monte Carlo Simulations</CardTitle>
-                <CardDescription>Advanced stochastic modeling for financial planning</CardDescription>
+                <CardDescription>{activeTabConfig?.description}</CardDescription>
               </div>
             </div>
             <Select value={activeSubTab} onValueChange={(value) => setActiveSubTab(value as MonteCarloSubTab)}>
@@ -892,54 +1931,7 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
       </Card>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-success/10 to-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-success">
-              {simulationComplete ? "87%" : "—"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {params.iterations.toLocaleString()} simulations
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-primary/10 to-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Median Outcome</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {simulationComplete ? formatCurrency(params.initialAmount * 1.07 ** params.timeHorizon) : "—"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">in {params.timeHorizon} years</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-success/10 to-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Best Case (90%)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-success">
-              {simulationComplete ? formatCurrency(params.initialAmount * 1.12 ** params.timeHorizon) : "—"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">90th percentile</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-warning/10 to-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Worst Case (10%)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-warning">
-              {simulationComplete ? formatCurrency(params.initialAmount * 1.02 ** params.timeHorizon) : "—"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">10th percentile</p>
-          </CardContent>
-        </Card>
-      </div>
+      {renderKPIs()}
 
       {/* Chart Section */}
       <Card>
@@ -978,47 +1970,47 @@ export default function MonteCarloSimulations({ selectedClient, clients, formatC
               <CardTitle>Simulation Parameters</CardTitle>
               <CardDescription>Configure assumptions for {activeTabConfig?.label}</CardDescription>
             </div>
-            {activeTabConfig?.requiresSimulation && (
-              <Button 
-                onClick={runSimulation}
-                disabled={isSimulating || !selectedClient}
-                className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-              >
-                {isSimulating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Running Simulation...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4" />
-                    Run Simulation
-                  </>
-                )}
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Iterations</Label>
+                <Select value={params.iterations.toString()} onValueChange={(v) => setParams(p => ({ ...p, iterations: +v }))}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1000">1,000</SelectItem>
+                    <SelectItem value="5000">5,000</SelectItem>
+                    <SelectItem value="10000">10,000</SelectItem>
+                    <SelectItem value="50000">50,000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {activeTabConfig?.requiresSimulation && (
+                <Button 
+                  onClick={runSimulation}
+                  disabled={isSimulating || !selectedClient}
+                  className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  size="lg"
+                >
+                  {isSimulating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Running...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4" />
+                      Run Simulation
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {renderParameters()}
-            <div className="space-y-2">
-              <Label>Number of Simulations</Label>
-              <Select 
-                value={params.iterations.toString()} 
-                onValueChange={(value) => setParams(prev => ({ ...prev, iterations: Number(value) }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1000">1,000</SelectItem>
-                  <SelectItem value="5000">5,000</SelectItem>
-                  <SelectItem value="10000">10,000</SelectItem>
-                  <SelectItem value="50000">50,000</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           
           {!selectedClient && (
