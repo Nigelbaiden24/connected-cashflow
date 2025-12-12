@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ClientOverviewHub } from "@/components/client/ClientOverviewHub";
 import { 
   ArrowLeft, 
   Edit, 
@@ -282,72 +283,12 @@ const ClientProfile = () => {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Assets Under Management</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(client.aum)}</div>
-                <p className="text-xs text-muted-foreground">
-                  Net Worth: {formatCurrency(client.net_worth)}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Annual Income</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(client.annual_income)}</div>
-                <p className="text-xs text-muted-foreground">
-                  Time Horizon: {client.time_horizon} years
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Goals</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{goals.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Financial objectives tracked
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Investment Objectives & Risk Profile</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Investment Objectives</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {client.investment_objectives?.map((objective, index) => (
-                      <Badge key={index} variant="outline">{objective}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Investment Experience</Label>
-                  <p className="text-sm text-muted-foreground mt-1">{client.investment_experience}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Liquidity Needs</Label>
-                  <p className="text-sm text-muted-foreground mt-1">{client.liquidity_needs}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ClientOverviewHub 
+            client={client} 
+            goals={goals} 
+            portfolioHoldings={portfolioHoldings}
+            formatCurrency={formatCurrency}
+          />
         </TabsContent>
 
         <TabsContent value="personal">
