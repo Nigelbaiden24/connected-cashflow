@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ClientOverviewHub } from "@/components/client/ClientOverviewHub";
+import { ClientReportGenerator } from "@/components/client/ClientReportGenerator";
 import { 
   ArrowLeft, 
   Edit, 
@@ -279,7 +280,7 @@ const ClientProfile = () => {
           <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
           <TabsTrigger value="goals">Goals & Planning</TabsTrigger>
           <TabsTrigger value="meetings">Meetings</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="documents">Generate Report</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -572,18 +573,12 @@ const ClientProfile = () => {
         </TabsContent>
 
         <TabsContent value="documents">
-          <Card>
-            <CardHeader>
-              <CardTitle>Client Documents</CardTitle>
-              <CardDescription>Uploaded documents and statements</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-8 w-8 mx-auto mb-2" />
-                <p>No documents uploaded</p>
-              </div>
-            </CardContent>
-          </Card>
+          <ClientReportGenerator 
+            client={client} 
+            goals={goals} 
+            portfolioHoldings={portfolioHoldings}
+            formatCurrency={formatCurrency}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -16,19 +16,66 @@ import {
   PiggyBank, Home, Briefcase, Shield, AlertTriangle, Calendar,
   Play, ZoomIn, Plus, BarChart3, PieChartIcon, ArrowUpRight,
   ArrowDownRight, Clock, FileText, CheckCircle2, XCircle,
-  Calculator, Banknote, Receipt, Heart, GraduationCap
+  Calculator, Banknote, Receipt, Heart, GraduationCap, Edit, Trash2, X
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 
 interface ClientOverviewHubProps {
   client: any;
   goals: any[];
   portfolioHoldings: any[];
   formatCurrency: (amount: number) => string;
+}
+
+interface Dependent {
+  id: string;
+  name: string;
+  relationship: string;
+  age: number;
+  dependentUntil?: string;
+}
+
+interface IncomeSource {
+  id: string;
+  name: string;
+  amount: number;
+  type: string;
+  taxable: boolean;
+  frequency: string;
+}
+
+interface PensionAccount {
+  id: string;
+  name: string;
+  value: number;
+  type: string;
+  provider: string;
+  annualAmount?: number;
+}
+
+interface Property {
+  id: string;
+  name: string;
+  value: number;
+  mortgage: number;
+  equity: number;
+  type: string;
+  rentalIncome?: number;
+}
+
+interface Debt {
+  id: string;
+  name: string;
+  balance: number;
+  rate: number;
+  monthlyPayment: number;
+  remaining: number;
+  type: string;
 }
 
 // Generate mock projection data for the timeline chart
@@ -116,7 +163,46 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
   });
   
   const [simulationRunning, setSimulationRunning] = useState(false);
-  const [activeDialog, setActiveDialog] = useState<string | null>(null);
+  
+  // State for CRUD operations
+  const [dependents, setDependents] = useState<Dependent[]>([
+    { id: '1', name: 'Child 1', relationship: 'Child', age: 12, dependentUntil: '2030' },
+  ]);
+  const [incomeSources, setIncomeSources] = useState<IncomeSource[]>([
+    { id: '1', name: 'Employment Income', amount: client?.annual_income || 85000, type: 'Primary', taxable: true, frequency: 'Annual' },
+    { id: '2', name: 'Rental Income', amount: 12000, type: 'Secondary', taxable: true, frequency: 'Annual' },
+    { id: '3', name: 'Dividend Income', amount: 8500, type: 'Investment', taxable: true, frequency: 'Annual' },
+  ]);
+  const [pensionAccounts, setPensionAccounts] = useState<PensionAccount[]>([
+    { id: '1', name: 'SIPP - Hargreaves Lansdown', value: 285000, type: 'DC', provider: 'HL' },
+    { id: '2', name: 'Workplace Pension', value: 142000, type: 'DC', provider: 'Aviva' },
+    { id: '3', name: 'Previous Employer Pension', value: 67000, type: 'DC', provider: 'Scottish Widows' },
+    { id: '4', name: 'DB Pension (Deferred)', value: 0, annualAmount: 12500, type: 'DB', provider: 'BT' },
+    { id: '5', name: 'State Pension', value: 0, annualAmount: 10600, type: 'State', provider: 'HMRC' },
+  ]);
+  const [properties, setProperties] = useState<Property[]>([
+    { id: '1', name: 'Main Residence', value: 650000, mortgage: 180000, equity: 470000, type: 'Primary' },
+    { id: '2', name: 'Buy-to-Let Property', value: 320000, mortgage: 160000, equity: 160000, type: 'Investment', rentalIncome: 1200 },
+  ]);
+  const [debts, setDebts] = useState<Debt[]>([
+    { id: '1', name: 'Main Residence Mortgage', balance: 180000, rate: 4.5, monthlyPayment: 1200, remaining: 18, type: 'Mortgage' },
+    { id: '2', name: 'BTL Mortgage', balance: 160000, rate: 5.2, monthlyPayment: 950, remaining: 22, type: 'Mortgage' },
+  ]);
+
+  // Dialog states
+  const [editingDependent, setEditingDependent] = useState<Dependent | null>(null);
+  const [editingIncome, setEditingIncome] = useState<IncomeSource | null>(null);
+  const [editingPension, setEditingPension] = useState<PensionAccount | null>(null);
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
+  
+  const [newDependent, setNewDependent] = useState<Partial<Dependent>>({});
+  const [newIncome, setNewIncome] = useState<Partial<IncomeSource>>({});
+  const [newPension, setNewPension] = useState<Partial<PensionAccount>>({});
+  const [newProperty, setNewProperty] = useState<Partial<Property>>({});
+  const [newDebt, setNewDebt] = useState<Partial<Debt>>({});
+  
+  const [dialogOpen, setDialogOpen] = useState<string | null>(null);
   
   const projectionData = useMemo(() => generateProjectionData(client, goals), [client, goals]);
   const assetAllocation = useMemo(() => generateAssetAllocation(portfolioHoldings), [portfolioHoldings]);
@@ -135,6 +221,168 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
   const runSimulation = () => {
     setSimulationRunning(true);
     setTimeout(() => setSimulationRunning(false), 2000);
+  };
+
+  // CRUD Functions for Dependents
+  const handleAddDependent = () => {
+    if (!newDependent.name || !newDependent.relationship) {
+      toast({ title: "Missing Fields", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    const dependent: Dependent = {
+      id: Date.now().toString(),
+      name: newDependent.name,
+      relationship: newDependent.relationship,
+      age: newDependent.age || 0,
+      dependentUntil: newDependent.dependentUntil,
+    };
+    setDependents([...dependents, dependent]);
+    setNewDependent({});
+    setDialogOpen(null);
+    toast({ title: "Dependent Added", description: `${dependent.name} has been added` });
+  };
+
+  const handleUpdateDependent = () => {
+    if (!editingDependent) return;
+    setDependents(dependents.map(d => d.id === editingDependent.id ? editingDependent : d));
+    setEditingDependent(null);
+    toast({ title: "Dependent Updated", description: "Changes have been saved" });
+  };
+
+  const handleDeleteDependent = (id: string) => {
+    setDependents(dependents.filter(d => d.id !== id));
+    toast({ title: "Dependent Removed", description: "Dependent has been removed" });
+  };
+
+  // CRUD Functions for Income
+  const handleAddIncome = () => {
+    if (!newIncome.name || !newIncome.amount) {
+      toast({ title: "Missing Fields", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    const income: IncomeSource = {
+      id: Date.now().toString(),
+      name: newIncome.name,
+      amount: newIncome.amount,
+      type: newIncome.type || 'Primary',
+      taxable: newIncome.taxable ?? true,
+      frequency: newIncome.frequency || 'Annual',
+    };
+    setIncomeSources([...incomeSources, income]);
+    setNewIncome({});
+    setDialogOpen(null);
+    toast({ title: "Income Source Added", description: `${income.name} has been added` });
+  };
+
+  const handleUpdateIncome = () => {
+    if (!editingIncome) return;
+    setIncomeSources(incomeSources.map(i => i.id === editingIncome.id ? editingIncome : i));
+    setEditingIncome(null);
+    toast({ title: "Income Updated", description: "Changes have been saved" });
+  };
+
+  const handleDeleteIncome = (id: string) => {
+    setIncomeSources(incomeSources.filter(i => i.id !== id));
+    toast({ title: "Income Removed", description: "Income source has been removed" });
+  };
+
+  // CRUD Functions for Pensions
+  const handleAddPension = () => {
+    if (!newPension.name || (!newPension.value && !newPension.annualAmount)) {
+      toast({ title: "Missing Fields", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    const pension: PensionAccount = {
+      id: Date.now().toString(),
+      name: newPension.name,
+      value: newPension.value || 0,
+      type: newPension.type || 'DC',
+      provider: newPension.provider || '',
+      annualAmount: newPension.annualAmount,
+    };
+    setPensionAccounts([...pensionAccounts, pension]);
+    setNewPension({});
+    setDialogOpen(null);
+    toast({ title: "Pension Added", description: `${pension.name} has been added` });
+  };
+
+  const handleUpdatePension = () => {
+    if (!editingPension) return;
+    setPensionAccounts(pensionAccounts.map(p => p.id === editingPension.id ? editingPension : p));
+    setEditingPension(null);
+    toast({ title: "Pension Updated", description: "Changes have been saved" });
+  };
+
+  const handleDeletePension = (id: string) => {
+    setPensionAccounts(pensionAccounts.filter(p => p.id !== id));
+    toast({ title: "Pension Removed", description: "Pension has been removed" });
+  };
+
+  // CRUD Functions for Properties
+  const handleAddProperty = () => {
+    if (!newProperty.name || !newProperty.value) {
+      toast({ title: "Missing Fields", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    const property: Property = {
+      id: Date.now().toString(),
+      name: newProperty.name,
+      value: newProperty.value,
+      mortgage: newProperty.mortgage || 0,
+      equity: (newProperty.value || 0) - (newProperty.mortgage || 0),
+      type: newProperty.type || 'Primary',
+      rentalIncome: newProperty.rentalIncome,
+    };
+    setProperties([...properties, property]);
+    setNewProperty({});
+    setDialogOpen(null);
+    toast({ title: "Property Added", description: `${property.name} has been added` });
+  };
+
+  const handleUpdateProperty = () => {
+    if (!editingProperty) return;
+    const updated = { ...editingProperty, equity: editingProperty.value - editingProperty.mortgage };
+    setProperties(properties.map(p => p.id === editingProperty.id ? updated : p));
+    setEditingProperty(null);
+    toast({ title: "Property Updated", description: "Changes have been saved" });
+  };
+
+  const handleDeleteProperty = (id: string) => {
+    setProperties(properties.filter(p => p.id !== id));
+    toast({ title: "Property Removed", description: "Property has been removed" });
+  };
+
+  // CRUD Functions for Debts
+  const handleAddDebt = () => {
+    if (!newDebt.name || !newDebt.balance) {
+      toast({ title: "Missing Fields", description: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    const debt: Debt = {
+      id: Date.now().toString(),
+      name: newDebt.name,
+      balance: newDebt.balance,
+      rate: newDebt.rate || 0,
+      monthlyPayment: newDebt.monthlyPayment || 0,
+      remaining: newDebt.remaining || 0,
+      type: newDebt.type || 'Loan',
+    };
+    setDebts([...debts, debt]);
+    setNewDebt({});
+    setDialogOpen(null);
+    toast({ title: "Debt Added", description: `${debt.name} has been added` });
+  };
+
+  const handleUpdateDebt = () => {
+    if (!editingDebt) return;
+    setDebts(debts.map(d => d.id === editingDebt.id ? editingDebt : d));
+    setEditingDebt(null);
+    toast({ title: "Debt Updated", description: "Changes have been saved" });
+  };
+
+  const handleDeleteDebt = (id: string) => {
+    setDebts(debts.filter(d => d.id !== id));
+    toast({ title: "Debt Removed", description: "Debt has been removed" });
   };
 
   // Section Row Component
@@ -188,33 +436,28 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
     </Collapsible>
   );
 
-  // Income sources mock data
-  const incomeSources = [
-    { name: 'Employment Income', amount: client?.annual_income || 85000, type: 'Primary', taxable: true },
-    { name: 'Rental Income', amount: 12000, type: 'Secondary', taxable: true },
-    { name: 'Dividend Income', amount: 8500, type: 'Investment', taxable: true },
-  ];
-
-  // Pension accounts mock data
-  const pensionAccounts = [
-    { name: 'SIPP - Hargreaves Lansdown', value: 285000, type: 'DC', provider: 'HL' },
-    { name: 'Workplace Pension', value: 142000, type: 'DC', provider: 'Aviva' },
-    { name: 'Previous Employer Pension', value: 67000, type: 'DC', provider: 'Scottish Widows' },
-    { name: 'DB Pension (Deferred)', value: 0, annualAmount: 12500, type: 'DB', provider: 'BT' },
-    { name: 'State Pension', value: 0, annualAmount: 10600, type: 'State', provider: 'HMRC' },
-  ];
-
-  // Property data
-  const properties = [
-    { name: 'Main Residence', value: 650000, mortgage: 180000, equity: 470000, type: 'Primary' },
-    { name: 'Buy-to-Let Property', value: 320000, mortgage: 160000, equity: 160000, type: 'Investment' },
-  ];
-
-  // Debt data
-  const debts = [
-    { name: 'Main Residence Mortgage', balance: 180000, rate: 4.5, monthlyPayment: 1200, remaining: 18 },
-    { name: 'BTL Mortgage', balance: 160000, rate: 5.2, monthlyPayment: 950, remaining: 22 },
-  ];
+  // Item Row with Edit/Delete
+  const ItemRow = ({ 
+    children, 
+    onEdit, 
+    onDelete 
+  }: { 
+    children: React.ReactNode; 
+    onEdit: () => void; 
+    onDelete: () => void;
+  }) => (
+    <div className="flex items-center justify-between p-3 bg-background rounded-lg border group">
+      <div className="flex-1">{children}</div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}>
+          <Edit className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={onDelete}>
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -387,7 +630,7 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
             <SectionRow 
               icon={Users} 
               title="People" 
-              count={2}
+              count={1 + dependents.length}
               section="people"
             >
               <div className="space-y-3">
@@ -403,21 +646,144 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
                   </div>
                   <Badge>Owner</Badge>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-chart-2/20 flex items-center justify-center">
-                      <Users className="h-5 w-5 text-chart-2" />
+                
+                {dependents.map((dep) => (
+                  <ItemRow 
+                    key={dep.id}
+                    onEdit={() => setEditingDependent(dep)}
+                    onDelete={() => handleDeleteDependent(dep.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-chart-2/20 flex items-center justify-center">
+                        <Users className="h-5 w-5 text-chart-2" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{dep.name}</p>
+                        <p className="text-sm text-muted-foreground">Age {dep.age} • {dep.relationship}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">Spouse/Partner</p>
-                      <p className="text-sm text-muted-foreground">Age {currentAge - 2} • Partner</p>
+                  </ItemRow>
+                ))}
+                
+                <Dialog open={dialogOpen === 'dependent'} onOpenChange={(open) => setDialogOpen(open ? 'dependent' : null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Plus className="h-4 w-4 mr-1" /> Add Dependent
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Dependent</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input 
+                          value={newDependent.name || ''} 
+                          onChange={(e) => setNewDependent({...newDependent, name: e.target.value})}
+                          placeholder="Enter name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Relationship</Label>
+                        <Select 
+                          value={newDependent.relationship} 
+                          onValueChange={(v) => setNewDependent({...newDependent, relationship: v})}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select relationship" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Spouse">Spouse/Partner</SelectItem>
+                            <SelectItem value="Child">Child</SelectItem>
+                            <SelectItem value="Parent">Parent</SelectItem>
+                            <SelectItem value="Sibling">Sibling</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Age</Label>
+                          <Input 
+                            type="number" 
+                            value={newDependent.age || ''} 
+                            onChange={(e) => setNewDependent({...newDependent, age: parseInt(e.target.value)})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Dependent Until</Label>
+                          <Input 
+                            value={newDependent.dependentUntil || ''} 
+                            onChange={(e) => setNewDependent({...newDependent, dependentUntil: e.target.value})}
+                            placeholder="e.g., 2030"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant="secondary">Co-Owner</Badge>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Plus className="h-4 w-4 mr-1" /> Add Dependent
-                </Button>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleAddDependent}>Add Dependent</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Dependent Dialog */}
+                <Dialog open={!!editingDependent} onOpenChange={(open) => !open && setEditingDependent(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Dependent</DialogTitle>
+                    </DialogHeader>
+                    {editingDependent && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Name</Label>
+                          <Input 
+                            value={editingDependent.name} 
+                            onChange={(e) => setEditingDependent({...editingDependent, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Relationship</Label>
+                          <Select 
+                            value={editingDependent.relationship} 
+                            onValueChange={(v) => setEditingDependent({...editingDependent, relationship: v})}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Spouse">Spouse/Partner</SelectItem>
+                              <SelectItem value="Child">Child</SelectItem>
+                              <SelectItem value="Parent">Parent</SelectItem>
+                              <SelectItem value="Sibling">Sibling</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Age</Label>
+                            <Input 
+                              type="number" 
+                              value={editingDependent.age} 
+                              onChange={(e) => setEditingDependent({...editingDependent, age: parseInt(e.target.value)})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Dependent Until</Label>
+                            <Input 
+                              value={editingDependent.dependentUntil || ''} 
+                              onChange={(e) => setEditingDependent({...editingDependent, dependentUntil: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditingDependent(null)}>Cancel</Button>
+                      <Button onClick={handleUpdateDependent}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </SectionRow>
 
@@ -493,21 +859,127 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
               section="income"
             >
               <div className="space-y-3">
-                {incomeSources.map((source, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                {incomeSources.map((source) => (
+                  <ItemRow 
+                    key={source.id}
+                    onEdit={() => setEditingIncome(source)}
+                    onDelete={() => handleDeleteIncome(source.id)}
+                  >
                     <div className="flex items-center gap-3">
                       <Banknote className="h-5 w-5 text-chart-1" />
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium">{source.name}</p>
                         <p className="text-sm text-muted-foreground">{source.type} • {source.taxable ? 'Taxable' : 'Tax-Free'}</p>
                       </div>
+                      <span className="font-semibold">{formatCurrency(source.amount)}/yr</span>
                     </div>
-                    <span className="font-semibold">{formatCurrency(source.amount)}/yr</span>
-                  </div>
+                  </ItemRow>
                 ))}
-                <Button variant="outline" size="sm" className="w-full">
-                  <Plus className="h-4 w-4 mr-1" /> Add Income Source
-                </Button>
+                
+                <Dialog open={dialogOpen === 'income'} onOpenChange={(open) => setDialogOpen(open ? 'income' : null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Plus className="h-4 w-4 mr-1" /> Add Income Source
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Income Source</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input 
+                          value={newIncome.name || ''} 
+                          onChange={(e) => setNewIncome({...newIncome, name: e.target.value})}
+                          placeholder="e.g., Employment Income"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Annual Amount (£)</Label>
+                          <Input 
+                            type="number" 
+                            value={newIncome.amount || ''} 
+                            onChange={(e) => setNewIncome({...newIncome, amount: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Type</Label>
+                          <Select 
+                            value={newIncome.type} 
+                            onValueChange={(v) => setNewIncome({...newIncome, type: v})}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Primary">Primary</SelectItem>
+                              <SelectItem value="Secondary">Secondary</SelectItem>
+                              <SelectItem value="Investment">Investment</SelectItem>
+                              <SelectItem value="Rental">Rental</SelectItem>
+                              <SelectItem value="Pension">Pension</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleAddIncome}>Add Income</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Income Dialog */}
+                <Dialog open={!!editingIncome} onOpenChange={(open) => !open && setEditingIncome(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Income Source</DialogTitle>
+                    </DialogHeader>
+                    {editingIncome && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Name</Label>
+                          <Input 
+                            value={editingIncome.name} 
+                            onChange={(e) => setEditingIncome({...editingIncome, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Annual Amount (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingIncome.amount} 
+                              onChange={(e) => setEditingIncome({...editingIncome, amount: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Type</Label>
+                            <Select 
+                              value={editingIncome.type} 
+                              onValueChange={(v) => setEditingIncome({...editingIncome, type: v})}
+                            >
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Primary">Primary</SelectItem>
+                                <SelectItem value="Secondary">Secondary</SelectItem>
+                                <SelectItem value="Investment">Investment</SelectItem>
+                                <SelectItem value="Rental">Rental</SelectItem>
+                                <SelectItem value="Pension">Pension</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditingIncome(null)}>Cancel</Button>
+                      <Button onClick={handleUpdateIncome}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </SectionRow>
 
@@ -550,34 +1022,164 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
               section="property"
             >
               <div className="space-y-3">
-                {properties.map((prop, i) => (
-                  <div key={i} className="p-3 bg-background rounded-lg border">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-5 w-5 text-chart-3" />
-                        <span className="font-medium">{prop.name}</span>
+                {properties.map((prop) => (
+                  <ItemRow 
+                    key={prop.id}
+                    onEdit={() => setEditingProperty(prop)}
+                    onDelete={() => handleDeleteProperty(prop.id)}
+                  >
+                    <div className="p-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-5 w-5 text-chart-3" />
+                          <span className="font-medium">{prop.name}</span>
+                        </div>
+                        <Badge variant="outline">{prop.type}</Badge>
                       </div>
-                      <Badge variant="outline">{prop.type}</Badge>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Value</p>
+                          <p className="font-semibold">{formatCurrency(prop.value)}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Mortgage</p>
+                          <p className="font-semibold text-destructive">{formatCurrency(prop.mortgage)}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Equity</p>
+                          <p className="font-semibold text-chart-1">{formatCurrency(prop.equity)}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Value</p>
-                        <p className="font-semibold">{formatCurrency(prop.value)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Mortgage</p>
-                        <p className="font-semibold text-destructive">{formatCurrency(prop.mortgage)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Equity</p>
-                        <p className="font-semibold text-chart-1">{formatCurrency(prop.equity)}</p>
-                      </div>
-                    </div>
-                  </div>
+                  </ItemRow>
                 ))}
-                <Button variant="outline" size="sm" className="w-full">
-                  <Plus className="h-4 w-4 mr-1" /> Add Property
-                </Button>
+                
+                <Dialog open={dialogOpen === 'property'} onOpenChange={(open) => setDialogOpen(open ? 'property' : null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Plus className="h-4 w-4 mr-1" /> Add Property
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Property</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Property Name</Label>
+                        <Input 
+                          value={newProperty.name || ''} 
+                          onChange={(e) => setNewProperty({...newProperty, name: e.target.value})}
+                          placeholder="e.g., Main Residence"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Property Type</Label>
+                        <Select 
+                          value={newProperty.type} 
+                          onValueChange={(v) => setNewProperty({...newProperty, type: v})}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Primary">Primary Residence</SelectItem>
+                            <SelectItem value="Investment">Investment/BTL</SelectItem>
+                            <SelectItem value="Holiday">Holiday Home</SelectItem>
+                            <SelectItem value="Commercial">Commercial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Value (£)</Label>
+                          <Input 
+                            type="number" 
+                            value={newProperty.value || ''} 
+                            onChange={(e) => setNewProperty({...newProperty, value: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Mortgage (£)</Label>
+                          <Input 
+                            type="number" 
+                            value={newProperty.mortgage || ''} 
+                            onChange={(e) => setNewProperty({...newProperty, mortgage: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Monthly Rental Income (£) - Optional</Label>
+                        <Input 
+                          type="number" 
+                          value={newProperty.rentalIncome || ''} 
+                          onChange={(e) => setNewProperty({...newProperty, rentalIncome: parseFloat(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleAddProperty}>Add Property</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Property Dialog */}
+                <Dialog open={!!editingProperty} onOpenChange={(open) => !open && setEditingProperty(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Property</DialogTitle>
+                    </DialogHeader>
+                    {editingProperty && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Property Name</Label>
+                          <Input 
+                            value={editingProperty.name} 
+                            onChange={(e) => setEditingProperty({...editingProperty, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Property Type</Label>
+                          <Select 
+                            value={editingProperty.type} 
+                            onValueChange={(v) => setEditingProperty({...editingProperty, type: v})}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Primary">Primary Residence</SelectItem>
+                              <SelectItem value="Investment">Investment/BTL</SelectItem>
+                              <SelectItem value="Holiday">Holiday Home</SelectItem>
+                              <SelectItem value="Commercial">Commercial</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Value (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingProperty.value} 
+                              onChange={(e) => setEditingProperty({...editingProperty, value: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Mortgage (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingProperty.mortgage} 
+                              onChange={(e) => setEditingProperty({...editingProperty, mortgage: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditingProperty(null)}>Cancel</Button>
+                      <Button onClick={handleUpdateProperty}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </SectionRow>
 
@@ -589,8 +1191,12 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
               section="pensions"
             >
               <div className="space-y-3">
-                {pensionAccounts.map((pension, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                {pensionAccounts.map((pension) => (
+                  <ItemRow 
+                    key={pension.id}
+                    onEdit={() => setEditingPension(pension)}
+                    onDelete={() => handleDeletePension(pension.id)}
+                  >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold ${
                         pension.type === 'DB' ? 'bg-chart-1/20 text-chart-1' : 
@@ -599,23 +1205,155 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
                       }`}>
                         {pension.type}
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <p className="font-medium text-sm">{pension.name}</p>
                         <p className="text-xs text-muted-foreground">{pension.provider}</p>
                       </div>
+                      <div className="text-right">
+                        {pension.value > 0 ? (
+                          <span className="font-semibold">{formatCurrency(pension.value)}</span>
+                        ) : (
+                          <span className="font-semibold">{formatCurrency(pension.annualAmount || 0)}/yr</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      {pension.value > 0 ? (
-                        <span className="font-semibold">{formatCurrency(pension.value)}</span>
-                      ) : (
-                        <span className="font-semibold">{formatCurrency(pension.annualAmount || 0)}/yr</span>
-                      )}
-                    </div>
-                  </div>
+                  </ItemRow>
                 ))}
-                <Button variant="outline" size="sm" className="w-full">
-                  <Plus className="h-4 w-4 mr-1" /> Add Pension
-                </Button>
+                
+                <Dialog open={dialogOpen === 'pension'} onOpenChange={(open) => setDialogOpen(open ? 'pension' : null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Plus className="h-4 w-4 mr-1" /> Add Pension
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Pension</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Pension Name</Label>
+                        <Input 
+                          value={newPension.name || ''} 
+                          onChange={(e) => setNewPension({...newPension, name: e.target.value})}
+                          placeholder="e.g., SIPP - Provider"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Type</Label>
+                          <Select 
+                            value={newPension.type} 
+                            onValueChange={(v) => setNewPension({...newPension, type: v})}
+                          >
+                            <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="DC">Defined Contribution (DC)</SelectItem>
+                              <SelectItem value="DB">Defined Benefit (DB)</SelectItem>
+                              <SelectItem value="State">State Pension</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Provider</Label>
+                          <Input 
+                            value={newPension.provider || ''} 
+                            onChange={(e) => setNewPension({...newPension, provider: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Fund Value (£)</Label>
+                          <Input 
+                            type="number" 
+                            value={newPension.value || ''} 
+                            onChange={(e) => setNewPension({...newPension, value: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Annual Amount (£) - For DB/State</Label>
+                          <Input 
+                            type="number" 
+                            value={newPension.annualAmount || ''} 
+                            onChange={(e) => setNewPension({...newPension, annualAmount: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleAddPension}>Add Pension</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Pension Dialog */}
+                <Dialog open={!!editingPension} onOpenChange={(open) => !open && setEditingPension(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Pension</DialogTitle>
+                    </DialogHeader>
+                    {editingPension && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Pension Name</Label>
+                          <Input 
+                            value={editingPension.name} 
+                            onChange={(e) => setEditingPension({...editingPension, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Type</Label>
+                            <Select 
+                              value={editingPension.type} 
+                              onValueChange={(v) => setEditingPension({...editingPension, type: v})}
+                            >
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="DC">Defined Contribution (DC)</SelectItem>
+                                <SelectItem value="DB">Defined Benefit (DB)</SelectItem>
+                                <SelectItem value="State">State Pension</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Provider</Label>
+                            <Input 
+                              value={editingPension.provider} 
+                              onChange={(e) => setEditingPension({...editingPension, provider: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Fund Value (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingPension.value} 
+                              onChange={(e) => setEditingPension({...editingPension, value: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Annual Amount (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingPension.annualAmount || ''} 
+                              onChange={(e) => setEditingPension({...editingPension, annualAmount: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditingPension(null)}>Cancel</Button>
+                      <Button onClick={handleUpdatePension}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </SectionRow>
 
@@ -627,31 +1365,195 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
               section="debt"
             >
               <div className="space-y-3">
-                {debts.map((debt, i) => (
-                  <div key={i} className="p-3 bg-background rounded-lg border">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">{debt.name}</span>
-                      <span className="font-semibold text-destructive">{formatCurrency(debt.balance)}</span>
+                {debts.map((debt) => (
+                  <ItemRow 
+                    key={debt.id}
+                    onEdit={() => setEditingDebt(debt)}
+                    onDelete={() => handleDeleteDebt(debt.id)}
+                  >
+                    <div className="p-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">{debt.name}</span>
+                        <span className="font-semibold text-destructive">{formatCurrency(debt.balance)}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Interest Rate</p>
+                          <p className="font-medium">{debt.rate}%</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Monthly Payment</p>
+                          <p className="font-medium">{formatCurrency(debt.monthlyPayment)}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Years Remaining</p>
+                          <p className="font-medium">{debt.remaining} years</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Interest Rate</p>
-                        <p className="font-medium">{debt.rate}%</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Monthly Payment</p>
-                        <p className="font-medium">{formatCurrency(debt.monthlyPayment)}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Years Remaining</p>
-                        <p className="font-medium">{debt.remaining} years</p>
-                      </div>
-                    </div>
-                  </div>
+                  </ItemRow>
                 ))}
-                <Button variant="outline" size="sm" className="w-full">
-                  <Plus className="h-4 w-4 mr-1" /> Add Debt/Loan
-                </Button>
+                
+                <Dialog open={dialogOpen === 'debt'} onOpenChange={(open) => setDialogOpen(open ? 'debt' : null)}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Plus className="h-4 w-4 mr-1" /> Add Debt/Loan
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Debt/Loan</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input 
+                          value={newDebt.name || ''} 
+                          onChange={(e) => setNewDebt({...newDebt, name: e.target.value})}
+                          placeholder="e.g., Mortgage, Personal Loan"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Type</Label>
+                        <Select 
+                          value={newDebt.type} 
+                          onValueChange={(v) => setNewDebt({...newDebt, type: v})}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Mortgage">Mortgage</SelectItem>
+                            <SelectItem value="Personal Loan">Personal Loan</SelectItem>
+                            <SelectItem value="Car Finance">Car Finance</SelectItem>
+                            <SelectItem value="Credit Card">Credit Card</SelectItem>
+                            <SelectItem value="Student Loan">Student Loan</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Outstanding Balance (£)</Label>
+                          <Input 
+                            type="number" 
+                            value={newDebt.balance || ''} 
+                            onChange={(e) => setNewDebt({...newDebt, balance: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Interest Rate (%)</Label>
+                          <Input 
+                            type="number" 
+                            step="0.1"
+                            value={newDebt.rate || ''} 
+                            onChange={(e) => setNewDebt({...newDebt, rate: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Monthly Payment (£)</Label>
+                          <Input 
+                            type="number" 
+                            value={newDebt.monthlyPayment || ''} 
+                            onChange={(e) => setNewDebt({...newDebt, monthlyPayment: parseFloat(e.target.value)})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Years Remaining</Label>
+                          <Input 
+                            type="number" 
+                            value={newDebt.remaining || ''} 
+                            onChange={(e) => setNewDebt({...newDebt, remaining: parseInt(e.target.value)})}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleAddDebt}>Add Debt</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Debt Dialog */}
+                <Dialog open={!!editingDebt} onOpenChange={(open) => !open && setEditingDebt(null)}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Debt/Loan</DialogTitle>
+                    </DialogHeader>
+                    {editingDebt && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Name</Label>
+                          <Input 
+                            value={editingDebt.name} 
+                            onChange={(e) => setEditingDebt({...editingDebt, name: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Type</Label>
+                          <Select 
+                            value={editingDebt.type} 
+                            onValueChange={(v) => setEditingDebt({...editingDebt, type: v})}
+                          >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Mortgage">Mortgage</SelectItem>
+                              <SelectItem value="Personal Loan">Personal Loan</SelectItem>
+                              <SelectItem value="Car Finance">Car Finance</SelectItem>
+                              <SelectItem value="Credit Card">Credit Card</SelectItem>
+                              <SelectItem value="Student Loan">Student Loan</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Outstanding Balance (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingDebt.balance} 
+                              onChange={(e) => setEditingDebt({...editingDebt, balance: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Interest Rate (%)</Label>
+                            <Input 
+                              type="number" 
+                              step="0.1"
+                              value={editingDebt.rate} 
+                              onChange={(e) => setEditingDebt({...editingDebt, rate: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Monthly Payment (£)</Label>
+                            <Input 
+                              type="number" 
+                              value={editingDebt.monthlyPayment} 
+                              onChange={(e) => setEditingDebt({...editingDebt, monthlyPayment: parseFloat(e.target.value)})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Years Remaining</Label>
+                            <Input 
+                              type="number" 
+                              value={editingDebt.remaining} 
+                              onChange={(e) => setEditingDebt({...editingDebt, remaining: parseInt(e.target.value)})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setEditingDebt(null)}>Cancel</Button>
+                      <Button onClick={handleUpdateDebt}>Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </SectionRow>
 
@@ -805,10 +1707,6 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
                 Run Scenario Analysis
               </Button>
               <Button variant="outline" className="w-full justify-start">
-                <Shield className="h-4 w-4 mr-2" />
-                Risk Assessment
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
                 <FileText className="h-4 w-4 mr-2" />
                 Generate Report
               </Button>
@@ -817,8 +1715,8 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
                 Schedule Review
               </Button>
               <Button variant="outline" className="w-full justify-start">
-                <Receipt className="h-4 w-4 mr-2" />
-                Tax Planning
+                <Shield className="h-4 w-4 mr-2" />
+                Risk Assessment
               </Button>
             </CardContent>
           </Card>
@@ -829,45 +1727,36 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
               <CardTitle className="text-base">Key Metrics</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+              <div>
+                <div className="flex items-center justify-between text-sm mb-1">
                   <span className="text-muted-foreground">Goal Success Rate</span>
-                  <span className="font-semibold text-chart-1">87%</span>
+                  <span className="font-medium">92%</span>
                 </div>
-                <Progress value={87} className="h-2" />
+                <Progress value={92} className="h-2" />
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+              <div>
+                <div className="flex items-center justify-between text-sm mb-1">
                   <span className="text-muted-foreground">Retirement Readiness</span>
-                  <span className="font-semibold text-chart-2">72%</span>
+                  <span className="font-medium">78%</span>
                 </div>
-                <Progress value={72} className="h-2" />
+                <Progress value={78} className="h-2" />
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax Efficiency</span>
-                  <span className="font-semibold text-chart-3">65%</span>
+              <div>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-muted-foreground">Protection Score</span>
+                  <span className="font-medium">65%</span>
                 </div>
                 <Progress value={65} className="h-2" />
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Estate Planning</span>
-                  <span className="font-semibold text-chart-4">45%</span>
+              <div>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-muted-foreground">Tax Efficiency</span>
+                  <span className="font-medium">84%</span>
                 </div>
-                <Progress value={45} className="h-2" />
+                <Progress value={84} className="h-2" />
               </div>
             </CardContent>
           </Card>
-
-          {/* Floating Action Button */}
-          <Button 
-            size="lg" 
-            className="w-full h-14 text-lg shadow-lg"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Add New Item
-          </Button>
         </div>
       </div>
     </div>
