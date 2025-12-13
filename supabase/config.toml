@@ -99,3 +99,6 @@ verify_jwt = false
 [functions.crm-ai-insights]
 verify_jwt = true
 
+[functions.companies-house-scraper]
+verify_jwt = true
+
