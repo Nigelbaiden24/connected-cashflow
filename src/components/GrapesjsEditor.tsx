@@ -364,9 +364,9 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
       category: 'Media',
     });
 
-    // Table Block
+    // Table Blocks
     bm.add('table-basic', {
-      label: '📊 Table',
+      label: '📊 Table 3x3',
       content: `<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
         <thead>
           <tr style="background: #f7fafc; border-bottom: 2px solid #e2e8f0;">
@@ -388,7 +388,137 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
           </tr>
         </tbody>
       </table>`,
-      category: 'Components',
+      category: 'Tables',
+    });
+
+    bm.add('table-2col', {
+      label: '📋 Table 2x4',
+      content: `<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+          <tr style="background: #1e3a5f; color: white; border-bottom: 2px solid #e2e8f0;">
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Field</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px; font-weight: 500;">Row 1</td><td style="padding: 12px;">Value 1</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px; font-weight: 500;">Row 2</td><td style="padding: 12px;">Value 2</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px; font-weight: 500;">Row 3</td><td style="padding: 12px;">Value 3</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px; font-weight: 500;">Row 4</td><td style="padding: 12px;">Value 4</td></tr>
+        </tbody>
+      </table>`,
+      category: 'Tables',
+    });
+
+    bm.add('table-4col', {
+      label: '📑 Table 4x5',
+      content: `<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+          <tr style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Column 1</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Column 2</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Column 3</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Column 4</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td><td style="padding: 12px;">Data</td></tr>
+        </tbody>
+      </table>`,
+      category: 'Tables',
+    });
+
+    bm.add('table-financial', {
+      label: '💰 Financial Table',
+      content: `<table style="width: 100%; border-collapse: collapse; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden;">
+        <thead>
+          <tr style="background: #1e3a5f; color: white;">
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Description</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600;">Amount</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600;">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px;">Item 1</td><td style="padding: 12px; text-align: right; font-family: monospace;">£10,000</td><td style="padding: 12px; text-align: right;">25%</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px;">Item 2</td><td style="padding: 12px; text-align: right; font-family: monospace;">£15,000</td><td style="padding: 12px; text-align: right;">37.5%</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px;">Item 3</td><td style="padding: 12px; text-align: right; font-family: monospace;">£15,000</td><td style="padding: 12px; text-align: right;">37.5%</td></tr>
+          <tr style="background: #f1f5f9; font-weight: 700;"><td style="padding: 14px;">Total</td><td style="padding: 14px; text-align: right; font-family: monospace;">£40,000</td><td style="padding: 14px; text-align: right;">100%</td></tr>
+        </tbody>
+      </table>`,
+      category: 'Tables',
+    });
+
+    bm.add('table-comparison', {
+      label: '⚖️ Comparison Table',
+      content: `<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+          <tr style="background: #667eea; color: white;">
+            <th style="padding: 14px; text-align: left; font-weight: 600;">Feature</th>
+            <th style="padding: 14px; text-align: center; font-weight: 600;">Option A</th>
+            <th style="padding: 14px; text-align: center; font-weight: 600;">Option B</th>
+            <th style="padding: 14px; text-align: center; font-weight: 600;">Option C</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px; font-weight: 500;">Feature 1</td><td style="padding: 12px; text-align: center;">✓</td><td style="padding: 12px; text-align: center;">✓</td><td style="padding: 12px; text-align: center;">✓</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px; font-weight: 500;">Feature 2</td><td style="padding: 12px; text-align: center;">✓</td><td style="padding: 12px; text-align: center;">—</td><td style="padding: 12px; text-align: center;">✓</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;"><td style="padding: 12px; font-weight: 500;">Feature 3</td><td style="padding: 12px; text-align: center;">—</td><td style="padding: 12px; text-align: center;">✓</td><td style="padding: 12px; text-align: center;">✓</td></tr>
+          <tr style="border-bottom: 1px solid #e2e8f0; background: #f9fafb;"><td style="padding: 12px; font-weight: 500;">Price</td><td style="padding: 12px; text-align: center; font-weight: 600;">£99</td><td style="padding: 12px; text-align: center; font-weight: 600;">£149</td><td style="padding: 12px; text-align: center; font-weight: 600;">£199</td></tr>
+        </tbody>
+      </table>`,
+      category: 'Tables',
+    });
+
+    bm.add('table-striped', {
+      label: '🦓 Striped Table',
+      content: `<table style="width: 100%; border-collapse: collapse; margin: 20px 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <thead>
+          <tr style="background: #f3f4f6;">
+            <th style="padding: 14px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0;">Name</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0;">Status</th>
+            <th style="padding: 14px; text-align: left; font-weight: 600; border-bottom: 2px solid #e2e8f0;">Date</th>
+            <th style="padding: 14px; text-align: right; font-weight: 600; border-bottom: 2px solid #e2e8f0;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding: 12px;">Record 1</td><td style="padding: 12px;"><span style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 12px;">Active</span></td><td style="padding: 12px;">01/01/2024</td><td style="padding: 12px; text-align: right;">£1,000</td></tr>
+          <tr style="background: #f9fafb;"><td style="padding: 12px;">Record 2</td><td style="padding: 12px;"><span style="background: #fef3c7; color: #d97706; padding: 4px 12px; border-radius: 20px; font-size: 12px;">Pending</span></td><td style="padding: 12px;">02/01/2024</td><td style="padding: 12px; text-align: right;">£2,500</td></tr>
+          <tr><td style="padding: 12px;">Record 3</td><td style="padding: 12px;"><span style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 12px;">Active</span></td><td style="padding: 12px;">03/01/2024</td><td style="padding: 12px; text-align: right;">£750</td></tr>
+        </tbody>
+      </table>`,
+      category: 'Tables',
+    });
+
+    bm.add('table-pricing', {
+      label: '💵 Pricing Table',
+      content: `<div style="display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; text-align: center;">
+          <h3 style="margin: 0 0 8px 0; color: #667eea;">Basic</h3>
+          <div style="font-size: 32px; font-weight: 700; margin: 16px 0;">£29<span style="font-size: 14px; font-weight: 400; color: #6b7280;">/mo</span></div>
+          <ul style="list-style: none; padding: 0; margin: 20px 0; text-align: left;">
+            <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✓ Feature 1</li>
+            <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✓ Feature 2</li>
+            <li style="padding: 8px 0; color: #9ca3af;">✗ Feature 3</li>
+          </ul>
+          <button style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">Select</button>
+        </div>
+        <div style="flex: 1; min-width: 200px; border: 2px solid #667eea; border-radius: 12px; padding: 24px; text-align: center; background: linear-gradient(to bottom, #f0f5ff, white);">
+          <span style="background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px;">Popular</span>
+          <h3 style="margin: 12px 0 8px 0; color: #667eea;">Pro</h3>
+          <div style="font-size: 32px; font-weight: 700; margin: 16px 0;">£59<span style="font-size: 14px; font-weight: 400; color: #6b7280;">/mo</span></div>
+          <ul style="list-style: none; padding: 0; margin: 20px 0; text-align: left;">
+            <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✓ Feature 1</li>
+            <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✓ Feature 2</li>
+            <li style="padding: 8px 0;">✓ Feature 3</li>
+          </ul>
+          <button style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">Select</button>
+        </div>
+      </div>`,
+      category: 'Tables',
     });
 
     // Set initial content with wrapper

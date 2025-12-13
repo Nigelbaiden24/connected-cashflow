@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
+import html2pdf from 'html2pdf.js';
 import {
   FileText, Download, Loader2, Eye, Settings2,
   User, Target, PiggyBank, Home, Landmark, CreditCard,
@@ -156,24 +157,62 @@ export function ClientReportGenerator({ client, goals, portfolioHoldings, format
     // Generate PDF content
     const reportContent = generatePDFContent();
     
-    // Create blob and download
-    const blob = new Blob([reportContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${client?.name?.replace(/\s+/g, '_') || 'Client'}_Financial_Report_${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Create a temporary container for the HTML content
+    const container = document.createElement('div');
+    container.innerHTML = reportContent;
+    document.body.appendChild(container);
+    
+    // Configure html2pdf options for enterprise-grade output
+    const opt = {
+      margin: [10, 10, 15, 10] as [number, number, number, number],
+      filename: `${client?.name?.replace(/\s+/g, '_') || 'Client'}_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true,
+        letterRendering: true,
+        logging: false
+      },
+      jsPDF: { 
+        unit: 'mm' as const, 
+        format: 'a4' as const, 
+        orientation: 'portrait' as const,
+        compress: true
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+
+    try {
+      await html2pdf().set(opt).from(container).save();
+      
+      toast({
+        title: "PDF Report Generated",
+        description: `${selectedSections.length} sections included in your professional report`,
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Downloading as HTML instead.",
+        variant: "destructive"
+      });
+      
+      // Fallback to HTML download
+      const blob = new Blob([reportContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${client?.name?.replace(/\s+/g, '_') || 'Client'}_Financial_Report_${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      document.body.removeChild(container);
+    }
 
     setGenerating(false);
     setProgress(0);
-
-    toast({
-      title: "Report Generated",
-      description: `${selectedSections.length} sections included in your report`,
-    });
   };
 
   const generatePDFContent = () => {
