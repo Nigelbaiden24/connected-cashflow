@@ -1564,6 +1564,45 @@ export type Database = {
         }
         Relationships: []
       }
+      companies_house_scrapes: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          search_query: string
+          search_type: string
+          status: string
+          total_pages_scraped: number | null
+          total_records_found: number | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          search_query: string
+          search_type: string
+          status?: string
+          total_pages_scraped?: number | null
+          total_records_found?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          search_query?: string
+          search_type?: string
+          status?: string
+          total_pages_scraped?: number | null
+          total_records_found?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       compliance_audit_trail: {
         Row: {
           action: string
@@ -4107,6 +4146,110 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      scraped_companies: {
+        Row: {
+          company_name: string
+          company_number: string
+          company_status: string | null
+          created_at: string
+          id: string
+          incorporation_date: string | null
+          registered_address: string | null
+          scrape_id: string | null
+          sic_codes: string[] | null
+        }
+        Insert: {
+          company_name: string
+          company_number: string
+          company_status?: string | null
+          created_at?: string
+          id?: string
+          incorporation_date?: string | null
+          registered_address?: string | null
+          scrape_id?: string | null
+          sic_codes?: string[] | null
+        }
+        Update: {
+          company_name?: string
+          company_number?: string
+          company_status?: string | null
+          created_at?: string
+          id?: string
+          incorporation_date?: string | null
+          registered_address?: string | null
+          scrape_id?: string | null
+          sic_codes?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scraped_companies_scrape_id_fkey"
+            columns: ["scrape_id"]
+            isOneToOne: false
+            referencedRelation: "companies_house_scrapes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scraped_officers: {
+        Row: {
+          appointed_date: string | null
+          company_id: string | null
+          correspondence_address: string | null
+          created_at: string
+          date_of_birth_month: number | null
+          date_of_birth_year: number | null
+          full_name: string
+          id: string
+          nationality: string | null
+          officer_role: string
+          resigned_date: string | null
+          scrape_id: string | null
+        }
+        Insert: {
+          appointed_date?: string | null
+          company_id?: string | null
+          correspondence_address?: string | null
+          created_at?: string
+          date_of_birth_month?: number | null
+          date_of_birth_year?: number | null
+          full_name: string
+          id?: string
+          nationality?: string | null
+          officer_role: string
+          resigned_date?: string | null
+          scrape_id?: string | null
+        }
+        Update: {
+          appointed_date?: string | null
+          company_id?: string | null
+          correspondence_address?: string | null
+          created_at?: string
+          date_of_birth_month?: number | null
+          date_of_birth_year?: number | null
+          full_name?: string
+          id?: string
+          nationality?: string | null
+          officer_role?: string
+          resigned_date?: string | null
+          scrape_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scraped_officers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "scraped_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scraped_officers_scrape_id_fkey"
+            columns: ["scrape_id"]
+            isOneToOne: false
+            referencedRelation: "companies_house_scrapes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       secure_vault: {
         Row: {
