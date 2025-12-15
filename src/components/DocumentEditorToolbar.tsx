@@ -81,8 +81,6 @@ interface DocumentEditorToolbarProps {
   onTextAlignChange: (align: string) => void;
   zoom: number;
   onZoomChange: (zoom: number) => void;
-  showGrid: boolean;
-  onShowGridChange: (show: boolean) => void;
   onUndo: () => void;
   onRedo: () => void;
   canUndo: boolean;
@@ -93,6 +91,7 @@ interface DocumentEditorToolbarProps {
   onAddSignatureField?: () => void;
   onRequestSignature?: () => void;
   signatureFields?: Array<{ id: string; signed: boolean }>;
+  onInsertTable: (rows: number, cols: number) => void;
 }
 
 export function DocumentEditorToolbar({
@@ -118,8 +117,6 @@ export function DocumentEditorToolbar({
   onTextAlignChange,
   zoom,
   onZoomChange,
-  showGrid,
-  onShowGridChange,
   onUndo,
   onRedo,
   canUndo,
@@ -130,6 +127,7 @@ export function DocumentEditorToolbar({
   onAddSignatureField,
   onRequestSignature,
   signatureFields = [],
+  onInsertTable,
 }: DocumentEditorToolbarProps) {
   const [imageUploadKey, setImageUploadKey] = useState(0);
   const [logoUploadKey, setLogoUploadKey] = useState(0);
@@ -138,6 +136,9 @@ export function DocumentEditorToolbar({
   const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false);
   const [signatureName, setSignatureName] = useState("");
   const [signatureTitle, setSignatureTitle] = useState("");
+  const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
+  const [tableRows, setTableRows] = useState(3);
+  const [tableCols, setTableCols] = useState(3);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -448,13 +449,60 @@ export function DocumentEditorToolbar({
           </Button>
         </div>
 
-        <Button
-          variant={showGrid ? "default" : "outline"}
-          size="sm"
-          onClick={() => onShowGridChange(!showGrid)}
-        >
-          <Grid3x3 className="h-4 w-4" />
-        </Button>
+        <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsTableDialogOpen(true)}
+          >
+            <Grid3x3 className="h-4 w-4 mr-2" />
+            Table
+          </Button>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Insert Table</DialogTitle>
+              <DialogDescription>
+                Choose the number of rows and columns for your data table.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <div>
+                <Label htmlFor="table-rows">Rows</Label>
+                <Input
+                  id="table-rows"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={tableRows}
+                  onChange={(e) => setTableRows(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="table-cols">Columns</Label>
+                <Input
+                  id="table-cols"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={tableCols}
+                  onChange={(e) => setTableCols(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <Button
+              className="mt-4"
+              onClick={() => {
+                onInsertTable(tableRows, tableCols);
+                setIsTableDialogOpen(false);
+              }}
+            >
+              <Grid3x3 className="h-4 w-4 mr-2" />
+              Insert Table
+            </Button>
+          </DialogContent>
+        </Dialog>
 
         <Separator orientation="vertical" className="h-6" />
 
