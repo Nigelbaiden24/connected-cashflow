@@ -30,7 +30,6 @@ const BusinessAIGenerator = () => {
   const [fontSize, setFontSize] = useState(16);
   const [textAlign, setTextAlign] = useState("left");
   const [zoom, setZoom] = useState(100);
-  const [showGrid, setShowGrid] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [shapes, setShapes] = useState<Array<{ id: string; type: string; x: number; y: number; width: number; height: number; color: string }>>([]);
@@ -474,8 +473,6 @@ ELITE DOCUMENT REQUIREMENTS:
                 onTextAlignChange={setTextAlign}
                 zoom={zoom}
                 onZoomChange={setZoom}
-                showGrid={showGrid}
-                onShowGridChange={setShowGrid}
                 onUndo={handleUndo}
                 onRedo={handleRedo}
                 canUndo={historyIndex > 0}
@@ -513,6 +510,60 @@ ELITE DOCUMENT REQUIREMENTS:
                 onAddSignatureField={handleAddSignatureField}
                 onRequestSignature={handleRequestSignature}
                 signatureFields={signatureFields}
+                onInsertTable={(rows, cols) => {
+                  const maxY = currentPageSections.length > 0
+                    ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
+                    : 0;
+
+                  const headers = Array.from({ length: cols }, (_, i) => `Column ${i + 1}`);
+                  const bodyRows = Array.from({ length: rows }, (_, r) =>
+                    `<tr>${headers
+                      .map(
+                        (_, c) =>
+                          `<td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #e5e7eb;">Row ${r + 1} value ${c + 1}</td>`
+                      )
+                      .join("")}</tr>`
+                  ).join("");
+
+                  const tableHtml = `
+                    <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
+                      <thead>
+                        <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                          ${headers
+                            .map(
+                              (h) =>
+                                `<th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">${h}</th>`
+                            )
+                            .join("")}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${bodyRows}
+                      </tbody>
+                    </table>
+                  `;
+
+                  const newSection: any = {
+                    id: `table-${Date.now()}`,
+                    title: "Data Table",
+                    content: tableHtml,
+                    type: "table",
+                    editable: false,
+                    order: sections.length,
+                    x: 50,
+                    y: maxY + 50,
+                    width: 700,
+                    height: 160,
+                    isCustom: true,
+                    pageId: currentPageId,
+                  };
+
+                  setSections([...sections, newSection]);
+                  toast({
+                    title: "Table inserted",
+                    description: `${rows} x ${cols} table added to the page`,
+                  });
+                }}
               />
 
               <div className="flex-1 overflow-auto">

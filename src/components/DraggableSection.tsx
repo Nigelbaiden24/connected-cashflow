@@ -139,10 +139,20 @@ export function DraggableSection({
         <ul className="list-disc list-inside space-y-2">
           {items.map((item, idx) => (
             <li key={idx} className="text-foreground/80">
-              {item.replace(/^[-•]\s*/, "")}
+              {item.replace(/^[ -•]\s*/, "")}
             </li>
           ))}
         </ul>
+      );
+    }
+    if (type === "table") {
+      return (
+        <div className="max-w-full overflow-x-auto">
+          <div
+            className="min-w-full text-sm text-foreground/90"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
       );
     }
     return null;
