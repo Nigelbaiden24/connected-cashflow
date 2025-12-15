@@ -554,6 +554,55 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
       category: 'Tables',
     });
 
+    // Rich Text Editor: elite table insertion button
+    const rte = editor.RichTextEditor;
+    if (rte) {
+      // Add custom table action
+      rte.add('insert-table-elite', {
+        icon: '<span style="font-size:14px">📊</span>',
+        attributes: { title: 'Insert responsive data table' },
+        result: (rteInstance: any) => {
+          const tableHtml = `
+            <div class="table-wrapper" style="margin: 20px 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+              <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
+                <thead>
+                  <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                    <th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">Column 1</th>
+                    <th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">Column 2</th>
+                    <th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">Column 3</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 8px 12px; font-size: 13px;">Row 1 value 1</td>
+                    <td style="padding: 8px 12px; font-size: 13px;">Row 1 value 2</td>
+                    <td style="padding: 8px 12px; font-size: 13px;">Row 1 value 3</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                    <td style="padding: 8px 12px; font-size: 13px;">Row 2 value 1</td>
+                    <td style="padding: 8px 12px; font-size: 13px;">Row 2 value 2</td>
+                    <td style="padding: 8px 12px; font-size: 13px;">Row 2 value 3</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+
+          // Insert at current caret position inside the rich text area
+          rteInstance.insertHTML(tableHtml);
+        },
+      });
+
+      // Ensure the action is available on all text toolbars
+      editor.on('rte:config', (config: any) => {
+        const actions = Array.isArray(config.actions) ? config.actions : [];
+        if (!actions.includes('insert-table-elite')) {
+          config.actions = [...actions, 'insert-table-elite'];
+        }
+        return config;
+      });
+    }
+
     // Set initial content with wrapper
     const wrappedContent = `
       <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
@@ -735,53 +784,39 @@ export function GrapesjsEditor({ initialHtml, onSave, height = '100vh' }: Grapes
           padding: 8px 12px;
         }
         
-        /* Toolbar */
-        .gjs-toolbar {
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          border: 1px solid #e2e8f0;
+        /* Data tables - enterprise responsive styling */
+        .table-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          margin: 20px 0;
         }
-        .gjs-toolbar-item {
-          padding: 6px 10px;
-          transition: all 0.2s;
+        .table-wrapper table {
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 480px;
         }
-        .gjs-toolbar-item:hover {
-          background: #f1f5f9;
+        .table-wrapper th,
+        .table-wrapper td {
+          padding: 8px 12px;
+          border-bottom: 1px solid #e5e7eb;
+          font-size: 13px;
+          text-align: left;
+          word-break: break-word;
         }
-        
-        /* Resizer */
-        .gjs-resizer-h,
-        .gjs-resizer-w {
-          background-color: #667eea;
+        .table-wrapper thead tr {
+          background: #f3f4f6;
+          border-bottom: 2px solid #e5e7eb;
         }
-        
-        /* Scrollbars */
-        .blocks-container::-webkit-scrollbar,
-        .layers-container::-webkit-scrollbar,
-        .styles-container::-webkit-scrollbar,
-        .traits-container::-webkit-scrollbar {
-          width: 8px;
-        }
-        .blocks-container::-webkit-scrollbar-track,
-        .layers-container::-webkit-scrollbar-track,
-        .styles-container::-webkit-scrollbar-track,
-        .traits-container::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 4px;
-        }
-        .blocks-container::-webkit-scrollbar-thumb,
-        .layers-container::-webkit-scrollbar-thumb,
-        .styles-container::-webkit-scrollbar-thumb,
-        .traits-container::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
-          border-radius: 4px;
-        }
-        .blocks-container::-webkit-scrollbar-thumb:hover,
-        .layers-container::-webkit-scrollbar-thumb:hover,
-        .styles-container::-webkit-scrollbar-thumb:hover,
-        .traits-container::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+
+        @media (max-width: 768px) {
+          .table-wrapper table {
+            min-width: 100%;
+          }
+          .table-wrapper th,
+          .table-wrapper td {
+            padding: 8px;
+          }
         }
       `}</style>
       
