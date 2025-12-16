@@ -462,22 +462,33 @@ ELITE DOCUMENT REQUIREMENTS:
       container.style.left = '-9999px';
       container.style.top = '0';
       container.style.width = '794px'; // A4 width at 96 DPI
+      container.style.background = 'white';
       document.body.appendChild(container);
 
-      // Render all pages
-      for (const page of pages) {
+      // Render all pages sequentially
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
         const pageSections = sections.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
         const pageShapes = shapes.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
         const pageImages = uploadedImages.filter(img => (img as any).pageId === page.id || (!(img as any).pageId && page.id === 'page-1'));
 
         const pageDiv = document.createElement('div');
-        pageDiv.style.backgroundColor = backgroundColor;
+        pageDiv.className = 'pdf-page';
+        pageDiv.style.backgroundColor = backgroundColor || '#ffffff';
         pageDiv.style.fontFamily = fontFamily;
         pageDiv.style.fontSize = `${fontSize}px`;
         pageDiv.style.padding = '40px';
+        pageDiv.style.width = '794px';
         pageDiv.style.minHeight = '1123px'; // A4 height
+        pageDiv.style.height = '1123px';
         pageDiv.style.position = 'relative';
-        pageDiv.style.pageBreakAfter = 'always';
+        pageDiv.style.boxSizing = 'border-box';
+        pageDiv.style.overflow = 'hidden';
+        
+        // Force page break for all pages except first
+        if (i > 0) {
+          pageDiv.style.pageBreakBefore = 'always';
+        }
 
         // Render sections
         pageSections.forEach(section => {
@@ -487,14 +498,18 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.top = `${section.y}px`;
           sectionDiv.style.width = `${section.width}px`;
           sectionDiv.style.minHeight = `${section.height}px`;
-          sectionDiv.style.color = (section as any).textColor || textColor;
+          sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
+          sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || 'transparent';
+          sectionDiv.style.padding = '12px';
+          sectionDiv.style.borderRadius = '4px';
           
           if (section.type === 'heading') {
             sectionDiv.innerHTML = `<h2 style="font-size: 24px; font-weight: bold; margin-bottom: 16px;">${section.content || section.title}</h2>`;
           } else if (section.type === 'table') {
             sectionDiv.innerHTML = section.content;
           } else {
-            sectionDiv.innerHTML = `<p style="white-space: pre-wrap;">${section.content || ''}</p>`;
+            const title = section.title ? `<h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${section.title}</h3>` : '';
+            sectionDiv.innerHTML = `${title}<p style="white-space: pre-wrap; line-height: 1.6;">${section.content || ''}</p>`;
           }
           
           pageDiv.appendChild(sectionDiv);
@@ -513,16 +528,40 @@ ELITE DOCUMENT REQUIREMENTS:
           pageDiv.appendChild(imgEl);
         });
 
+        // Render shapes
+        pageShapes.forEach(shape => {
+          const shapeDiv = document.createElement('div');
+          shapeDiv.style.position = 'absolute';
+          shapeDiv.style.left = `${shape.x}px`;
+          shapeDiv.style.top = `${shape.y}px`;
+          shapeDiv.style.width = `${shape.width}px`;
+          shapeDiv.style.height = `${shape.height}px`;
+          shapeDiv.style.backgroundColor = shape.color;
+          if (shape.type === 'circle') {
+            shapeDiv.style.borderRadius = '50%';
+          }
+          pageDiv.appendChild(shapeDiv);
+        });
+
         container.appendChild(pageDiv);
       }
+
+      // Wait for images to load
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const opt = {
         margin: 0,
         filename: `${template?.name || 'document'}-${new Date().toISOString().slice(0, 10)}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          logging: false,
+          windowWidth: 794,
+          windowHeight: 1123
+        },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css', 'legacy'] as any }
+        pagebreak: { mode: ['css', 'legacy'] as any, before: '.pdf-page', avoid: 'img' }
       };
       
       await html2pdf().set(opt).from(container).save();
@@ -531,12 +570,13 @@ ELITE DOCUMENT REQUIREMENTS:
       
       toast({
         title: "PDF downloaded!",
-        description: `Document with ${pages.length} page(s) has been saved.`,
+        description: `Document with ${pages.length} page(s) has been saved successfully.`,
       });
     } catch (error) {
+      console.error('PDF generation error:', error);
       toast({
         title: "Download failed",
-        description: "Could not generate PDF",
+        description: "Could not generate PDF. Please try again.",
         variant: "destructive"
       });
     }

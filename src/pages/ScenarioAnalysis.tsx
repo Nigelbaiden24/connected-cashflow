@@ -501,75 +501,147 @@ export default function ScenarioAnalysis() {
           />
         </TabsContent>
 
-        {/* What-If Scenarios */}
-        <TabsContent value="what-if" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Market Scenarios Analysis</CardTitle>
-              <CardDescription>Impact of different market conditions on your portfolio</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {whatIfScenarios.map((scenario, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-semibold">{scenario.name}</h4>
-                        <p className="text-sm text-muted-foreground">Probability: {scenario.probability}%</p>
-                      </div>
-                      <Badge 
-                        variant={scenario.percentage >= 0 ? "default" : "destructive"}
-                        className="text-lg px-3 py-1"
-                      >
-                        {formatPercent(scenario.percentage)}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Portfolio Impact:</span>
-                        <div className={`text-lg font-semibold ${scenario.impact >= 0 ? 'text-success' : 'text-destructive'}`}>
-                          {formatCurrency(scenario.impact)}
+        {/* What-If Scenarios - Enhanced Enterprise Design */}
+        <TabsContent value="what-if" className="space-y-8">
+          {/* Scenario Overview Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {whatIfScenarios.map((scenario, index) => (
+              <Card 
+                key={index} 
+                className={`relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer border-2 ${
+                  scenario.percentage >= 15 ? 'border-green-500/50 bg-gradient-to-br from-green-500/5 to-green-500/10' :
+                  scenario.percentage >= 0 ? 'border-blue-500/50 bg-gradient-to-br from-blue-500/5 to-blue-500/10' :
+                  scenario.percentage >= -20 ? 'border-amber-500/50 bg-gradient-to-br from-amber-500/5 to-amber-500/10' :
+                  'border-red-500/50 bg-gradient-to-br from-red-500/5 to-red-500/10'
+                }`}
+              >
+                <CardContent className="p-4 text-center">
+                  <div className={`text-3xl font-bold mb-1 ${
+                    scenario.percentage >= 0 ? 'text-green-500' : 'text-red-500'
+                  }`}>
+                    {formatPercent(scenario.percentage)}
+                  </div>
+                  <div className="text-sm font-medium truncate">{scenario.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{scenario.probability}% probability</div>
+                  <div className="absolute top-2 right-2">
+                    {scenario.percentage >= 0 ? 
+                      <TrendingUp className="h-4 w-4 text-green-500" /> : 
+                      <TrendingDown className="h-4 w-4 text-red-500" />
+                    }
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Main Analysis Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Scenario Details */}
+            <Card className="lg:col-span-2 bg-gradient-to-br from-card via-card to-muted/20 border-border/50 shadow-lg">
+              <CardHeader className="border-b border-border/50 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">Market Scenarios Analysis</CardTitle>
+                    <CardDescription>Comprehensive impact assessment across market conditions</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  {whatIfScenarios.map((scenario, index) => (
+                    <div 
+                      key={index} 
+                      className="group p-5 rounded-xl border border-border/50 bg-gradient-to-r from-background to-muted/30 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-full ${
+                            scenario.percentage >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'
+                          }`}>
+                            {scenario.percentage >= 0 ? 
+                              <TrendingUp className="h-5 w-5 text-green-500" /> : 
+                              <TrendingDown className="h-5 w-5 text-red-500" />
+                            }
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-lg group-hover:text-primary transition-colors">{scenario.name}</h4>
+                            <p className="text-sm text-muted-foreground">Recovery: {scenario.recovery}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge 
+                            variant={scenario.percentage >= 0 ? "default" : "destructive"}
+                            className="text-lg px-4 py-1.5 font-bold"
+                          >
+                            {formatPercent(scenario.percentage)}
+                          </Badge>
                         </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Expected Recovery:</span>
-                        <div className="text-lg font-semibold">{scenario.recovery}</div>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-3 rounded-lg bg-background/80 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">Portfolio Impact</span>
+                          <span className={`text-xl font-bold ${scenario.impact >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {formatCurrency(scenario.impact)}
+                          </span>
+                        </div>
+                        <div className="p-3 rounded-lg bg-background/80 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">Probability</span>
+                          <span className="text-xl font-bold">{scenario.probability}%</span>
+                        </div>
+                        <div className="p-3 rounded-lg bg-background/80 border border-border/30">
+                          <span className="text-xs text-muted-foreground block mb-1">Recovery Time</span>
+                          <span className="text-xl font-bold">{scenario.recovery}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>Probability Distribution</span>
+                          <span>{scenario.probability}%</span>
+                        </div>
+                        <Progress value={scenario.probability} className="h-2" />
                       </div>
                     </div>
-                    <Progress value={scenario.probability} className="mt-3" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-gradient-to-br from-card to-card/50 border-border/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-primary" />
-                  Custom Scenario Builder
-                </CardTitle>
-                <CardDescription>Model your own market scenarios with precision</CardDescription>
+            {/* Custom Scenario Builder */}
+            <Card className="bg-gradient-to-br from-card via-card to-primary/5 border-primary/20 shadow-lg">
+              <CardHeader className="border-b border-border/50 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
+                    <Calculator className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Custom Scenario Builder</CardTitle>
+                    <CardDescription>Model your own market scenarios</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-5">
+              <CardContent className="pt-6 space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="scenario-name">Scenario Name</Label>
+                  <Label htmlFor="scenario-name" className="text-sm font-medium">Scenario Name</Label>
                   <Input 
                     id="scenario-name"
                     placeholder="e.g., Tech Sector Correction"
                     value={customScenario.name}
                     onChange={(e) => setCustomScenario(prev => ({ ...prev, name: e.target.value }))}
-                    className="bg-background/50"
+                    className="bg-background/50 border-border/50 focus:border-primary"
                   />
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/30">
                   <div className="flex items-center justify-between">
-                    <Label>Market Return</Label>
+                    <Label className="text-sm font-medium">Market Return</Label>
                     <Badge 
                       variant={customScenario.marketReturn >= 0 ? "default" : "destructive"}
-                      className="font-mono"
+                      className="font-mono text-sm px-3"
                     >
                       {customScenario.marketReturn > 0 ? '+' : ''}{customScenario.marketReturn}%
                     </Badge>
@@ -583,16 +655,16 @@ export default function ScenarioAnalysis() {
                     className="cursor-pointer"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>-50%</span>
+                    <span className="text-red-500">-50%</span>
                     <span>0%</span>
-                    <span>+50%</span>
+                    <span className="text-green-500">+50%</span>
                   </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 p-4 rounded-xl bg-muted/30 border border-border/30">
                   <div className="flex items-center justify-between">
-                    <Label>Duration</Label>
-                    <Badge variant="outline" className="font-mono">
+                    <Label className="text-sm font-medium">Duration</Label>
+                    <Badge variant="outline" className="font-mono text-sm px-3">
                       {customScenario.duration} {customScenario.duration === 1 ? 'month' : 'months'}
                     </Badge>
                   </div>
@@ -605,40 +677,40 @@ export default function ScenarioAnalysis() {
                     className="cursor-pointer"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>1 month</span>
-                    <span>18 months</span>
-                    <span>36 months</span>
+                    <span>1 mo</span>
+                    <span>18 mo</span>
+                    <span>36 mo</span>
                   </div>
                 </div>
                 
                 <Button 
-                  className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                  className="w-full gap-2 h-12 text-base font-semibold bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25"
                   onClick={handleCalculateCustomScenario}
                   disabled={isCalculating || !selectedClient}
                 >
-                  <Calculator className="h-4 w-4" />
+                  <Calculator className="h-5 w-5" />
                   {isCalculating ? "Calculating..." : "Calculate Impact"}
                 </Button>
 
                 {customScenarioResult && (
-                  <div className="mt-6 p-4 rounded-lg border bg-gradient-to-br from-muted/50 to-muted/20 space-y-3 animate-fade-in">
-                    <div className="flex items-center justify-between pb-2 border-b">
-                      <span className="text-sm font-medium">Results</span>
-                      <Badge variant={customScenarioResult.percentage >= 0 ? "default" : "destructive"}>
+                  <div className="mt-4 p-5 rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 space-y-4 animate-fade-in">
+                    <div className="flex items-center justify-between pb-3 border-b border-primary/20">
+                      <span className="font-semibold text-primary">Analysis Results</span>
+                      <Badge variant={customScenarioResult.percentage >= 0 ? "default" : "destructive"} className="text-sm">
                         {customScenarioResult.percentage > 0 ? '+' : ''}{customScenarioResult.percentage.toFixed(2)}%
                       </Badge>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Portfolio Impact</p>
-                        <p className={`text-lg font-bold ${customScenarioResult.impact >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="p-3 rounded-lg bg-background/60 border border-border/30">
+                        <p className="text-xs text-muted-foreground mb-1">Portfolio Impact</p>
+                        <p className={`text-2xl font-bold ${customScenarioResult.impact >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {formatCurrency(customScenarioResult.impact)}
                         </p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">Final Value</p>
-                        <p className="text-lg font-bold">
+                      <div className="p-3 rounded-lg bg-background/60 border border-border/30">
+                        <p className="text-xs text-muted-foreground mb-1">Projected Final Value</p>
+                        <p className="text-2xl font-bold text-primary">
                           {formatCurrency(customScenarioResult.finalValue)}
                         </p>
                       </div>
@@ -646,9 +718,9 @@ export default function ScenarioAnalysis() {
 
                     <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
                       {customScenarioResult.impact >= 0 ? (
-                        <TrendingUp className="h-3 w-3 text-success" />
+                        <TrendingUp className="h-4 w-4 text-green-500" />
                       ) : (
-                        <TrendingDown className="h-3 w-3 text-destructive" />
+                        <TrendingDown className="h-4 w-4 text-red-500" />
                       )}
                       <span>Based on {customScenario.duration} month projection</span>
                     </div>
@@ -656,69 +728,191 @@ export default function ScenarioAnalysis() {
                 )}
               </CardContent>
             </Card>
+          </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Scenario Comparison</CardTitle>
-                <CardDescription>Portfolio value after 1 year</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={whatIfScenarios}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                      <YAxis tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`} />
-                      <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                      <Bar dataKey="impact" radius={[8, 8, 0, 0]}>
-                        {whatIfScenarios.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+          {/* Scenario Comparison Chart */}
+          <Card className="bg-gradient-to-br from-card to-muted/10 border-border/50 shadow-lg">
+            <CardHeader className="border-b border-border/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
+                <div>
+                  <CardTitle>Scenario Comparison</CardTitle>
+                  <CardDescription>Portfolio value impact after 1 year across all scenarios</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={whatIfScenarios} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+                    <XAxis 
+                      dataKey="name" 
+                      angle={-35} 
+                      textAnchor="end" 
+                      height={80}
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `£${(value / 1000).toFixed(0)}k`}
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => formatCurrency(value)}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}
+                    />
+                    <Bar dataKey="impact" radius={[8, 8, 0, 0]}>
+                      {whatIfScenarios.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Stress Test - Enhanced Enterprise Design */}
+        <TabsContent value="stress-test" className="space-y-8">
+          {/* Key Metrics Banner */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="relative overflow-hidden bg-gradient-to-br from-green-500/10 via-card to-green-500/5 border-green-500/30 shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl" />
+              <CardContent className="pt-6 pb-6 relative">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-green-500/20">
+                    <ShieldAlert className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Portfolio Resilience Score</p>
+                    <p className="text-4xl font-bold text-green-500">8.2<span className="text-lg text-muted-foreground">/10</span></p>
+                  </div>
+                </div>
+                <Progress value={82} className="mt-4 h-2" />
+                <p className="text-xs text-muted-foreground mt-2">Above average risk management</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="relative overflow-hidden bg-gradient-to-br from-red-500/10 via-card to-red-500/5 border-red-500/30 shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl" />
+              <CardContent className="pt-6 pb-6 relative">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-red-500/20">
+                    <TrendingDown className="h-6 w-6 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Worst Historical Drawdown</p>
+                    <p className="text-4xl font-bold text-red-500">-35.2%</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">2000 Dot-com Bubble</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500/10 via-card to-blue-500/5 border-blue-500/30 shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
+              <CardContent className="pt-6 pb-6 relative">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-blue-500/20">
+                    <Activity className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Avg Recovery Time</p>
+                    <p className="text-4xl font-bold text-blue-500">14<span className="text-lg text-muted-foreground"> mo</span></p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">Average recovery period</p>
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
 
-        {/* Stress Test */}
-        <TabsContent value="stress-test" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldAlert className="h-5 w-5" />
-                Historical Stress Tests
-              </CardTitle>
-              <CardDescription>How your portfolio would perform in past market crises</CardDescription>
+          {/* Historical Stress Tests */}
+          <Card className="bg-gradient-to-br from-card via-card to-muted/20 border-border/50 shadow-lg">
+            <CardHeader className="border-b border-border/50 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-orange-500/20">
+                  <ShieldAlert className="h-5 w-5 text-red-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Historical Crisis Stress Tests</CardTitle>
+                  <CardDescription>How your portfolio would perform in past market crises</CardDescription>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pt-6">
+              <div className="space-y-5">
                 {stressTestData.map((test, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-semibold">{test.scenario}</h4>
-                        <p className="text-sm text-muted-foreground">Duration: {test.duration}</p>
+                  <div 
+                    key={index} 
+                    className="group p-6 rounded-xl border border-border/50 bg-gradient-to-r from-background via-background to-red-500/5 hover:shadow-xl hover:border-red-500/30 transition-all duration-300"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/10 group-hover:scale-110 transition-transform">
+                          <TrendingDown className="h-6 w-6 text-red-500" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg group-hover:text-red-500 transition-colors">{test.scenario}</h4>
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Activity className="h-3 w-3" />
+                            Duration: {test.duration}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm text-muted-foreground">Market Impact</div>
-                        <Badge variant="destructive" className="text-lg">
-                          {test.impact}%
+                      <div className="flex gap-3">
+                        <Badge variant="destructive" className="text-lg px-4 py-2 font-bold">
+                          Market: {test.impact}%
+                        </Badge>
+                        <Badge variant="outline" className="text-lg px-4 py-2 font-bold border-primary text-primary">
+                          Your Portfolio: {test.currentPortfolio}%
                         </Badge>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Your Portfolio Impact:</span>
-                        <span className="font-semibold text-destructive">{test.currentPortfolio}%</span>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Market Drawdown</span>
+                          <span className="font-semibold text-red-500">{test.impact}%</span>
+                        </div>
+                        <div className="relative h-4 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="absolute inset-y-0 left-0 bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.abs(test.impact)}%` }}
+                          />
+                        </div>
                       </div>
-                      <Progress value={Math.abs(test.currentPortfolio)} className="h-2" />
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <ShieldAlert className="h-3 w-3" />
-                        <span>Your portfolio shows {Math.abs(test.impact - test.currentPortfolio).toFixed(1)}% better resilience than market</span>
+                      
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Your Portfolio Impact</span>
+                          <span className="font-semibold text-primary">{test.currentPortfolio}%</span>
+                        </div>
+                        <div className="relative h-4 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/60 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.abs(test.currentPortfolio)}%` }}
+                          />
+                        </div>
                       </div>
+                    </div>
+                    
+                    <div className="mt-5 p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3">
+                      <ShieldAlert className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <span className="text-sm">
+                        <span className="font-semibold text-green-500">
+                          {Math.abs(test.impact - test.currentPortfolio).toFixed(1)}% better resilience
+                        </span>
+                        <span className="text-muted-foreground"> than market average during this crisis</span>
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -726,36 +920,52 @@ export default function ScenarioAnalysis() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Portfolio Resilience Score</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-success">8.2/10</div>
-                <Progress value={82} className="mt-2" />
-                <p className="text-xs text-muted-foreground mt-2">Above average risk management</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Worst Historical Drawdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-destructive">-35.2%</div>
-                <p className="text-xs text-muted-foreground mt-2">2000 Dot-com Bubble</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium">Recovery Time</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">14 months</div>
-                <p className="text-xs text-muted-foreground mt-2">Average recovery period</p>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Stress Test Comparison Chart */}
+          <Card className="bg-gradient-to-br from-card to-muted/10 border-border/50 shadow-lg">
+            <CardHeader className="border-b border-border/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <CardTitle>Crisis Impact Comparison</CardTitle>
+                  <CardDescription>Market vs your portfolio during historical crises</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stressTestData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+                    <XAxis 
+                      dataKey="scenario" 
+                      angle={-35} 
+                      textAnchor="end" 
+                      height={80}
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `${value}%`}
+                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => `${value}%`}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}
+                    />
+                    <Legend />
+                    <Bar name="Market Impact" dataKey="impact" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+                    <Bar name="Your Portfolio" dataKey="currentPortfolio" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Goal Planning */}
