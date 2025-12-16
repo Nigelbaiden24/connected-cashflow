@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,24 @@ interface UploadedImage {
   height: number;
 }
 
+interface SavedDocument {
+  id: string;
+  name: string;
+  savedAt: string;
+  data: {
+    selectedTemplate: string | null;
+    sections: any[];
+    pages: Array<{ id: string; name: string }>;
+    shapes: any[];
+    uploadedImages: any[];
+    signatureFields: any[];
+    backgroundColor: string;
+    textColor: string;
+    fontFamily: string;
+    fontSize: number;
+  };
+}
+
 const FinanceAIGenerator = () => {
   const navigate = useNavigate();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -36,10 +54,23 @@ const FinanceAIGenerator = () => {
   const [pages, setPages] = useState<Array<{ id: string; name: string }>>([{ id: 'page-1', name: 'Page 1' }]);
   const [currentPageId, setCurrentPageId] = useState('page-1');
   const [signatureFields, setSignatureFields] = useState<Array<{ id: string; x: number; y: number; width: number; height: number; signed: boolean; pageId: string }>>([]);
+  const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
   const { toast } = useToast();
   
   const template = documentTemplates.find(t => t.id === selectedTemplate);
   const { sections, setSections, updateSectionContent } = useDocumentSections(template?.sections || []);
+  
+  // Load saved documents on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('flowpulse-saved-documents');
+    if (saved) {
+      try {
+        setSavedDocuments(JSON.parse(saved));
+      } catch (e) {
+        console.error('Error loading saved documents:', e);
+      }
+    }
+  }, []);
   
   // Filter sections by current page
   const currentPageSections = sections.filter(s => (s as any).pageId === currentPageId || (!( s as any).pageId && currentPageId === 'page-1'));
@@ -419,22 +450,88 @@ ELITE DOCUMENT REQUIREMENTS:
   };
 
   const handleDownloadPDF = async () => {
-    const element = document.getElementById("document-preview");
-    if (!element) return;
-
     try {
+      toast({
+        title: "Generating PDF...",
+        description: `Processing ${pages.length} page(s)`,
+      });
+
+      // Create a temporary container for all pages
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '794px'; // A4 width at 96 DPI
+      document.body.appendChild(container);
+
+      // Render all pages
+      for (const page of pages) {
+        const pageSections = sections.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
+        const pageShapes = shapes.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
+        const pageImages = uploadedImages.filter(img => (img as any).pageId === page.id || (!(img as any).pageId && page.id === 'page-1'));
+
+        const pageDiv = document.createElement('div');
+        pageDiv.style.backgroundColor = backgroundColor;
+        pageDiv.style.fontFamily = fontFamily;
+        pageDiv.style.fontSize = `${fontSize}px`;
+        pageDiv.style.padding = '40px';
+        pageDiv.style.minHeight = '1123px'; // A4 height
+        pageDiv.style.position = 'relative';
+        pageDiv.style.pageBreakAfter = 'always';
+
+        // Render sections
+        pageSections.forEach(section => {
+          const sectionDiv = document.createElement('div');
+          sectionDiv.style.position = 'absolute';
+          sectionDiv.style.left = `${section.x}px`;
+          sectionDiv.style.top = `${section.y}px`;
+          sectionDiv.style.width = `${section.width}px`;
+          sectionDiv.style.minHeight = `${section.height}px`;
+          sectionDiv.style.color = (section as any).textColor || textColor;
+          
+          if (section.type === 'heading') {
+            sectionDiv.innerHTML = `<h2 style="font-size: 24px; font-weight: bold; margin-bottom: 16px;">${section.content || section.title}</h2>`;
+          } else if (section.type === 'table') {
+            sectionDiv.innerHTML = section.content;
+          } else {
+            sectionDiv.innerHTML = `<p style="white-space: pre-wrap;">${section.content || ''}</p>`;
+          }
+          
+          pageDiv.appendChild(sectionDiv);
+        });
+
+        // Render images
+        pageImages.forEach(img => {
+          const imgEl = document.createElement('img');
+          imgEl.src = img.url;
+          imgEl.style.position = 'absolute';
+          imgEl.style.left = `${img.x}px`;
+          imgEl.style.top = `${img.y}px`;
+          imgEl.style.width = `${img.width}px`;
+          imgEl.style.height = `${img.height}px`;
+          imgEl.style.objectFit = 'contain';
+          pageDiv.appendChild(imgEl);
+        });
+
+        container.appendChild(pageDiv);
+      }
+
       const opt = {
-        margin: 10,
-        filename: `${template?.name || 'document'}.pdf`,
+        margin: 0,
+        filename: `${template?.name || 'document'}-${new Date().toISOString().slice(0, 10)}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
+        pagebreak: { mode: ['css', 'legacy'] as any }
       };
       
-      await html2pdf().set(opt).from(element).save();
+      await html2pdf().set(opt).from(container).save();
+      
+      document.body.removeChild(container);
+      
       toast({
         title: "PDF downloaded!",
-        description: "Your document has been saved.",
+        description: `Document with ${pages.length} page(s) has been saved.`,
       });
     } catch (error) {
       toast({
@@ -443,6 +540,69 @@ ELITE DOCUMENT REQUIREMENTS:
         variant: "destructive"
       });
     }
+  };
+
+  const handleSaveDocument = () => {
+    if (!selectedTemplate) {
+      toast({
+        title: "No document to save",
+        description: "Please select a template first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const docName = template?.name || 'Untitled Document';
+    const docId = `doc-${Date.now()}`;
+    
+    const newDoc: SavedDocument = {
+      id: docId,
+      name: docName,
+      savedAt: new Date().toLocaleString(),
+      data: {
+        selectedTemplate,
+        sections,
+        pages,
+        shapes,
+        uploadedImages,
+        signatureFields,
+        backgroundColor,
+        textColor,
+        fontFamily,
+        fontSize,
+      }
+    };
+
+    const updatedDocs = [...savedDocuments.filter(d => d.name !== docName), newDoc];
+    setSavedDocuments(updatedDocs);
+    localStorage.setItem('flowpulse-saved-documents', JSON.stringify(updatedDocs));
+    
+    toast({
+      title: "Document saved!",
+      description: `"${docName}" has been saved. You can reload it anytime.`,
+    });
+  };
+
+  const handleLoadDocument = (docId?: string) => {
+    const doc = savedDocuments.find(d => docId ? d.id === docId : true);
+    if (!doc) return;
+
+    setSelectedTemplate(doc.data.selectedTemplate);
+    setSections(doc.data.sections);
+    setPages(doc.data.pages);
+    setShapes(doc.data.shapes);
+    setUploadedImages(doc.data.uploadedImages);
+    setSignatureFields(doc.data.signatureFields);
+    setBackgroundColor(doc.data.backgroundColor);
+    setTextColor(doc.data.textColor);
+    setFontFamily(doc.data.fontFamily);
+    setFontSize(doc.data.fontSize);
+    setCurrentPageId(doc.data.pages[0]?.id || 'page-1');
+
+    toast({
+      title: "Document loaded!",
+      description: `"${doc.name}" has been restored.`,
+    });
   };
 
   return (
@@ -564,6 +724,9 @@ ELITE DOCUMENT REQUIREMENTS:
                     description: `${rows} x ${cols} table added to the page`,
                   });
                 }}
+                onSaveDocument={handleSaveDocument}
+                onLoadDocument={() => handleLoadDocument()}
+                savedDocuments={savedDocuments}
               />
 
               <div className="flex-1 overflow-auto">

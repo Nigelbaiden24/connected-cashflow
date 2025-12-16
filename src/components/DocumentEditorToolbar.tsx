@@ -35,6 +35,8 @@ import {
   PenTool,
   FileSignature,
   Check,
+  Save,
+  FolderOpen,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,6 +94,9 @@ interface DocumentEditorToolbarProps {
   onRequestSignature?: () => void;
   signatureFields?: Array<{ id: string; signed: boolean }>;
   onInsertTable: (rows: number, cols: number) => void;
+  onSaveDocument?: () => void;
+  onLoadDocument?: () => void;
+  savedDocuments?: Array<{ id: string; name: string; savedAt: string }>;
 }
 
 export function DocumentEditorToolbar({
@@ -128,6 +133,9 @@ export function DocumentEditorToolbar({
   onRequestSignature,
   signatureFields = [],
   onInsertTable,
+  onSaveDocument,
+  onLoadDocument,
+  savedDocuments = [],
 }: DocumentEditorToolbarProps) {
   const [imageUploadKey, setImageUploadKey] = useState(0);
   const [logoUploadKey, setLogoUploadKey] = useState(0);
@@ -688,7 +696,44 @@ export function DocumentEditorToolbar({
           </PopoverContent>
         </Popover>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          {onSaveDocument && (
+            <Button onClick={onSaveDocument} size="sm" variant="outline">
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </Button>
+          )}
+          {onLoadDocument && savedDocuments.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Load
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">Saved Documents</h4>
+                  {savedDocuments.map((doc) => (
+                    <Button
+                      key={doc.id}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-left"
+                      onClick={() => {
+                        onLoadDocument();
+                      }}
+                    >
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium">{doc.name}</span>
+                        <span className="text-xs text-muted-foreground">{doc.savedAt}</span>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
           <Button onClick={onDownloadPDF} size="sm">
             <Download className="h-4 w-4 mr-2" />
             Download PDF
