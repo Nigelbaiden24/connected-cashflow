@@ -19,6 +19,7 @@ interface DraggableSectionProps {
   onEdit: () => void;
   onDelete: () => void;
   onGenerateContent: () => void;
+  onContentChange?: (id: string, content: string) => void;
 }
 
 export function DraggableSection({
@@ -38,12 +39,16 @@ export function DraggableSection({
   onEdit,
   onDelete,
   onGenerateContent,
+  onContentChange,
 }: DraggableSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [editingCell, setEditingCell] = useState<{ row: number; col: number } | null>(null);
+  const [cellValue, setCellValue] = useState("");
   const sectionRef = useRef<HTMLDivElement>(null);
+  const cellInputRef = useRef<HTMLInputElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -146,12 +151,151 @@ export function DraggableSection({
       );
     }
     if (type === "table") {
+      // Parse table HTML to make cells editable
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, "text/html");
+      const table = doc.querySelector("table");
+      
+      if (!table) {
+        return (
+          <div className="max-w-full overflow-x-auto">
+            <div
+              className="min-w-full text-sm text-foreground/90"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+          </div>
+        );
+      }
+
+      const rows = table.querySelectorAll("tr");
+      const tableData: { isHeader: boolean; cells: string[] }[] = [];
+      
+      rows.forEach((row, rowIndex) => {
+        const cells = row.querySelectorAll("th, td");
+        const cellTexts: string[] = [];
+        cells.forEach((cell) => {
+          cellTexts.push(cell.textContent || "");
+        });
+        tableData.push({
+          isHeader: row.parentElement?.tagName === "THEAD" || row.querySelector("th") !== null,
+          cells: cellTexts,
+        });
+      });
+
+      const handleCellClick = (rowIndex: number, colIndex: number, currentValue: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setEditingCell({ row: rowIndex, col: colIndex });
+        setCellValue(currentValue);
+        setTimeout(() => cellInputRef.current?.focus(), 0);
+      };
+
+      const handleCellSave = () => {
+        if (editingCell && onContentChange) {
+          const newTableData = [...tableData];
+          newTableData[editingCell.row].cells[editingCell.col] = cellValue;
+          
+          // Rebuild HTML
+          const headerRow = newTableData.find(r => r.isHeader);
+          const bodyRows = newTableData.filter(r => !r.isHeader);
+          
+          const newHtml = `
+            <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
+              <thead>
+                <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                  ${headerRow?.cells.map(cell => 
+                    `<th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">${cell}</th>`
+                  ).join("") || ""}
+                </tr>
+              </thead>
+              <tbody>
+                ${bodyRows.map(row => 
+                  `<tr>${row.cells.map(cell => 
+                    `<td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #e5e7eb;">${cell}</td>`
+                  ).join("")}</tr>`
+                ).join("")}
+              </tbody>
+            </table>
+          `;
+          
+          onContentChange(id, newHtml);
+        }
+        setEditingCell(null);
+        setCellValue("");
+      };
+
+      const handleCellKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+          handleCellSave();
+        } else if (e.key === "Escape") {
+          setEditingCell(null);
+          setCellValue("");
+        }
+      };
+
       return (
-        <div className="max-w-full overflow-x-auto">
-          <div
-            className="min-w-full text-sm text-foreground/90"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
+        <div className="max-w-full overflow-x-auto" onClick={(e) => e.stopPropagation()}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "480px" }}>
+            <thead>
+              {tableData.filter(r => r.isHeader).map((row, rowIndex) => (
+                <tr key={rowIndex} style={{ background: "#f3f4f6", borderBottom: "2px solid #e5e7eb" }}>
+                  {row.cells.map((cell, colIndex) => (
+                    <th
+                      key={colIndex}
+                      style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, fontSize: "13px", cursor: "text" }}
+                      onClick={(e) => handleCellClick(tableData.indexOf(row), colIndex, cell, e)}
+                    >
+                      {editingCell?.row === tableData.indexOf(row) && editingCell?.col === colIndex ? (
+                        <input
+                          ref={cellInputRef}
+                          type="text"
+                          value={cellValue}
+                          onChange={(e) => setCellValue(e.target.value)}
+                          onBlur={handleCellSave}
+                          onKeyDown={handleCellKeyDown}
+                          className="w-full bg-white border border-primary px-1 py-0.5 rounded text-sm font-semibold"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        cell
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {tableData.filter(r => !r.isHeader).map((row, rowIndex) => {
+                const actualRowIndex = tableData.indexOf(row);
+                return (
+                  <tr key={rowIndex}>
+                    {row.cells.map((cell, colIndex) => (
+                      <td
+                        key={colIndex}
+                        style={{ padding: "8px 12px", fontSize: "13px", borderBottom: "1px solid #e5e7eb", cursor: "text" }}
+                        onClick={(e) => handleCellClick(actualRowIndex, colIndex, cell, e)}
+                      >
+                        {editingCell?.row === actualRowIndex && editingCell?.col === colIndex ? (
+                          <input
+                            ref={cellInputRef}
+                            type="text"
+                            value={cellValue}
+                            onChange={(e) => setCellValue(e.target.value)}
+                            onBlur={handleCellSave}
+                            onKeyDown={handleCellKeyDown}
+                            className="w-full bg-white border border-primary px-1 py-0.5 rounded text-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          cell
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       );
     }

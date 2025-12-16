@@ -204,6 +204,7 @@ export function EnhancedDocumentEditor({
           onEdit={() => handleEditSection(section)}
           onDelete={() => handleDeleteSection(section.id)}
           onGenerateContent={() => handleGenerateContent(section)}
+          onContentChange={onContentChange}
         />
       ))}
 
