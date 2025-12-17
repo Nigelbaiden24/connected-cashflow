@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter } from "recharts";
-import { Search, TrendingUp, TrendingDown, BarChart3, PieChart, Star, AlertTriangle, Info, Download, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
+import { Search, TrendingUp, TrendingDown, BarChart3, PieChart as PieChartIcon, Star, AlertTriangle, Info, Download, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { CreateWatchlistDialog } from "@/components/investor/CreateWatchlistDialog";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
@@ -568,39 +568,201 @@ export default function InvestmentAnalysis() {
         </TabsContent>
 
         <TabsContent value="sectors" className="space-y-6">
-          <Card>
+          {/* Sector Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {sectorAnalysis.map((sector, index) => (
+              <Card 
+                key={sector.sector} 
+                className="bg-gradient-to-br from-card to-muted/30 border-border/50 hover:shadow-lg transition-all duration-300 hover:border-primary/30"
+                style={{ animationDelay: `${index * 100}ms`, animation: 'fade-in 0.5s ease-out' }}
+              >
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">{sector.allocation}%</div>
+                    <div className="text-sm text-muted-foreground mt-1 font-medium">{sector.sector}</div>
+                    <Badge 
+                      variant="outline" 
+                      className={`mt-3 ${
+                        sector.outlook === 'Positive' ? 'bg-success/10 text-success border-success/30' :
+                        sector.outlook === 'Volatile' ? 'bg-warning/10 text-warning border-warning/30' :
+                        'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {sector.outlook}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Sector Performance Chart */}
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Sector Performance
+                </CardTitle>
+                <CardDescription>YTD performance by market sector</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={sectorAnalysis} layout="vertical">
+                    <defs>
+                      <linearGradient id="sectorGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis type="number" tickFormatter={(v) => `${v}%`} />
+                    <YAxis type="category" dataKey="sector" width={130} tick={{ fontSize: 12 }} />
+                    <Tooltip 
+                      formatter={(value) => [`${value}`, 'Performance']}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey={(d) => parseFloat(d.performance)} 
+                      fill="url(#sectorGradient)"
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Sector Allocation Pie */}
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChartIcon className="h-5 w-5 text-primary" />
+                  Portfolio Allocation
+                </CardTitle>
+                <CardDescription>Distribution across sectors</CardDescription>
+              </CardHeader>
+              <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <RechartsPieChart>
+                  <Pie
+                    data={sectorAnalysis}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="allocation"
+                  >
+                    {sectorAnalysis.map((_, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={`hsl(${index * 60}, 70%, 50%)`}
+                        className="hover:opacity-80 transition-opacity cursor-pointer"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => `${value}%`} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Detailed Sector Cards */}
+          <Card className="bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>Sector Analysis</CardTitle>
-              <CardDescription>Performance and outlook by market sector</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-success" />
+                Detailed Sector Analysis
+              </CardTitle>
+              <CardDescription>In-depth metrics and outlook by market sector</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {sectorAnalysis.map((sector) => (
-                  <div key={sector.sector} className="p-4 border rounded-lg">
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-3">
-                      <div>
-                        <h3 className="font-semibold">{sector.sector}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {sector.allocation}% of portfolio
-                        </p>
-                      </div>
-                      <Badge variant="outline">{sector.outlook}</Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-3 sm:gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Performance</div>
-                        <div className="font-semibold text-success">{sector.performance}</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Risk Level</div>
-                        <div className={`font-semibold ${getRiskColor(sector.risk)}`}>
-                          {sector.risk}
+                {sectorAnalysis.map((sector, index) => (
+                  <div 
+                    key={sector.sector} 
+                    className="p-6 rounded-xl border bg-gradient-to-r from-card to-muted/30 hover:shadow-lg transition-all duration-300 hover:border-primary/30"
+                    style={{ animationDelay: `${index * 100}ms`, animation: 'fade-in 0.5s ease-out' }}
+                  >
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`p-3 rounded-xl ${
+                          sector.risk === 'Low' ? 'bg-success/20' :
+                          sector.risk === 'Medium' ? 'bg-warning/20' :
+                          'bg-destructive/20'
+                        }`}>
+                          <BarChart3 className={`h-6 w-6 ${
+                            sector.risk === 'Low' ? 'text-success' :
+                            sector.risk === 'Medium' ? 'text-warning' :
+                            'text-destructive'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-lg">{sector.sector}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {sector.allocation}% of total portfolio
+                          </p>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground">Allocation</div>
-                        <div className="font-semibold">{sector.allocation}%</div>
+                      <div className="flex gap-2">
+                        <Badge 
+                          variant="outline"
+                          className={`${
+                            sector.outlook === 'Positive' ? 'bg-success/10 text-success border-success/30' :
+                            sector.outlook === 'Volatile' ? 'bg-warning/10 text-warning border-warning/30' :
+                            'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          {sector.outlook}
+                        </Badge>
+                        <Badge 
+                          variant="outline"
+                          className={`${getRiskColor(sector.risk)} border-current/30`}
+                        >
+                          {sector.risk} Risk
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-4 rounded-lg bg-success/10 text-center">
+                        <div className="text-xs text-muted-foreground mb-1">YTD Performance</div>
+                        <div className="text-xl font-bold text-success">{sector.performance}</div>
+                      </div>
+                      <div className="p-4 rounded-lg bg-primary/10 text-center">
+                        <div className="text-xs text-muted-foreground mb-1">Allocation</div>
+                        <div className="text-xl font-bold text-primary">{sector.allocation}%</div>
+                      </div>
+                      <div className={`p-4 rounded-lg text-center ${
+                        sector.risk === 'Low' ? 'bg-success/10' :
+                        sector.risk === 'Medium' ? 'bg-warning/10' :
+                        'bg-destructive/10'
+                      }`}>
+                        <div className="text-xs text-muted-foreground mb-1">Risk Level</div>
+                        <div className={`text-xl font-bold ${getRiskColor(sector.risk)}`}>{sector.risk}</div>
+                      </div>
+                      <div className="p-4 rounded-lg bg-muted/50 text-center">
+                        <div className="text-xs text-muted-foreground mb-1">Market Outlook</div>
+                        <div className="text-xl font-bold">{sector.outlook}</div>
+                      </div>
+                    </div>
+
+                    {/* Progress bar for allocation */}
+                    <div className="mt-4">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>Portfolio Weight</span>
+                        <span>{sector.allocation}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div 
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-500"
+                          style={{ width: `${sector.allocation}%` }}
+                        />
                       </div>
                     </div>
                   </div>
