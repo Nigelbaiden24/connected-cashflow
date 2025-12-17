@@ -508,17 +508,84 @@ export default function PracticeManagement() {
           </TabsContent>
 
           <TabsContent value="tasks" className="space-y-4">
+            {/* Task Stats Banner */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-full bg-destructive/20">
+                      <Clock className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">High Priority</div>
+                      <div className="text-2xl font-bold text-destructive">{upcomingTasks.filter(t => t.priority === 'high').length}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-full bg-warning/20">
+                      <Calendar className="h-5 w-5 text-warning" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Due This Week</div>
+                      <div className="text-2xl font-bold text-warning">4</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-full bg-primary/20">
+                      <Briefcase className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Total Tasks</div>
+                      <div className="text-2xl font-bold text-primary">{upcomingTasks.length}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-full bg-success/20">
+                      <Target className="h-5 w-5 text-success" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Completion Rate</div>
+                      <div className="text-2xl font-bold text-success">94%</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle>Task Management</CardTitle>
-                <CardDescription>Upcoming client tasks and deadlines</CardDescription>
+              <CardHeader className="border-b border-border/50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      Task Management
+                    </CardTitle>
+                    <CardDescription>Upcoming client tasks and deadlines</CardDescription>
+                  </div>
+                  <Button size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Task
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="pt-6">
+                <div className="space-y-4">
                   {upcomingTasks.map((task, index) => (
                     <div 
                       key={task.id}
-                      className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg hover:bg-muted/30 hover:border-primary/30 transition-all duration-200"
+                      className="flex flex-col lg:flex-row lg:items-center justify-between p-5 rounded-xl border bg-gradient-to-r from-card to-muted/30 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
                       style={{
                         animationDelay: `${index * 50}ms`,
                         animation: 'fade-in 0.3s ease-out'
@@ -526,25 +593,39 @@ export default function PracticeManagement() {
                     >
                       <div className="flex items-center gap-4 mb-3 lg:mb-0">
                         <div className={cn(
-                          "p-2 rounded-full",
-                          task.priority === "high" ? "bg-destructive/20 text-destructive" :
-                          task.priority === "medium" ? "bg-warning/20 text-warning" : 
-                          "bg-muted/20 text-muted-foreground"
+                          "p-3 rounded-xl",
+                          task.priority === "high" ? "bg-gradient-to-br from-destructive/20 to-destructive/10 text-destructive" :
+                          task.priority === "medium" ? "bg-gradient-to-br from-warning/20 to-warning/10 text-warning" : 
+                          "bg-gradient-to-br from-muted/20 to-muted/10 text-muted-foreground"
                         )}>
-                          <Clock className="h-4 w-4" />
+                          {task.type === "meeting" ? <Phone className="h-5 w-5" /> : 
+                           task.type === "review" ? <Target className="h-5 w-5" /> :
+                           <Mail className="h-5 w-5" />}
                         </div>
                         <div>
-                          <div className="font-semibold">{task.task}</div>
-                          <div className="text-sm text-muted-foreground">Client: {task.client}</div>
+                          <div className="font-bold text-base">{task.task}</div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                            <Users className="h-3.5 w-3.5" />
+                            {task.client}
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className={getPriorityColor(task.priority)}>
+                      <div className="flex items-center gap-4">
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "px-3 py-1",
+                            task.priority === "high" ? "bg-destructive/10 text-destructive border-destructive/30" :
+                            task.priority === "medium" ? "bg-warning/10 text-warning border-warning/30" :
+                            "bg-muted text-muted-foreground"
+                          )}
+                        >
                           {task.priority}
                         </Badge>
-                        <div className="text-sm text-muted-foreground">{task.due}</div>
-                        <Button size="sm" variant="outline">
-                          {task.type === "meeting" ? <Phone className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
+                        <div className="text-sm font-medium px-3 py-1 rounded-lg bg-muted/50">{task.due}</div>
+                        <Button size="sm" variant="outline" className="gap-2 hover:bg-primary/10 hover:border-primary/30">
+                          <Target className="h-4 w-4" />
+                          View
                         </Button>
                       </div>
                     </div>
@@ -555,37 +636,84 @@ export default function PracticeManagement() {
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-4">
+            {/* Performance Summary Banner */}
+            <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-success/10 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 rounded-xl bg-success/20">
+                      <Shield className="h-8 w-8 text-success" />
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Overall Performance Score</div>
+                      <div className="text-4xl font-bold text-success">Excellent</div>
+                      <div className="text-sm text-muted-foreground mt-1">All KPIs exceeding targets</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Export Report
+                    </Button>
+                    <Button className="gap-2 bg-gradient-to-r from-primary to-primary/80">
+                      <Activity className="h-4 w-4" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {performanceMetrics.map((metric, index) => (
                 <Card 
                   key={metric.metric}
-                  className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:shadow-lg transition-all duration-300"
+                  className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:shadow-xl hover:border-primary/30 transition-all duration-300 group"
                   style={{
                     animationDelay: `${index * 100}ms`,
                     animation: 'fade-in 0.5s ease-out'
                   }}
                 >
-                  <CardHeader>
+                  <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{metric.metric}</CardTitle>
-                        <CardDescription className="text-sm mt-1">
+                      <div className="space-y-1">
+                        <CardTitle className="text-lg group-hover:text-primary transition-colors">{metric.metric}</CardTitle>
+                        <CardDescription className="text-sm">
                           Target: {metric.target}{metric.unit}
                         </CardDescription>
                       </div>
-                      <Badge className={getStatusColor(metric.status)}>
+                      <Badge className={cn(
+                        "px-3 py-1",
+                        metric.status === "excellent" ? "bg-gradient-to-r from-success to-success/80 text-success-foreground" :
+                        "bg-muted text-muted-foreground"
+                      )}>
                         {metric.status}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="text-4xl font-bold">
-                      {metric.value}{metric.unit}
+                  <CardContent className="space-y-4">
+                    <div className="flex items-end gap-2">
+                      <div className="text-5xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
+                        {metric.value}
+                      </div>
+                      <div className="text-xl text-muted-foreground mb-2">{metric.unit}</div>
                     </div>
-                    <Progress 
-                      value={metric.unit === "%" ? metric.value : (metric.value / metric.target) * 100} 
-                      className="h-2"
-                    />
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Progress</span>
+                        <span>{Math.round(metric.unit === "%" ? metric.value : (metric.value / metric.target) * 100)}%</span>
+                      </div>
+                      <div className="h-3 rounded-full bg-muted overflow-hidden">
+                        <div 
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-success transition-all duration-700"
+                          style={{ width: `${Math.min(metric.unit === "%" ? metric.value : (metric.value / metric.target) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <TrendingUp className="h-4 w-4 text-success" />
+                      <span className="text-success font-medium">Above target</span>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

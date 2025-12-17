@@ -382,43 +382,46 @@ const Calendar = () => {
   const allEvents = [...events, ...integratedEvents];
 
   return (
-    <div className="flex-1 p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex-1 p-6 space-y-6 bg-gradient-to-br from-background via-background to-primary/5 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
-            className="gap-2"
+            className="gap-2 hover:bg-primary/10"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Calendar</h1>
-            <p className="text-muted-foreground">Manage your schedule and events</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Calendar
+            </h1>
+            <p className="text-muted-foreground mt-1">Manage your schedule and events</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 hover:border-primary/50">
                 <Download className="h-4 w-4" />
                 Connect Calendar
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-80 bg-card/95 backdrop-blur-sm">
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Connect External Calendars</h3>
+                  <h3 className="font-bold text-lg mb-2">Connect External Calendars</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Sync your FlowPulse calendar with Google Calendar or Outlook
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <div className="p-4 border rounded-lg space-y-2">
+                <div className="space-y-3">
+                  <div className="p-4 border rounded-xl space-y-3 bg-gradient-to-r from-blue-500/5 to-blue-500/10 border-blue-500/20">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">Google Calendar</h4>
+                      <h4 className="font-semibold">Google Calendar</h4>
                       {googleConnected && <CheckCircle2 className="h-5 w-5 text-green-600" />}
                     </div>
                     <Button 
@@ -430,9 +433,9 @@ const Calendar = () => {
                       {googleConnected ? "Connected" : "Connect Google Calendar"}
                     </Button>
                   </div>
-                  <div className="p-4 border rounded-lg space-y-2">
+                  <div className="p-4 border rounded-xl space-y-3 bg-gradient-to-r from-orange-500/5 to-orange-500/10 border-orange-500/20">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">Outlook Calendar</h4>
+                      <h4 className="font-semibold">Outlook Calendar</h4>
                       {outlookConnected && <CheckCircle2 className="h-5 w-5 text-green-600" />}
                     </div>
                     <Button 
@@ -453,14 +456,14 @@ const Calendar = () => {
           </Popover>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20">
                 <Plus className="h-4 w-4" />
                 New Event
               </Button>
             </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] bg-card/95 backdrop-blur-sm">
             <DialogHeader>
-              <DialogTitle>Create New Event</DialogTitle>
+              <DialogTitle className="text-xl">Create New Event</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -470,6 +473,7 @@ const Calendar = () => {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Enter event title"
+                  className="bg-background/50"
                 />
               </div>
               <div className="space-y-2">
@@ -479,12 +483,13 @@ const Calendar = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter event description"
+                  className="bg-background/50"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="type">Event Type</Label>
                 <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -502,6 +507,7 @@ const Calendar = () => {
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="bg-background/50"
                   />
                 </div>
                 <div className="space-y-2">
@@ -511,41 +517,112 @@ const Calendar = () => {
                     type="time"
                     value={formData.time}
                     onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                    className="bg-background/50"
                   />
                 </div>
               </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleSaveEvent}>Create Event</Button>
+              <Button onClick={handleSaveEvent} className="bg-gradient-to-r from-primary to-primary/80">Create Event</Button>
             </div>
           </DialogContent>
         </Dialog>
         </div>
       </div>
 
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-primary/20">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Today's Events</div>
+                <div className="text-2xl font-bold">{allEvents.filter(e => {
+                  const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+                  return isSameDay(eventDate, new Date());
+                }).length}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-success/20">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">This Week</div>
+                <div className="text-2xl font-bold">{allEvents.filter(e => {
+                  const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+                  const weekFromNow = new Date();
+                  weekFromNow.setDate(weekFromNow.getDate() + 7);
+                  return eventDate >= new Date() && eventDate <= weekFromNow;
+                }).length}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-warning/20">
+                <CalendarIcon className="h-5 w-5 text-warning" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">This Month</div>
+                <div className="text-2xl font-bold">{allEvents.filter(e => {
+                  const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+                  return isSameMonth(eventDate, currentDate);
+                }).length}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-full bg-blue-500/20">
+                <Download className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Synced Calendars</div>
+                <div className="text-2xl font-bold">{(googleConnected ? 1 : 0) + (outlookConnected ? 1 : 0)}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
+        {/* Calendar */}
+        <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-border/50 shadow-xl">
+          <CardHeader className="border-b border-border/50">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <CalendarIcon className="h-6 w-6 text-primary" />
+                </div>
                 {format(currentDate, 'MMMM yyyy')}
               </CardTitle>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
+                <Button variant="outline" size="icon" onClick={handlePreviousMonth} className="hover:bg-primary/10 hover:border-primary/30">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" onClick={handleNextMonth}>
+                <Button variant="outline" size="icon" onClick={handleNextMonth} className="hover:bg-primary/10 hover:border-primary/30">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="grid grid-cols-7 gap-2 mb-4">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+                <div key={day} className="text-center text-sm font-bold text-primary py-3 bg-primary/5 rounded-lg">
                   {day}
                 </div>
               ))}
@@ -556,10 +633,11 @@ const Calendar = () => {
                   return <div key={`empty-${i}`} className="aspect-square p-2" />;
                 }
                 
-                const hasEvent = allEvents.some(e => {
+                const dayEvents = allEvents.filter(e => {
                   const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
                   return isSameDay(eventDate, day);
                 });
+                const hasEvent = dayEvents.length > 0;
                 const isToday = isSameDay(day, new Date());
                 const isCurrentMonth = isSameMonth(day, currentDate);
                 
@@ -567,13 +645,27 @@ const Calendar = () => {
                   <button
                     key={i}
                     onClick={() => handleDateClick(day)}
-                    className={`aspect-square p-2 rounded-lg hover:bg-accent transition-colors text-sm ${
-                      isToday ? 'bg-primary text-primary-foreground font-bold' : ''
-                    } ${!isCurrentMonth ? 'text-muted-foreground opacity-50' : ''} ${
-                      hasEvent && !isToday ? 'ring-2 ring-primary' : ''
-                    }`}
+                    className={`aspect-square p-2 rounded-xl transition-all duration-200 text-sm relative group hover:scale-105 ${
+                      isToday 
+                        ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold shadow-lg shadow-primary/30' 
+                        : hasEvent 
+                          ? 'bg-primary/10 border-2 border-primary/30 hover:border-primary hover:bg-primary/20' 
+                          : 'hover:bg-muted/50 border border-transparent hover:border-border'
+                    } ${!isCurrentMonth ? 'text-muted-foreground opacity-40' : ''}`}
                   >
-                    {format(day, 'd')}
+                    <span className="relative z-10">{format(day, 'd')}</span>
+                    {hasEvent && !isToday && (
+                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+                        {dayEvents.slice(0, 3).map((_, idx) => (
+                          <div key={idx} className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        ))}
+                      </div>
+                    )}
+                    {isToday && hasEvent && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
+                        {dayEvents.length}
+                      </Badge>
+                    )}
                   </button>
                 );
               })}
@@ -581,11 +673,17 @@ const Calendar = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming Events</CardTitle>
+        {/* Upcoming Events */}
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-xl">
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <div className="p-2 rounded-lg bg-success/10">
+                <CalendarIcon className="h-5 w-5 text-success" />
+              </div>
+              Upcoming Events
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="pt-4 space-y-3 max-h-[600px] overflow-y-auto">
             {allEvents
               .filter((event) => {
                 const eventDate = event.provider === 'local' ? new Date(event.date) : new Date(event.start);
@@ -597,37 +695,39 @@ const Calendar = () => {
                 return dateA.getTime() - dateB.getTime();
               })
               .slice(0, 10)
-              .map((event) => {
+              .map((event, index) => {
                 const isLocal = event.provider === 'local';
                 const eventDate = isLocal ? new Date(event.date) : new Date(event.start);
                 const eventTime = isLocal ? event.time : format(new Date(event.start), "HH:mm");
                 
                 return (
-                  <div key={event.id} className="space-y-2 pb-4 border-b last:border-0">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1 flex-1">
-                        <h4 className="font-medium">{event.title}</h4>
-                        <p className="text-sm text-muted-foreground">{eventTime}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(eventDate, 'PPP')}
-                        </p>
+                  <div 
+                    key={event.id} 
+                    className="p-4 rounded-xl border bg-gradient-to-r from-card to-muted/30 hover:shadow-md transition-all duration-200 hover:border-primary/30"
+                    style={{ animationDelay: `${index * 50}ms`, animation: 'fade-in 0.3s ease-out' }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2 flex-1">
+                        <h4 className="font-bold text-base">{event.title}</h4>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CalendarIcon className="h-3.5 w-3.5" />
+                          {format(eventDate, 'MMM dd, yyyy')}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Badge variant="outline" className="text-xs">{eventTime}</Badge>
+                        </div>
                         {event.location && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
                             📍 {event.location}
                           </p>
                         )}
-                        {event.email && (
-                          <p className="text-xs text-muted-foreground">
-                            {event.email}
-                          </p>
-                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getEventColor(event.type, event.provider)}>
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge className={`${getEventColor(event.type, event.provider)} text-xs`}>
                           {event.provider === 'google' ? 'Google' : event.provider === 'outlook' ? 'Outlook' : event.type}
                         </Badge>
                         {isLocal && (
-                          <Button variant="ghost" size="icon" onClick={() => handleEditEvent(event)}>
+                          <Button variant="ghost" size="icon" onClick={() => handleEditEvent(event)} className="h-8 w-8 hover:bg-primary/10">
                             <Edit className="h-4 w-4" />
                           </Button>
                         )}
@@ -636,6 +736,19 @@ const Calendar = () => {
                   </div>
                 );
               })}
+            {allEvents.filter(e => {
+              const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+              return eventDate >= new Date();
+            }).length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <CalendarIcon className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>No upcoming events</p>
+                <Button variant="outline" className="mt-4" onClick={() => setDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -554,69 +554,197 @@ Based on your risk profile and tolerance, we recommend maintaining a ${getRiskLe
         </TabsContent>
 
         <TabsContent value="stress" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Stress Test Analysis</CardTitle>
-              <CardDescription>How your portfolio would perform in various market scenarios</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {stressTestScenarios.map((scenario) => (
-                  <div key={scenario.scenario} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-semibold">{scenario.scenario}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Impact Duration: {scenario.duration}
-                        </p>
-                      </div>
-                      <Badge variant={scenario.impact > -15 ? "default" : "destructive"}>
-                        {formatPercent(scenario.impact)}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Portfolio Impact</div>
-                        <div className="font-semibold text-destructive">
+          {/* Key Stress Metrics Banner */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-full bg-destructive/20">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Worst Case Impact</div>
+                    <div className="text-2xl font-bold text-destructive">-37.0%</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-full bg-warning/20">
+                    <TrendingUp className="h-5 w-5 text-warning" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Avg Recovery Time</div>
+                    <div className="text-2xl font-bold">19.5 months</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-full bg-primary/20">
+                    <Shield className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Resilience Score</div>
+                    <div className="text-2xl font-bold text-primary">72/100</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-full bg-success/20">
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Risk Adjusted</div>
+                    <div className="text-2xl font-bold text-success">Strong</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Stress Test Scenarios */}
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
+                  Historical Stress Scenarios
+                </CardTitle>
+                <CardDescription>Portfolio performance during major market events</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {stressTestScenarios.map((scenario, index) => (
+                    <div 
+                      key={scenario.scenario} 
+                      className="p-5 rounded-xl border bg-gradient-to-r from-card to-muted/30 hover:shadow-lg transition-all duration-300 hover:border-primary/30"
+                      style={{ animationDelay: `${index * 100}ms`, animation: 'fade-in 0.5s ease-out' }}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg">{scenario.scenario}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Crisis Duration: {scenario.duration}
+                          </p>
+                        </div>
+                        <Badge 
+                          variant="outline"
+                          className={`text-base px-3 py-1 ${
+                            scenario.impact > -15 ? 'bg-warning/10 text-warning border-warning/30' : 'bg-destructive/10 text-destructive border-destructive/30'
+                          }`}
+                        >
                           {formatPercent(scenario.impact)}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="p-3 rounded-lg bg-destructive/10 text-center">
+                          <div className="text-xs text-muted-foreground mb-1">Portfolio Impact</div>
+                          <div className="text-xl font-bold text-destructive">
+                            {formatPercent(scenario.impact)}
+                          </div>
+                        </div>
+                        <div className="p-3 rounded-lg bg-warning/10 text-center">
+                          <div className="text-xs text-muted-foreground mb-1">Duration</div>
+                          <div className="text-xl font-bold text-warning">{scenario.duration}</div>
+                        </div>
+                        <div className="p-3 rounded-lg bg-success/10 text-center">
+                          <div className="text-xs text-muted-foreground mb-1">Recovery</div>
+                          <div className="text-xl font-bold text-success">{scenario.recovery}</div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground">Duration</div>
-                        <div className="font-semibold">{scenario.duration}</div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground">Recovery Time</div>
-                        <div className="font-semibold">{scenario.recovery}</div>
+
+                      <div className="mt-4">
+                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                          <span>Impact Severity</span>
+                          <span>{Math.abs(scenario.impact)}%</span>
+                        </div>
+                        <div className="h-3 rounded-full bg-muted overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              Math.abs(scenario.impact) > 30 ? 'bg-gradient-to-r from-destructive to-destructive/70' :
+                              Math.abs(scenario.impact) > 15 ? 'bg-gradient-to-r from-warning to-warning/70' :
+                              'bg-gradient-to-r from-primary to-primary/70'
+                            }`}
+                            style={{ width: `${Math.min(Math.abs(scenario.impact) * 2.5, 100)}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-                    <div className="mt-3">
-                      <Progress 
-                        value={Math.abs(scenario.impact)} 
-                        className="h-2"
-                      />
+            {/* Impact Visualization */}
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-primary" />
+                  Impact Comparison Chart
+                </CardTitle>
+                <CardDescription>Visual comparison of stress test impacts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={stressTestScenarios} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                    <XAxis type="number" domain={[-50, 0]} tickFormatter={(v) => `${v}%`} />
+                    <YAxis type="category" dataKey="scenario" width={120} tick={{ fontSize: 11 }} />
+                    <Tooltip 
+                      formatter={(value) => [`${value}%`, 'Impact']}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Bar 
+                      dataKey="impact" 
+                      fill="hsl(var(--destructive))"
+                      radius={[0, 4, 4, 0]}
+                      opacity={0.8}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+
+                <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-full bg-primary/20">
+                      <Info className="h-5 w-5 text-primary" />
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 p-4 rounded-lg bg-muted/50 border">
-                <div className="flex items-start gap-3">
-                  <Info className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <div className="font-semibold">Portfolio Resilience</div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Based on historical stress tests, your current portfolio shows good resilience 
-                      with manageable drawdowns and reasonable recovery periods. Consider increasing 
-                      defensive positions if you're concerned about market volatility.
+                    <div>
+                      <div className="font-bold text-lg">Portfolio Resilience Analysis</div>
+                      <div className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                        Based on historical stress tests, your current portfolio demonstrates <span className="text-primary font-semibold">strong resilience</span> with 
+                        manageable drawdowns and reasonable recovery periods. The worst-case scenario (2008 Financial Crisis) 
+                        would result in a 37% drawdown, but recovery is achievable within 24 months. Consider 
+                        <span className="text-primary font-semibold"> increasing defensive positions</span> if you're concerned about near-term volatility.
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button size="sm" variant="outline" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          Download Report
+                        </Button>
+                        <Button size="sm" className="gap-2">
+                          <Calculator className="h-4 w-4" />
+                          Run Custom Scenario
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

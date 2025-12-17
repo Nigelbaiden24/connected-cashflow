@@ -453,70 +453,92 @@ ELITE DOCUMENT REQUIREMENTS:
     try {
       toast({
         title: "Generating PDF...",
-        description: `Processing ${pages.length} page(s)`,
+        description: `Processing ${pages.length} page(s) with all content`,
       });
 
       // Create a temporary container for all pages
       const container = document.createElement('div');
+      container.id = 'pdf-export-container';
       container.style.position = 'absolute';
       container.style.left = '-9999px';
       container.style.top = '0';
-      container.style.width = '794px'; // A4 width at 96 DPI
+      container.style.width = '794px';
       container.style.background = 'white';
       document.body.appendChild(container);
 
-      // Render all pages sequentially
+      // Render all pages with all content
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
         const pageSections = sections.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
         const pageShapes = shapes.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
         const pageImages = uploadedImages.filter(img => (img as any).pageId === page.id || (!(img as any).pageId && page.id === 'page-1'));
+        const pageSignatures = signatureFields.filter(sig => sig.pageId === page.id || (!sig.pageId && page.id === 'page-1'));
 
         const pageDiv = document.createElement('div');
         pageDiv.className = 'pdf-page';
         pageDiv.style.backgroundColor = backgroundColor || '#ffffff';
         pageDiv.style.fontFamily = fontFamily;
         pageDiv.style.fontSize = `${fontSize}px`;
+        pageDiv.style.color = textColor || '#000000';
         pageDiv.style.padding = '40px';
         pageDiv.style.width = '794px';
-        pageDiv.style.minHeight = '1123px'; // A4 height
-        pageDiv.style.height = '1123px';
+        pageDiv.style.minHeight = '1123px';
+        pageDiv.style.height = 'auto';
         pageDiv.style.position = 'relative';
         pageDiv.style.boxSizing = 'border-box';
-        pageDiv.style.overflow = 'hidden';
-        
-        // Force page break for all pages except first
-        if (i > 0) {
-          pageDiv.style.pageBreakBefore = 'always';
-        }
+        pageDiv.style.overflow = 'visible';
+        pageDiv.style.pageBreakAfter = i < pages.length - 1 ? 'always' : 'auto';
+        pageDiv.style.pageBreakInside = 'avoid';
 
-        // Render sections
+        // Add page number
+        const pageNum = document.createElement('div');
+        pageNum.style.position = 'absolute';
+        pageNum.style.bottom = '20px';
+        pageNum.style.right = '40px';
+        pageNum.style.fontSize = '12px';
+        pageNum.style.color = '#666';
+        pageNum.textContent = `Page ${i + 1} of ${pages.length}`;
+        pageDiv.appendChild(pageNum);
+
+        // Render all sections with full content
         pageSections.forEach(section => {
           const sectionDiv = document.createElement('div');
           sectionDiv.style.position = 'absolute';
-          sectionDiv.style.left = `${section.x}px`;
-          sectionDiv.style.top = `${section.y}px`;
-          sectionDiv.style.width = `${section.width}px`;
+          sectionDiv.style.left = `${Math.max(0, section.x)}px`;
+          sectionDiv.style.top = `${Math.max(0, section.y)}px`;
+          sectionDiv.style.width = `${Math.min(section.width, 714)}px`;
           sectionDiv.style.minHeight = `${section.height}px`;
-          sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
+          sectionDiv.style.color = (section as any).styling?.textColor || textColor;
           sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || 'transparent';
-          sectionDiv.style.padding = '12px';
-          sectionDiv.style.borderRadius = '4px';
-          
-          if (section.type === 'heading') {
-            sectionDiv.innerHTML = `<h2 style="font-size: 24px; font-weight: bold; margin-bottom: 16px;">${section.content || section.title}</h2>`;
-          } else if (section.type === 'table') {
-            sectionDiv.innerHTML = section.content;
-          } else {
-            const title = section.title ? `<h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${section.title}</h3>` : '';
-            sectionDiv.innerHTML = `${title}<p style="white-space: pre-wrap; line-height: 1.6;">${section.content || ''}</p>`;
+          sectionDiv.style.padding = '16px';
+          sectionDiv.style.borderRadius = '8px';
+          sectionDiv.style.boxSizing = 'border-box';
+          sectionDiv.style.overflow = 'visible';
+          sectionDiv.style.wordWrap = 'break-word';
+
+          if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== 'none') {
+            sectionDiv.style.border = `1px solid ${(section as any).styling?.borderColor || '#e5e7eb'}`;
           }
-          
+
+          if (section.type === 'heading') {
+            sectionDiv.innerHTML = `<h2 style="font-size: 28px; font-weight: bold; margin-bottom: 16px; line-height: 1.3;">${section.content || section.title}</h2>`;
+          } else if (section.type === 'table') {
+            // Render table with proper styling
+            const tableWrapper = document.createElement('div');
+            tableWrapper.style.overflow = 'visible';
+            tableWrapper.innerHTML = `<style>table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 12px; text-align: left; } th { background-color: #f5f5f5; font-weight: 600; }</style>${section.content}`;
+            sectionDiv.appendChild(tableWrapper);
+          } else {
+            const title = section.title ? `<h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px; color: ${(section as any).styling?.textColor || textColor};">${section.title}</h3>` : '';
+            const content = section.content || '';
+            sectionDiv.innerHTML = `${title}<div style="white-space: pre-wrap; line-height: 1.7; font-size: 14px;">${content}</div>`;
+          }
+
           pageDiv.appendChild(sectionDiv);
         });
 
-        // Render images
-        pageImages.forEach(img => {
+        // Render all images
+        for (const img of pageImages) {
           const imgEl = document.createElement('img');
           imgEl.src = img.url;
           imgEl.style.position = 'absolute';
@@ -525,10 +547,11 @@ ELITE DOCUMENT REQUIREMENTS:
           imgEl.style.width = `${img.width}px`;
           imgEl.style.height = `${img.height}px`;
           imgEl.style.objectFit = 'contain';
+          imgEl.crossOrigin = 'anonymous';
           pageDiv.appendChild(imgEl);
-        });
+        }
 
-        // Render shapes
+        // Render all shapes
         pageShapes.forEach(shape => {
           const shapeDiv = document.createElement('div');
           shapeDiv.style.position = 'absolute';
@@ -539,38 +562,78 @@ ELITE DOCUMENT REQUIREMENTS:
           shapeDiv.style.backgroundColor = shape.color;
           if (shape.type === 'circle') {
             shapeDiv.style.borderRadius = '50%';
+          } else if (shape.type === 'triangle') {
+            shapeDiv.style.backgroundColor = 'transparent';
+            shapeDiv.style.width = '0';
+            shapeDiv.style.height = '0';
+            shapeDiv.style.borderLeft = `${shape.width / 2}px solid transparent`;
+            shapeDiv.style.borderRight = `${shape.width / 2}px solid transparent`;
+            shapeDiv.style.borderBottom = `${shape.height}px solid ${shape.color}`;
           }
           pageDiv.appendChild(shapeDiv);
+        });
+
+        // Render signature fields
+        pageSignatures.forEach(sig => {
+          const sigDiv = document.createElement('div');
+          sigDiv.style.position = 'absolute';
+          sigDiv.style.left = `${sig.x}px`;
+          sigDiv.style.top = `${sig.y}px`;
+          sigDiv.style.width = `${sig.width}px`;
+          sigDiv.style.height = `${sig.height}px`;
+          sigDiv.style.border = '2px dashed #999';
+          sigDiv.style.borderRadius = '4px';
+          sigDiv.style.display = 'flex';
+          sigDiv.style.alignItems = 'center';
+          sigDiv.style.justifyContent = 'center';
+          sigDiv.style.color = '#666';
+          sigDiv.style.fontSize = '12px';
+          sigDiv.textContent = sig.signed ? '✓ Signed' : 'Signature Required';
+          pageDiv.appendChild(sigDiv);
         });
 
         container.appendChild(pageDiv);
       }
 
-      // Wait for images to load
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for all images to load
+      const images = container.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        return new Promise((resolve) => {
+          if (img.complete) resolve(true);
+          else {
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+          }
+        });
+      }));
+
+      // Additional wait for rendering
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       const opt = {
-        margin: 0,
+        margin: [10, 10, 10, 10] as [number, number, number, number],
         filename: `${template?.name || 'document'}-${new Date().toISOString().slice(0, 10)}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
+        html2canvas: {
+          scale: 2,
           useCORS: true,
           logging: false,
+          allowTaint: true,
           windowWidth: 794,
-          windowHeight: 1123
+          scrollY: 0,
+          scrollX: 0,
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css', 'legacy'] as any, before: '.pdf-page', avoid: 'img' }
+        pagebreak: { mode: ['css', 'legacy'] as any, before: '.pdf-page' }
       };
-      
+
       await html2pdf().set(opt).from(container).save();
-      
+
       document.body.removeChild(container);
-      
+
       toast({
-        title: "PDF downloaded!",
-        description: `Document with ${pages.length} page(s) has been saved successfully.`,
+        title: "PDF downloaded successfully!",
+        description: `Document with ${pages.length} page(s) and all content has been saved.`,
       });
     } catch (error) {
       console.error('PDF generation error:', error);
