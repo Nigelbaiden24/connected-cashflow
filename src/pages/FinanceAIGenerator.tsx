@@ -450,170 +450,268 @@ ELITE DOCUMENT REQUIREMENTS:
   };
 
   const handleDownloadPDF = async () => {
+    // Ensure all user-created content (all pages, sections, images, shapes, signatures, logo) is included in export
+    const container = document.createElement("div");
+    container.id = "pdf-export-container";
+
+    const cleanup = () => {
+      if (container.parentElement) document.body.removeChild(container);
+    };
+
+    const waitForImages = async (root: HTMLElement) => {
+      const imgs = Array.from(root.querySelectorAll("img"));
+      await Promise.all(
+        imgs.map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              if (img.complete) return resolve();
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            })
+        )
+      );
+    };
+
+    const createShapeElement = (shape: any) => {
+      const el = document.createElement("div");
+      el.style.position = "absolute";
+      el.style.left = `${shape.x}px`;
+      el.style.top = `${shape.y}px`;
+      el.style.width = `${shape.width}px`;
+      el.style.height = `${shape.height}px`;
+      el.style.pointerEvents = "none";
+
+      const color = shape.color || "#111";
+
+      switch (shape.type) {
+        case "circle": {
+          el.style.backgroundColor = color;
+          el.style.borderRadius = "9999px";
+          break;
+        }
+        case "triangle": {
+          el.style.backgroundColor = "transparent";
+          el.style.width = "0";
+          el.style.height = "0";
+          el.style.borderLeft = `${shape.width / 2}px solid transparent`;
+          el.style.borderRight = `${shape.width / 2}px solid transparent`;
+          el.style.borderBottom = `${shape.height}px solid ${color}`;
+          break;
+        }
+        case "line": {
+          el.style.height = "0";
+          el.style.borderTop = `3px solid ${color}`;
+          el.style.transformOrigin = "left center";
+          break;
+        }
+        case "diamond": {
+          el.style.backgroundColor = color;
+          el.style.transform = "rotate(45deg)";
+          break;
+        }
+        case "arrow": {
+          el.innerHTML = `
+            <svg width="${shape.width}" height="${shape.height}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 12h12" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+              <path d="M13 6l6 6-6 6" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          `;
+          break;
+        }
+        case "star": {
+          el.innerHTML = `
+            <svg width="${shape.width}" height="${shape.height}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="${color}" />
+            </svg>
+          `;
+          break;
+        }
+        case "rectangle":
+        default: {
+          el.style.backgroundColor = color;
+          el.style.borderRadius = "8px";
+          break;
+        }
+      }
+
+      return el;
+    };
+
     try {
       toast({
         title: "Generating PDF...",
         description: `Processing ${pages.length} page(s) with all content`,
       });
 
-      // Create a temporary container for all pages
-      const container = document.createElement('div');
-      container.id = 'pdf-export-container';
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = '794px';
-      container.style.background = 'white';
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.top = "0";
+      container.style.width = "794px";
+      container.style.background = "white";
+      container.style.pointerEvents = "none";
       document.body.appendChild(container);
 
-      // Render all pages with all content
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
-        const pageSections = sections.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
-        const pageShapes = shapes.filter(s => (s as any).pageId === page.id || (!(s as any).pageId && page.id === 'page-1'));
-        const pageImages = uploadedImages.filter(img => (img as any).pageId === page.id || (!(img as any).pageId && page.id === 'page-1'));
-        const pageSignatures = signatureFields.filter(sig => sig.pageId === page.id || (!sig.pageId && page.id === 'page-1'));
+        const pageSections = sections.filter(
+          (s) => (s as any).pageId === page.id || (!(s as any).pageId && page.id === "page-1")
+        );
+        const pageShapes = shapes.filter(
+          (s) => (s as any).pageId === page.id || (!(s as any).pageId && page.id === "page-1")
+        );
+        const pageImages = uploadedImages.filter(
+          (img) => (img as any).pageId === page.id || (!(img as any).pageId && page.id === "page-1")
+        );
+        const pageSignatures = signatureFields.filter(
+          (sig) => sig.pageId === page.id || (!sig.pageId && page.id === "page-1")
+        );
 
-        const pageDiv = document.createElement('div');
-        pageDiv.className = 'pdf-page';
-        pageDiv.style.backgroundColor = backgroundColor || '#ffffff';
+        const pageDiv = document.createElement("div");
+        pageDiv.className = "pdf-page";
+        pageDiv.style.backgroundColor = backgroundColor || "#ffffff";
         pageDiv.style.fontFamily = fontFamily;
         pageDiv.style.fontSize = `${fontSize}px`;
-        pageDiv.style.color = textColor || '#000000';
-        pageDiv.style.padding = '40px';
-        pageDiv.style.width = '794px';
-        pageDiv.style.minHeight = '1123px';
-        pageDiv.style.height = 'auto';
-        pageDiv.style.position = 'relative';
-        pageDiv.style.boxSizing = 'border-box';
-        pageDiv.style.overflow = 'visible';
-        pageDiv.style.pageBreakAfter = i < pages.length - 1 ? 'always' : 'auto';
-        pageDiv.style.pageBreakInside = 'avoid';
+        pageDiv.style.color = textColor || "#000000";
+        pageDiv.style.padding = "40px";
+        pageDiv.style.width = "794px";
+        pageDiv.style.minHeight = "1123px";
+        pageDiv.style.position = "relative";
+        pageDiv.style.boxSizing = "border-box";
+        pageDiv.style.overflow = "visible";
+        pageDiv.style.pageBreakAfter = i < pages.length - 1 ? "always" : "auto";
 
-        // Add page number
-        const pageNum = document.createElement('div');
-        pageNum.style.position = 'absolute';
-        pageNum.style.bottom = '20px';
-        pageNum.style.right = '40px';
-        pageNum.style.fontSize = '12px';
-        pageNum.style.color = '#666';
-        pageNum.textContent = `Page ${i + 1} of ${pages.length}`;
-        pageDiv.appendChild(pageNum);
+        // Logo
+        if (logoUrl) {
+          const logo = document.createElement("img");
+          logo.src = logoUrl;
+          logo.style.position = "absolute";
+          logo.style.left = "40px";
+          logo.style.top = "32px";
+          logo.style.height = "56px";
+          logo.style.width = "auto";
+          logo.style.objectFit = "contain";
+          pageDiv.appendChild(logo);
+        }
 
-        // Render all sections with full content
-        pageSections.forEach(section => {
-          const sectionDiv = document.createElement('div');
-          sectionDiv.style.position = 'absolute';
+        // Shapes (render behind content)
+        pageShapes.forEach((shape) => {
+          pageDiv.appendChild(createShapeElement(shape));
+        });
+
+        // Sections
+        pageSections.forEach((section) => {
+          const sectionDiv = document.createElement("div");
+          sectionDiv.style.position = "absolute";
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
           sectionDiv.style.top = `${Math.max(0, section.y)}px`;
           sectionDiv.style.width = `${Math.min(section.width, 714)}px`;
           sectionDiv.style.minHeight = `${section.height}px`;
-          sectionDiv.style.color = (section as any).styling?.textColor || textColor;
-          sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || 'transparent';
-          sectionDiv.style.padding = '16px';
-          sectionDiv.style.borderRadius = '8px';
-          sectionDiv.style.boxSizing = 'border-box';
-          sectionDiv.style.overflow = 'visible';
-          sectionDiv.style.wordWrap = 'break-word';
+          sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
+          sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || "transparent";
+          sectionDiv.style.padding = "16px";
+          sectionDiv.style.borderRadius = "8px";
+          sectionDiv.style.boxSizing = "border-box";
+          sectionDiv.style.overflow = "visible";
+          sectionDiv.style.wordBreak = "break-word";
 
-          if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== 'none') {
-            sectionDiv.style.border = `1px solid ${(section as any).styling?.borderColor || '#e5e7eb'}`;
+          if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== "none") {
+            sectionDiv.style.border = `1px solid ${(section as any).styling?.borderColor || "#e5e7eb"}`;
           }
 
-          if (section.type === 'heading') {
-            sectionDiv.innerHTML = `<h2 style="font-size: 28px; font-weight: bold; margin-bottom: 16px; line-height: 1.3;">${section.content || section.title}</h2>`;
-          } else if (section.type === 'table') {
-            // Render table with proper styling
-            const tableWrapper = document.createElement('div');
-            tableWrapper.style.overflow = 'visible';
-            tableWrapper.innerHTML = `<style>table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 12px; text-align: left; } th { background-color: #f5f5f5; font-weight: 600; }</style>${section.content}`;
+          if (section.type === "heading") {
+            const h2 = document.createElement("h2");
+            h2.style.fontSize = "28px";
+            h2.style.fontWeight = "700";
+            h2.style.marginBottom = "16px";
+            h2.style.lineHeight = "1.3";
+            h2.textContent = (section.content || section.title || "").toString();
+            sectionDiv.appendChild(h2);
+          } else if (section.type === "table") {
+            const tableWrapper = document.createElement("div");
+            tableWrapper.style.overflow = "visible";
+            tableWrapper.innerHTML = `
+              <style>
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                th { background-color: #f5f5f5; font-weight: 600; }
+              </style>
+              ${section.content || ""}
+            `;
             sectionDiv.appendChild(tableWrapper);
           } else {
-            const title = section.title ? `<h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px; color: ${(section as any).styling?.textColor || textColor};">${section.title}</h3>` : '';
-            const content = section.content || '';
-            sectionDiv.innerHTML = `${title}<div style="white-space: pre-wrap; line-height: 1.7; font-size: 14px;">${content}</div>`;
+            if (section.title) {
+              const h3 = document.createElement("h3");
+              h3.style.fontSize = "20px";
+              h3.style.fontWeight = "600";
+              h3.style.marginBottom = "12px";
+              h3.textContent = section.title;
+              sectionDiv.appendChild(h3);
+            }
+
+            const contentDiv = document.createElement("div");
+            contentDiv.style.whiteSpace = "pre-wrap";
+            contentDiv.style.lineHeight = "1.7";
+            contentDiv.style.fontSize = "14px";
+            contentDiv.textContent = (section.content || "").toString();
+            sectionDiv.appendChild(contentDiv);
           }
 
           pageDiv.appendChild(sectionDiv);
         });
 
-        // Render all images
+        // Images
         for (const img of pageImages) {
-          const imgEl = document.createElement('img');
+          const imgEl = document.createElement("img");
           imgEl.src = img.url;
-          imgEl.style.position = 'absolute';
+          imgEl.style.position = "absolute";
           imgEl.style.left = `${img.x}px`;
           imgEl.style.top = `${img.y}px`;
           imgEl.style.width = `${img.width}px`;
           imgEl.style.height = `${img.height}px`;
-          imgEl.style.objectFit = 'contain';
-          imgEl.crossOrigin = 'anonymous';
+          imgEl.style.objectFit = "contain";
+          imgEl.crossOrigin = "anonymous";
           pageDiv.appendChild(imgEl);
         }
 
-        // Render all shapes
-        pageShapes.forEach(shape => {
-          const shapeDiv = document.createElement('div');
-          shapeDiv.style.position = 'absolute';
-          shapeDiv.style.left = `${shape.x}px`;
-          shapeDiv.style.top = `${shape.y}px`;
-          shapeDiv.style.width = `${shape.width}px`;
-          shapeDiv.style.height = `${shape.height}px`;
-          shapeDiv.style.backgroundColor = shape.color;
-          if (shape.type === 'circle') {
-            shapeDiv.style.borderRadius = '50%';
-          } else if (shape.type === 'triangle') {
-            shapeDiv.style.backgroundColor = 'transparent';
-            shapeDiv.style.width = '0';
-            shapeDiv.style.height = '0';
-            shapeDiv.style.borderLeft = `${shape.width / 2}px solid transparent`;
-            shapeDiv.style.borderRight = `${shape.width / 2}px solid transparent`;
-            shapeDiv.style.borderBottom = `${shape.height}px solid ${shape.color}`;
-          }
-          pageDiv.appendChild(shapeDiv);
-        });
-
-        // Render signature fields
-        pageSignatures.forEach(sig => {
-          const sigDiv = document.createElement('div');
-          sigDiv.style.position = 'absolute';
+        // Signature fields
+        pageSignatures.forEach((sig) => {
+          const sigDiv = document.createElement("div");
+          sigDiv.style.position = "absolute";
           sigDiv.style.left = `${sig.x}px`;
           sigDiv.style.top = `${sig.y}px`;
           sigDiv.style.width = `${sig.width}px`;
           sigDiv.style.height = `${sig.height}px`;
-          sigDiv.style.border = '2px dashed #999';
-          sigDiv.style.borderRadius = '4px';
-          sigDiv.style.display = 'flex';
-          sigDiv.style.alignItems = 'center';
-          sigDiv.style.justifyContent = 'center';
-          sigDiv.style.color = '#666';
-          sigDiv.style.fontSize = '12px';
-          sigDiv.textContent = sig.signed ? '✓ Signed' : 'Signature Required';
+          sigDiv.style.border = "2px dashed #999";
+          sigDiv.style.borderRadius = "6px";
+          sigDiv.style.display = "flex";
+          sigDiv.style.alignItems = "center";
+          sigDiv.style.justifyContent = "center";
+          sigDiv.style.color = "#666";
+          sigDiv.style.fontSize = "12px";
+          sigDiv.textContent = sig.signed ? "✓ Signed" : "Signature Required";
           pageDiv.appendChild(sigDiv);
         });
+
+        // Expand height to include absolutely-positioned elements (prevents clipping)
+        const maxBottom = Math.max(
+          1123,
+          ...pageSections.map((s: any) => (s.y || 0) + (s.height || 0) + 120),
+          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0) + 120),
+          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0) + 120),
+          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0) + 120)
+        );
+        pageDiv.style.height = `${maxBottom}px`;
 
         container.appendChild(pageDiv);
       }
 
-      // Wait for all images to load
-      const images = container.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => {
-        return new Promise((resolve) => {
-          if (img.complete) resolve(true);
-          else {
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-          }
-        });
-      }));
-
-      // Additional wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await waitForImages(container);
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       const opt = {
         margin: [10, 10, 10, 10] as [number, number, number, number],
-        filename: `${template?.name || 'document'}-${new Date().toISOString().slice(0, 10)}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
+        filename: `${template?.name || "document"}-${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: "jpeg" as const, quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
@@ -623,24 +721,25 @@ ELITE DOCUMENT REQUIREMENTS:
           scrollY: 0,
           scrollX: 0,
         },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
-        pagebreak: { mode: ['css', 'legacy'] as any, before: '.pdf-page' }
+        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
+        pagebreak: { mode: ["css", "legacy"] as any },
       };
 
       await html2pdf().set(opt).from(container).save();
 
-      document.body.removeChild(container);
+      cleanup();
 
       toast({
         title: "PDF downloaded successfully!",
-        description: `Document with ${pages.length} page(s) and all content has been saved.`,
+        description: `Document with all content has been saved.`,
       });
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error("PDF generation error:", error);
+      cleanup();
       toast({
         title: "Download failed",
         description: "Could not generate PDF. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
