@@ -199,6 +199,22 @@ const Calendar = () => {
       return;
     }
 
+    // Important: open the popup synchronously (before await) so browsers don't block it.
+    const popup = window.open(
+      "about:blank",
+      "google-calendar-auth",
+      "width=600,height=700"
+    );
+
+    if (!popup) {
+      toast({
+        title: "Popup Blocked",
+        description: "Please allow popups for this site to connect Google Calendar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke('google-calendar-auth');
@@ -208,8 +224,15 @@ const Calendar = () => {
         throw new Error('Failed to get authorization URL');
       }
 
-      window.open(data.authUrl, 'google-calendar-auth', 'width=600,height=700');
+      popup.location.href = data.authUrl;
+      popup.focus?.();
     } catch (error: any) {
+      try {
+        popup.close?.();
+      } catch {
+        // ignore
+      }
+
       console.error('Error connecting Google Calendar:', error);
       toast({
         title: "Connection Error",
@@ -222,6 +245,22 @@ const Calendar = () => {
   };
 
   const handleConnectOutlook = async () => {
+    // Important: open the popup synchronously (before await) so browsers don't block it.
+    const popup = window.open(
+      "about:blank",
+      "outlook-calendar-auth",
+      "width=600,height=700"
+    );
+
+    if (!popup) {
+      toast({
+        title: "Popup Blocked",
+        description: "Please allow popups for this site to connect Outlook Calendar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke('outlook-calendar-auth');
@@ -230,8 +269,15 @@ const Calendar = () => {
         throw new Error('Failed to get authorization URL');
       }
 
-      window.open(data.authUrl, 'outlook-calendar-auth', 'width=600,height=700');
+      popup.location.href = data.authUrl;
+      popup.focus?.();
     } catch (error) {
+      try {
+        popup.close?.();
+      } catch {
+        // ignore
+      }
+
       console.error('Error connecting Outlook Calendar:', error);
       toast({
         title: "Error",
