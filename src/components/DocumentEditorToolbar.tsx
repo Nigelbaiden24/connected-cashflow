@@ -11,14 +11,10 @@ import {
   Download,
   Upload,
   ImagePlus,
-  Type,
   Palette,
   Sparkles,
   Plus,
   FilePlus,
-  Bold,
-  Italic,
-  Underline,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -38,6 +34,12 @@ import {
   Save,
   FolderOpen,
   BarChart3,
+  ChevronDown,
+  FileText,
+  Type,
+  Layout,
+  Layers,
+  MoreHorizontal,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,7 +62,22 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { ChartInsertDialog, ChartConfig } from "@/components/ChartInsertDialog";
+import { cn } from "@/lib/utils";
 
 interface DocumentEditorToolbarProps {
   templates: any[];
@@ -101,6 +118,70 @@ interface DocumentEditorToolbarProps {
   onLoadDocument?: () => void;
   savedDocuments?: Array<{ id: string; name: string; savedAt: string }>;
 }
+
+// Toolbar button with tooltip
+const ToolbarButton = ({
+  onClick,
+  disabled,
+  tooltip,
+  children,
+  variant = "ghost",
+  className,
+}: {
+  onClick?: () => void;
+  disabled?: boolean;
+  tooltip: string;
+  children: React.ReactNode;
+  variant?: "ghost" | "outline" | "default";
+  className?: string;
+}) => (
+  <TooltipProvider delayDuration={300}>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant={variant}
+          size="sm"
+          onClick={onClick}
+          disabled={disabled}
+          className={cn(
+            "h-8 px-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all duration-200",
+            variant === "default" && "text-primary-foreground hover:text-primary-foreground",
+            className
+          )}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="text-xs">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
+// Section wrapper for toolbar groups
+const ToolbarSection = ({
+  children,
+  label,
+  className,
+}: {
+  children: React.ReactNode;
+  label?: string;
+  className?: string;
+}) => (
+  <div className={cn("flex items-center gap-1", className)}>
+    {label && (
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium mr-1 hidden xl:inline">
+        {label}
+      </span>
+    )}
+    {children}
+  </div>
+);
+
+const ToolbarDivider = () => (
+  <div className="h-6 w-px bg-border/50 mx-1.5" />
+);
 
 export function DocumentEditorToolbar({
   templates,
@@ -195,226 +276,219 @@ export function DocumentEditorToolbar({
   const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
 
   return (
-    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-[5]">
-      <div className="flex items-center gap-2 p-2 flex-wrap">
-        {/* Template Selection */}
-        <div className="flex items-center gap-2">
+    <div className="sticky top-0 z-[5] border-b border-border/40 bg-gradient-to-b from-background via-background to-background/95 backdrop-blur-xl shadow-sm">
+      {/* Main Toolbar Row */}
+      <div className="flex items-center gap-1 px-3 py-2">
+        {/* File & Template Section */}
+        <ToolbarSection>
           <Select value={selectedTemplate || undefined} onValueChange={onTemplateSelect}>
-            <SelectTrigger className="w-[180px] h-9">
+            <SelectTrigger className="h-8 w-[160px] text-xs font-medium bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+              <FileText className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
               <SelectValue placeholder="Select template" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-popover border-border shadow-xl">
               {templates.map((template) => (
-                <SelectItem key={template.id} value={template.id}>
+                <SelectItem key={template.id} value={template.id} className="text-xs">
                   {template.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </ToolbarSection>
 
-        <Separator orientation="vertical" className="h-6" />
+        <ToolbarDivider />
 
-        {/* Page Actions */}
+        {/* Page Navigation */}
         {selectedTemplate && (
           <>
-            <Select value={currentPageId} onValueChange={onPageChange}>
-              <SelectTrigger className="w-[120px] h-9 bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-background border border-border z-50">
-                {pages.map((page) => (
-                  <SelectItem key={page.id} value={page.id}>
-                    {page.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ToolbarSection>
+              <Select value={currentPageId} onValueChange={onPageChange}>
+                <SelectTrigger className="h-8 w-[100px] text-xs bg-muted/50 border-border/50">
+                  <Layers className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border shadow-xl z-50">
+                  {pages.map((page) => (
+                    <SelectItem key={page.id} value={page.id} className="text-xs">
+                      {page.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Button variant="outline" size="sm" onClick={onAddPage}>
-              <FilePlus className="h-4 w-4 mr-2" />
-              Add Page
-            </Button>
+              <ToolbarButton tooltip="Add new page" onClick={onAddPage}>
+                <FilePlus className="h-4 w-4" />
+              </ToolbarButton>
 
-            <Button variant="outline" size="sm" onClick={onAddSection}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Section
-        </Button>
+              <ToolbarButton tooltip="Add section" onClick={onAddSection}>
+                <Plus className="h-4 w-4" />
+              </ToolbarButton>
+            </ToolbarSection>
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Shapes className="h-4 w-4 mr-2" />
-              Shapes
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56">
-            <div className="grid grid-cols-3 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('rectangle')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <Square className="h-6 w-6" />
-                <span className="text-xs">Rectangle</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('circle')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <Circle className="h-6 w-6" />
-                <span className="text-xs">Circle</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('triangle')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <Triangle className="h-6 w-6" />
-                <span className="text-xs">Triangle</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('star')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
-                </svg>
-                <span className="text-xs">Star</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('arrow')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" />
-                </svg>
-                <span className="text-xs">Arrow</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('diamond')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M12 2 L22 12 L12 22 L2 12 Z" strokeWidth="2" />
-                </svg>
-                <span className="text-xs">Diamond</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddShape('line')}
-                className="flex flex-col items-center gap-1 h-auto py-2"
-              >
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M5 19 L19 5" strokeWidth="2" />
-                </svg>
-                <span className="text-xs">Line</span>
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
+            <ToolbarDivider />
           </>
         )}
 
-        <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Sparkles className="h-4 w-4 mr-2" />
-              AI Fill
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>AI Fill Document</DialogTitle>
-              <DialogDescription>
-                Describe what content you'd like the AI to generate for your document
-              </DialogDescription>
-            </DialogHeader>
-            <Textarea
-              placeholder="E.g., Create a comprehensive business plan for a tech startup focusing on AI-powered solutions..."
-              value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
-              className="min-h-[120px]"
-            />
-            <Button onClick={handleAiFillSubmit} disabled={!aiPrompt.trim()}>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate Content
-            </Button>
-          </DialogContent>
-        </Dialog>
+        {/* History Controls */}
+        <ToolbarSection>
+          <ToolbarButton tooltip="Undo (Ctrl+Z)" onClick={onUndo} disabled={!canUndo}>
+            <Undo className="h-4 w-4" />
+          </ToolbarButton>
+          <ToolbarButton tooltip="Redo (Ctrl+Y)" onClick={onRedo} disabled={!canRedo}>
+            <Redo className="h-4 w-4" />
+          </ToolbarButton>
+        </ToolbarSection>
 
-        <Separator orientation="vertical" className="h-6" />
+        <ToolbarDivider />
 
-        {/* Font Controls */}
-        <Select value={fontFamily} onValueChange={onFontFamilyChange}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue placeholder="Font" />
-          </SelectTrigger>
-          <SelectContent>
-            {fonts.map((font) => (
-              <SelectItem key={font} value={font} style={{ fontFamily: font }}>
-                {font}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Typography Section */}
+        <ToolbarSection label="Font">
+          <Select value={fontFamily} onValueChange={onFontFamilyChange}>
+            <SelectTrigger className="h-8 w-[120px] text-xs bg-muted/50 border-border/50">
+              <Type className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+              <SelectValue placeholder="Font" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border shadow-xl">
+              {fonts.map((font) => (
+                <SelectItem key={font} value={font} style={{ fontFamily: font }} className="text-xs">
+                  {font}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select value={fontSize.toString()} onValueChange={(val) => onFontSizeChange(Number(val))}>
-          <SelectTrigger className="w-[80px] h-9">
-            <SelectValue placeholder="Size" />
-          </SelectTrigger>
-          <SelectContent>
-            {fontSizes.map((size) => (
-              <SelectItem key={size} value={size.toString()}>
-                {size}px
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={fontSize.toString()} onValueChange={(val) => onFontSizeChange(Number(val))}>
+            <SelectTrigger className="h-8 w-[70px] text-xs bg-muted/50 border-border/50">
+              <SelectValue placeholder="Size" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border shadow-xl">
+              {fontSizes.map((size) => (
+                <SelectItem key={size} value={size.toString()} className="text-xs">
+                  {size}px
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </ToolbarSection>
 
-        <Separator orientation="vertical" className="h-6" />
+        <ToolbarDivider />
 
         {/* Text Alignment */}
-        <ToggleGroup type="single" value={textAlign} onValueChange={onTextAlignChange}>
-          <ToggleGroupItem value="left" aria-label="Align left" size="sm">
-            <AlignLeft className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="center" aria-label="Align center" size="sm">
-            <AlignCenter className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="right" aria-label="Align right" size="sm">
-            <AlignRight className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="justify" aria-label="Justify" size="sm">
-            <AlignJustify className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
+        <ToolbarSection>
+          <ToggleGroup
+            type="single"
+            value={textAlign}
+            onValueChange={onTextAlignChange}
+            className="bg-muted/30 rounded-md p-0.5"
+          >
+            <ToggleGroupItem
+              value="left"
+              aria-label="Align left"
+              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            >
+              <AlignLeft className="h-3.5 w-3.5" />
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="center"
+              aria-label="Align center"
+              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            >
+              <AlignCenter className="h-3.5 w-3.5" />
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="right"
+              aria-label="Align right"
+              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            >
+              <AlignRight className="h-3.5 w-3.5" />
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="justify"
+              aria-label="Justify"
+              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
+            >
+              <AlignJustify className="h-3.5 w-3.5" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </ToolbarSection>
 
-        <Separator orientation="vertical" className="h-6" />
+        <ToolbarDivider />
 
-        {/* Undo/Redo */}
-        <Button variant="outline" size="sm" onClick={onUndo} disabled={!canUndo}>
-          <Undo className="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="sm" onClick={onRedo} disabled={!canRedo}>
-          <Redo className="h-4 w-4" />
-        </Button>
+        {/* Insert Menu */}
+        <ToolbarSection>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+              >
+                <Layout className="h-4 w-4 mr-1.5" />
+                Insert
+                <ChevronDown className="h-3 w-3 ml-1.5 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56 bg-popover border-border shadow-xl">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Media</DropdownMenuLabel>
+              <DropdownMenuItem asChild className="text-xs cursor-pointer">
+                <label htmlFor="image-upload" className="flex items-center cursor-pointer w-full">
+                  <ImagePlus className="h-4 w-4 mr-2" />
+                  Upload Image
+                </label>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="text-xs cursor-pointer">
+                <label htmlFor="logo-upload" className="flex items-center cursor-pointer w-full">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Logo
+                </label>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Elements</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setIsTableDialogOpen(true)} className="text-xs cursor-pointer">
+                <Grid3x3 className="h-4 w-4 mr-2" />
+                Insert Table
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsChartDialogOpen(true)} className="text-xs cursor-pointer">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Insert Chart
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Shapes</DropdownMenuLabel>
+              <div className="grid grid-cols-4 gap-1 p-2">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('rectangle')} className="h-9 w-9 p-0">
+                  <Square className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('circle')} className="h-9 w-9 p-0">
+                  <Circle className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('triangle')} className="h-9 w-9 p-0">
+                  <Triangle className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('star')} className="h-9 w-9 p-0">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
+                  </svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('arrow')} className="h-9 w-9 p-0">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" />
+                  </svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('diamond')} className="h-9 w-9 p-0">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 2 L22 12 L12 22 L2 12 Z" strokeWidth="2" />
+                  </svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('line')} className="h-9 w-9 p-0">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 19 L19 5" strokeWidth="2" />
+                  </svg>
+                </Button>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <Separator orientation="vertical" className="h-6" />
-
-        {/* Image Upload */}
-        <div>
+          {/* Hidden file inputs */}
           <input
             key={imageUploadKey}
             type="file"
@@ -423,16 +497,6 @@ export function DocumentEditorToolbar({
             onChange={handleImageUpload}
             className="hidden"
           />
-          <Button variant="outline" size="sm" asChild>
-            <label htmlFor="image-upload" className="cursor-pointer">
-              <ImagePlus className="h-4 w-4 mr-2" />
-              Upload Image
-            </label>
-          </Button>
-        </div>
-
-        {/* Logo Upload */}
-        <div>
           <input
             key={logoUploadKey}
             type="file"
@@ -441,123 +505,130 @@ export function DocumentEditorToolbar({
             onChange={handleLogoUpload}
             className="hidden"
           />
-          <Button variant="outline" size="sm" asChild>
-            <label htmlFor="logo-upload" className="cursor-pointer">
-              <Upload className="h-4 w-4 mr-2" />
-              Logo
-            </label>
-          </Button>
-        </div>
+        </ToolbarSection>
 
-        <Separator orientation="vertical" className="h-6" />
-
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" onClick={() => onZoomChange(Math.max(25, zoom - 25))}>
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <span className="text-xs text-muted-foreground w-12 text-center">{zoom}%</span>
-          <Button variant="outline" size="sm" onClick={() => onZoomChange(Math.min(200, zoom + 25))}>
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsTableDialogOpen(true)}
-          >
-            <Grid3x3 className="h-4 w-4 mr-2" />
-            Table
-          </Button>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Insert Table</DialogTitle>
-              <DialogDescription>
-                Choose the number of rows and columns for your data table.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 mt-2">
-              <div>
-                <Label htmlFor="table-rows">Rows</Label>
-                <Input
-                  id="table-rows"
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={tableRows}
-                  onChange={(e) => setTableRows(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-                  className="mt-1"
+        {/* Colors */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 px-2.5 text-muted-foreground hover:text-foreground">
+              <Palette className="h-4 w-4 mr-1.5" />
+              <span className="text-xs hidden sm:inline">Colors</span>
+              <div className="flex ml-1.5 gap-0.5">
+                <div
+                  className="h-3 w-3 rounded-sm border border-border/50"
+                  style={{ backgroundColor: backgroundColor }}
+                />
+                <div
+                  className="h-3 w-3 rounded-sm border border-border/50"
+                  style={{ backgroundColor: textColor }}
                 />
               </div>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 bg-popover border-border shadow-xl">
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="table-cols">Columns</Label>
-                <Input
-                  id="table-cols"
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={tableCols}
-                  onChange={(e) => setTableCols(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
-                  className="mt-1"
-                />
+                <Label htmlFor="bg-color" className="text-xs font-medium">Background Color</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="bg-color"
+                    type="color"
+                    value={backgroundColor}
+                    onChange={(e) => onBackgroundColorChange(e.target.value)}
+                    className="h-9 w-14 p-1 cursor-pointer"
+                  />
+                  <Input
+                    value={backgroundColor}
+                    onChange={(e) => onBackgroundColorChange(e.target.value)}
+                    placeholder="#ffffff"
+                    className="flex-1 h-9 text-xs font-mono"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="text-color" className="text-xs font-medium">Text Color</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="text-color"
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => onTextColorChange(e.target.value)}
+                    className="h-9 w-14 p-1 cursor-pointer"
+                  />
+                  <Input
+                    value={textColor}
+                    onChange={(e) => onTextColorChange(e.target.value)}
+                    placeholder="#000000"
+                    className="flex-1 h-9 text-xs font-mono"
+                  />
+                </div>
               </div>
             </div>
+          </PopoverContent>
+        </Popover>
+
+        <ToolbarDivider />
+
+        {/* AI Fill */}
+        <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+          <DialogTrigger asChild>
             <Button
-              className="mt-4"
-              onClick={() => {
-                onInsertTable(tableRows, tableCols);
-                setIsTableDialogOpen(false);
-              }}
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20"
             >
-              <Grid3x3 className="h-4 w-4 mr-2" />
-              Insert Table
+              <Sparkles className="h-4 w-4 mr-1.5" />
+              <span className="text-xs font-medium">AI Fill</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-violet-500" />
+                AI Document Generator
+              </DialogTitle>
+              <DialogDescription>
+                Describe the content you'd like AI to generate for your document
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              placeholder="E.g., Create a comprehensive business plan for a tech startup focusing on AI-powered solutions..."
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              className="min-h-[120px] text-sm"
+            />
+            <Button
+              onClick={handleAiFillSubmit}
+              disabled={!aiPrompt.trim()}
+              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate Content
             </Button>
           </DialogContent>
         </Dialog>
 
-        {/* Chart Insert Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsChartDialogOpen(true)}
-        >
-          <BarChart3 className="h-4 w-4 mr-2" />
-          Charts
-        </Button>
-
-        {onInsertChart && (
-          <ChartInsertDialog
-            open={isChartDialogOpen}
-            onOpenChange={setIsChartDialogOpen}
-            onInsertChart={onInsertChart}
-          />
-        )}
-
-        <Separator orientation="vertical" className="h-6" />
-
-        {/* E-Signature Controls */}
+        {/* E-Signature */}
         {selectedTemplate && (
           <>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="relative">
-                  <FileSignature className="h-4 w-4 mr-2" />
-                  E-Signature
+                <Button variant="ghost" size="sm" className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative">
+                  <FileSignature className="h-4 w-4 mr-1.5" />
+                  <span className="text-xs hidden sm:inline">Sign</span>
                   {signatureFields.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
                       {signatureFields.length}
                     </span>
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-4">
+              <PopoverContent className="w-72 bg-popover border-border shadow-xl">
+                <div className="space-y-3">
                   <div>
-                    <h4 className="font-semibold mb-2">E-Signature Options</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Add signature fields and request signatures for your document
+                    <h4 className="font-semibold text-sm">E-Signature</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Add signature fields and request signatures
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -565,7 +636,7 @@ export function DocumentEditorToolbar({
                       variant="outline"
                       size="sm"
                       onClick={onAddSignatureField}
-                      className="w-full justify-start"
+                      className="w-full justify-start text-xs"
                     >
                       <PenTool className="h-4 w-4 mr-2" />
                       Add Signature Field
@@ -573,10 +644,8 @@ export function DocumentEditorToolbar({
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => {
-                        setIsSignatureDialogOpen(true);
-                      }}
-                      className="w-full justify-start"
+                      onClick={() => setIsSignatureDialogOpen(true)}
+                      className="w-full justify-start text-xs"
                       disabled={signatureFields.length === 0}
                     >
                       <FileSignature className="h-4 w-4 mr-2" />
@@ -585,10 +654,10 @@ export function DocumentEditorToolbar({
                   </div>
                   {signatureFields.length > 0 && (
                     <div className="pt-2 border-t">
-                      <p className="text-sm font-medium mb-2">Signature Status</p>
+                      <p className="text-xs font-medium mb-2">Signature Status</p>
                       <div className="space-y-1">
                         {signatureFields.map((field, idx) => (
-                          <div key={field.id} className="flex items-center justify-between text-sm">
+                          <div key={field.id} className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">Field {idx + 1}</span>
                             {field.signed ? (
                               <span className="text-green-600 flex items-center gap-1">
@@ -612,12 +681,12 @@ export function DocumentEditorToolbar({
                 <DialogHeader>
                   <DialogTitle>Request Document Signatures</DialogTitle>
                   <DialogDescription>
-                    Send this document for electronic signature. Recipients will receive an email with a secure signing link.
+                    Send this document for electronic signature
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="signer-name">Signer Name</Label>
+                    <Label htmlFor="signer-name" className="text-xs">Signer Name</Label>
                     <Input
                       id="signer-name"
                       placeholder="Enter signer's full name"
@@ -627,7 +696,7 @@ export function DocumentEditorToolbar({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="signer-title">Signer Title/Position</Label>
+                    <Label htmlFor="signer-title" className="text-xs">Signer Title/Position</Label>
                     <Input
                       id="signer-title"
                       placeholder="e.g., CEO, Director, Manager"
@@ -636,14 +705,12 @@ export function DocumentEditorToolbar({
                       className="mt-2"
                     />
                   </div>
-                  <div className="bg-muted p-4 rounded-lg">
-                    <h4 className="font-semibold text-sm mb-2">Elite Features Included:</h4>
-                    <ul className="text-sm space-y-1 text-muted-foreground">
+                  <div className="bg-muted/50 p-3 rounded-lg border">
+                    <h4 className="font-semibold text-xs mb-2">Elite Features Included:</h4>
+                    <ul className="text-xs space-y-1 text-muted-foreground">
                       <li>• Secure encrypted signatures</li>
                       <li>• Legally binding digital certificates</li>
                       <li>• Audit trail and timestamp logging</li>
-                      <li>• Multi-party signature workflow</li>
-                      <li>• Automatic status tracking</li>
                     </ul>
                   </div>
                   <Button
@@ -667,89 +734,52 @@ export function DocumentEditorToolbar({
           </>
         )}
 
-        <Separator orientation="vertical" className="h-6" />
+        <ToolbarDivider />
 
-        {/* Color Controls */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Palette className="h-4 w-4 mr-2" />
-              Colors
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="bg-color">Background Color</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="bg-color"
-                    type="color"
-                    value={backgroundColor}
-                    onChange={(e) => onBackgroundColorChange(e.target.value)}
-                    className="h-10 w-20"
-                  />
-                  <Input
-                    value={backgroundColor}
-                    onChange={(e) => onBackgroundColorChange(e.target.value)}
-                    placeholder="#ffffff"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="text-color">Text Color</Label>
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    id="text-color"
-                    type="color"
-                    value={textColor}
-                    onChange={(e) => onTextColorChange(e.target.value)}
-                    className="h-10 w-20"
-                  />
-                  <Input
-                    value={textColor}
-                    onChange={(e) => onTextColorChange(e.target.value)}
-                    placeholder="#000000"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+        {/* Zoom Controls */}
+        <ToolbarSection>
+          <div className="flex items-center gap-1 bg-muted/30 rounded-md px-1 py-0.5">
+            <ToolbarButton tooltip="Zoom out" onClick={() => onZoomChange(Math.max(25, zoom - 25))}>
+              <ZoomOut className="h-3.5 w-3.5" />
+            </ToolbarButton>
+            <span className="text-[11px] font-medium text-muted-foreground w-10 text-center tabular-nums">
+              {zoom}%
+            </span>
+            <ToolbarButton tooltip="Zoom in" onClick={() => onZoomChange(Math.min(200, zoom + 25))}>
+              <ZoomIn className="h-3.5 w-3.5" />
+            </ToolbarButton>
+          </div>
+        </ToolbarSection>
 
+        {/* Right Actions */}
         <div className="ml-auto flex items-center gap-2">
           {onSaveDocument && (
-            <Button onClick={onSaveDocument} size="sm" variant="outline">
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </Button>
+            <ToolbarButton tooltip="Save document" onClick={onSaveDocument} variant="outline">
+              <Save className="h-4 w-4" />
+            </ToolbarButton>
           )}
+          
           {onLoadDocument && savedDocuments.length > 0 && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Load
+                <Button variant="outline" size="sm" className="h-8 px-2.5">
+                  <FolderOpen className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64">
+              <PopoverContent className="w-56 bg-popover border-border shadow-xl">
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Saved Documents</h4>
+                  <h4 className="font-semibold text-xs">Saved Documents</h4>
                   {savedDocuments.map((doc) => (
                     <Button
                       key={doc.id}
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-start text-left"
-                      onClick={() => {
-                        onLoadDocument();
-                      }}
+                      className="w-full justify-start text-left h-auto py-2"
+                      onClick={() => onLoadDocument()}
                     >
                       <div className="flex flex-col items-start">
-                        <span className="font-medium">{doc.name}</span>
-                        <span className="text-xs text-muted-foreground">{doc.savedAt}</span>
+                        <span className="text-xs font-medium">{doc.name}</span>
+                        <span className="text-[10px] text-muted-foreground">{doc.savedAt}</span>
                       </div>
                     </Button>
                   ))}
@@ -757,12 +787,77 @@ export function DocumentEditorToolbar({
               </PopoverContent>
             </Popover>
           )}
-          <Button onClick={onDownloadPDF} size="sm">
+
+          <Button
+            onClick={onDownloadPDF}
+            size="sm"
+            className="h-8 px-4 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+          >
             <Download className="h-4 w-4 mr-2" />
-            Download PDF
+            <span className="text-xs font-medium">Export PDF</span>
           </Button>
         </div>
       </div>
+
+      {/* Table Dialog */}
+      <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Grid3x3 className="h-5 w-5" />
+              Insert Table
+            </DialogTitle>
+            <DialogDescription>
+              Configure your table dimensions
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 mt-2">
+            <div>
+              <Label htmlFor="table-rows" className="text-xs">Rows</Label>
+              <Input
+                id="table-rows"
+                type="number"
+                min={1}
+                max={20}
+                value={tableRows}
+                onChange={(e) => setTableRows(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label htmlFor="table-cols" className="text-xs">Columns</Label>
+              <Input
+                id="table-cols"
+                type="number"
+                min={1}
+                max={10}
+                value={tableCols}
+                onChange={(e) => setTableCols(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
+                className="mt-1.5"
+              />
+            </div>
+          </div>
+          <Button
+            className="mt-4"
+            onClick={() => {
+              onInsertTable(tableRows, tableCols);
+              setIsTableDialogOpen(false);
+            }}
+          >
+            <Grid3x3 className="h-4 w-4 mr-2" />
+            Insert Table
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Chart Dialog */}
+      {onInsertChart && (
+        <ChartInsertDialog
+          open={isChartDialogOpen}
+          onOpenChange={setIsChartDialogOpen}
+          onInsertChart={onInsertChart}
+        />
+      )}
     </div>
   );
 }
