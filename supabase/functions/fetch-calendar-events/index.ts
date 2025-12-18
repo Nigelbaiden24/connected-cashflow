@@ -34,12 +34,13 @@ async function refreshGoogleToken(refreshToken: string): Promise<string | null> 
 async function refreshOutlookToken(refreshToken: string): Promise<string | null> {
   const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID');
   const MICROSOFT_CLIENT_SECRET = Deno.env.get('MICROSOFT_CLIENT_SECRET');
+  const MICROSOFT_TENANT_ID = Deno.env.get('MICROSOFT_TENANT_ID') || 'common';
 
   if (!MICROSOFT_CLIENT_ID || !MICROSOFT_CLIENT_SECRET) {
     return null;
   }
 
-  const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+  const response = await fetch(`https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
