@@ -169,6 +169,24 @@ export function EnterpriseChart({
     setEditConfig(normalizeConfig(inputConfig));
   }, [inputConfig]);
 
+  // Auto-apply changes in real-time when editConfig changes
+  const handleConfigUpdate = (newConfig: EnterpriseChartConfig) => {
+    setEditConfig(newConfig);
+    
+    // Apply dimension changes immediately
+    const newDimensions = newConfig.dimensions;
+    if (newDimensions.widthPx !== width || newDimensions.heightPx !== height) {
+      onSizeChange?.(newDimensions.widthPx, newDimensions.heightPx);
+    }
+
+    // Apply config changes immediately
+    if (useEnterpriseConfig || isEnterpriseConfig(inputConfig)) {
+      onConfigChange?.(newConfig);
+    } else {
+      onConfigChange?.(enterpriseToLegacy(newConfig));
+    }
+  };
+
   const chartData = useMemo(() => {
     let data = config.data.map((d) => ({
       name: d.label,
@@ -198,20 +216,6 @@ export function EnterpriseChart({
 
     return data;
   }, [config]);
-
-  const handleSave = () => {
-    const newDimensions = editConfig.dimensions;
-    if (newDimensions.widthPx !== width || newDimensions.heightPx !== height) {
-      onSizeChange?.(newDimensions.widthPx, newDimensions.heightPx);
-    }
-
-    if (useEnterpriseConfig || isEnterpriseConfig(inputConfig)) {
-      onConfigChange?.(editConfig);
-    } else {
-      onConfigChange?.(enterpriseToLegacy(editConfig));
-    }
-    setShowEditor(false);
-  };
 
   const animationDuration = config.visualControls.animationEnabled
     ? config.visualControls.animationDurationMs
@@ -673,11 +677,14 @@ export function EnterpriseChart({
             </DialogTitle>
           </DialogHeader>
 
-          <EnterpriseChartEditor config={editConfig} onChange={setEditConfig} />
+          <EnterpriseChartEditor config={editConfig} onChange={handleConfigUpdate} />
 
           {/* Live Preview */}
           <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-            <p className="text-sm font-medium mb-2">Live Preview</p>
+            <p className="text-sm font-medium mb-2 flex items-center gap-2">
+              Live Preview
+              <span className="text-xs text-muted-foreground font-normal">(Changes apply automatically)</span>
+            </p>
             <div className="h-[200px] bg-background/50 rounded-md border border-border/50">
               <ResponsiveContainer width="100%" height="100%">
                 {(() => {
@@ -757,10 +764,7 @@ export function EnterpriseChart({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditor(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button onClick={() => setShowEditor(false)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
