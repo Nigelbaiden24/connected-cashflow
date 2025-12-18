@@ -53,7 +53,6 @@ import {
   UserCog,
   History,
   FolderKanban,
-  ClipboardList,
   Zap,
   Globe,
 } from "lucide-react";
@@ -73,11 +72,6 @@ const aiToolsItems = [
     title: "AI Chatbot",
     url: "/theodore",
     icon: MessageSquare,
-  },
-  {
-    title: "Tasks",
-    url: "/finance/tasks",
-    icon: ClipboardList,
   },
   {
     title: "Calendar",

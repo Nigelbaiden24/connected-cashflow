@@ -33,7 +33,7 @@ import Watchlists from "./pages/investor/Watchlists";
 import Languages from "./pages/investor/Languages";
 import BusinessLanguages from "./pages/business/Languages";
 import FinanceLanguages from "./pages/finance/Languages";
-import FinanceTasks from "./pages/finance/Tasks";
+import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import Paraplanning from "./pages/Paraplanning";
@@ -344,11 +344,11 @@ const App = () => {
               )
             } />
             
-            <Route path="/finance/tasks" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                  <FinanceTasks />
-                </FinanceLayout>
+            <Route path="/investor/tasks" element={
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
+                <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <InvestorTasks />
+                </InvestorLayout>
               )
             } />
             
