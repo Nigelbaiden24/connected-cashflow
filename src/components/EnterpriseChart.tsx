@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+
 import { Palette, Settings2 } from "lucide-react";
 import {
   Dialog,
@@ -137,14 +137,13 @@ export function EnterpriseChart({
 }: EnterpriseChartProps) {
   const [showEditor, setShowEditor] = useState(false);
   const [editConfig, setEditConfig] = useState<EnterpriseChartConfig>(config);
-  const [dataInput, setDataInput] = useState("");
-  const [showColorPicker, setShowColorPicker] = useState<number | null>(null);
+  const [editData, setEditData] = useState<ChartDataItem[]>(config.data);
   const [editWidth, setEditWidth] = useState(width);
   const [editHeight, setEditHeight] = useState(height);
 
   useEffect(() => {
     setEditConfig(config);
-    setDataInput(config.data.map(d => `${d.label}, ${d.value}, ${d.color}`).join('\n'));
+    setEditData([...config.data]);
     setEditWidth(config.width ?? width);
     setEditHeight(config.height ?? height);
   }, [config, width, height]);
@@ -156,63 +155,47 @@ export function EnterpriseChart({
   }));
 
   const handleSave = () => {
-    const lines = dataInput.split('\n').filter(l => l.trim());
-    const newData = lines.map((line, idx) => {
-      const parts = line.split(',').map(p => p.trim());
-      return {
-        label: parts[0] || `Item ${idx + 1}`,
-        value: parseFloat(parts[1]) || 0,
-        color: parts[2] || editConfig.data[idx]?.color || defaultColors[idx % defaultColors.length],
-      };
-    });
-
-    const newConfig = { ...editConfig, data: newData, width: editWidth, height: editHeight };
+    const newConfig = { ...editConfig, data: editData, width: editWidth, height: editHeight };
     onConfigChange?.(newConfig);
     onSizeChange?.(editWidth, editHeight);
     setShowEditor(false);
   };
 
   const updateDataColor = (index: number, color: string) => {
-    const lines = dataInput.split('\n').filter(l => l.trim());
-    const newLines = lines.map((line, idx) => {
-      if (idx === index) {
-        const parts = line.split(',').map(p => p.trim());
-        return `${parts[0]}, ${parts[1]}, ${color}`;
-      }
-      return line;
-    });
-    setDataInput(newLines.join('\n'));
+    setEditData(prev => prev.map((item, idx) => 
+      idx === index ? { ...item, color } : item
+    ));
   };
 
   const updateDataField = (index: number, field: 'label' | 'value', newValue: string) => {
-    const lines = dataInput.split('\n').filter(l => l.trim());
-    const newLines = lines.map((line, idx) => {
+    setEditData(prev => prev.map((item, idx) => {
       if (idx === index) {
-        const parts = line.split(',').map(p => p.trim());
         if (field === 'label') {
-          return `${newValue}, ${parts[1]}, ${parts[2] || defaultColors[idx % defaultColors.length]}`;
+          return { ...item, label: newValue };
         } else {
-          return `${parts[0]}, ${newValue}, ${parts[2] || defaultColors[idx % defaultColors.length]}`;
+          return { ...item, value: parseFloat(newValue) || 0 };
         }
       }
-      return line;
-    });
-    setDataInput(newLines.join('\n'));
+      return item;
+    }));
+  };
+
+  const addDataRow = () => {
+    const newColor = defaultColors[editData.length % defaultColors.length];
+    setEditData(prev => [...prev, { label: `Item ${prev.length + 1}`, value: 100, color: newColor }]);
   };
 
   const removeDataRow = (index: number) => {
-    const lines = dataInput.split('\n').filter(l => l.trim());
-    const newLines = lines.filter((_, idx) => idx !== index);
-    setDataInput(newLines.join('\n'));
+    if (editData.length > 1) {
+      setEditData(prev => prev.filter((_, idx) => idx !== index));
+    }
   };
 
   const applyColorPreset = (preset: string[]) => {
-    const lines = dataInput.split('\n').filter(l => l.trim());
-    const newLines = lines.map((line, idx) => {
-      const parts = line.split(',').map(p => p.trim());
-      return `${parts[0]}, ${parts[1]}, ${preset[idx % preset.length]}`;
-    });
-    setDataInput(newLines.join('\n'));
+    setEditData(prev => prev.map((item, idx) => ({
+      ...item,
+      color: preset[idx % preset.length]
+    })));
   };
 
   const renderChart = () => {
@@ -438,15 +421,12 @@ export function EnterpriseChart({
     }
   };
 
-  const parseCurrentData = () => {
-    return dataInput.split('\n').filter(l => l.trim()).map((line, idx) => {
-      const parts = line.split(',').map(p => p.trim());
-      return {
-        label: parts[0] || `Item ${idx + 1}`,
-        value: parseFloat(parts[1]) || 0,
-        color: parts[2] || defaultColors[idx % defaultColors.length],
-      };
-    });
+  const getPreviewData = () => {
+    return editData.map(d => ({
+      name: d.label,
+      value: d.value,
+      fill: d.color,
+    }));
   };
 
   return (
@@ -630,17 +610,14 @@ export function EnterpriseChart({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    const newColor = defaultColors[parseCurrentData().length % defaultColors.length];
-                    setDataInput(prev => prev + `\nNew Item, 100, ${newColor}`);
-                  }}
+                  onClick={addDataRow}
                 >
                   + Add Row
                 </Button>
               </div>
               
               <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-                {parseCurrentData().map((item, idx) => (
+                {editData.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg">
                     <Popover>
                       <PopoverTrigger asChild>
@@ -689,7 +666,7 @@ export function EnterpriseChart({
                       variant="ghost"
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => removeDataRow(idx)}
-                      disabled={parseCurrentData().length <= 1}
+                      disabled={editData.length <= 1}
                     >
                       ×
                     </Button>
@@ -705,13 +682,7 @@ export function EnterpriseChart({
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 {(() => {
-                  const previewData = parseCurrentData().map(d => ({
-                    name: d.label,
-                    value: d.value,
-                    fill: d.color,
-                  }));
-                  
-                  const previewConfig = { ...editConfig, data: parseCurrentData() };
+                  const previewData = getPreviewData();
 
                   switch (editConfig.type) {
                     case "bar":
