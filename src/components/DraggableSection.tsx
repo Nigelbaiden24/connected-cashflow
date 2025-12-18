@@ -520,6 +520,7 @@ export function DraggableSection({
   return (
     <div
       ref={sectionRef}
+      data-section-id={id}
       className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
       style={{
         left: `${x}px`,

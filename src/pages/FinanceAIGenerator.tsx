@@ -563,8 +563,8 @@ ELITE DOCUMENT REQUIREMENTS:
           pageContainer.appendChild(createShapeElement(shape));
         });
 
-        // Sections
-        pageSections.forEach((section) => {
+        // Sections - use for...of to allow await
+        for (const section of pageSections) {
           const sectionDiv = document.createElement("div");
           sectionDiv.style.position = "absolute";
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
@@ -595,8 +595,40 @@ ELITE DOCUMENT REQUIREMENTS:
             tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
             sectionDiv.appendChild(tableWrapper);
           } else if (section.type === "chart") {
+            // For charts, we need to find the actual rendered chart in the DOM and capture it
             const chartWrapper = document.createElement("div");
-            chartWrapper.innerHTML = section.content || "";
+            chartWrapper.style.width = "100%";
+            chartWrapper.style.height = "100%";
+            chartWrapper.style.display = "flex";
+            chartWrapper.style.alignItems = "center";
+            chartWrapper.style.justifyContent = "center";
+            
+            // Try to find the rendered chart element in the actual document
+            const existingChartEl = document.querySelector(`[data-section-id="${section.id}"] .recharts-wrapper`);
+            if (existingChartEl) {
+              try {
+                // Capture the chart as an image
+                const chartCanvas = await html2canvas(existingChartEl as HTMLElement, {
+                  scale: 2,
+                  useCORS: true,
+                  allowTaint: true,
+                  backgroundColor: "transparent",
+                  logging: false,
+                });
+                const chartImg = document.createElement("img");
+                chartImg.src = chartCanvas.toDataURL("image/png");
+                chartImg.style.maxWidth = "100%";
+                chartImg.style.maxHeight = "100%";
+                chartImg.style.objectFit = "contain";
+                chartWrapper.appendChild(chartImg);
+              } catch (chartError) {
+                console.error("Error capturing chart:", chartError);
+                chartWrapper.innerHTML = "<p style='color:#666;text-align:center;'>Chart</p>";
+              }
+            } else {
+              // Fallback: show placeholder for chart
+              chartWrapper.innerHTML = "<p style='color:#666;text-align:center;padding:20px;'>Chart visualization</p>";
+            }
             sectionDiv.appendChild(chartWrapper);
           } else {
             if (section.title) {
@@ -615,7 +647,7 @@ ELITE DOCUMENT REQUIREMENTS:
             sectionDiv.appendChild(contentDiv);
           }
           pageContainer.appendChild(sectionDiv);
-        });
+        }
 
         // Images
         for (const img of pageImages) {
