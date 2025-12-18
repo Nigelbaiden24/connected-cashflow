@@ -18,16 +18,8 @@ import {
   Sparkles,
   Lock,
   Video,
-  ChevronDown,
-  Laptop,
   Menu
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -182,10 +174,9 @@ const Index = () => {
               <Separator className="my-4" />
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-muted-foreground">Flowpulse Tech</h3>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start font-semibold"
                     onClick={() => {
                       navigate("/login");
                       setMobileMenuOpen(false);
@@ -195,7 +186,7 @@ const Index = () => {
                   </Button>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start font-semibold"
                     onClick={() => {
                       navigate("/login-investor");
                       setMobileMenuOpen(false);
@@ -205,7 +196,7 @@ const Index = () => {
                   </Button>
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start font-semibold"
                     onClick={() => {
                       navigate("/pricing");
                       setMobileMenuOpen(false);
@@ -265,36 +256,32 @@ const Index = () => {
           </Sheet>
           
           <nav className="hidden md:flex items-center gap-8">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="relative font-space-grotesk font-semibold text-lg group flex items-center gap-2">
-                  <span className="relative z-10">Flowpulse Tech</span>
-                  <ChevronDown className="h-4 w-4 group-data-[state=open]:rotate-180 transition-transform" />
-                  <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-xl border-2 border-border/50 shadow-2xl z-[100]" align="center">
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-blue-500/10 focus:bg-blue-500/10"
-                  onClick={() => navigate('/login')}
-                >
-                  FlowPulse Finance
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
-                  onClick={() => navigate('/login-investor')}
-                >
-                  FlowPulse Investor
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-primary/10 focus:bg-primary/10"
-                  onClick={() => navigate('/pricing')}
-                >
-                  Pricing
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <button 
+              onClick={() => navigate('/login')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">FlowPulse Finance</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+            </button>
+
+            <button 
+              onClick={() => navigate('/login-investor')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">FlowPulse Investor</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+            </button>
+
+            <button 
+              onClick={() => navigate('/pricing')}
+              className="relative font-space-grotesk font-semibold text-lg group"
+            >
+              <span className="relative z-10">Pricing</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+            </button>
 
             <button 
               onClick={() => navigate('/paraplanning')}
