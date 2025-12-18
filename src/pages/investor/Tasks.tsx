@@ -219,14 +219,16 @@ export default function InvestorTasks() {
   const [isNewTaskDialogOpen, setIsNewTaskDialogOpen] = useState(false);
   const [isNewGoalDialogOpen, setIsNewGoalDialogOpen] = useState(false);
   const [isEditTaskDialogOpen, setIsEditTaskDialogOpen] = useState(false);
+  const [isEditGoalDialogOpen, setIsEditGoalDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
     category: "investment" as Task["category"],
     priority: "medium" as Task["priority"],
     dueDate: null as Date | null,
-    linkedGoal: "",
+    linkedGoal: "none",
   });
   const [newGoal, setNewGoal] = useState({
     title: "",
@@ -370,7 +372,7 @@ export default function InvestorTasks() {
       priority: newTask.priority,
       status: "pending",
       dueDate: newTask.dueDate,
-      linkedGoal: newTask.linkedGoal || undefined,
+      linkedGoal: newTask.linkedGoal === "none" ? undefined : newTask.linkedGoal,
       progress: 0,
       createdAt: new Date(),
     };
@@ -382,7 +384,7 @@ export default function InvestorTasks() {
       category: "investment",
       priority: "medium",
       dueDate: null,
-      linkedGoal: "",
+      linkedGoal: "none",
     });
     setIsNewTaskDialogOpen(false);
     toast({
@@ -442,6 +444,26 @@ export default function InvestorTasks() {
     toast({
       title: "Goal deleted",
       description: "The goal has been removed.",
+    });
+  };
+
+  const handleEditGoal = (goal: Goal) => {
+    setEditingGoal(goal);
+    setIsEditGoalDialogOpen(true);
+  };
+
+  const handleSaveEditGoal = () => {
+    if (!editingGoal) return;
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === editingGoal.id ? editingGoal : goal
+      )
+    );
+    setIsEditGoalDialogOpen(false);
+    setEditingGoal(null);
+    toast({
+      title: "Goal updated",
+      description: "Your changes have been saved.",
     });
   };
 
@@ -845,7 +867,7 @@ export default function InvestorTasks() {
                         <SelectValue placeholder="Select a goal" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No linked goal</SelectItem>
+                        <SelectItem value="none">No linked goal</SelectItem>
                         {goals.map((goal) => (
                           <SelectItem key={goal.id} value={goal.id}>
                             {goal.title}
@@ -1091,7 +1113,7 @@ export default function InvestorTasks() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditGoal(goal)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Goal
                             </DropdownMenuItem>
@@ -1222,11 +1244,85 @@ export default function InvestorTasks() {
                     </Select>
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={editingTask.status}
+                      onValueChange={(value) => setEditingTask({ 
+                        ...editingTask, 
+                        status: value as Task["status"],
+                        progress: value === "completed" ? 100 : value === "pending" ? 0 : editingTask.progress
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Due Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !editingTask.dueDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {editingTask.dueDate ? format(editingTask.dueDate, "MMM d, yyyy") : "No date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={editingTask.dueDate || undefined}
+                          onSelect={(date) => setEditingTask({ ...editingTask, dueDate: date || null })}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Link to Goal</Label>
+                  <Select
+                    value={editingTask.linkedGoal || "none"}
+                    onValueChange={(value) => setEditingTask({ 
+                      ...editingTask, 
+                      linkedGoal: value === "none" ? undefined : value 
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a goal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No linked goal</SelectItem>
+                      {goals.map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          {goal.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2">
                   <Label>Progress: {editingTask.progress}%</Label>
                   <Slider
                     value={[editingTask.progress]}
-                    onValueChange={([value]) => setEditingTask({ ...editingTask, progress: value })}
+                    onValueChange={([value]) => setEditingTask({ 
+                      ...editingTask, 
+                      progress: value,
+                      status: value === 100 ? "completed" : value > 0 ? "in_progress" : "pending"
+                    })}
                     max={100}
                     step={5}
                   />
@@ -1238,6 +1334,137 @@ export default function InvestorTasks() {
                 Cancel
               </Button>
               <Button onClick={handleSaveEditTask} className="gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Goal Dialog */}
+        <Dialog open={isEditGoalDialogOpen} onOpenChange={setIsEditGoalDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                Edit Goal
+              </DialogTitle>
+              <DialogDescription>
+                Update your financial goal details.
+              </DialogDescription>
+            </DialogHeader>
+            {editingGoal && (
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-goal-title">Goal Title</Label>
+                  <Input
+                    id="edit-goal-title"
+                    value={editingGoal.title}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select
+                    value={editingGoal.category}
+                    onValueChange={(value) => setEditingGoal({ ...editingGoal, category: value as Goal["category"] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(goalCategoryConfig).map(([key, config]) => (
+                        <SelectItem key={key} value={key}>
+                          {config.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-target-amount">Target Amount (£)</Label>
+                    <Input
+                      id="edit-target-amount"
+                      type="number"
+                      value={editingGoal.targetAmount}
+                      onChange={(e) => setEditingGoal({ ...editingGoal, targetAmount: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-current-amount">Current Amount (£)</Label>
+                    <Input
+                      id="edit-current-amount"
+                      type="number"
+                      value={editingGoal.currentAmount}
+                      onChange={(e) => setEditingGoal({ ...editingGoal, currentAmount: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-monthly-contribution">Monthly Contribution (£)</Label>
+                  <Input
+                    id="edit-monthly-contribution"
+                    type="number"
+                    value={editingGoal.monthlyContribution}
+                    onChange={(e) => setEditingGoal({ ...editingGoal, monthlyContribution: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select
+                      value={editingGoal.status}
+                      onValueChange={(value) => setEditingGoal({ ...editingGoal, status: value as Goal["status"] })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="on_track">On Track</SelectItem>
+                        <SelectItem value="behind">Behind</SelectItem>
+                        <SelectItem value="ahead">Ahead</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Target Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !editingGoal.targetDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {editingGoal.targetDate ? format(editingGoal.targetDate, "MMM yyyy") : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={editingGoal.targetDate}
+                          onSelect={(date) => setEditingGoal({ ...editingGoal, targetDate: date || new Date() })}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Progress: {Math.round((editingGoal.currentAmount / editingGoal.targetAmount) * 100)}%</Label>
+                  <Progress value={Math.round((editingGoal.currentAmount / editingGoal.targetAmount) * 100)} className="h-2" />
+                </div>
+              </div>
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditGoalDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEditGoal} className="gap-2">
                 <CheckCircle2 className="h-4 w-4" />
                 Save Changes
               </Button>
