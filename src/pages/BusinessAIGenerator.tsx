@@ -542,7 +542,8 @@ ELITE DOCUMENT REQUIREMENTS:
 
         pageShapes.forEach((shape) => pageContainer.appendChild(createShapeElement(shape)));
 
-        pageSections.forEach((section) => {
+        // Sections - use for...of to allow await for chart capture
+        for (const section of pageSections) {
           const sectionDiv = document.createElement("div");
           sectionDiv.style.position = "absolute";
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
@@ -571,6 +572,39 @@ ELITE DOCUMENT REQUIREMENTS:
             const tableWrapper = document.createElement("div");
             tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
             sectionDiv.appendChild(tableWrapper);
+          } else if (section.type === "chart") {
+            // For charts, capture the rendered chart from DOM
+            const chartWrapper = document.createElement("div");
+            chartWrapper.style.width = "100%";
+            chartWrapper.style.height = "100%";
+            chartWrapper.style.display = "flex";
+            chartWrapper.style.alignItems = "center";
+            chartWrapper.style.justifyContent = "center";
+            
+            const existingChartEl = document.querySelector(`[data-section-id="${section.id}"] .recharts-wrapper`);
+            if (existingChartEl) {
+              try {
+                const chartCanvas = await html2canvas(existingChartEl as HTMLElement, {
+                  scale: 2,
+                  useCORS: true,
+                  allowTaint: true,
+                  backgroundColor: "transparent",
+                  logging: false,
+                });
+                const chartImg = document.createElement("img");
+                chartImg.src = chartCanvas.toDataURL("image/png");
+                chartImg.style.maxWidth = "100%";
+                chartImg.style.maxHeight = "100%";
+                chartImg.style.objectFit = "contain";
+                chartWrapper.appendChild(chartImg);
+              } catch (chartError) {
+                console.error("Error capturing chart:", chartError);
+                chartWrapper.innerHTML = "<p style='color:#666;text-align:center;'>Chart</p>";
+              }
+            } else {
+              chartWrapper.innerHTML = "<p style='color:#666;text-align:center;padding:20px;'>Chart visualization</p>";
+            }
+            sectionDiv.appendChild(chartWrapper);
           } else {
             if (section.title) {
               const h3 = document.createElement("h3");
@@ -588,7 +622,7 @@ ELITE DOCUMENT REQUIREMENTS:
             sectionDiv.appendChild(contentDiv);
           }
           pageContainer.appendChild(sectionDiv);
-        });
+        }
 
         for (const img of pageImages) {
           const imgEl = document.createElement("img");
