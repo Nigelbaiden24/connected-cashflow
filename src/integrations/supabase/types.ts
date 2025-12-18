@@ -5106,6 +5106,10 @@ export type Database = {
         Args: { content_id: string }
         Returns: undefined
       }
+      increment_report_downloads: {
+        Args: { report_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_hr_admin: { Args: { _user_id: string }; Returns: boolean }
       is_payroll_admin: { Args: { _user_id: string }; Returns: boolean }
