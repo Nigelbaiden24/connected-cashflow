@@ -21,8 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import { Palette, Settings2 } from "lucide-react";
+import { Palette, Settings2, Plus, Trash2, BarChart3, LineChart as LineChartIcon, TrendingUp, PieChart as PieChartIcon, Circle, Target } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +57,11 @@ export interface EnterpriseChartConfig {
   gradientEnabled?: boolean;
   width?: number;
   height?: number;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  valuePrefix?: string;
+  valueSuffix?: string;
+  showValues?: boolean;
 }
 
 interface EnterpriseChartProps {
@@ -197,6 +201,8 @@ export function EnterpriseChart({
       color: preset[idx % preset.length]
     })));
   };
+
+  const isAxisChart = ["bar", "line", "area"].includes(editConfig.type);
 
   const renderChart = () => {
     const animationDuration = config.animationDuration ?? 1200;
@@ -467,7 +473,7 @@ export function EnterpriseChart({
 
       {/* Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings2 className="h-5 w-5" />
@@ -488,12 +494,42 @@ export function EnterpriseChart({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bar">Bar Chart</SelectItem>
-                    <SelectItem value="line">Line Chart</SelectItem>
-                    <SelectItem value="area">Area Chart</SelectItem>
-                    <SelectItem value="pie">Pie Chart</SelectItem>
-                    <SelectItem value="donut">Donut Chart</SelectItem>
-                    <SelectItem value="radial">Radial Chart</SelectItem>
+                    <SelectItem value="bar">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Bar Chart
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="line">
+                      <div className="flex items-center gap-2">
+                        <LineChartIcon className="h-4 w-4" />
+                        Line Chart
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="area">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Area Chart
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="pie">
+                      <div className="flex items-center gap-2">
+                        <PieChartIcon className="h-4 w-4" />
+                        Pie Chart
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="donut">
+                      <div className="flex items-center gap-2">
+                        <Circle className="h-4 w-4" />
+                        Donut Chart
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="radial">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Radial Chart
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -504,7 +540,54 @@ export function EnterpriseChart({
                   value={editConfig.title}
                   onChange={(e) => setEditConfig({ ...editConfig, title: e.target.value })}
                   className="mt-1.5"
+                  placeholder="Enter chart title"
                 />
+              </div>
+
+              {/* Axis Labels - Only for bar/line/area charts */}
+              {isAxisChart && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>X-Axis Label</Label>
+                    <Input
+                      value={editConfig.xAxisLabel || ''}
+                      onChange={(e) => setEditConfig({ ...editConfig, xAxisLabel: e.target.value })}
+                      placeholder="e.g., Quarters"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label>Y-Axis Label</Label>
+                    <Input
+                      value={editConfig.yAxisLabel || ''}
+                      onChange={(e) => setEditConfig({ ...editConfig, yAxisLabel: e.target.value })}
+                      placeholder="e.g., Revenue"
+                      className="mt-1.5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Value Formatting */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Value Prefix</Label>
+                  <Input
+                    value={editConfig.valuePrefix || ''}
+                    onChange={(e) => setEditConfig({ ...editConfig, valuePrefix: e.target.value })}
+                    placeholder="e.g., $"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label>Value Suffix</Label>
+                  <Input
+                    value={editConfig.valueSuffix || ''}
+                    onChange={(e) => setEditConfig({ ...editConfig, valueSuffix: e.target.value })}
+                    placeholder="e.g., %"
+                    className="mt-1.5"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -532,16 +615,31 @@ export function EnterpriseChart({
                 </div>
               </div>
 
+              <div>
+                <Label>Animation Duration (ms)</Label>
+                <Input
+                  type="number"
+                  value={editConfig.animationDuration ?? 1200}
+                  onChange={(e) => setEditConfig({ ...editConfig, animationDuration: parseInt(e.target.value) || 1200 })}
+                  className="mt-1.5"
+                  min={0}
+                  max={5000}
+                  step={100}
+                />
+              </div>
+
               <div className="flex items-center gap-4 flex-wrap">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={editConfig.showGrid !== false}
-                    onChange={(e) => setEditConfig({ ...editConfig, showGrid: e.target.checked })}
-                    className="rounded"
-                  />
-                  Show Grid
-                </label>
+                {isAxisChart && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={editConfig.showGrid !== false}
+                      onChange={(e) => setEditConfig({ ...editConfig, showGrid: e.target.checked })}
+                      className="rounded"
+                    />
+                    Show Grid
+                  </label>
+                )}
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -560,19 +658,15 @@ export function EnterpriseChart({
                   />
                   Gradients
                 </label>
-              </div>
-
-              <div>
-                <Label>Animation Duration (ms)</Label>
-                <Input
-                  type="number"
-                  value={editConfig.animationDuration ?? 1200}
-                  onChange={(e) => setEditConfig({ ...editConfig, animationDuration: parseInt(e.target.value) || 1200 })}
-                  className="mt-1.5"
-                  min={0}
-                  max={5000}
-                  step={100}
-                />
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={editConfig.showValues === true}
+                    onChange={(e) => setEditConfig({ ...editConfig, showValues: e.target.checked })}
+                    className="rounded"
+                  />
+                  Show Values
+                </label>
               </div>
 
               <div>
@@ -606,29 +700,40 @@ export function EnterpriseChart({
             {/* Right Column - Data */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Chart Data</Label>
+                <Label className="text-base font-semibold">Chart Data</Label>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={addDataRow}
+                  className="gap-1"
                 >
-                  + Add Row
+                  <Plus className="h-3 w-3" />
+                  Add Row
                 </Button>
               </div>
+
+              {/* Column Headers */}
+              <div className="grid grid-cols-[40px_1fr_100px_32px] gap-2 px-2 text-xs font-medium text-muted-foreground">
+                <span>Color</span>
+                <span>Label</span>
+                <span>Value</span>
+                <span></span>
+              </div>
               
-              <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
                 {editData.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg">
+                  <div key={idx} className="grid grid-cols-[40px_1fr_100px_32px] gap-2 items-center bg-muted/50 p-2 rounded-lg">
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
-                          className="w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-transform shrink-0"
+                          className="w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-transform"
                           style={{ backgroundColor: item.color }}
                           title="Change color"
                         />
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-3">
                         <div className="space-y-2">
+                          <Label className="text-xs">Pick Color</Label>
                           <div className="grid grid-cols-5 gap-1">
                             {defaultColors.map((color) => (
                               <button
@@ -652,14 +757,14 @@ export function EnterpriseChart({
                       value={item.label}
                       onChange={(e) => updateDataField(idx, 'label', e.target.value)}
                       placeholder="Label"
-                      className="flex-1 h-8 text-sm"
+                      className="h-8 text-sm"
                     />
                     <Input
                       type="number"
                       value={item.value}
                       onChange={(e) => updateDataField(idx, 'value', e.target.value)}
                       placeholder="Value"
-                      className="w-24 h-8 text-sm"
+                      className="h-8 text-sm"
                     />
                     <Button
                       size="sm"
@@ -668,10 +773,30 @@ export function EnterpriseChart({
                       onClick={() => removeDataRow(idx)}
                       disabled={editData.length <= 1}
                     >
-                      ×
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 ))}
+              </div>
+
+              {/* Data Summary */}
+              <div className="bg-muted/30 p-3 rounded-lg text-xs text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Total Data Points:</span>
+                  <span className="font-medium text-foreground">{editData.length}</span>
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span>Sum of Values:</span>
+                  <span className="font-medium text-foreground">
+                    {editConfig.valuePrefix || ''}{editData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}{editConfig.valueSuffix || ''}
+                  </span>
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span>Average Value:</span>
+                  <span className="font-medium text-foreground">
+                    {editConfig.valuePrefix || ''}{(editData.reduce((sum, d) => sum + d.value, 0) / editData.length).toFixed(1)}{editConfig.valueSuffix || ''}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -16,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { BarChart3, PieChart, LineChart, TrendingUp, Circle, Target, Palette } from "lucide-react";
+import { BarChart3, PieChart, LineChart, TrendingUp, Circle, Target, Palette, Plus, Trash2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -30,10 +29,16 @@ interface ChartInsertDialogProps {
   onInsertChart: (chartConfig: ChartConfig) => void;
 }
 
+export interface ChartDataItem {
+  label: string;
+  value: number;
+  color: string;
+}
+
 export interface ChartConfig {
   type: "bar" | "line" | "pie" | "area" | "donut" | "radial";
   title: string;
-  data: { label: string; value: number; color: string }[];
+  data: ChartDataItem[];
   x: number;
   y: number;
   width: number;
@@ -42,6 +47,11 @@ export interface ChartConfig {
   showLegend?: boolean;
   gradientEnabled?: boolean;
   animationDuration?: number;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  valuePrefix?: string;
+  valueSuffix?: string;
+  showValues?: boolean;
 }
 
 const defaultColors = [
@@ -57,10 +67,17 @@ const colorPresets = [
   { name: "Teal", colors: ["#134e4a", "#0d9488", "#14b8a6", "#2dd4bf", "#5eead4"] },
 ];
 
+const defaultData: ChartDataItem[] = [
+  { label: "Q1", value: 100, color: "#3b82f6" },
+  { label: "Q2", value: 150, color: "#10b981" },
+  { label: "Q3", value: 120, color: "#f59e0b" },
+  { label: "Q4", value: 180, color: "#ef4444" },
+];
+
 export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartInsertDialogProps) {
   const [chartType, setChartType] = useState<ChartConfig["type"]>("bar");
   const [chartTitle, setChartTitle] = useState("Chart Title");
-  const [dataInput, setDataInput] = useState("Q1, 100, #3b82f6\nQ2, 150, #10b981\nQ3, 120, #f59e0b\nQ4, 180, #ef4444");
+  const [chartData, setChartData] = useState<ChartDataItem[]>(defaultData);
   const [posX, setPosX] = useState(50);
   const [posY, setPosY] = useState(200);
   const [chartWidth, setChartWidth] = useState(500);
@@ -69,47 +86,49 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
   const [showLegend, setShowLegend] = useState(true);
   const [gradientEnabled, setGradientEnabled] = useState(true);
   const [animationDuration, setAnimationDuration] = useState(1200);
+  const [xAxisLabel, setXAxisLabel] = useState("");
+  const [yAxisLabel, setYAxisLabel] = useState("");
+  const [valuePrefix, setValuePrefix] = useState("");
+  const [valueSuffix, setValueSuffix] = useState("");
+  const [showValues, setShowValues] = useState(false);
 
-  const parseData = () => {
-    const lines = dataInput.split("\n").filter(line => line.trim());
-    return lines.map((line, idx) => {
-      const parts = line.split(",").map(p => p.trim());
-      const label = parts[0] || `Item ${idx + 1}`;
-      const value = parseFloat(parts[1]) || 0;
-      const color = parts[2] || defaultColors[idx % defaultColors.length];
-      return { label, value, color };
-    });
+  const updateDataField = (index: number, field: keyof ChartDataItem, value: string | number) => {
+    setChartData(prev => prev.map((item, idx) => {
+      if (idx === index) {
+        if (field === 'value') {
+          return { ...item, [field]: parseFloat(value as string) || 0 };
+        }
+        return { ...item, [field]: value };
+      }
+      return item;
+    }));
   };
 
-  const updateDataColor = (index: number, color: string) => {
-    const lines = dataInput.split("\n").filter(line => line.trim());
-    const newLines = lines.map((line, idx) => {
-      if (idx === index) {
-        const parts = line.split(",").map(p => p.trim());
-        return `${parts[0]}, ${parts[1]}, ${color}`;
-      }
-      return line;
-    });
-    setDataInput(newLines.join("\n"));
+  const addDataRow = () => {
+    const newColor = defaultColors[chartData.length % defaultColors.length];
+    setChartData(prev => [...prev, { label: `Item ${prev.length + 1}`, value: 100, color: newColor }]);
+  };
+
+  const removeDataRow = (index: number) => {
+    if (chartData.length > 1) {
+      setChartData(prev => prev.filter((_, idx) => idx !== index));
+    }
   };
 
   const applyColorPreset = (colors: string[]) => {
-    const lines = dataInput.split("\n").filter(line => line.trim());
-    const newLines = lines.map((line, idx) => {
-      const parts = line.split(",").map(p => p.trim());
-      return `${parts[0]}, ${parts[1]}, ${colors[idx % colors.length]}`;
-    });
-    setDataInput(newLines.join("\n"));
+    setChartData(prev => prev.map((item, idx) => ({
+      ...item,
+      color: colors[idx % colors.length]
+    })));
   };
 
   const handleInsert = () => {
-    const data = parseData();
-    if (data.length === 0) return;
+    if (chartData.length === 0) return;
 
     onInsertChart({
       type: chartType,
       title: chartTitle,
-      data,
+      data: chartData,
       x: posX,
       y: posY,
       width: chartWidth,
@@ -118,6 +137,11 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
       showLegend,
       gradientEnabled,
       animationDuration,
+      xAxisLabel,
+      yAxisLabel,
+      valuePrefix,
+      valueSuffix,
+      showValues,
     });
     onOpenChange(false);
   };
@@ -131,20 +155,23 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
     { value: "radial", label: "Radial Chart", icon: Target },
   ];
 
+  const isAxisChart = ["bar", "line", "area"].includes(chartType);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-background border-border">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
             Insert Enterprise Chart
           </DialogTitle>
           <DialogDescription>
-            Create animated, interactive charts with custom colors. Format: Label, Value, Color (hex)
+            Create animated, interactive charts with full data customization
           </DialogDescription>
         </DialogHeader>
         
         <div className="grid grid-cols-2 gap-6 mt-4">
+          {/* Left Column - Chart Settings */}
           <div className="space-y-4">
             <div>
               <Label>Chart Type</Label>
@@ -175,22 +202,47 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
               />
             </div>
 
+            {/* Axis Labels - Only for bar/line/area charts */}
+            {isAxisChart && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>X-Axis Label</Label>
+                  <Input
+                    value={xAxisLabel}
+                    onChange={(e) => setXAxisLabel(e.target.value)}
+                    placeholder="e.g., Quarters"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label>Y-Axis Label</Label>
+                  <Input
+                    value={yAxisLabel}
+                    onChange={(e) => setYAxisLabel(e.target.value)}
+                    placeholder="e.g., Revenue"
+                    className="mt-1.5"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Value Formatting */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>X Position</Label>
+                <Label>Value Prefix</Label>
                 <Input
-                  type="number"
-                  value={posX}
-                  onChange={(e) => setPosX(Number(e.target.value))}
+                  value={valuePrefix}
+                  onChange={(e) => setValuePrefix(e.target.value)}
+                  placeholder="e.g., $"
                   className="mt-1.5"
                 />
               </div>
               <div>
-                <Label>Y Position</Label>
+                <Label>Value Suffix</Label>
                 <Input
-                  type="number"
-                  value={posY}
-                  onChange={(e) => setPosY(Number(e.target.value))}
+                  value={valueSuffix}
+                  onChange={(e) => setValueSuffix(e.target.value)}
+                  placeholder="e.g., %"
                   className="mt-1.5"
                 />
               </div>
@@ -198,21 +250,25 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Width</Label>
+                <Label>Width (px)</Label>
                 <Input
                   type="number"
                   value={chartWidth}
                   onChange={(e) => setChartWidth(Number(e.target.value))}
                   className="mt-1.5"
+                  min={200}
+                  max={1200}
                 />
               </div>
               <div>
-                <Label>Height</Label>
+                <Label>Height (px)</Label>
                 <Input
                   type="number"
                   value={chartHeight}
                   onChange={(e) => setChartHeight(Number(e.target.value))}
                   className="mt-1.5"
+                  min={150}
+                  max={800}
                 />
               </div>
             </div>
@@ -231,15 +287,17 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
             </div>
 
             <div className="flex items-center gap-4 flex-wrap">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={showGrid}
-                  onChange={(e) => setShowGrid(e.target.checked)}
-                  className="rounded"
-                />
-                Show Grid
-              </label>
+              {isAxisChart && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={showGrid}
+                    onChange={(e) => setShowGrid(e.target.checked)}
+                    className="rounded"
+                  />
+                  Show Grid
+                </label>
+              )}
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -258,20 +316,18 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
                 />
                 Gradients
               </label>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <Label>Data (Label, Value, Color per line)</Label>
-              <Textarea
-                value={dataInput}
-                onChange={(e) => setDataInput(e.target.value)}
-                placeholder="Q1, 100, #3b82f6&#10;Q2, 150, #10b981&#10;Q3, 120, #f59e0b"
-                className="mt-1.5 h-[140px] font-mono text-sm"
-              />
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={showValues}
+                  onChange={(e) => setShowValues(e.target.checked)}
+                  className="rounded"
+                />
+                Show Values
+              </label>
             </div>
 
+            {/* Color Presets */}
             <div>
               <Label className="flex items-center gap-2">
                 <Palette className="h-4 w-4" />
@@ -298,50 +354,111 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
                 ))}
               </div>
             </div>
+          </div>
 
-            <div className="bg-muted/50 p-3 rounded-lg max-h-[180px] overflow-y-auto">
-              <p className="text-xs text-muted-foreground mb-2">Data Preview & Colors:</p>
-              <div className="space-y-2">
-                {parseData().slice(0, 8).map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className="w-6 h-6 rounded border-2 border-border hover:scale-110 transition-transform"
-                          style={{ backgroundColor: item.color }}
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-3 z-[200]">
-                        <div className="space-y-2">
-                          <Label className="text-xs">Pick Color</Label>
-                          <div className="grid grid-cols-5 gap-1">
-                            {defaultColors.map((color) => (
-                              <button
-                                key={color}
-                                className="w-5 h-5 rounded border hover:scale-110 transition-transform"
-                                style={{ backgroundColor: color }}
-                                onClick={() => updateDataColor(idx, color)}
-                              />
-                            ))}
-                          </div>
-                          <Input
-                            type="color"
-                            value={item.color}
-                            onChange={(e) => updateDataColor(idx, e.target.value)}
-                            className="w-full h-7 cursor-pointer"
-                          />
+          {/* Right Column - Data Editor */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">Chart Data</Label>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={addDataRow}
+                className="gap-1"
+              >
+                <Plus className="h-3 w-3" />
+                Add Row
+              </Button>
+            </div>
+
+            {/* Column Headers */}
+            <div className="grid grid-cols-[40px_1fr_100px_32px] gap-2 px-2 text-xs font-medium text-muted-foreground">
+              <span>Color</span>
+              <span>Label</span>
+              <span>Value</span>
+              <span></span>
+            </div>
+            
+            {/* Data Rows */}
+            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+              {chartData.map((item, idx) => (
+                <div key={idx} className="grid grid-cols-[40px_1fr_100px_32px] gap-2 items-center bg-muted/50 p-2 rounded-lg">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className="w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-transform"
+                        style={{ backgroundColor: item.color }}
+                        title="Change color"
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-3 z-[200]">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Pick Color</Label>
+                        <div className="grid grid-cols-5 gap-1">
+                          {defaultColors.map((color) => (
+                            <button
+                              key={color}
+                              className="w-6 h-6 rounded border hover:scale-110 transition-transform"
+                              style={{ backgroundColor: color }}
+                              onClick={() => updateDataField(idx, 'color', color)}
+                            />
+                          ))}
                         </div>
-                      </PopoverContent>
-                    </Popover>
-                    <span className="font-medium flex-1">{item.label}</span>
-                    <span className="text-muted-foreground">{item.value}</span>
-                  </div>
-                ))}
-                {parseData().length > 8 && (
-                  <span className="text-xs text-muted-foreground">
-                    +{parseData().length - 8} more...
-                  </span>
-                )}
+                        <Input
+                          type="color"
+                          value={item.color}
+                          onChange={(e) => updateDataField(idx, 'color', e.target.value)}
+                          className="w-full h-8 cursor-pointer"
+                        />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <Input
+                    value={item.label}
+                    onChange={(e) => updateDataField(idx, 'label', e.target.value)}
+                    placeholder="Label"
+                    className="h-8 text-sm"
+                  />
+                  
+                  <Input
+                    type="number"
+                    value={item.value}
+                    onChange={(e) => updateDataField(idx, 'value', e.target.value)}
+                    placeholder="Value"
+                    className="h-8 text-sm"
+                  />
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => removeDataRow(idx)}
+                    disabled={chartData.length <= 1}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {/* Data Summary */}
+            <div className="bg-muted/30 p-3 rounded-lg text-xs text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Total Data Points:</span>
+                <span className="font-medium text-foreground">{chartData.length}</span>
+              </div>
+              <div className="flex justify-between mt-1">
+                <span>Sum of Values:</span>
+                <span className="font-medium text-foreground">
+                  {valuePrefix}{chartData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}{valueSuffix}
+                </span>
+              </div>
+              <div className="flex justify-between mt-1">
+                <span>Average Value:</span>
+                <span className="font-medium text-foreground">
+                  {valuePrefix}{(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(1)}{valueSuffix}
+                </span>
               </div>
             </div>
           </div>
@@ -351,7 +468,7 @@ export function ChartInsertDialog({ open, onOpenChange, onInsertChart }: ChartIn
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleInsert} disabled={parseData().length === 0}>
+          <Button onClick={handleInsert} disabled={chartData.length === 0}>
             <BarChart3 className="h-4 w-4 mr-2" />
             Insert Chart
           </Button>
