@@ -543,8 +543,10 @@ ELITE DOCUMENT REQUIREMENTS:
         description: `Processing ${pages.length} page(s) with all content`,
       });
 
-      container.style.position = "absolute";
-      container.style.left = "-9999px";
+      // Keep export DOM in the render tree (avoids blank html2canvas captures)
+      // while remaining invisible/non-interactive to the user.
+      container.style.position = "fixed";
+      container.style.left = "120vw";
       container.style.top = "0";
       container.style.width = "794px";
       container.style.background = "white";
