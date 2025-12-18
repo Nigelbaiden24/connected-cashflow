@@ -37,6 +37,14 @@ const Calendar = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showSyncPanel, setShowSyncPanel] = useState(false);
 
+  const isEmbeddedPreview = (() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  })();
+
   useEffect(() => {
     fetchMeetings();
     checkCalendarConnections();
@@ -214,6 +222,34 @@ const Calendar = () => {
       return;
     }
 
+    // Google blocks sign-in pages inside iframes.
+    // When running inside the embedded preview, open the Calendar page in a real tab first.
+    if (isEmbeddedPreview) {
+      const opened = window.open(window.location.href, "_blank", "noopener,noreferrer");
+
+      if (!opened) {
+        // Fallback: copy the URL so the user can paste it into a new tab
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          toast({
+            title: "Open in a new tab",
+            description: "Your Calendar URL was copied. Paste it into a new tab, then connect Google Calendar there.",
+          });
+        } catch {
+          toast({
+            title: "Open in a new tab",
+            description: "Please open this Calendar page in a new browser tab (outside the preview), then connect Google Calendar.",
+          });
+        }
+      } else {
+        toast({
+          title: "Opened in new tab",
+          description: "Complete the Google connection in the new tab.",
+        });
+      }
+      return;
+    }
+
     setIsConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke('google-calendar-auth');
@@ -223,19 +259,15 @@ const Calendar = () => {
         throw new Error('Failed to get authorization URL');
       }
 
-      // Open in a NEW TAB to avoid Google blocking being loaded inside an iframe.
-      const a = document.createElement('a');
-      a.href = data.authUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      toast({
-        title: "Continue in new tab",
-        description: "Finish Google sign-in, then return here — we’ll auto-sync when you come back.",
-      });
+      // Top-level tab: safe to open Google auth
+      const authTab = window.open(data.authUrl, '_blank', 'noopener,noreferrer');
+      if (!authTab) {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups to connect Google Calendar.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       console.error('Error connecting Google Calendar:', error);
       toast({
@@ -249,28 +281,28 @@ const Calendar = () => {
   };
 
   const handleConnectOutlook = async () => {
-    // Important: open the popup synchronously (before await) so browsers don't block it.
-    // Use the top-level window when accessible to avoid loading Outlook login inside an iframe.
-    const openerWindow = (() => {
-      try {
-        return window.top && window.top !== window ? window.top : window;
-      } catch {
-        return window;
+    // Outlook login also often breaks in embedded previews.
+    if (isEmbeddedPreview) {
+      const opened = window.open(window.location.href, "_blank", "noopener,noreferrer");
+      if (!opened) {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          toast({
+            title: "Open in a new tab",
+            description: "Your Calendar URL was copied. Paste it into a new tab, then connect Outlook there.",
+          });
+        } catch {
+          toast({
+            title: "Open in a new tab",
+            description: "Please open this Calendar page in a new browser tab (outside the preview), then connect Outlook.",
+          });
+        }
+      } else {
+        toast({
+          title: "Opened in new tab",
+          description: "Complete the Outlook connection in the new tab.",
+        });
       }
-    })();
-
-    const popup = openerWindow.open(
-      "about:blank",
-      "outlook-calendar-auth",
-      "width=600,height=700"
-    );
-
-    if (!popup) {
-      toast({
-        title: "Popup Blocked",
-        description: "Please allow popups for this site to connect Outlook Calendar.",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -282,15 +314,15 @@ const Calendar = () => {
         throw new Error('Failed to get authorization URL');
       }
 
-      popup.location.href = data.authUrl;
-      popup.focus?.();
-    } catch (error) {
-      try {
-        popup.close?.();
-      } catch {
-        // ignore
+      const authTab = window.open(data.authUrl, '_blank', 'noopener,noreferrer');
+      if (!authTab) {
+        toast({
+          title: "Popup Blocked",
+          description: "Please allow popups to connect Outlook Calendar.",
+          variant: "destructive",
+        });
       }
-
+    } catch (error) {
       console.error('Error connecting Outlook Calendar:', error);
       toast({
         title: "Error",
@@ -638,6 +670,23 @@ const Calendar = () => {
             </p>
           </CardHeader>
           <CardContent>
+            {isEmbeddedPreview && (
+              <div className="mb-4 rounded-lg border border-border bg-muted/40 p-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Google/Outlook sign-in is blocked inside embedded previews. Open this Calendar in a real tab to connect.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(window.location.href, '_blank', 'noopener,noreferrer')}
+                  >
+                    Open in new tab
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Google Calendar */}
               <div className={`p-4 rounded-xl border-2 transition-all ${
