@@ -178,8 +178,14 @@ export function EnterpriseChart({
       width: editWidth,
       height: editHeight,
     };
+
+    // Important: update size first (if applicable), then content/config.
+    // This prevents size updates (drag/resize state) from overwriting the just-saved config.
+    if (editWidth !== width || editHeight !== height) {
+      onSizeChange?.(editWidth, editHeight);
+    }
+
     onConfigChange?.(newConfig);
-    onSizeChange?.(editWidth, editHeight);
     setShowEditor(false);
   };
 
