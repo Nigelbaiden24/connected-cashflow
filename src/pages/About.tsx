@@ -107,24 +107,6 @@ const About = () => {
       ]
     },
     {
-      icon: Building2,
-      name: "FlowPulse Business",
-      tagline: "Enterprise Operations Platform",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      description: "Transform your business operations with intelligent project management, team collaboration, and workflow automation. Perfect for consultancies, agencies, and professional services firms looking to scale efficiently.",
-      features: [
-        "Smart Project Management",
-        "Team Collaboration & Communication",
-        "Workflow Automation Engine",
-        "Business Analytics & Insights",
-        "Resource Planning & Allocation",
-        "Time Tracking & Billing",
-        "Document Generation & Management",
-        "Integrated Payroll & HR Tools"
-      ]
-    },
-    {
       icon: Briefcase,
       name: "FlowPulse Investor",
       tagline: "Professional Investment Intelligence",

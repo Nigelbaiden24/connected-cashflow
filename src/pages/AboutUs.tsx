@@ -41,8 +41,8 @@ export default function AboutUs() {
     {
       icon: Code,
       title: "SaaS Solutions",
-      description: "Comprehensive business management platforms including FlowPulse Finance and FlowPulse Business for modern enterprises.",
-      features: ["Financial Planning", "Business Analytics", "Team Management", "Compliance Tools"]
+      description: "Comprehensive financial management and investment platforms including FlowPulse Finance and FlowPulse Investor for modern enterprises.",
+      features: ["Financial Planning", "Investment Analytics", "Portfolio Management", "Compliance Tools"]
     },
     {
       icon: Globe,
