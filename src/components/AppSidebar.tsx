@@ -157,7 +157,7 @@ const practiceManagementItems = [
   },
   {
     title: "Reports",
-    url: "/reports",
+    url: "/finance/reports",
     icon: FileText,
   },
   {
