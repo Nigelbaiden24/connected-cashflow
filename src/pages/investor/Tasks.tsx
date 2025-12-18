@@ -183,7 +183,7 @@ const goalStatusConfig = {
   ahead: { label: "Ahead", color: "bg-blue-500/10 text-blue-600" },
 };
 
-export default function FinanceTasks() {
+export default function InvestorTasks() {
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const [goals] = useState<Goal[]>(mockGoals);
@@ -386,9 +386,9 @@ export default function FinanceTasks() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Tasks & Goals</h1>
+            <h1 className="text-2xl font-bold">Investment Tasks & Goals</h1>
             <p className="text-muted-foreground">
-              Track your financial tasks and monitor progress towards your goals
+              Track your investment tasks and monitor progress towards your financial goals
             </p>
           </div>
           <Dialog open={isNewTaskDialogOpen} onOpenChange={setIsNewTaskDialogOpen}>
