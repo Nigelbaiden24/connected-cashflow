@@ -253,7 +253,7 @@ const App = () => {
               )
             } />
             
-            <Route path="/reports" element={
+            <Route path="/finance/reports" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Reports />

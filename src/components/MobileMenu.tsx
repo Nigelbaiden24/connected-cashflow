@@ -50,7 +50,7 @@ export function MobileMenu({ platform = "business" }: MobileMenuProps) {
     { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "Clients", url: "/clients", icon: Users },
     { title: "Financial Planning", url: "/financial-planning", icon: TrendingUp },
-    { title: "Reports", url: "/reports", icon: FileText },
+    { title: "Reports", url: "/finance/reports", icon: FileText },
     { title: "Payroll", url: "/payroll", icon: Briefcase },
   ];
 
