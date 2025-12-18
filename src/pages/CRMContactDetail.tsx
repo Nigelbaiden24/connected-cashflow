@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Phone, Mail, MessageSquare, Calendar, Plus, Edit2, Building2, Briefcase, Clock, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Phone, Mail, MessageSquare, Calendar, Plus, Edit2, Building2, Briefcase, Clock, CheckCircle2, ChevronLeft, ChevronRight, Bell, BellRing, CalendarClock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -46,29 +47,121 @@ interface Interaction {
   interaction_date: string;
 }
 
+interface FollowUp {
+  id: string;
+  title: string;
+  notes: string | null;
+  follow_up_date: string;
+  status: string;
+}
+
+interface CRMNotification {
+  id: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  action_url: string | null;
+}
+
 const CRMContactDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [contact, setContact] = useState<Contact | null>(null);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [notifications, setNotifications] = useState<CRMNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [allContactIds, setAllContactIds] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
   const [customData, setCustomData] = useState<Record<string, string>>({});
+  const [showNotifications, setShowNotifications] = useState(false);
   const [newInteraction, setNewInteraction] = useState({
     interaction_type: "note",
     subject: "",
     description: "",
     outcome: "",
+    scheduleFollowUp: false,
+    followUpDate: "",
+    followUpTime: "",
+    followUpNotes: "",
   });
 
   useEffect(() => {
     fetchContactData();
     fetchAllContactIds();
     fetchCustomColumns();
+    fetchFollowUps();
+    fetchNotifications();
   }, [id]);
+
+  const fetchFollowUps = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("crm_follow_ups")
+        .select("*")
+        .eq("contact_id", id)
+        .eq("status", "pending")
+        .order("follow_up_date", { ascending: true });
+
+      if (error) throw error;
+      setFollowUps(data || []);
+    } catch (error) {
+      console.error("Error fetching follow-ups:", error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("crm_notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_read", false)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  const markNotificationRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("crm_notifications")
+        .update({ is_read: true })
+        .eq("id", notificationId);
+
+      if (error) throw error;
+      setNotifications(notifications.filter(n => n.id !== notificationId));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const completeFollowUp = async (followUpId: string) => {
+    try {
+      const { error } = await supabase
+        .from("crm_follow_ups")
+        .update({ status: "completed" })
+        .eq("id", followUpId);
+
+      if (error) throw error;
+      toast.success("Follow-up marked as complete");
+      fetchFollowUps();
+    } catch (error) {
+      console.error("Error completing follow-up:", error);
+      toast.error("Failed to complete follow-up");
+    }
+  };
 
   const fetchAllContactIds = async () => {
     try {
@@ -230,18 +323,62 @@ const CRMContactDetail = () => {
     }
 
     try {
-      const { error } = await supabase.from("crm_interactions").insert({
-        contact_id: id,
-        ...newInteraction,
-      });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to log interactions");
+        return;
+      }
 
-      if (error) throw error;
-      toast.success("Interaction logged successfully");
+      // Insert interaction
+      const { data: interactionData, error: interactionError } = await supabase
+        .from("crm_interactions")
+        .insert({
+          contact_id: id,
+          interaction_type: newInteraction.interaction_type,
+          subject: newInteraction.subject,
+          description: newInteraction.description,
+          outcome: newInteraction.outcome,
+        })
+        .select()
+        .single();
+
+      if (interactionError) throw interactionError;
+
+      // Create follow-up if scheduled
+      if (newInteraction.scheduleFollowUp && newInteraction.followUpDate && newInteraction.followUpTime) {
+        const followUpDateTime = new Date(`${newInteraction.followUpDate}T${newInteraction.followUpTime}`);
+        
+        const { error: followUpError } = await supabase
+          .from("crm_follow_ups")
+          .insert({
+            contact_id: id,
+            user_id: user.id,
+            interaction_id: interactionData.id,
+            follow_up_date: followUpDateTime.toISOString(),
+            title: `Follow-up: ${newInteraction.subject}`,
+            notes: newInteraction.followUpNotes || null,
+          });
+
+        if (followUpError) {
+          console.error("Error creating follow-up:", followUpError);
+          toast.error("Interaction logged but failed to schedule follow-up");
+        } else {
+          toast.success("Interaction logged and follow-up scheduled!");
+          fetchFollowUps();
+        }
+      } else {
+        toast.success("Interaction logged successfully");
+      }
+
       setNewInteraction({
         interaction_type: "note",
         subject: "",
         description: "",
         outcome: "",
+        scheduleFollowUp: false,
+        followUpDate: "",
+        followUpTime: "",
+        followUpNotes: "",
       });
       fetchContactData();
     } catch (error) {
@@ -354,6 +491,60 @@ const CRMContactDetail = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {/* Notifications Bell */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative"
+            >
+              {notifications.length > 0 ? (
+                <BellRing className="h-5 w-5 text-primary animate-pulse" />
+              ) : (
+                <Bell className="h-5 w-5" />
+              )}
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              )}
+            </Button>
+            
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 top-10 w-80 bg-card border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                <div className="p-3 border-b">
+                  <h4 className="font-semibold">Notifications</h4>
+                </div>
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground text-sm">
+                    No new notifications
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        className="p-3 hover:bg-muted/50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          markNotificationRead(notif.id);
+                          if (notif.action_url) navigate(notif.action_url);
+                        }}
+                      >
+                        <p className="font-medium text-sm">{notif.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{notif.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {format(new Date(notif.created_at), "PPp")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <Badge variant="secondary" className="text-xs">
             <Clock className="h-3 w-3 mr-1" />
             Last updated {format(new Date(), "MMM d, yyyy")}
@@ -715,6 +906,79 @@ const CRMContactDetail = () => {
                         placeholder="Result or next steps"
                       />
                     </div>
+                    
+                    {/* Follow-up Scheduling */}
+                    <Separator />
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CalendarClock className="h-4 w-4 text-primary" />
+                          <Label className="text-sm font-medium">Schedule Follow-up</Label>
+                        </div>
+                        <Switch
+                          checked={newInteraction.scheduleFollowUp}
+                          onCheckedChange={(checked) =>
+                            setNewInteraction({
+                              ...newInteraction,
+                              scheduleFollowUp: checked,
+                            })
+                          }
+                        />
+                      </div>
+                      
+                      {newInteraction.scheduleFollowUp && (
+                        <div className="space-y-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs">Date</Label>
+                              <Input
+                                type="date"
+                                value={newInteraction.followUpDate}
+                                onChange={(e) =>
+                                  setNewInteraction({
+                                    ...newInteraction,
+                                    followUpDate: e.target.value,
+                                  })
+                                }
+                                min={new Date().toISOString().split("T")[0]}
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Time</Label>
+                              <Input
+                                type="time"
+                                value={newInteraction.followUpTime}
+                                onChange={(e) =>
+                                  setNewInteraction({
+                                    ...newInteraction,
+                                    followUpTime: e.target.value,
+                                  })
+                                }
+                                className="mt-1"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs">Notes for follow-up</Label>
+                            <Input
+                              value={newInteraction.followUpNotes}
+                              onChange={(e) =>
+                                setNewInteraction({
+                                  ...newInteraction,
+                                  followUpNotes: e.target.value,
+                                })
+                              }
+                              placeholder="What to discuss in follow-up..."
+                              className="mt-1"
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            You'll receive a reminder notification 30 minutes before
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <DialogFooter>
                     <Button onClick={addInteraction}>Log Interaction</Button>
@@ -801,6 +1065,79 @@ const CRMContactDetail = () => {
                           className="mt-1.5"
                         />
                       </div>
+                      
+                      {/* Follow-up Scheduling */}
+                      <Separator />
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CalendarClock className="h-4 w-4 text-primary" />
+                            <Label className="text-sm font-medium">Schedule Follow-up</Label>
+                          </div>
+                          <Switch
+                            checked={newInteraction.scheduleFollowUp}
+                            onCheckedChange={(checked) =>
+                              setNewInteraction({
+                                ...newInteraction,
+                                scheduleFollowUp: checked,
+                              })
+                            }
+                          />
+                        </div>
+                        
+                        {newInteraction.scheduleFollowUp && (
+                          <div className="space-y-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <Label className="text-xs">Date</Label>
+                                <Input
+                                  type="date"
+                                  value={newInteraction.followUpDate}
+                                  onChange={(e) =>
+                                    setNewInteraction({
+                                      ...newInteraction,
+                                      followUpDate: e.target.value,
+                                    })
+                                  }
+                                  min={new Date().toISOString().split("T")[0]}
+                                  className="mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Time</Label>
+                                <Input
+                                  type="time"
+                                  value={newInteraction.followUpTime}
+                                  onChange={(e) =>
+                                    setNewInteraction({
+                                      ...newInteraction,
+                                      followUpTime: e.target.value,
+                                    })
+                                  }
+                                  className="mt-1"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label className="text-xs">Notes</Label>
+                              <Input
+                                value={newInteraction.followUpNotes}
+                                onChange={(e) =>
+                                  setNewInteraction({
+                                    ...newInteraction,
+                                    followUpNotes: e.target.value,
+                                  })
+                                }
+                                placeholder="What to discuss..."
+                                className="mt-1"
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Reminder 30 mins before
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <DialogFooter>
                       <Button onClick={addInteraction} className="w-full sm:w-auto">
@@ -814,6 +1151,43 @@ const CRMContactDetail = () => {
             </div>
 
             <Separator className="my-6" />
+
+            {/* Upcoming Follow-ups */}
+            {followUps.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <CalendarClock className="h-4 w-4 text-primary" />
+                  Scheduled Follow-ups
+                </h4>
+                <div className="space-y-2">
+                  {followUps.map((followUp) => (
+                    <div
+                      key={followUp.id}
+                      className="flex items-center justify-between p-3 rounded-lg border bg-primary/5 border-primary/20"
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{followUp.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(followUp.follow_up_date), "PPp")}
+                        </p>
+                        {followUp.notes && (
+                          <p className="text-xs text-muted-foreground mt-1">{followUp.notes}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => completeFollowUp(followUp.id)}
+                        className="text-primary hover:text-primary/80"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-6" />
+              </div>
+            )}
 
             {/* Interaction Timeline */}
             <div className="space-y-4">

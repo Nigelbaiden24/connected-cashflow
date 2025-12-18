@@ -52,7 +52,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.send-investor-alert]
-verify_jwt = true
+verify_jwt = false
 
 [functions.portfolio-benchmark-analysis]
 verify_jwt = true
@@ -68,9 +68,6 @@ verify_jwt = true
 
 [functions.business-recommendations]
 verify_jwt = true
-
-[functions.send-investor-alert]
-verify_jwt = false
 
 [functions.generate-ai-roundup]
 verify_jwt = false
@@ -108,3 +105,5 @@ verify_jwt = false
 [functions.verify-report-purchase]
 verify_jwt = false
 
+[functions.crm-follow-up-reminder]
+verify_jwt = false
