@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { CashflowDetailModal } from "./CashflowDetailModal";
 
 interface ClientOverviewHubProps {
   client: any;
@@ -163,6 +164,8 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
   });
   
   const [simulationRunning, setSimulationRunning] = useState(false);
+  const [selectedCashflowData, setSelectedCashflowData] = useState<any>(null);
+  const [cashflowModalOpen, setCashflowModalOpen] = useState(false);
   
   // State for CRUD operations
   const [dependents, setDependents] = useState<Dependent[]>([
@@ -466,7 +469,9 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg">Lifetime Cashflow Projection</CardTitle>
-            <p className="text-sm text-muted-foreground">Ages {currentAge} to 95 • Retirement at 65</p>
+            <p className="text-sm text-muted-foreground">
+              Ages {currentAge} to 95 • Retirement at 65 • <span className="text-primary">Click chart for details</span>
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button 
@@ -484,9 +489,18 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="h-[320px] w-full">
+          <div className="h-[320px] w-full cursor-pointer" title="Click on chart to see detailed breakdown">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={projectionData} margin={{ top: 10, right: 30, left: 0, bottom: 30 }}>
+              <ComposedChart 
+                data={projectionData} 
+                margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                onClick={(data) => {
+                  if (data && data.activePayload && data.activePayload[0]) {
+                    setSelectedCashflowData(data.activePayload[0].payload);
+                    setCashflowModalOpen(true);
+                  }
+                }}
+              >
                 <defs>
                   <linearGradient id="surplusGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
@@ -1759,6 +1773,16 @@ export function ClientOverviewHub({ client, goals, portfolioHoldings, formatCurr
           </Card>
         </div>
       </div>
+
+      {/* Cashflow Detail Modal */}
+      <CashflowDetailModal
+        isOpen={cashflowModalOpen}
+        onClose={() => setCashflowModalOpen(false)}
+        data={selectedCashflowData}
+        allData={projectionData}
+        formatCurrency={formatCurrency}
+        clientName={client?.name}
+      />
     </div>
   );
 }
