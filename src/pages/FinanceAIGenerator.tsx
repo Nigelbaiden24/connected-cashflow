@@ -899,6 +899,13 @@ ELITE DOCUMENT REQUIREMENTS:
                     showLegend: chartConfig.showLegend ?? true,
                     gradientEnabled: chartConfig.gradientEnabled ?? true,
                     animationDuration: chartConfig.animationDuration ?? 1200,
+                    width: chartConfig.width,
+                    height: chartConfig.height,
+                    xAxisLabel: chartConfig.xAxisLabel,
+                    yAxisLabel: chartConfig.yAxisLabel,
+                    valuePrefix: chartConfig.valuePrefix,
+                    valueSuffix: chartConfig.valueSuffix,
+                    showValues: chartConfig.showValues,
                   };
 
                   const newSection: any = {
