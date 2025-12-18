@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2, Download, CheckCircle2 } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ArrowLeft, Edit, Trash2, Download, CheckCircle2, RefreshCw, Unlink, Link2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,8 @@ const Calendar = () => {
   const [googleConnected, setGoogleConnected] = useState(false);
   const [outlookConnected, setOutlookConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [showSyncPanel, setShowSyncPanel] = useState(false);
 
   useEffect(() => {
     fetchMeetings();
@@ -79,27 +81,82 @@ const Calendar = () => {
     }
   };
 
-  const fetchIntegratedEvents = async () => {
+  const fetchIntegratedEvents = async (showToast = false) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       console.log('User not authenticated, skipping integrated events fetch');
       return;
     }
 
+    if (showToast) setIsSyncing(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('fetch-calendar-events');
 
       if (error) {
         console.error('Error fetching integrated events:', error);
+        if (showToast) {
+          toast({
+            title: "Sync Error",
+            description: "Failed to sync calendar events. Please try again.",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
       if (data?.events) {
         setIntegratedEvents(data.events);
+        if (showToast) {
+          toast({
+            title: "Synced Successfully",
+            description: `Fetched ${data.events.length} events from connected calendars.`,
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to fetch integrated events:', error);
+    } finally {
+      setIsSyncing(false);
     }
+  };
+
+  const handleDisconnectCalendar = async (provider: 'google' | 'outlook') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("calendar_connections")
+      .update({ is_active: false })
+      .eq("user_id", user.id)
+      .eq("provider", provider);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: `Failed to disconnect ${provider === 'google' ? 'Google' : 'Outlook'} Calendar.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (provider === 'google') {
+      setGoogleConnected(false);
+    } else {
+      setOutlookConnected(false);
+    }
+
+    toast({
+      title: "Disconnected",
+      description: `${provider === 'google' ? 'Google' : 'Outlook'} Calendar has been disconnected.`,
+    });
+
+    // Refresh events
+    fetchIntegratedEvents();
+  };
+
+  const handleSyncNow = () => {
+    fetchIntegratedEvents(true);
   };
 
   const fetchMeetings = async () => {
@@ -403,57 +460,30 @@ const Calendar = () => {
           </div>
         </div>
         <div className="flex gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2 hover:border-primary/50">
-                <Download className="h-4 w-4" />
-                Connect Calendar
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 bg-card/95 backdrop-blur-sm">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg mb-2">Connect External Calendars</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Sync your FlowPulse calendar with Google Calendar or Outlook
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div className="p-4 border rounded-xl space-y-3 bg-gradient-to-r from-blue-500/5 to-blue-500/10 border-blue-500/20">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold">Google Calendar</h4>
-                      {googleConnected && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                    </div>
-                    <Button 
-                      variant={googleConnected ? "secondary" : "outline"} 
-                      className="w-full"
-                      onClick={handleConnectGoogle}
-                      disabled={isConnecting || googleConnected}
-                    >
-                      {googleConnected ? "Connected" : "Connect Google Calendar"}
-                    </Button>
-                  </div>
-                  <div className="p-4 border rounded-xl space-y-3 bg-gradient-to-r from-orange-500/5 to-orange-500/10 border-orange-500/20">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold">Outlook Calendar</h4>
-                      {outlookConnected && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                    </div>
-                    <Button 
-                      variant={outlookConnected ? "secondary" : "outline"} 
-                      className="w-full"
-                      onClick={handleConnectOutlook}
-                      disabled={isConnecting || outlookConnected}
-                    >
-                      {outlookConnected ? "Connected" : "Connect Outlook Calendar"}
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Once connected, your meetings will automatically sync across all platforms.
-                </p>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <Button 
+            variant="outline" 
+            className="gap-2 hover:border-primary/50"
+            onClick={() => setShowSyncPanel(!showSyncPanel)}
+          >
+            <Link2 className="h-4 w-4" />
+            Sync Calendars
+            {(googleConnected || outlookConnected) && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5">
+                {(googleConnected ? 1 : 0) + (outlookConnected ? 1 : 0)}
+              </Badge>
+            )}
+          </Button>
+          {(googleConnected || outlookConnected) && (
+            <Button 
+              variant="outline" 
+              className="gap-2 hover:border-primary/50"
+              onClick={handleSyncNow}
+              disabled={isSyncing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing...' : 'Sync Now'}
+            </Button>
+          )}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20">
@@ -530,6 +560,178 @@ const Calendar = () => {
         </Dialog>
         </div>
       </div>
+
+      {/* Calendar Sync Panel */}
+      {showSyncPanel && (
+        <Card className="bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-orange-500/5 border-primary/20 shadow-lg">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Link2 className="h-5 w-5 text-primary" />
+                Connect Your Calendars
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowSyncPanel(false)}>
+                ✕
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Sync your Google Calendar and Outlook Calendar to see all your events in one place.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Google Calendar */}
+              <div className={`p-4 rounded-xl border-2 transition-all ${
+                googleConnected 
+                  ? 'bg-green-500/10 border-green-500/30' 
+                  : 'bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20 hover:border-blue-500/40'
+              }`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold">Google Calendar</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {googleConnected ? 'Connected and syncing' : 'Connect to sync events'}
+                    </p>
+                  </div>
+                  {googleConnected && <CheckCircle2 className="h-6 w-6 text-green-600" />}
+                </div>
+                {googleConnected ? (
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={handleSyncNow}
+                      disabled={isSyncing}
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                      Sync
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDisconnectCalendar('google')}
+                    >
+                      <Unlink className="h-4 w-4 mr-1" />
+                      Disconnect
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={handleConnectGoogle}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? 'Connecting...' : 'Connect Google Calendar'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Outlook Calendar */}
+              <div className={`p-4 rounded-xl border-2 transition-all ${
+                outlookConnected 
+                  ? 'bg-green-500/10 border-green-500/30' 
+                  : 'bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20 hover:border-orange-500/40'
+              }`}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6">
+                      <path fill="#0078D4" d="M23 12.5V23H12V12.5L17.5 9L23 12.5Z"/>
+                      <path fill="#0078D4" d="M12 1V12.5L1 6.75V1H12Z" opacity="0.8"/>
+                      <path fill="#28A8EA" d="M12 12.5V23H1V6.75L12 12.5Z"/>
+                      <path fill="#50D9FF" d="M23 1V12.5L12 6.75V1H23Z"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold">Outlook Calendar</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {outlookConnected ? 'Connected and syncing' : 'Connect to sync events'}
+                    </p>
+                  </div>
+                  {outlookConnected && <CheckCircle2 className="h-6 w-6 text-green-600" />}
+                </div>
+                {outlookConnected ? (
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={handleSyncNow}
+                      disabled={isSyncing}
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                      Sync
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDisconnectCalendar('outlook')}
+                    >
+                      <Unlink className="h-4 w-4 mr-1" />
+                      Disconnect
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    onClick={handleConnectOutlook}
+                    disabled={isConnecting}
+                  >
+                    {isConnecting ? 'Connecting...' : 'Connect Outlook Calendar'}
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {(googleConnected || outlookConnected) && (
+              <div className="mt-4 p-3 rounded-lg bg-muted/50 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  {integratedEvents.length} events synced from external calendars
+                </div>
+                <Button variant="ghost" size="sm" onClick={handleSyncNow} disabled={isSyncing}>
+                  <RefreshCw className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Prompt Banner when no calendars connected */}
+      {!googleConnected && !outlookConnected && !showSyncPanel && (
+        <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+              onClick={() => setShowSyncPanel(true)}>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-primary/20">
+                  <Link2 className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Sync your calendars</h3>
+                  <p className="text-sm text-muted-foreground">Connect Google Calendar or Outlook to see all your events in one place</p>
+                </div>
+              </div>
+              <Button variant="default" size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Connect
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
