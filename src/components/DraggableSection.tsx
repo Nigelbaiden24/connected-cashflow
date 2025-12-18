@@ -458,6 +458,7 @@ export function DraggableSection({
             width={width}
             height={height}
             onConfigChange={handleConfigChange}
+            onSizeChange={(newWidth, newHeight) => onSizeChange(id, newWidth, newHeight)}
             editable={true}
           />
         </div>
