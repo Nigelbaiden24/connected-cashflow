@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { EnterpriseChart, EnterpriseChartConfig } from "./EnterpriseChart";
+import { EnterpriseChart, LegacyChartConfig } from "./EnterpriseChart";
 
 interface DraggableSectionProps {
   id: string;
@@ -80,7 +80,7 @@ export function DraggableSection({
   const sectionRef = useRef<HTMLDivElement>(null);
   const cellInputRef = useRef<HTMLInputElement>(null);
 
-  const parsedChartConfig = useMemo<EnterpriseChartConfig | null>(() => {
+  const parsedChartConfig = useMemo<LegacyChartConfig | null>(() => {
     if (type !== "chart") return null;
 
     // New format: JSON
@@ -106,7 +106,7 @@ export function DraggableSection({
           valuePrefix: parsed.valuePrefix,
           valueSuffix: parsed.valueSuffix,
           showValues: parsed.showValues,
-        } as EnterpriseChartConfig;
+        } as LegacyChartConfig;
       }
     } catch {
       // fall through to legacy parsing
@@ -472,9 +472,9 @@ export function DraggableSection({
         showLegend: true,
         gradientEnabled: true,
         animationDuration: 1200,
-      } as EnterpriseChartConfig;
+      } as LegacyChartConfig;
 
-      const handleConfigChange = (newConfig: EnterpriseChartConfig) => {
+      const handleConfigChange = (newConfig: LegacyChartConfig) => {
         if (onContentChange) {
           // Store as JSON for easy parsing later
           onContentChange(id, JSON.stringify(newConfig));
