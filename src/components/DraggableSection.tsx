@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Edit2, Trash2, Wand2, GripVertical, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +79,78 @@ export function DraggableSection({
   const [chartTitle, setChartTitle] = useState("");
   const sectionRef = useRef<HTMLDivElement>(null);
   const cellInputRef = useRef<HTMLInputElement>(null);
+
+  const parsedChartConfig = useMemo<EnterpriseChartConfig | null>(() => {
+    if (type !== "chart") return null;
+
+    // New format: JSON
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed?.type && Array.isArray(parsed?.data)) {
+        return {
+          type: parsed.type,
+          title: parsed.title || "Chart",
+          data: parsed.data.map((d: any, idx: number) => ({
+            label: String(d?.label ?? `Item ${idx + 1}`),
+            value: Number(d?.value ?? 0),
+            color: String(d?.color ?? defaultColors[idx % defaultColors.length]),
+          })),
+          showGrid: parsed.showGrid,
+          showLegend: parsed.showLegend,
+          gradientEnabled: parsed.gradientEnabled,
+          animationDuration: parsed.animationDuration,
+          width: parsed.width,
+          height: parsed.height,
+          xAxisLabel: parsed.xAxisLabel,
+          yAxisLabel: parsed.yAxisLabel,
+          valuePrefix: parsed.valuePrefix,
+          valueSuffix: parsed.valueSuffix,
+          showValues: parsed.showValues,
+        } as EnterpriseChartConfig;
+      }
+    } catch {
+      // fall through to legacy parsing
+    }
+
+    // Legacy SVG parsing
+    const titleMatch = content.match(/<text[^>]*class="[^"]*chart-title[^"]*"[^>]*>([^<]+)<\/text>/);
+    const dataMatches = content.matchAll(/data-label="([^"]+)"\s+data-value="([^"]+)"/g);
+
+    const parsedTitle = titleMatch?.[1] || "Chart";
+
+    const items: { label: string; value: number; color: string }[] = [];
+    let idx = 0;
+    for (const match of dataMatches) {
+      items.push({
+        label: match[1],
+        value: parseFloat(match[2]),
+        color: defaultColors[idx % defaultColors.length],
+      });
+      idx++;
+    }
+
+    if (items.length === 0) {
+      items.push(
+        { label: "Q1", value: 100, color: "#3b82f6" },
+        { label: "Q2", value: 150, color: "#10b981" },
+        { label: "Q3", value: 120, color: "#f59e0b" },
+        { label: "Q4", value: 180, color: "#ef4444" }
+      );
+    }
+
+    const isPie = content.includes("path") && content.includes("L") && content.includes("A");
+    const isBar = content.includes("rect") && !isPie;
+
+    return {
+      type: isPie ? "pie" : isBar ? "bar" : "bar",
+      title: parsedTitle,
+      data: items,
+      showGrid: true,
+      showLegend: true,
+      gradientEnabled: true,
+      animationDuration: 1200,
+    };
+  }, [type, content]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
@@ -387,62 +459,20 @@ export function DraggableSection({
       );
     }
     if (type === "chart") {
-      // Parse chart config from JSON content or legacy SVG
-      const parseChartConfig = (): EnterpriseChartConfig => {
-        try {
-          // Try parsing as JSON first (new format)
-          const parsed = JSON.parse(content);
-          if (parsed.type && parsed.data) {
-            return parsed as EnterpriseChartConfig;
-          }
-        } catch {
-          // Fall back to parsing legacy SVG format
-        }
-
-        // Parse legacy SVG content
-        const titleMatch = content.match(/<text[^>]*class="[^"]*chart-title[^"]*"[^>]*>([^<]+)<\/text>/);
-        const dataMatches = content.matchAll(/data-label="([^"]+)"\s+data-value="([^"]+)"/g);
-        
-        let parsedTitle = "Chart";
-        if (titleMatch) parsedTitle = titleMatch[1];
-        
-        const items: { label: string; value: number; color: string }[] = [];
-        let idx = 0;
-        for (const match of dataMatches) {
-          items.push({ 
-            label: match[1], 
-            value: parseFloat(match[2]),
-            color: defaultColors[idx % defaultColors.length]
-          });
-          idx++;
-        }
-        
-        // Default data if nothing found
-        if (items.length === 0) {
-          items.push(
-            { label: "Q1", value: 100, color: "#3b82f6" },
-            { label: "Q2", value: 150, color: "#10b981" },
-            { label: "Q3", value: 120, color: "#f59e0b" },
-            { label: "Q4", value: 180, color: "#ef4444" }
-          );
-        }
-
-        // Detect chart type from SVG content
-        const isPie = content.includes('path') && content.includes('L') && content.includes('A');
-        const isBar = content.includes('rect') && !isPie;
-        
-        return {
-          type: isPie ? "pie" : "bar",
-          title: parsedTitle,
-          data: items,
-          showGrid: true,
-          showLegend: true,
-          gradientEnabled: true,
-          animationDuration: 1200,
-        };
-      };
-
-      const chartConfig = parseChartConfig();
+      const chartConfig = parsedChartConfig || {
+        type: "bar",
+        title: "Chart",
+        data: [
+          { label: "Q1", value: 100, color: "#3b82f6" },
+          { label: "Q2", value: 150, color: "#10b981" },
+          { label: "Q3", value: 120, color: "#f59e0b" },
+          { label: "Q4", value: 180, color: "#ef4444" },
+        ],
+        showGrid: true,
+        showLegend: true,
+        gradientEnabled: true,
+        animationDuration: 1200,
+      } as EnterpriseChartConfig;
 
       const handleConfigChange = (newConfig: EnterpriseChartConfig) => {
         if (onContentChange) {
