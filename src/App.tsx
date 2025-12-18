@@ -88,6 +88,7 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import Install from "./pages/Install";
+import PublicReports from "./pages/PublicReports";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/reports" element={<PublicReports />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
             

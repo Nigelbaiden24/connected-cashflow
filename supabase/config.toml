@@ -102,3 +102,9 @@ verify_jwt = true
 [functions.companies-house-scraper]
 verify_jwt = true
 
+[functions.create-report-payment]
+verify_jwt = false
+
+[functions.verify-report-purchase]
+verify_jwt = false
+

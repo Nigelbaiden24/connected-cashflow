@@ -4006,6 +4006,54 @@ export type Database = {
         }
         Relationships: []
       }
+      purchasable_reports: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          download_count: number | null
+          file_path: string
+          id: string
+          is_published: boolean | null
+          price_cents: number
+          stripe_price_id: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          download_count?: number | null
+          file_path: string
+          id?: string
+          is_published?: boolean | null
+          price_cents?: number
+          stripe_price_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          download_count?: number | null
+          file_path?: string
+          id?: string
+          is_published?: boolean | null
+          price_cents?: number
+          stripe_price_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       regulatory_updates: {
         Row: {
           ai_generated: boolean | null
@@ -4044,6 +4092,53 @@ export type Database = {
           update_date?: string | null
         }
         Relationships: []
+      }
+      report_purchases: {
+        Row: {
+          amount_paid: number
+          currency: string
+          email: string | null
+          id: string
+          purchased_at: string
+          report_id: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_paid: number
+          currency?: string
+          email?: string | null
+          id?: string
+          purchased_at?: string
+          report_id?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_paid?: number
+          currency?: string
+          email?: string | null
+          id?: string
+          purchased_at?: string
+          report_id?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_purchases_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "purchasable_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
