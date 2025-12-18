@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EnterpriseChart, EnterpriseChartConfig } from "./EnterpriseChart";
 
 interface DraggableSectionProps {
   id: string;
@@ -386,176 +387,80 @@ export function DraggableSection({
       );
     }
     if (type === "chart") {
-      // Parse chart data from SVG content
-      const parseChartData = () => {
+      // Parse chart config from JSON content or legacy SVG
+      const parseChartConfig = (): EnterpriseChartConfig => {
+        try {
+          // Try parsing as JSON first (new format)
+          const parsed = JSON.parse(content);
+          if (parsed.type && parsed.data) {
+            return parsed as EnterpriseChartConfig;
+          }
+        } catch {
+          // Fall back to parsing legacy SVG format
+        }
+
+        // Parse legacy SVG content
         const titleMatch = content.match(/<text[^>]*class="[^"]*chart-title[^"]*"[^>]*>([^<]+)<\/text>/);
         const dataMatches = content.matchAll(/data-label="([^"]+)"\s+data-value="([^"]+)"/g);
         
-        let parsedTitle = chartTitle || "Chart";
+        let parsedTitle = "Chart";
         if (titleMatch) parsedTitle = titleMatch[1];
         
-        const items: { label: string; value: number }[] = [];
+        const items: { label: string; value: number; color: string }[] = [];
+        let idx = 0;
         for (const match of dataMatches) {
-          items.push({ label: match[1], value: parseFloat(match[2]) });
+          items.push({ 
+            label: match[1], 
+            value: parseFloat(match[2]),
+            color: defaultColors[idx % defaultColors.length]
+          });
+          idx++;
         }
         
-        // Fallback: try to extract from text elements
+        // Default data if nothing found
         if (items.length === 0) {
-          const textMatches = content.matchAll(/<text[^>]*>([^<]+)<\/text>/g);
-          const labels: string[] = [];
-          for (const match of textMatches) {
-            const text = match[1].trim();
-            if (text && text !== parsedTitle && !text.includes('%')) {
-              labels.push(text);
-            }
-          }
+          items.push(
+            { label: "Q1", value: 100, color: "#3b82f6" },
+            { label: "Q2", value: 150, color: "#10b981" },
+            { label: "Q3", value: 120, color: "#f59e0b" },
+            { label: "Q4", value: 180, color: "#ef4444" }
+          );
         }
+
+        // Detect chart type from SVG content
+        const isPie = content.includes('path') && content.includes('L') && content.includes('A');
+        const isBar = content.includes('rect') && !isPie;
         
-        return { title: parsedTitle, items };
+        return {
+          type: isPie ? "pie" : "bar",
+          title: parsedTitle,
+          data: items,
+          showGrid: true,
+          showLegend: true,
+          gradientEnabled: true,
+          animationDuration: 1200,
+        };
       };
 
-      const handleChartClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const parsed = parseChartData();
-        setChartTitle(parsed.title);
-        if (parsed.items.length > 0) {
-          setChartData(parsed.items.map(i => `${i.label}, ${i.value}`).join('\n'));
-        } else {
-          setChartData("Q1, 100\nQ2, 150\nQ3, 120\nQ4, 180");
-        }
-        setShowChartEditor(true);
-      };
+      const chartConfig = parseChartConfig();
 
-      const handleChartSave = () => {
-        if (!onContentChange) return;
-        
-        const lines = chartData.split("\n").filter(line => line.trim());
-        const data = lines.map((line, idx) => {
-          const parts = line.split(",").map(p => p.trim());
-          const label = parts[0] || `Item ${idx + 1}`;
-          const value = parseFloat(parts[1]) || 0;
-          const color = defaultColors[idx % defaultColors.length];
-          return { label, value, color };
-        });
-        
-        if (data.length === 0) return;
-        
-        // Detect chart type from content
-        const isBar = content.includes('rect') && !content.includes('circle');
-        const isPie = content.includes('circle') || content.includes('arc');
-        const isLine = content.includes('polyline') || content.includes('line');
-        
-        let newSvg = "";
-        const maxValue = Math.max(...data.map(d => d.value));
-        
-        if (isPie) {
-          // Generate pie chart
-          const total = data.reduce((sum, d) => sum + d.value, 0);
-          let currentAngle = 0;
-          const cx = 150, cy = 120, r = 80;
-          
-          const slices = data.map((d, i) => {
-            const angle = (d.value / total) * 360;
-            const startAngle = currentAngle;
-            const endAngle = currentAngle + angle;
-            currentAngle = endAngle;
-            
-            const startRad = (startAngle - 90) * Math.PI / 180;
-            const endRad = (endAngle - 90) * Math.PI / 180;
-            
-            const x1 = cx + r * Math.cos(startRad);
-            const y1 = cy + r * Math.sin(startRad);
-            const x2 = cx + r * Math.cos(endRad);
-            const y2 = cy + r * Math.sin(endRad);
-            
-            const largeArc = angle > 180 ? 1 : 0;
-            
-            return `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z" fill="${d.color}" data-label="${d.label}" data-value="${d.value}"/>`;
-          }).join('');
-          
-          const legend = data.map((d, i) => 
-            `<rect x="320" y="${40 + i * 25}" width="12" height="12" fill="${d.color}"/>
-             <text x="340" y="${51 + i * 25}" font-size="12">${d.label}: ${d.value}</text>`
-          ).join('');
-          
-          newSvg = `<svg viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg">
-            <text x="250" y="25" text-anchor="middle" font-size="16" font-weight="bold" class="chart-title">${chartTitle}</text>
-            ${slices}
-            ${legend}
-          </svg>`;
-        } else {
-          // Generate bar chart
-          const barWidth = 60;
-          const chartWidth = data.length * (barWidth + 20) + 80;
-          const chartHeight = 250;
-          const maxBarHeight = 150;
-          
-          const bars = data.map((d, i) => {
-            const barHeight = (d.value / maxValue) * maxBarHeight;
-            const x = 60 + i * (barWidth + 20);
-            const y = 200 - barHeight;
-            return `
-              <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" fill="${d.color}" data-label="${d.label}" data-value="${d.value}"/>
-              <text x="${x + barWidth/2}" y="220" text-anchor="middle" font-size="12">${d.label}</text>
-              <text x="${x + barWidth/2}" y="${y - 5}" text-anchor="middle" font-size="11">${d.value}</text>
-            `;
-          }).join('');
-          
-          newSvg = `<svg viewBox="0 0 ${Math.max(chartWidth, 400)} ${chartHeight}" xmlns="http://www.w3.org/2000/svg">
-            <text x="${Math.max(chartWidth, 400)/2}" y="25" text-anchor="middle" font-size="16" font-weight="bold" class="chart-title">${chartTitle}</text>
-            <line x1="50" y1="200" x2="${chartWidth - 30}" y2="200" stroke="#e5e7eb" stroke-width="2"/>
-            ${bars}
-          </svg>`;
+      const handleConfigChange = (newConfig: EnterpriseChartConfig) => {
+        if (onContentChange) {
+          // Store as JSON for easy parsing later
+          onContentChange(id, JSON.stringify(newConfig));
         }
-        
-        onContentChange(id, newSvg);
-        setShowChartEditor(false);
       };
 
       return (
-        <>
-          <div 
-            className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-primary/5 rounded transition-colors"
-            onClick={handleChartClick}
-            title="Click to edit chart data"
-            dangerouslySetInnerHTML={{ __html: content }}
+        <div className="w-full h-full" onClick={(e) => e.stopPropagation()}>
+          <EnterpriseChart
+            config={chartConfig}
+            width={width}
+            height={height}
+            onConfigChange={handleConfigChange}
+            editable={true}
           />
-          <Dialog open={showChartEditor} onOpenChange={setShowChartEditor}>
-            <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
-              <DialogHeader>
-                <DialogTitle>Edit Chart Data</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Chart Title</Label>
-                  <Input
-                    value={chartTitle}
-                    onChange={(e) => setChartTitle(e.target.value)}
-                    placeholder="Enter chart title"
-                    className="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label>Data (Label, Value per line)</Label>
-                  <Textarea
-                    value={chartData}
-                    onChange={(e) => setChartData(e.target.value)}
-                    placeholder="Q1, 100&#10;Q2, 150&#10;Q3, 120"
-                    className="mt-1.5 h-[150px] font-mono text-sm"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowChartEditor(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleChartSave}>
-                    Update Chart
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </>
+        </div>
       );
     }
     // Default fallback for any content with HTML
