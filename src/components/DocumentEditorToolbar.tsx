@@ -135,7 +135,7 @@ const ToolbarButton = ({
   variant?: "ghost" | "outline" | "default";
   className?: string;
 }) => (
-  <TooltipProvider delayDuration={300}>
+  <TooltipProvider delayDuration={200}>
     <Tooltip>
       <TooltipTrigger asChild>
         <Button
@@ -144,7 +144,7 @@ const ToolbarButton = ({
           onClick={onClick}
           disabled={disabled}
           className={cn(
-            "h-8 px-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all duration-200",
+            "h-7 px-1.5 text-muted-foreground hover:text-foreground hover:bg-accent/80 transition-all duration-150",
             variant === "default" && "text-primary-foreground hover:text-primary-foreground",
             className
           )}
@@ -180,7 +180,7 @@ const ToolbarSection = ({
 );
 
 const ToolbarDivider = () => (
-  <div className="h-6 w-px bg-border/50 mx-1.5" />
+  <div className="h-5 w-px bg-border/40 mx-0.5" />
 );
 
 export function DocumentEditorToolbar({
@@ -278,17 +278,17 @@ export function DocumentEditorToolbar({
   return (
     <div className="sticky top-0 z-[5] border-b border-border/40 bg-gradient-to-b from-background via-background to-background/95 backdrop-blur-xl shadow-sm">
       {/* Main Toolbar Row */}
-      <div className="flex items-center gap-1 px-3 py-2">
+      <div className="flex items-center gap-0.5 px-2 py-1.5 flex-wrap min-h-[44px]">
         {/* File & Template Section */}
         <ToolbarSection>
           <Select value={selectedTemplate || undefined} onValueChange={onTemplateSelect}>
-            <SelectTrigger className="h-8 w-[160px] text-xs font-medium bg-muted/50 border-border/50 hover:bg-muted transition-colors">
-              <FileText className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-              <SelectValue placeholder="Select template" />
+            <SelectTrigger className="h-7 w-[130px] text-[11px] font-medium bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+              <FileText className="h-3 w-3 mr-1 text-muted-foreground" />
+              <SelectValue placeholder="Template" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border shadow-xl">
               {templates.map((template) => (
-                <SelectItem key={template.id} value={template.id} className="text-xs">
+                <SelectItem key={template.id} value={template.id} className="text-[11px]">
                   {template.name}
                 </SelectItem>
               ))}
@@ -303,25 +303,25 @@ export function DocumentEditorToolbar({
           <>
             <ToolbarSection>
               <Select value={currentPageId} onValueChange={onPageChange}>
-                <SelectTrigger className="h-8 w-[100px] text-xs bg-muted/50 border-border/50">
-                  <Layers className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectTrigger className="h-7 w-[80px] text-[11px] bg-muted/50 border-border/50">
+                  <Layers className="h-3 w-3 mr-1 text-muted-foreground" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border shadow-xl z-50">
                   {pages.map((page) => (
-                    <SelectItem key={page.id} value={page.id} className="text-xs">
+                    <SelectItem key={page.id} value={page.id} className="text-[11px]">
                       {page.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <ToolbarButton tooltip="Add new page" onClick={onAddPage}>
-                <FilePlus className="h-4 w-4" />
+              <ToolbarButton tooltip="Add page" onClick={onAddPage}>
+                <FilePlus className="h-3.5 w-3.5" />
               </ToolbarButton>
 
               <ToolbarButton tooltip="Add section" onClick={onAddSection}>
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
               </ToolbarButton>
             </ToolbarSection>
 
@@ -331,26 +331,25 @@ export function DocumentEditorToolbar({
 
         {/* History Controls */}
         <ToolbarSection>
-          <ToolbarButton tooltip="Undo (Ctrl+Z)" onClick={onUndo} disabled={!canUndo}>
-            <Undo className="h-4 w-4" />
+          <ToolbarButton tooltip="Undo" onClick={onUndo} disabled={!canUndo}>
+            <Undo className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton tooltip="Redo (Ctrl+Y)" onClick={onRedo} disabled={!canRedo}>
-            <Redo className="h-4 w-4" />
+          <ToolbarButton tooltip="Redo" onClick={onRedo} disabled={!canRedo}>
+            <Redo className="h-3.5 w-3.5" />
           </ToolbarButton>
         </ToolbarSection>
 
         <ToolbarDivider />
 
         {/* Typography Section */}
-        <ToolbarSection label="Font">
+        <ToolbarSection>
           <Select value={fontFamily} onValueChange={onFontFamilyChange}>
-            <SelectTrigger className="h-8 w-[120px] text-xs bg-muted/50 border-border/50">
-              <Type className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectTrigger className="h-7 w-[90px] text-[11px] bg-muted/50 border-border/50">
               <SelectValue placeholder="Font" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border shadow-xl">
               {fonts.map((font) => (
-                <SelectItem key={font} value={font} style={{ fontFamily: font }} className="text-xs">
+                <SelectItem key={font} value={font} style={{ fontFamily: font }} className="text-[11px]">
                   {font}
                 </SelectItem>
               ))}
@@ -358,13 +357,13 @@ export function DocumentEditorToolbar({
           </Select>
 
           <Select value={fontSize.toString()} onValueChange={(val) => onFontSizeChange(Number(val))}>
-            <SelectTrigger className="h-8 w-[70px] text-xs bg-muted/50 border-border/50">
+            <SelectTrigger className="h-7 w-[55px] text-[11px] bg-muted/50 border-border/50">
               <SelectValue placeholder="Size" />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border shadow-xl">
               {fontSizes.map((size) => (
-                <SelectItem key={size} value={size.toString()} className="text-xs">
-                  {size}px
+                <SelectItem key={size} value={size.toString()} className="text-[11px]">
+                  {size}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -379,35 +378,19 @@ export function DocumentEditorToolbar({
             type="single"
             value={textAlign}
             onValueChange={onTextAlignChange}
-            className="bg-muted/30 rounded-md p-0.5"
+            className="bg-muted/30 rounded p-0.5"
           >
-            <ToggleGroupItem
-              value="left"
-              aria-label="Align left"
-              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-            >
-              <AlignLeft className="h-3.5 w-3.5" />
+            <ToggleGroupItem value="left" aria-label="Left" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
+              <AlignLeft className="h-3 w-3" />
             </ToggleGroupItem>
-            <ToggleGroupItem
-              value="center"
-              aria-label="Align center"
-              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-            >
-              <AlignCenter className="h-3.5 w-3.5" />
+            <ToggleGroupItem value="center" aria-label="Center" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
+              <AlignCenter className="h-3 w-3" />
             </ToggleGroupItem>
-            <ToggleGroupItem
-              value="right"
-              aria-label="Align right"
-              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-            >
-              <AlignRight className="h-3.5 w-3.5" />
+            <ToggleGroupItem value="right" aria-label="Right" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
+              <AlignRight className="h-3 w-3" />
             </ToggleGroupItem>
-            <ToggleGroupItem
-              value="justify"
-              aria-label="Justify"
-              className="h-7 w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm"
-            >
-              <AlignJustify className="h-3.5 w-3.5" />
+            <ToggleGroupItem value="justify" aria-label="Justify" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
+              <AlignJustify className="h-3 w-3" />
             </ToggleGroupItem>
           </ToggleGroup>
         </ToolbarSection>
@@ -421,11 +404,11 @@ export function DocumentEditorToolbar({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+                className="h-7 px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground"
               >
-                <Layout className="h-4 w-4 mr-1.5" />
+                <Layout className="h-3.5 w-3.5 mr-1" />
                 Insert
-                <ChevronDown className="h-3 w-3 ml-1.5 opacity-50" />
+                <ChevronDown className="h-2.5 w-2.5 ml-1 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56 bg-popover border-border shadow-xl">
@@ -510,18 +493,11 @@ export function DocumentEditorToolbar({
         {/* Colors */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2.5 text-muted-foreground hover:text-foreground">
-              <Palette className="h-4 w-4 mr-1.5" />
-              <span className="text-xs hidden sm:inline">Colors</span>
-              <div className="flex ml-1.5 gap-0.5">
-                <div
-                  className="h-3 w-3 rounded-sm border border-border/50"
-                  style={{ backgroundColor: backgroundColor }}
-                />
-                <div
-                  className="h-3 w-3 rounded-sm border border-border/50"
-                  style={{ backgroundColor: textColor }}
-                />
+            <Button variant="ghost" size="sm" className="h-7 px-1.5 text-muted-foreground hover:text-foreground">
+              <Palette className="h-3.5 w-3.5" />
+              <div className="flex ml-1 gap-0.5">
+                <div className="h-2.5 w-2.5 rounded-sm border border-border/50" style={{ backgroundColor: backgroundColor }} />
+                <div className="h-2.5 w-2.5 rounded-sm border border-border/50" style={{ backgroundColor: textColor }} />
               </div>
             </Button>
           </PopoverTrigger>
@@ -575,10 +551,10 @@ export function DocumentEditorToolbar({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20"
+              className="h-7 px-2 bg-gradient-to-r from-violet-500/10 to-purple-500/10 hover:from-violet-500/20 hover:to-purple-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20"
             >
-              <Sparkles className="h-4 w-4 mr-1.5" />
-              <span className="text-xs font-medium">AI Fill</span>
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
+              <span className="text-[11px] font-medium">AI</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
@@ -613,11 +589,10 @@ export function DocumentEditorToolbar({
           <>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative">
-                  <FileSignature className="h-4 w-4 mr-1.5" />
-                  <span className="text-xs hidden sm:inline">Sign</span>
+                <Button variant="ghost" size="sm" className="h-7 px-1.5 text-muted-foreground hover:text-foreground relative">
+                  <FileSignature className="h-3.5 w-3.5" />
                   {signatureFields.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
+                    <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium">
                       {signatureFields.length}
                     </span>
                   )}
@@ -738,32 +713,32 @@ export function DocumentEditorToolbar({
 
         {/* Zoom Controls */}
         <ToolbarSection>
-          <div className="flex items-center gap-1 bg-muted/30 rounded-md px-1 py-0.5">
+          <div className="flex items-center gap-0.5 bg-muted/30 rounded px-0.5 py-0.5">
             <ToolbarButton tooltip="Zoom out" onClick={() => onZoomChange(Math.max(25, zoom - 25))}>
-              <ZoomOut className="h-3.5 w-3.5" />
+              <ZoomOut className="h-3 w-3" />
             </ToolbarButton>
-            <span className="text-[11px] font-medium text-muted-foreground w-10 text-center tabular-nums">
+            <span className="text-[10px] font-medium text-muted-foreground w-8 text-center tabular-nums">
               {zoom}%
             </span>
             <ToolbarButton tooltip="Zoom in" onClick={() => onZoomChange(Math.min(200, zoom + 25))}>
-              <ZoomIn className="h-3.5 w-3.5" />
+              <ZoomIn className="h-3 w-3" />
             </ToolbarButton>
           </div>
         </ToolbarSection>
 
         {/* Right Actions */}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1">
           {onSaveDocument && (
-            <ToolbarButton tooltip="Save document" onClick={onSaveDocument} variant="outline">
-              <Save className="h-4 w-4" />
+            <ToolbarButton tooltip="Save" onClick={onSaveDocument} variant="outline">
+              <Save className="h-3.5 w-3.5" />
             </ToolbarButton>
           )}
           
           {onLoadDocument && savedDocuments.length > 0 && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 px-2.5">
-                  <FolderOpen className="h-4 w-4" />
+                <Button variant="outline" size="sm" className="h-7 px-1.5">
+                  <FolderOpen className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56 bg-popover border-border shadow-xl">
@@ -791,10 +766,10 @@ export function DocumentEditorToolbar({
           <Button
             onClick={onDownloadPDF}
             size="sm"
-            className="h-8 px-4 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+            className="h-7 px-3 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-[11px] font-medium"
           >
-            <Download className="h-4 w-4 mr-2" />
-            <span className="text-xs font-medium">Export PDF</span>
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            Export
           </Button>
         </div>
       </div>
