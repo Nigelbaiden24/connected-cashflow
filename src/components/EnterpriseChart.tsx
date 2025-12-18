@@ -184,6 +184,28 @@ export function EnterpriseChart({
     setDataInput(newLines.join('\n'));
   };
 
+  const updateDataField = (index: number, field: 'label' | 'value', newValue: string) => {
+    const lines = dataInput.split('\n').filter(l => l.trim());
+    const newLines = lines.map((line, idx) => {
+      if (idx === index) {
+        const parts = line.split(',').map(p => p.trim());
+        if (field === 'label') {
+          return `${newValue}, ${parts[1]}, ${parts[2] || defaultColors[idx % defaultColors.length]}`;
+        } else {
+          return `${parts[0]}, ${newValue}, ${parts[2] || defaultColors[idx % defaultColors.length]}`;
+        }
+      }
+      return line;
+    });
+    setDataInput(newLines.join('\n'));
+  };
+
+  const removeDataRow = (index: number) => {
+    const lines = dataInput.split('\n').filter(l => l.trim());
+    const newLines = lines.filter((_, idx) => idx !== index);
+    setDataInput(newLines.join('\n'));
+  };
+
   const applyColorPreset = (preset: string[]) => {
     const lines = dataInput.split('\n').filter(l => l.trim());
     const newLines = lines.map((line, idx) => {
@@ -603,54 +625,76 @@ export function EnterpriseChart({
 
             {/* Right Column - Data */}
             <div className="space-y-4">
-              <div>
-                <Label>Data (Label, Value, Color per line)</Label>
-                <Textarea
-                  value={dataInput}
-                  onChange={(e) => setDataInput(e.target.value)}
-                  className="mt-1.5 h-[150px] font-mono text-sm"
-                  placeholder="Q1, 100, #3b82f6&#10;Q2, 150, #10b981"
-                />
+              <div className="flex items-center justify-between">
+                <Label>Chart Data</Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const newColor = defaultColors[parseCurrentData().length % defaultColors.length];
+                    setDataInput(prev => prev + `\nNew Item, 100, ${newColor}`);
+                  }}
+                >
+                  + Add Row
+                </Button>
               </div>
-
-              <div>
-                <Label>Individual Colors</Label>
-                <div className="space-y-2 mt-2 max-h-[200px] overflow-y-auto">
-                  {parseCurrentData().map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            className="w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-transform"
-                            style={{ backgroundColor: item.color }}
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-3">
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-5 gap-1">
-                              {defaultColors.map((color) => (
-                                <button
-                                  key={color}
-                                  className="w-6 h-6 rounded border hover:scale-110 transition-transform"
-                                  style={{ backgroundColor: color }}
-                                  onClick={() => updateDataColor(idx, color)}
-                                />
-                              ))}
-                            </div>
-                            <Input
-                              type="color"
-                              value={item.color}
-                              onChange={(e) => updateDataColor(idx, e.target.value)}
-                              className="w-full h-8 cursor-pointer"
-                            />
+              
+              <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                {parseCurrentData().map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-muted/50 p-2 rounded-lg">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-transform shrink-0"
+                          style={{ backgroundColor: item.color }}
+                          title="Change color"
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-3">
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-5 gap-1">
+                            {defaultColors.map((color) => (
+                              <button
+                                key={color}
+                                className="w-6 h-6 rounded border hover:scale-110 transition-transform"
+                                style={{ backgroundColor: color }}
+                                onClick={() => updateDataColor(idx, color)}
+                              />
+                            ))}
                           </div>
-                        </PopoverContent>
-                      </Popover>
-                      <span className="font-medium flex-1">{item.label}</span>
-                      <span className="text-muted-foreground">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
+                          <Input
+                            type="color"
+                            value={item.color}
+                            onChange={(e) => updateDataColor(idx, e.target.value)}
+                            className="w-full h-8 cursor-pointer"
+                          />
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      value={item.label}
+                      onChange={(e) => updateDataField(idx, 'label', e.target.value)}
+                      placeholder="Label"
+                      className="flex-1 h-8 text-sm"
+                    />
+                    <Input
+                      type="number"
+                      value={item.value}
+                      onChange={(e) => updateDataField(idx, 'value', e.target.value)}
+                      placeholder="Value"
+                      className="w-24 h-8 text-sm"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => removeDataRow(idx)}
+                      disabled={parseCurrentData().length <= 1}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
