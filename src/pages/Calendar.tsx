@@ -42,7 +42,13 @@ const Calendar = () => {
     checkCalendarConnections();
     fetchIntegratedEvents();
 
-    // Listen for OAuth callback messages
+    const refreshConnectionsAndEvents = () => {
+      // user may complete OAuth in another tab; refresh when they come back
+      checkCalendarConnections();
+      fetchIntegratedEvents();
+    };
+
+    // Listen for OAuth callback messages (when popup has an opener)
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'google-calendar-connected') {
         setGoogleConnected(true);
@@ -62,7 +68,16 @@ const Calendar = () => {
     };
 
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener('focus', refreshConnectionsAndEvents);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshConnectionsAndEvents();
+    });
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('focus', refreshConnectionsAndEvents);
+      // note: anonymous visibilitychange handler is OK for this page's lifecycle
+    };
   }, []);
 
   const checkCalendarConnections = async () => {
@@ -199,22 +214,6 @@ const Calendar = () => {
       return;
     }
 
-    // Important: open the popup synchronously (before await) so browsers don't block it.
-    const popup = window.open(
-      "about:blank",
-      "google-calendar-auth",
-      "width=600,height=700"
-    );
-
-    if (!popup) {
-      toast({
-        title: "Popup Blocked",
-        description: "Please allow popups for this site to connect Google Calendar.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsConnecting(true);
     try {
       const { data, error } = await supabase.functions.invoke('google-calendar-auth');
@@ -224,19 +223,24 @@ const Calendar = () => {
         throw new Error('Failed to get authorization URL');
       }
 
-      popup.location.href = data.authUrl;
-      popup.focus?.();
-    } catch (error: any) {
-      try {
-        popup.close?.();
-      } catch {
-        // ignore
-      }
+      // Open in a NEW TAB to avoid Google blocking being loaded inside an iframe.
+      const a = document.createElement('a');
+      a.href = data.authUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
+      toast({
+        title: "Continue in new tab",
+        description: "Finish Google sign-in, then return here — we’ll auto-sync when you come back.",
+      });
+    } catch (error: any) {
       console.error('Error connecting Google Calendar:', error);
       toast({
         title: "Connection Error",
-        description: error.message || "Failed to connect Google Calendar. Please try again or contact support.",
+        description: error.message || "Failed to connect Google Calendar. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -246,7 +250,16 @@ const Calendar = () => {
 
   const handleConnectOutlook = async () => {
     // Important: open the popup synchronously (before await) so browsers don't block it.
-    const popup = window.open(
+    // Use the top-level window when accessible to avoid loading Outlook login inside an iframe.
+    const openerWindow = (() => {
+      try {
+        return window.top && window.top !== window ? window.top : window;
+      } catch {
+        return window;
+      }
+    })();
+
+    const popup = openerWindow.open(
       "about:blank",
       "outlook-calendar-auth",
       "width=600,height=700"
