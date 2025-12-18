@@ -37,6 +37,7 @@ import {
   Check,
   Save,
   FolderOpen,
+  BarChart3,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +60,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group";
+import { ChartInsertDialog, ChartConfig } from "@/components/ChartInsertDialog";
 
 interface DocumentEditorToolbarProps {
   templates: any[];
@@ -94,6 +96,7 @@ interface DocumentEditorToolbarProps {
   onRequestSignature?: () => void;
   signatureFields?: Array<{ id: string; signed: boolean }>;
   onInsertTable: (rows: number, cols: number) => void;
+  onInsertChart?: (chartConfig: ChartConfig) => void;
   onSaveDocument?: () => void;
   onLoadDocument?: () => void;
   savedDocuments?: Array<{ id: string; name: string; savedAt: string }>;
@@ -133,6 +136,7 @@ export function DocumentEditorToolbar({
   onRequestSignature,
   signatureFields = [],
   onInsertTable,
+  onInsertChart,
   onSaveDocument,
   onLoadDocument,
   savedDocuments = [],
@@ -147,6 +151,7 @@ export function DocumentEditorToolbar({
   const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
   const [tableRows, setTableRows] = useState(3);
   const [tableCols, setTableCols] = useState(3);
+  const [isChartDialogOpen, setIsChartDialogOpen] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -511,6 +516,24 @@ export function DocumentEditorToolbar({
             </Button>
           </DialogContent>
         </Dialog>
+
+        {/* Chart Insert Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsChartDialogOpen(true)}
+        >
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Charts
+        </Button>
+
+        {onInsertChart && (
+          <ChartInsertDialog
+            open={isChartDialogOpen}
+            onOpenChange={setIsChartDialogOpen}
+            onInsertChart={onInsertChart}
+          />
+        )}
 
         <Separator orientation="vertical" className="h-6" />
 
