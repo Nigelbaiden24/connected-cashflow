@@ -906,15 +906,17 @@ ELITE DOCUMENT REQUIREMENTS:
                       sections={currentPageSections}
                       onSectionsChange={(newSections) => {
                         // Preserve sections from other pages when updating current page
-                        const otherPageSections = sections.filter(s => {
-                          const sectionPageId = (s as any).pageId;
-                          // Keep sections that belong to OTHER pages
-                          if (currentPageId === 'page-1') {
-                            return sectionPageId && sectionPageId !== 'page-1';
-                          }
-                          return sectionPageId !== currentPageId;
+                        setSections((prev) => {
+                          const otherPageSections = prev.filter((s) => {
+                            const sectionPageId = (s as any).pageId;
+                            // Keep sections that belong to OTHER pages
+                            if (currentPageId === "page-1") {
+                              return sectionPageId && sectionPageId !== "page-1";
+                            }
+                            return sectionPageId !== currentPageId;
+                          });
+                          return [...otherPageSections, ...newSections];
                         });
-                        setSections([...otherPageSections, ...newSections]);
                         saveToHistory();
                       }}
                       onContentChange={(id, content) => {
