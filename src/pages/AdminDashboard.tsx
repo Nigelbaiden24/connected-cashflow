@@ -574,99 +574,101 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="flex flex-wrap gap-2 bg-gradient-to-br from-zinc-950 to-black p-2 backdrop-blur-sm border border-white/10 rounded-xl shadow-2xl">
-            <TabsTrigger 
-              value="users"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger 
-              value="demo-requests"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              Demo Requests
-            </TabsTrigger>
-            <TabsTrigger 
-              value="reports"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Reports
-            </TabsTrigger>
-            <TabsTrigger 
-              value="newsletters"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
-            >
-              <Newspaper className="h-4 w-4 mr-2" />
-              Newsletters
-            </TabsTrigger>
-            <TabsTrigger 
-              value="portfolios"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
-            >
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Portfolios
-            </TabsTrigger>
-            <TabsTrigger 
-              value="commentary"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Commentary
-            </TabsTrigger>
-            <TabsTrigger 
-              value="learning"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
-            >
-              <BookOpen className="h-4 w-4 mr-2" />
-              Learning
-            </TabsTrigger>
-            <TabsTrigger 
-              value="videos"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
-            >
-              <Video className="h-4 w-4 mr-2" />
-              Videos
-            </TabsTrigger>
-            <TabsTrigger 
-              value="watchlists"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
-            >
-              <List className="h-4 w-4 mr-2" />
-              Watchlists
-            </TabsTrigger>
-            <TabsTrigger 
-              value="risk-compliance"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              Risk & Compliance
-            </TabsTrigger>
-            <TabsTrigger 
-              value="alerts"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
-            >
-              <Bell className="h-4 w-4 mr-2" />
-              Signals & Alerts
-            </TabsTrigger>
-            <TabsTrigger 
-              value="market-trends"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
-            >
-              <TrendingUp className="h-4 w-4 mr-2" />
-              Market Trends
-            </TabsTrigger>
-            <TabsTrigger 
-              value="purchasable-reports"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500/90 data-[state=active]:to-green-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-green-500/30 transition-all hover:bg-white/5"
-            >
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              Shop Reports
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2 -mx-2 px-2">
+            <TabsList className="inline-flex min-w-max gap-1 bg-gradient-to-br from-zinc-950 to-black p-2 backdrop-blur-sm border border-white/10 rounded-xl shadow-2xl">
+              <TabsTrigger 
+                value="users"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger 
+                value="demo-requests"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                Demo Requests
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reports"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Reports
+              </TabsTrigger>
+              <TabsTrigger 
+                value="newsletters"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+              >
+                <Newspaper className="h-4 w-4 mr-2" />
+                Newsletters
+              </TabsTrigger>
+              <TabsTrigger 
+                value="portfolios"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Portfolios
+              </TabsTrigger>
+              <TabsTrigger 
+                value="commentary"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Commentary
+              </TabsTrigger>
+              <TabsTrigger 
+                value="learning"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Learning
+              </TabsTrigger>
+              <TabsTrigger 
+                value="videos"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+              >
+                <Video className="h-4 w-4 mr-2" />
+                Videos
+              </TabsTrigger>
+              <TabsTrigger 
+                value="watchlists"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+              >
+                <List className="h-4 w-4 mr-2" />
+                Watchlists
+              </TabsTrigger>
+              <TabsTrigger 
+                value="risk-compliance"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Risk & Compliance
+              </TabsTrigger>
+              <TabsTrigger 
+                value="alerts"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+              >
+                <Bell className="h-4 w-4 mr-2" />
+                Signals & Alerts
+              </TabsTrigger>
+              <TabsTrigger 
+                value="market-trends"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Market Trends
+              </TabsTrigger>
+              <TabsTrigger 
+                value="purchasable-reports"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500/90 data-[state=active]:to-green-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-green-500/30 transition-all hover:bg-white/5"
+              >
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Shop Reports
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* User Management Tab */}
           <TabsContent value="users">
