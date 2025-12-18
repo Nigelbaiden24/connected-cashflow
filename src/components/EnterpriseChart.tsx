@@ -653,22 +653,25 @@ export function EnterpriseChart({
         <Button
           size="sm"
           variant="secondary"
-          className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-2 right-2 opacity-70 hover:opacity-100 transition-opacity z-50 pointer-events-auto cursor-pointer shadow-sm"
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             setShowEditor(true);
           }}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <Settings2 className="h-4 w-4 mr-1" />
-          Edit
+          Edit Chart
         </Button>
       )}
 
       {/* Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
         <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          className="max-w-4xl max-h-[90vh] overflow-y-auto z-[9999]"
           onClick={(e) => e.stopPropagation()}
+          onPointerDownOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

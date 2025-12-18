@@ -482,7 +482,11 @@ export function DraggableSection({
       };
 
       return (
-        <div className="w-full h-full" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="w-full h-full pointer-events-auto" 
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           <EnterpriseChart
             config={chartConfig}
             width={width}
