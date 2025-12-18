@@ -56,6 +56,8 @@ export interface EnterpriseChartConfig {
   showLegend?: boolean;
   animationDuration?: number;
   gradientEnabled?: boolean;
+  width?: number;
+  height?: number;
 }
 
 interface EnterpriseChartProps {
@@ -63,6 +65,7 @@ interface EnterpriseChartProps {
   width?: number;
   height?: number;
   onConfigChange?: (config: EnterpriseChartConfig) => void;
+  onSizeChange?: (width: number, height: number) => void;
   editable?: boolean;
 }
 
@@ -129,17 +132,22 @@ export function EnterpriseChart({
   width = 500,
   height = 300,
   onConfigChange,
+  onSizeChange,
   editable = true,
 }: EnterpriseChartProps) {
   const [showEditor, setShowEditor] = useState(false);
   const [editConfig, setEditConfig] = useState<EnterpriseChartConfig>(config);
   const [dataInput, setDataInput] = useState("");
   const [showColorPicker, setShowColorPicker] = useState<number | null>(null);
+  const [editWidth, setEditWidth] = useState(width);
+  const [editHeight, setEditHeight] = useState(height);
 
   useEffect(() => {
     setEditConfig(config);
     setDataInput(config.data.map(d => `${d.label}, ${d.value}, ${d.color}`).join('\n'));
-  }, [config]);
+    setEditWidth(config.width ?? width);
+    setEditHeight(config.height ?? height);
+  }, [config, width, height]);
 
   const chartData = config.data.map(d => ({
     name: d.label,
@@ -158,8 +166,9 @@ export function EnterpriseChart({
       };
     });
 
-    const newConfig = { ...editConfig, data: newData };
+    const newConfig = { ...editConfig, data: newData, width: editWidth, height: editHeight };
     onConfigChange?.(newConfig);
+    onSizeChange?.(editWidth, editHeight);
     setShowEditor(false);
   };
 
@@ -496,7 +505,32 @@ export function EnterpriseChart({
                 />
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Width (px)</Label>
+                  <Input
+                    type="number"
+                    value={editWidth}
+                    onChange={(e) => setEditWidth(Math.max(200, Number(e.target.value)))}
+                    className="mt-1.5"
+                    min={200}
+                    max={1200}
+                  />
+                </div>
+                <div>
+                  <Label>Height (px)</Label>
+                  <Input
+                    type="number"
+                    value={editHeight}
+                    onChange={(e) => setEditHeight(Math.max(150, Number(e.target.value)))}
+                    className="mt-1.5"
+                    min={150}
+                    max={800}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4 flex-wrap">
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
