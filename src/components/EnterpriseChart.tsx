@@ -139,60 +139,81 @@ export function EnterpriseChart({
   onSizeChange,
   editable = true,
 }: EnterpriseChartProps) {
+  type EditableDataItem = ChartDataItem & { _id: string };
+
   const [showEditor, setShowEditor] = useState(false);
   const [editConfig, setEditConfig] = useState<EnterpriseChartConfig>(config);
-  const [editData, setEditData] = useState<ChartDataItem[]>(config.data);
+  const [editData, setEditData] = useState<EditableDataItem[]>(
+    config.data.map((d, idx) => ({
+      ...d,
+      _id: `row-${Date.now()}-${idx}`,
+    }))
+  );
   const [editWidth, setEditWidth] = useState(width);
   const [editHeight, setEditHeight] = useState(height);
 
   useEffect(() => {
     setEditConfig(config);
-    setEditData([...config.data]);
+    setEditData(
+      config.data.map((d, idx) => ({
+        ...d,
+        _id: `row-${Date.now()}-${idx}`,
+      }))
+    );
     setEditWidth(config.width ?? width);
     setEditHeight(config.height ?? height);
   }, [config, width, height]);
 
-  const chartData = config.data.map(d => ({
+  const chartData = config.data.map((d) => ({
     name: d.label,
     value: d.value,
     fill: d.color,
   }));
 
   const handleSave = () => {
-    const newConfig = { ...editConfig, data: editData, width: editWidth, height: editHeight };
+    const dataToSave: ChartDataItem[] = editData.map(({ _id, ...rest }) => rest);
+    const newConfig = {
+      ...editConfig,
+      data: dataToSave,
+      width: editWidth,
+      height: editHeight,
+    };
     onConfigChange?.(newConfig);
     onSizeChange?.(editWidth, editHeight);
     setShowEditor(false);
   };
 
-  const updateDataColor = (index: number, color: string) => {
-    setEditData(prev => prev.map((item, idx) => 
-      idx === index ? { ...item, color } : item
-    ));
+  const updateDataColor = (rowId: string, color: string) => {
+    setEditData((prev) => prev.map((item) => (item._id === rowId ? { ...item, color } : item)));
   };
 
-  const updateDataField = (index: number, field: 'label' | 'value', newValue: string) => {
-    setEditData(prev => prev.map((item, idx) => {
-      if (idx === index) {
-        if (field === 'label') {
-          return { ...item, label: newValue };
-        } else {
-          return { ...item, value: parseFloat(newValue) || 0 };
-        }
-      }
-      return item;
-    }));
+  const updateDataField = (rowId: string, field: "label" | "value", newValue: string) => {
+    setEditData((prev) =>
+      prev.map((item) => {
+        if (item._id !== rowId) return item;
+        if (field === "label") return { ...item, label: newValue };
+        return { ...item, value: parseFloat(newValue) || 0 };
+      })
+    );
   };
 
   const addDataRow = () => {
-    const newColor = defaultColors[editData.length % defaultColors.length];
-    setEditData(prev => [...prev, { label: `Item ${prev.length + 1}`, value: 100, color: newColor }]);
+    setEditData((prev) => {
+      const newColor = defaultColors[prev.length % defaultColors.length];
+      return [
+        ...prev,
+        {
+          _id: `row-${Date.now()}-${prev.length}`,
+          label: `Item ${prev.length + 1}`,
+          value: 100,
+          color: newColor,
+        },
+      ];
+    });
   };
 
-  const removeDataRow = (index: number) => {
-    if (editData.length > 1) {
-      setEditData(prev => prev.filter((_, idx) => idx !== index));
-    }
+  const removeDataRow = (rowId: string) => {
+    setEditData((prev) => (prev.length > 1 ? prev.filter((item) => item._id !== rowId) : prev));
   };
 
   const applyColorPreset = (preset: string[]) => {
@@ -713,8 +734,8 @@ export function EnterpriseChart({
               </div>
               
               <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
-                {editData.map((item, idx) => (
-                  <div key={idx} className="grid grid-cols-[40px_1fr_100px_32px] gap-2 items-center bg-muted/50 p-2 rounded-lg">
+                {editData.map((item) => (
+                  <div key={item._id} className="grid grid-cols-[40px_1fr_100px_32px] gap-2 items-center bg-muted/50 p-2 rounded-lg">
                     <Popover>
                       <PopoverTrigger asChild>
                         <button
@@ -732,14 +753,14 @@ export function EnterpriseChart({
                                 key={color}
                                 className="w-6 h-6 rounded border hover:scale-110 transition-transform"
                                 style={{ backgroundColor: color }}
-                                onClick={() => updateDataColor(idx, color)}
+                                onClick={() => updateDataColor(item._id, color)}
                               />
                             ))}
                           </div>
                           <Input
                             type="color"
                             value={item.color}
-                            onChange={(e) => updateDataColor(idx, e.target.value)}
+                            onChange={(e) => updateDataColor(item._id, e.target.value)}
                             className="w-full h-8 cursor-pointer"
                           />
                         </div>
@@ -747,14 +768,14 @@ export function EnterpriseChart({
                     </Popover>
                     <Input
                       value={item.label}
-                      onChange={(e) => updateDataField(idx, 'label', e.target.value)}
+                      onChange={(e) => updateDataField(item._id, "label", e.target.value)}
                       placeholder="Label"
                       className="h-8 text-sm"
                     />
                     <Input
                       type="number"
                       value={item.value}
-                      onChange={(e) => updateDataField(idx, 'value', e.target.value)}
+                      onChange={(e) => updateDataField(item._id, "value", e.target.value)}
                       placeholder="Value"
                       className="h-8 text-sm"
                     />
@@ -762,7 +783,7 @@ export function EnterpriseChart({
                       size="sm"
                       variant="ghost"
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => removeDataRow(idx)}
+                      onClick={() => removeDataRow(item._id)}
                       disabled={editData.length <= 1}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
