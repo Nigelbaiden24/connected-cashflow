@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -17,38 +17,38 @@ import {
   ResponsiveContainer,
   RadialBarChart,
   RadialBar,
+  ReferenceLine,
+  LabelList,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Palette, Settings2, Plus, Trash2, BarChart3, LineChart as LineChartIcon, TrendingUp, PieChart as PieChartIcon, Circle, Target } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { EnterpriseChartEditor } from "@/components/charts/EnterpriseChartEditor";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  EnterpriseChartConfig,
+  EnterpriseDataItem,
+  ChartType,
+  formatValue,
+  getDefaultEnterpriseConfig,
+  legacyToEnterpriseConfig,
+  DataFormattingConfig,
+} from "@/types/enterpriseChart";
 
+// Legacy interface for backward compatibility
 export interface ChartDataItem {
   label: string;
   value: number;
   color: string;
 }
 
-export interface EnterpriseChartConfig {
-  type: "bar" | "line" | "pie" | "area" | "radial" | "donut";
+export interface LegacyChartConfig {
+  type: ChartType;
   title: string;
   data: ChartDataItem[];
   showGrid?: boolean;
@@ -65,47 +65,70 @@ export interface EnterpriseChartConfig {
 }
 
 interface EnterpriseChartProps {
-  config: EnterpriseChartConfig;
+  config: LegacyChartConfig | EnterpriseChartConfig;
   width?: number;
   height?: number;
-  onConfigChange?: (config: EnterpriseChartConfig) => void;
+  onConfigChange?: (config: LegacyChartConfig | EnterpriseChartConfig) => void;
   onSizeChange?: (width: number, height: number) => void;
   editable?: boolean;
+  useEnterpriseConfig?: boolean;
 }
 
-const defaultColors = [
-  "#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6",
-  "#06b6d4", "#ec4899", "#84cc16", "#f97316", "#6366f1",
-  "#14b8a6", "#a855f7", "#22c55e", "#eab308", "#dc2626"
-];
+// Type guard
+function isEnterpriseConfig(config: any): config is EnterpriseChartConfig {
+  return config && typeof config === "object" && "core" in config && "dimensions" in config;
+}
 
-const colorPresets = [
-  // Blues
-  ["#1e3a8a", "#1d4ed8", "#3b82f6", "#60a5fa", "#93c5fd"],
-  // Greens
-  ["#14532d", "#15803d", "#22c55e", "#4ade80", "#86efac"],
-  // Warm
-  ["#7c2d12", "#c2410c", "#f97316", "#fb923c", "#fdba74"],
-  // Purple
-  ["#4c1d95", "#7c3aed", "#8b5cf6", "#a78bfa", "#c4b5fd"],
-  // Teal
-  ["#134e4a", "#0d9488", "#14b8a6", "#2dd4bf", "#5eead4"],
-];
+// Convert legacy to enterprise
+function normalizeConfig(config: LegacyChartConfig | EnterpriseChartConfig): EnterpriseChartConfig {
+  if (isEnterpriseConfig(config)) {
+    return config;
+  }
+  return legacyToEnterpriseConfig(config);
+}
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+// Convert enterprise back to legacy for backward compatibility
+function enterpriseToLegacy(config: EnterpriseChartConfig): LegacyChartConfig {
+  return {
+    type: config.core.chartType,
+    title: config.core.chartTitle,
+    data: config.data.map((d) => ({
+      label: d.label,
+      value: d.value,
+      color: d.color || "#3b82f6",
+    })),
+    showGrid: true,
+    showLegend: true,
+    gradientEnabled: config.visualControls.gradientEnabled,
+    animationDuration: config.visualControls.animationDurationMs,
+    width: config.dimensions.widthPx,
+    height: config.dimensions.heightPx,
+    xAxisLabel: config.axis?.xAxisLabel,
+    yAxisLabel: config.axis?.yAxisLabel,
+  };
+}
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  formatting,
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  formatting?: DataFormattingConfig;
+}) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-xl p-3 animate-in fade-in-0 zoom-in-95 duration-200">
         <p className="font-semibold text-sm text-foreground mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            />
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-muted-foreground">{entry.name}:</span>
             <span className="font-medium text-foreground">
-              {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
+              {formatting ? formatValue(entry.value, formatting) : entry.value?.toLocaleString()}
             </span>
           </div>
         ))}
@@ -115,160 +138,215 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const CustomLegend = ({ payload }: any) => {
-  return (
-    <div className="flex flex-wrap justify-center gap-4 mt-2">
-      {payload?.map((entry: any, index: number) => (
-        <div key={index} className="flex items-center gap-2 text-sm">
-          <div
-            className="w-3 h-3 rounded-full shadow-sm"
-            style={{ backgroundColor: entry.color }}
-          />
-          <span className="text-muted-foreground">{entry.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-};
+const CustomLegend = ({ payload }: any) => (
+  <div className="flex flex-wrap justify-center gap-4 mt-2">
+    {payload?.map((entry: any, index: number) => (
+      <div key={index} className="flex items-center gap-2 text-sm">
+        <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: entry.color }} />
+        <span className="text-muted-foreground">{entry.value}</span>
+      </div>
+    ))}
+  </div>
+);
 
 export function EnterpriseChart({
-  config,
+  config: inputConfig,
   width = 500,
   height = 300,
   onConfigChange,
   onSizeChange,
   editable = true,
+  useEnterpriseConfig = false,
 }: EnterpriseChartProps) {
-  type EditableDataItem = ChartDataItem & { _id: string };
-
   const [showEditor, setShowEditor] = useState(false);
-  const [editConfig, setEditConfig] = useState<EnterpriseChartConfig>(config);
-  const [editData, setEditData] = useState<EditableDataItem[]>(
-    config.data.map((d, idx) => ({
-      ...d,
-      _id: `row-${Date.now()}-${idx}`,
-    }))
+  const [editConfig, setEditConfig] = useState<EnterpriseChartConfig>(() =>
+    normalizeConfig(inputConfig)
   );
-  const [editWidth, setEditWidth] = useState(width);
-  const [editHeight, setEditHeight] = useState(height);
+
+  const config = useMemo(() => normalizeConfig(inputConfig), [inputConfig]);
 
   useEffect(() => {
-    setEditConfig(config);
-    setEditData(
-      config.data.map((d, idx) => ({
-        ...d,
-        _id: `row-${Date.now()}-${idx}`,
-      }))
-    );
-    setEditWidth(config.width ?? width);
-    setEditHeight(config.height ?? height);
-  }, [config, width, height]);
+    setEditConfig(normalizeConfig(inputConfig));
+  }, [inputConfig]);
 
-  const chartData = config.data.map((d) => ({
-    name: d.label,
-    value: d.value,
-    fill: d.color,
-  }));
+  const chartData = useMemo(() => {
+    let data = config.data.map((d) => ({
+      name: d.label,
+      value: d.value,
+      fill: d.color || "#3b82f6",
+      series: d.series,
+      date: d.date,
+      confidence: d.confidence,
+    }));
 
-  const handleSave = () => {
-    const dataToSave: ChartDataItem[] = editData.map(({ _id, ...rest }) => rest);
-    const newConfig = {
-      ...editConfig,
-      data: dataToSave,
-      width: editWidth,
-      height: editHeight,
-    };
-
-    // Important: update size first (if applicable), then content/config.
-    // This prevents size updates (drag/resize state) from overwriting the just-saved config.
-    if (editWidth !== width || editHeight !== height) {
-      onSizeChange?.(editWidth, editHeight);
+    // Apply sorting for bar charts
+    if (config.core.chartType === "bar" && config.barConfig?.sortOrder !== "none") {
+      data = [...data].sort((a, b) =>
+        config.barConfig?.sortOrder === "asc" ? a.value - b.value : b.value - a.value
+      );
     }
 
-    onConfigChange?.(newConfig);
+    // Apply sorting for pie/donut charts
+    if (
+      (config.core.chartType === "pie" || config.core.chartType === "donut") &&
+      config.pieConfig?.sortSlices !== "none"
+    ) {
+      data = [...data].sort((a, b) =>
+        config.pieConfig?.sortSlices === "asc" ? a.value - b.value : b.value - a.value
+      );
+    }
+
+    return data;
+  }, [config]);
+
+  const handleSave = () => {
+    const newDimensions = editConfig.dimensions;
+    if (newDimensions.widthPx !== width || newDimensions.heightPx !== height) {
+      onSizeChange?.(newDimensions.widthPx, newDimensions.heightPx);
+    }
+
+    if (useEnterpriseConfig || isEnterpriseConfig(inputConfig)) {
+      onConfigChange?.(editConfig);
+    } else {
+      onConfigChange?.(enterpriseToLegacy(editConfig));
+    }
     setShowEditor(false);
   };
 
-  const updateDataColor = (rowId: string, color: string) => {
-    setEditData((prev) => prev.map((item) => (item._id === rowId ? { ...item, color } : item)));
+  const animationDuration = config.visualControls.animationEnabled
+    ? config.visualControls.animationDurationMs
+    : 0;
+  const isHorizontalBar = config.barConfig?.barOrientation === "horizontal";
+
+  const getCurveType = () => {
+    switch (config.lineConfig?.curveType) {
+      case "linear":
+        return "linear";
+      case "step":
+        return "step";
+      default:
+        return "monotone";
+    }
   };
 
-  const updateDataField = (rowId: string, field: "label" | "value", newValue: string) => {
-    setEditData((prev) =>
-      prev.map((item) => {
-        if (item._id !== rowId) return item;
-        if (field === "label") return { ...item, label: newValue };
-        return { ...item, value: parseFloat(newValue) || 0 };
-      })
-    );
+  const getStrokeDasharray = (style?: string) => {
+    switch (style) {
+      case "dashed":
+        return "5 5";
+      case "dotted":
+        return "2 2";
+      default:
+        return undefined;
+    }
   };
-
-  const addDataRow = () => {
-    setEditData((prev) => {
-      const newColor = defaultColors[prev.length % defaultColors.length];
-      return [
-        ...prev,
-        {
-          _id: `row-${Date.now()}-${prev.length}`,
-          label: `Item ${prev.length + 1}`,
-          value: 100,
-          color: newColor,
-        },
-      ];
-    });
-  };
-
-  const removeDataRow = (rowId: string) => {
-    setEditData((prev) => (prev.length > 1 ? prev.filter((item) => item._id !== rowId) : prev));
-  };
-
-  const applyColorPreset = (preset: string[]) => {
-    setEditData(prev => prev.map((item, idx) => ({
-      ...item,
-      color: preset[idx % preset.length]
-    })));
-  };
-
-  const isAxisChart = ["bar", "line", "area"].includes(editConfig.type);
 
   const renderChart = () => {
-    const animationDuration = config.animationDuration ?? 1200;
-    const commonProps = {
-      data: chartData,
-      margin: { top: 20, right: 30, left: 20, bottom: 20 },
-    };
+    const commonMargin = { top: 20, right: 30, left: 20, bottom: 20 };
 
-    switch (config.type) {
+    switch (config.core.chartType) {
       case "bar":
         return (
-          <BarChart {...commonProps}>
+          <BarChart
+            data={chartData}
+            margin={commonMargin}
+            layout={isHorizontalBar ? "vertical" : "horizontal"}
+          >
             <defs>
               {chartData.map((entry, index) => (
-                <linearGradient key={`gradient-${index}`} id={`barGradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  key={`gradient-${index}`}
+                  id={`barGradient-${index}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
-                  <stop offset="100%" stopColor={entry.fill} stopOpacity={0.6} />
+                  <stop
+                    offset="100%"
+                    stopColor={entry.fill}
+                    stopOpacity={config.visualControls.opacity * 0.6}
+                  />
                 </linearGradient>
               ))}
             </defs>
-            {config.showGrid !== false && (
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+            {isHorizontalBar ? (
+              <>
+                <XAxis
+                  type="number"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  domain={[
+                    config.axis?.yAxisMin ?? "auto",
+                    config.axis?.yAxisMax ?? "auto",
+                  ]}
+                  scale={config.axis?.logScaleY ? "log" : "auto"}
+                  label={
+                    config.axis?.xAxisLabel
+                      ? { value: config.axis.xAxisLabel, position: "bottom", offset: 0 }
+                      : undefined
+                  }
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  width={80}
+                />
+              </>
+            ) : (
+              <>
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  label={
+                    config.axis?.xAxisLabel
+                      ? { value: config.axis.xAxisLabel, position: "bottom", offset: 0 }
+                      : undefined
+                  }
+                />
+                <YAxis
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
+                  domain={[
+                    config.axis?.yAxisMin ?? "auto",
+                    config.axis?.yAxisMax ?? "auto",
+                  ]}
+                  scale={config.axis?.logScaleY ? "log" : "auto"}
+                  label={
+                    config.axis?.yAxisLabel
+                      ? { value: config.axis.yAxisLabel, angle: -90, position: "insideLeft" }
+                      : undefined
+                  }
+                />
+              </>
             )}
-            <XAxis
-              dataKey="name"
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
-              tickLine={{ stroke: 'hsl(var(--border))' }}
+            <Tooltip
+              content={<CustomTooltip formatting={config.dataFormatting} />}
+              cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
             />
-            <YAxis
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
-              tickLine={{ stroke: 'hsl(var(--border))' }}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }} />
-            {config.showLegend !== false && <Legend content={<CustomLegend />} />}
+            <Legend content={<CustomLegend />} />
+            {config.barConfig?.benchmarkValue !== undefined && (
+              <ReferenceLine
+                y={config.barConfig.benchmarkValue}
+                stroke="hsl(var(--destructive))"
+                strokeDasharray="5 5"
+                label={config.barConfig.benchmarkLabel || "Benchmark"}
+              />
+            )}
+            {config.barConfig?.targetLineValue !== undefined && (
+              <ReferenceLine
+                y={config.barConfig.targetLineValue}
+                stroke="hsl(var(--primary))"
+                strokeDasharray="3 3"
+                label="Target"
+              />
+            )}
             <Bar
               dataKey="value"
-              animationBegin={0}
               animationDuration={animationDuration}
               animationEasing="ease-out"
               radius={[6, 6, 0, 0]}
@@ -276,23 +354,36 @@ export function EnterpriseChart({
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={config.gradientEnabled ? `url(#barGradient-${index})` : entry.fill}
-                  className="transition-all duration-300 hover:opacity-80"
+                  fill={
+                    config.visualControls.gradientEnabled
+                      ? `url(#barGradient-${index})`
+                      : entry.fill
+                  }
+                  opacity={config.visualControls.opacity}
                 />
               ))}
+              {config.barConfig?.showDataLabels && (
+                <LabelList
+                  dataKey="value"
+                  position={config.barConfig.dataLabelPosition || "top"}
+                  formatter={(value: number) => formatValue(value, config.dataFormatting)}
+                  fill="hsl(var(--foreground))"
+                  fontSize={11}
+                />
+              )}
             </Bar>
           </BarChart>
         );
 
       case "line":
         return (
-          <LineChart {...commonProps}>
+          <LineChart data={chartData} margin={commonMargin}>
             <defs>
               <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
                 {chartData.map((entry, index) => (
                   <stop
                     key={index}
-                    offset={`${(index / (chartData.length - 1)) * 100}%`}
+                    offset={`${(index / Math.max(chartData.length - 1, 1)) * 100}%`}
                     stopColor={entry.fill}
                   />
                 ))}
@@ -305,65 +396,92 @@ export function EnterpriseChart({
                 </feMerge>
               </filter>
             </defs>
-            {config.showGrid !== false && (
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-            )}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
             <XAxis
               dataKey="name"
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+              axisLine={{ stroke: "hsl(var(--border))" }}
+              label={
+                config.axis?.xAxisLabel
+                  ? { value: config.axis.xAxisLabel, position: "bottom", offset: 0 }
+                  : undefined
+              }
             />
             <YAxis
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+              axisLine={{ stroke: "hsl(var(--border))" }}
+              domain={[config.axis?.yAxisMin ?? "auto", config.axis?.yAxisMax ?? "auto"]}
+              scale={config.axis?.logScaleY ? "log" : "auto"}
+              label={
+                config.axis?.yAxisLabel
+                  ? { value: config.axis.yAxisLabel, angle: -90, position: "insideLeft" }
+                  : undefined
+              }
             />
-            <Tooltip content={<CustomTooltip />} />
-            {config.showLegend !== false && <Legend content={<CustomLegend />} />}
+            <Tooltip content={<CustomTooltip formatting={config.dataFormatting} />} />
+            <Legend content={<CustomLegend />} />
             <Line
-              type="monotone"
+              type={getCurveType()}
               dataKey="value"
-              stroke="url(#lineGradient)"
-              strokeWidth={3}
-              dot={{ r: 6, fill: 'hsl(var(--background))', strokeWidth: 3, stroke: chartData[0]?.fill }}
-              activeDot={{ r: 8, fill: chartData[0]?.fill, filter: 'url(#glow)' }}
-              animationBegin={0}
+              stroke={config.visualControls.gradientEnabled ? "url(#lineGradient)" : chartData[0]?.fill}
+              strokeWidth={config.lineConfig?.lineWidth || 2}
+              strokeDasharray={getStrokeDasharray(config.lineConfig?.lineStyle)}
+              dot={
+                config.lineConfig?.showMarkers
+                  ? {
+                      r: config.lineConfig?.markerSize || 4,
+                      fill: "hsl(var(--background))",
+                      strokeWidth: 2,
+                      stroke: chartData[0]?.fill,
+                    }
+                  : false
+              }
+              activeDot={{ r: 8, fill: chartData[0]?.fill, filter: "url(#glow)" }}
               animationDuration={animationDuration}
               animationEasing="ease-out"
-            />
+            >
+              {config.lineConfig?.showDataLabels && (
+                <LabelList
+                  dataKey="value"
+                  position="top"
+                  formatter={(value: number) => formatValue(value, config.dataFormatting)}
+                  fill="hsl(var(--foreground))"
+                  fontSize={10}
+                />
+              )}
+            </Line>
           </LineChart>
         );
 
       case "area":
         return (
-          <AreaChart {...commonProps}>
+          <AreaChart data={chartData} margin={commonMargin}>
             <defs>
               <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={chartData[0]?.fill || '#3b82f6'} stopOpacity={0.8} />
-                <stop offset="50%" stopColor={chartData[0]?.fill || '#3b82f6'} stopOpacity={0.4} />
-                <stop offset="100%" stopColor={chartData[0]?.fill || '#3b82f6'} stopOpacity={0.05} />
+                <stop offset="0%" stopColor={chartData[0]?.fill || "#3b82f6"} stopOpacity={config.areaConfig?.fillOpacity ?? 0.8} />
+                <stop offset="50%" stopColor={chartData[0]?.fill || "#3b82f6"} stopOpacity={(config.areaConfig?.fillOpacity ?? 0.8) * 0.5} />
+                <stop offset="100%" stopColor={chartData[0]?.fill || "#3b82f6"} stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            {config.showGrid !== false && (
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-            )}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
             <XAxis
               dataKey="name"
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+              axisLine={{ stroke: "hsl(var(--border))" }}
             />
             <YAxis
-              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
+              axisLine={{ stroke: "hsl(var(--border))" }}
+              domain={[config.axis?.yAxisMin ?? "auto", config.axis?.yAxisMax ?? "auto"]}
             />
-            <Tooltip content={<CustomTooltip />} />
-            {config.showLegend !== false && <Legend content={<CustomLegend />} />}
+            <Tooltip content={<CustomTooltip formatting={config.dataFormatting} />} />
+            <Legend content={<CustomLegend />} />
             <Area
               type="monotone"
               dataKey="value"
-              stroke={chartData[0]?.fill || '#3b82f6'}
+              stroke={config.areaConfig?.overlayLine !== false ? chartData[0]?.fill || "#3b82f6" : "transparent"}
               strokeWidth={2}
               fill="url(#areaGradient)"
-              animationBegin={0}
               animationDuration={animationDuration}
               animationEasing="ease-out"
             />
@@ -372,12 +490,20 @@ export function EnterpriseChart({
 
       case "pie":
       case "donut":
-        const innerRadius = config.type === "donut" ? 60 : 0;
+        const innerRadius = config.core.chartType === "donut" ? (config.donutConfig?.innerRadius || 60) : 0;
+        const total = chartData.reduce((sum, d) => sum + d.value, 0);
         return (
           <PieChart>
             <defs>
               {chartData.map((entry, index) => (
-                <linearGradient key={`pieGradient-${index}`} id={`pieGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                <linearGradient
+                  key={`pieGradient-${index}`}
+                  id={`pieGradient-${index}`}
+                  x1="0"
+                  y1="0"
+                  x2="1"
+                  y2="1"
+                >
                   <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
                   <stop offset="100%" stopColor={entry.fill} stopOpacity={0.7} />
                 </linearGradient>
@@ -394,33 +520,55 @@ export function EnterpriseChart({
               outerRadius={90}
               paddingAngle={2}
               dataKey="value"
-              animationBegin={0}
+              startAngle={config.pieConfig?.startAngle ?? 0}
+              endAngle={config.pieConfig?.endAngle ?? 360}
               animationDuration={animationDuration}
               animationEasing="ease-out"
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+              label={({ name, percent, value }) => {
+                const parts: string[] = [];
+                if (config.pieConfig?.showPercentages !== false) {
+                  parts.push(`${(percent * 100).toFixed(config.pieConfig?.percentageDecimalPlaces ?? 0)}%`);
+                }
+                if (config.pieConfig?.showValues) {
+                  parts.push(formatValue(value, config.dataFormatting));
+                }
+                return parts.length > 0 ? `${name}: ${parts.join(" ")}` : name;
+              }}
+              labelLine={config.pieConfig?.leaderLines !== false ? { stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 } : false}
             >
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={config.gradientEnabled ? `url(#pieGradient-${index})` : entry.fill}
+                  fill={config.visualControls.gradientEnabled ? `url(#pieGradient-${index})` : entry.fill}
                   stroke="hsl(var(--background))"
                   strokeWidth={2}
-                  className="transition-all duration-300 hover:opacity-80"
-                  style={{ filter: 'url(#shadow)' }}
+                  style={{ filter: "url(#shadow)" }}
                 />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            {config.showLegend !== false && <Legend content={<CustomLegend />} />}
+            {config.core.chartType === "donut" && config.donutConfig?.totalValueDisplay && (
+              <text
+                x="50%"
+                y="50%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-foreground"
+              >
+                <tspan x="50%" dy="-0.5em" fontSize="14" fontWeight="600">
+                  {config.donutConfig?.centerLabelPrimary || "Total"}
+                </tspan>
+                <tspan x="50%" dy="1.5em" fontSize="18" fontWeight="700">
+                  {config.donutConfig?.centerLabelSecondary || formatValue(total, config.dataFormatting)}
+                </tspan>
+              </text>
+            )}
+            <Tooltip content={<CustomTooltip formatting={config.dataFormatting} />} />
+            <Legend content={<CustomLegend />} />
           </PieChart>
         );
 
       case "radial":
-        const radialData = chartData.map((d, i) => ({
-          ...d,
-          fill: d.fill,
-        }));
+        const radialData = chartData.map((d) => ({ ...d }));
         return (
           <RadialBarChart
             cx="50%"
@@ -433,19 +581,18 @@ export function EnterpriseChart({
             endAngle={-180}
           >
             <RadialBar
-              background={{ fill: 'hsl(var(--muted))' }}
+              background={{ fill: "hsl(var(--muted))" }}
               dataKey="value"
-              animationBegin={0}
               animationDuration={animationDuration}
               animationEasing="ease-out"
               cornerRadius={10}
             >
               {radialData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
+                <Cell key={`cell-${index}`} fill={entry.fill} opacity={config.visualControls.opacity} />
               ))}
             </RadialBar>
-            <Tooltip content={<CustomTooltip />} />
-            {config.showLegend !== false && <Legend content={<CustomLegend />} iconType="circle" />}
+            <Tooltip content={<CustomTooltip formatting={config.dataFormatting} />} />
+            <Legend content={<CustomLegend />} iconType="circle" />
           </RadialBarChart>
         );
 
@@ -454,25 +601,48 @@ export function EnterpriseChart({
     }
   };
 
+  const actualWidth = config.dimensions.widthPx || width;
+  const actualHeight = config.dimensions.heightPx || height;
+
   return (
     <div className="relative group">
-      {/* Chart Title */}
-      {config.title && (
-        <h3 className="text-center font-semibold text-foreground mb-2 text-lg">
-          {config.title}
-        </h3>
+      {/* Title & Subtitle */}
+      {config.core.chartTitle && (
+        <div className="text-center mb-2">
+          <h3 className="font-semibold text-foreground text-lg">{config.core.chartTitle}</h3>
+          {config.core.subtitle && (
+            <p className="text-sm text-muted-foreground">{config.core.subtitle}</p>
+          )}
+        </div>
       )}
 
-      {/* Chart Container */}
-      <div 
+      {/* Chart */}
+      <div
         className="w-full cursor-pointer transition-all duration-300 hover:shadow-lg rounded-lg"
         onClick={() => editable && setShowEditor(true)}
-        style={{ height: height - 40 }}
+        style={{ height: actualHeight - 60 }}
+        title={config.core.description}
       >
         <ResponsiveContainer width="100%" height="100%">
           {renderChart()}
         </ResponsiveContainer>
       </div>
+
+      {/* Metadata Footer */}
+      {(config.metadata?.dataSource || config.metadata?.asOfDate || config.metadata?.footnote) && (
+        <div className="mt-2 text-xs text-muted-foreground text-center space-y-1">
+          {config.metadata.dataSource && <p>Source: {config.metadata.dataSource}</p>}
+          {config.metadata.asOfDate && <p>As of: {config.metadata.asOfDate}</p>}
+          {config.metadata.footnote && <p className="italic">{config.metadata.footnote}</p>}
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      {config.metadata?.disclaimerText && (
+        <p className="mt-2 text-[10px] text-muted-foreground/70 text-center">
+          {config.metadata.disclaimerText}
+        </p>
+      )}
 
       {/* Edit Button */}
       {editable && (
@@ -492,599 +662,111 @@ export function EnterpriseChart({
 
       {/* Editor Dialog */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <DialogContent
+          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings2 className="h-5 w-5" />
-              Edit Chart
+              Enterprise Chart Editor
             </DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-6 mt-4">
-            {/* Left Column - Settings */}
-            <div className="space-y-4">
-              <div>
-                <Label>Chart Type</Label>
-                <Select
-                  value={editConfig.type}
-                  onValueChange={(v: any) => setEditConfig({ ...editConfig, type: v })}
-                >
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bar">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4" />
-                        Bar Chart
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="line">
-                      <div className="flex items-center gap-2">
-                        <LineChartIcon className="h-4 w-4" />
-                        Line Chart
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="area">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        Area Chart
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="pie">
-                      <div className="flex items-center gap-2">
-                        <PieChartIcon className="h-4 w-4" />
-                        Pie Chart
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="donut">
-                      <div className="flex items-center gap-2">
-                        <Circle className="h-4 w-4" />
-                        Donut Chart
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="radial">
-                      <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4" />
-                        Radial Chart
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <EnterpriseChartEditor config={editConfig} onChange={setEditConfig} />
 
-              <div>
-                <Label>Chart Title</Label>
-                <Input
-                  value={editConfig.title}
-                  onChange={(e) => setEditConfig({ ...editConfig, title: e.target.value })}
-                  className="mt-1.5"
-                  placeholder="Enter chart title"
-                />
-              </div>
-
-              {/* Axis Labels - Only for bar/line/area charts */}
-              {isAxisChart && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>X-Axis Label</Label>
-                    <Input
-                      value={editConfig.xAxisLabel || ''}
-                      onChange={(e) => setEditConfig({ ...editConfig, xAxisLabel: e.target.value })}
-                      placeholder="e.g., Quarters"
-                      className="mt-1.5"
-                    />
-                  </div>
-                  <div>
-                    <Label>Y-Axis Label</Label>
-                    <Input
-                      value={editConfig.yAxisLabel || ''}
-                      onChange={(e) => setEditConfig({ ...editConfig, yAxisLabel: e.target.value })}
-                      placeholder="e.g., Revenue"
-                      className="mt-1.5"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Value Formatting */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Value Prefix</Label>
-                  <Input
-                    value={editConfig.valuePrefix || ''}
-                    onChange={(e) => setEditConfig({ ...editConfig, valuePrefix: e.target.value })}
-                    placeholder="e.g., $"
-                    className="mt-1.5"
-                  />
-                </div>
-                <div>
-                  <Label>Value Suffix</Label>
-                  <Input
-                    value={editConfig.valueSuffix || ''}
-                    onChange={(e) => setEditConfig({ ...editConfig, valueSuffix: e.target.value })}
-                    placeholder="e.g., %"
-                    className="mt-1.5"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Width (px)</Label>
-                  <Input
-                    type="number"
-                    value={editWidth}
-                    onChange={(e) => setEditWidth(Math.max(200, Number(e.target.value)))}
-                    className="mt-1.5"
-                    min={200}
-                    max={1200}
-                  />
-                </div>
-                <div>
-                  <Label>Height (px)</Label>
-                  <Input
-                    type="number"
-                    value={editHeight}
-                    onChange={(e) => setEditHeight(Math.max(150, Number(e.target.value)))}
-                    className="mt-1.5"
-                    min={150}
-                    max={800}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Animation Duration (ms)</Label>
-                <Input
-                  type="number"
-                  value={editConfig.animationDuration ?? 1200}
-                  onChange={(e) => setEditConfig({ ...editConfig, animationDuration: parseInt(e.target.value) || 1200 })}
-                  className="mt-1.5"
-                  min={0}
-                  max={5000}
-                  step={100}
-                />
-              </div>
-
-              <div className="flex items-center gap-4 flex-wrap">
-                {isAxisChart && (
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={editConfig.showGrid !== false}
-                      onChange={(e) => setEditConfig({ ...editConfig, showGrid: e.target.checked })}
-                      className="rounded"
-                    />
-                    Show Grid
-                  </label>
-                )}
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={editConfig.showLegend !== false}
-                    onChange={(e) => setEditConfig({ ...editConfig, showLegend: e.target.checked })}
-                    className="rounded"
-                  />
-                  Show Legend
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={editConfig.gradientEnabled !== false}
-                    onChange={(e) => setEditConfig({ ...editConfig, gradientEnabled: e.target.checked })}
-                    className="rounded"
-                  />
-                  Gradients
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={editConfig.showValues === true}
-                    onChange={(e) => setEditConfig({ ...editConfig, showValues: e.target.checked })}
-                    className="rounded"
-                  />
-                  Show Values
-                </label>
-              </div>
-
-              <div>
-                <Label className="flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  Color Presets
-                </Label>
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {colorPresets.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      className="h-8 rounded-md overflow-hidden border border-border hover:ring-2 ring-primary transition-all"
-                      onClick={() => applyColorPreset(preset)}
-                      title="Apply color preset"
-                    >
-                      <div className="h-full flex">
-                        {preset.slice(0, 3).map((color, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 h-full"
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Data */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Chart Data</Label>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={addDataRow}
-                  className="gap-1"
-                >
-                  <Plus className="h-3 w-3" />
-                  Add Row
-                </Button>
-              </div>
-
-              {/* Column Headers */}
-              <div className="grid grid-cols-[40px_1fr_100px_32px] gap-2 px-2 text-xs font-medium text-muted-foreground">
-                <span>Color</span>
-                <span>Label</span>
-                <span>Value</span>
-                <span></span>
-              </div>
-              
-              <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
-                {editData.map((item) => (
-                  <div key={item._id} className="grid grid-cols-[40px_1fr_100px_32px] gap-2 items-center bg-muted/50 p-2 rounded-lg">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          className="w-8 h-8 rounded-md border-2 border-border hover:scale-105 transition-transform"
-                          style={{ backgroundColor: item.color }}
-                          title="Change color"
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-3">
-                        <div className="space-y-2">
-                          <Label className="text-xs">Pick Color</Label>
-                          <div className="grid grid-cols-5 gap-1">
-                            {defaultColors.map((color) => (
-                              <button
-                                key={color}
-                                className="w-6 h-6 rounded border hover:scale-110 transition-transform"
-                                style={{ backgroundColor: color }}
-                                onClick={() => updateDataColor(item._id, color)}
-                              />
-                            ))}
-                          </div>
-                          <Input
-                            type="color"
-                            value={item.color}
-                            onChange={(e) => updateDataColor(item._id, e.target.value)}
-                            className="w-full h-8 cursor-pointer"
-                          />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                    <Input
-                      value={item.label}
-                      onChange={(e) => updateDataField(item._id, "label", e.target.value)}
-                      placeholder="Label"
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      type="number"
-                      value={item.value}
-                      onChange={(e) => updateDataField(item._id, "value", e.target.value)}
-                      placeholder="Value"
-                      className="h-8 text-sm"
-                    />
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => removeDataRow(item._id)}
-                      disabled={editData.length <= 1}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
-              {/* Data Summary */}
-              <div className="bg-muted/30 p-3 rounded-lg text-xs text-muted-foreground">
-                <div className="flex justify-between">
-                  <span>Total Data Points:</span>
-                  <span className="font-medium text-foreground">{editData.length}</span>
-                </div>
-                <div className="flex justify-between mt-1">
-                  <span>Sum of Values:</span>
-                  <span className="font-medium text-foreground">
-                    {editConfig.valuePrefix || ''}{editData.reduce((sum, d) => sum + d.value, 0).toLocaleString()}{editConfig.valueSuffix || ''}
-                  </span>
-                </div>
-                <div className="flex justify-between mt-1">
-                  <span>Average Value:</span>
-                  <span className="font-medium text-foreground">
-                    {editConfig.valuePrefix || ''}{(editData.reduce((sum, d) => sum + d.value, 0) / editData.length).toFixed(1)}{editConfig.valueSuffix || ''}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Preview */}
-          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-            <Label className="mb-2 block flex items-center gap-2">
-              {editConfig.type === 'bar' && <BarChart3 className="h-4 w-4" />}
-              {editConfig.type === 'line' && <LineChartIcon className="h-4 w-4" />}
-              {editConfig.type === 'area' && <TrendingUp className="h-4 w-4" />}
-              {editConfig.type === 'pie' && <PieChartIcon className="h-4 w-4" />}
-              {editConfig.type === 'donut' && <Circle className="h-4 w-4" />}
-              {editConfig.type === 'radial' && <Target className="h-4 w-4" />}
-              Live Preview - {editConfig.type.charAt(0).toUpperCase() + editConfig.type.slice(1)} Chart
-            </Label>
-            <div 
-              className="h-[250px] bg-background/50 rounded-md border border-border/50"
-            >
+          {/* Live Preview */}
+          <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+            <p className="text-sm font-medium mb-2">Live Preview</p>
+            <div className="h-[200px] bg-background/50 rounded-md border border-border/50">
               <ResponsiveContainer width="100%" height="100%">
                 {(() => {
-                  // Use editData directly for real-time updates
-                  const previewData = editData.map((d) => ({
+                  const previewData = editConfig.data.map((d) => ({
                     name: d.label,
                     value: d.value,
-                    fill: d.color,
+                    fill: d.color || "#3b82f6",
                   }));
 
-                  // Create a unique key for chart re-rendering
-                  const chartKey = `${editConfig.type}-${previewData.length}-${previewData.map(d => `${d.name}:${d.value}:${d.fill}`).join(',')}`;
-
-                  switch (editConfig.type) {
+                  switch (editConfig.core.chartType) {
                     case "bar":
                       return (
-                        <BarChart key={chartKey} data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                          <defs>
+                        <BarChart data={previewData} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                             {previewData.map((entry, index) => (
-                              <linearGradient key={`preview-bar-gradient-${index}`} id={`previewBarGradient-${index}-${entry.fill.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
-                                <stop offset="100%" stopColor={entry.fill} stopOpacity={0.6} />
-                              </linearGradient>
-                            ))}
-                          </defs>
-                          {editConfig.showGrid !== false && (
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                          )}
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                            axisLine={{ stroke: 'hsl(var(--border))' }}
-                            tickLine={{ stroke: 'hsl(var(--border))' }}
-                          />
-                          <YAxis 
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                            axisLine={{ stroke: 'hsl(var(--border))' }}
-                            tickLine={{ stroke: 'hsl(var(--border))' }}
-                          />
-                          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }} />
-                          {editConfig.showLegend !== false && <Legend content={<CustomLegend />} />}
-                          <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={300} isAnimationActive={false}>
-                            {previewData.map((entry, index) => (
-                              <Cell 
-                                key={`preview-bar-${index}-${entry.fill}`} 
-                                fill={editConfig.gradientEnabled !== false ? `url(#previewBarGradient-${index}-${entry.fill.replace('#', '')})` : entry.fill} 
-                              />
+                              <Cell key={index} fill={entry.fill} />
                             ))}
                           </Bar>
                         </BarChart>
                       );
                     case "line":
                       return (
-                        <LineChart key={chartKey} data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                          <defs>
-                            <linearGradient id={`previewLineGradient-${previewData.length}`} x1="0" y1="0" x2="1" y2="0">
-                              {previewData.map((entry, index) => (
-                                <stop
-                                  key={index}
-                                  offset={`${(index / Math.max(previewData.length - 1, 1)) * 100}%`}
-                                  stopColor={entry.fill}
-                                />
-                              ))}
-                            </linearGradient>
-                          </defs>
-                          {editConfig.showGrid !== false && (
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                          )}
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                            axisLine={{ stroke: 'hsl(var(--border))' }}
-                          />
-                          <YAxis 
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                            axisLine={{ stroke: 'hsl(var(--border))' }}
-                          />
-                          <Tooltip content={<CustomTooltip />} />
-                          {editConfig.showLegend !== false && <Legend content={<CustomLegend />} />}
-                          <Line 
-                            type="monotone" 
-                            dataKey="value" 
-                            stroke={`url(#previewLineGradient-${previewData.length})`}
-                            strokeWidth={3} 
-                            dot={{ r: 5, fill: 'hsl(var(--background))', strokeWidth: 3, stroke: previewData[0]?.fill || '#3b82f6' }}
-                            activeDot={{ r: 7, fill: previewData[0]?.fill || '#3b82f6' }}
-                            isAnimationActive={false}
-                          />
+                        <LineChart data={previewData} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <Line type="monotone" dataKey="value" stroke={previewData[0]?.fill} isAnimationActive={false} />
                         </LineChart>
                       );
                     case "area":
                       return (
-                        <AreaChart key={chartKey} data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                          <defs>
-                            <linearGradient id={`previewAreaGradient-${previewData[0]?.fill?.replace('#', '') || 'default'}`} x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor={previewData[0]?.fill || '#3b82f6'} stopOpacity={0.8} />
-                              <stop offset="50%" stopColor={previewData[0]?.fill || '#3b82f6'} stopOpacity={0.4} />
-                              <stop offset="100%" stopColor={previewData[0]?.fill || '#3b82f6'} stopOpacity={0.05} />
-                            </linearGradient>
-                          </defs>
-                          {editConfig.showGrid !== false && (
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                          )}
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                            axisLine={{ stroke: 'hsl(var(--border))' }}
-                          />
-                          <YAxis 
-                            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
-                            axisLine={{ stroke: 'hsl(var(--border))' }}
-                          />
-                          <Tooltip content={<CustomTooltip />} />
-                          {editConfig.showLegend !== false && <Legend content={<CustomLegend />} />}
-                          <Area 
-                            type="monotone" 
-                            dataKey="value" 
-                            stroke={previewData[0]?.fill || '#3b82f6'}
-                            strokeWidth={2}
-                            fill={`url(#previewAreaGradient-${previewData[0]?.fill?.replace('#', '') || 'default'})`}
-                            isAnimationActive={false}
-                          />
+                        <AreaChart data={previewData} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <Area type="monotone" dataKey="value" fill={previewData[0]?.fill} fillOpacity={0.6} stroke={previewData[0]?.fill} isAnimationActive={false} />
                         </AreaChart>
                       );
                     case "pie":
-                      return (
-                        <PieChart key={chartKey}>
-                          <defs>
-                            {previewData.map((entry, index) => (
-                              <linearGradient key={`preview-pie-gradient-${index}`} id={`previewPieGradient-${index}-${entry.fill.replace('#', '')}`} x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
-                                <stop offset="100%" stopColor={entry.fill} stopOpacity={0.7} />
-                              </linearGradient>
-                            ))}
-                          </defs>
-                          <Pie
-                            data={previewData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={0}
-                            outerRadius={80}
-                            paddingAngle={2}
-                            dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                            labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                            isAnimationActive={false}
-                          >
-                            {previewData.map((entry, index) => (
-                              <Cell 
-                                key={`preview-pie-${index}-${entry.fill}`} 
-                                fill={editConfig.gradientEnabled !== false ? `url(#previewPieGradient-${index}-${entry.fill.replace('#', '')})` : entry.fill}
-                                stroke="hsl(var(--background))"
-                                strokeWidth={2}
-                              />
-                            ))}
-                          </Pie>
-                          <Tooltip content={<CustomTooltip />} />
-                          {editConfig.showLegend !== false && <Legend content={<CustomLegend />} />}
-                        </PieChart>
-                      );
                     case "donut":
                       return (
-                        <PieChart key={chartKey}>
-                          <defs>
-                            {previewData.map((entry, index) => (
-                              <linearGradient key={`preview-donut-gradient-${index}`} id={`previewDonutGradient-${index}-${entry.fill.replace('#', '')}`} x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
-                                <stop offset="100%" stopColor={entry.fill} stopOpacity={0.7} />
-                              </linearGradient>
-                            ))}
-                          </defs>
+                        <PieChart>
                           <Pie
                             data={previewData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={50}
-                            outerRadius={80}
-                            paddingAngle={2}
+                            innerRadius={editConfig.core.chartType === "donut" ? 40 : 0}
+                            outerRadius={70}
                             dataKey="value"
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                            labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
                             isAnimationActive={false}
                           >
                             {previewData.map((entry, index) => (
-                              <Cell 
-                                key={`preview-donut-${index}-${entry.fill}`} 
-                                fill={editConfig.gradientEnabled !== false ? `url(#previewDonutGradient-${index}-${entry.fill.replace('#', '')})` : entry.fill}
-                                stroke="hsl(var(--background))"
-                                strokeWidth={2}
-                              />
+                              <Cell key={index} fill={entry.fill} />
                             ))}
                           </Pie>
-                          <Tooltip content={<CustomTooltip />} />
-                          {editConfig.showLegend !== false && <Legend content={<CustomLegend />} />}
                         </PieChart>
                       );
                     case "radial":
                       return (
-                        <RadialBarChart 
-                          key={chartKey}
-                          cx="50%" 
-                          cy="50%" 
-                          innerRadius="20%" 
-                          outerRadius="85%" 
-                          barSize={18} 
-                          data={previewData} 
-                          startAngle={180} 
-                          endAngle={-180}
-                        >
-                          <RadialBar 
-                            background={{ fill: 'hsl(var(--muted))' }} 
-                            dataKey="value" 
-                            cornerRadius={8}
-                            isAnimationActive={false}
-                          >
+                        <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="80%" data={previewData}>
+                          <RadialBar dataKey="value" isAnimationActive={false}>
                             {previewData.map((entry, index) => (
-                              <Cell key={`preview-radial-${index}-${entry.fill}`} fill={entry.fill} />
+                              <Cell key={index} fill={entry.fill} />
                             ))}
                           </RadialBar>
-                          <Tooltip content={<CustomTooltip />} />
-                          {editConfig.showLegend !== false && (
-                            <Legend 
-                              iconSize={10} 
-                              layout="horizontal" 
-                              verticalAlign="bottom"
-                              content={<CustomLegend />}
-                            />
-                          )}
                         </RadialBarChart>
                       );
                     default:
-                      return (
-                        <div className="flex items-center justify-center h-full text-muted-foreground">
-                          Select a chart type to preview
-                        </div>
-                      );
+                      return <div />;
                   }
                 })()}
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 mt-4">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditor(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              Save Changes
-            </Button>
-          </div>
+            <Button onClick={handleSave}>Save Changes</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+
+// Re-export for backward compatibility
+export type { EnterpriseChartConfig, EnterpriseChartConfig as EnterpriseChartConfigFull } from "@/types/enterpriseChart";
