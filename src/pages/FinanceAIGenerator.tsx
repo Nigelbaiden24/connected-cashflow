@@ -8,7 +8,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { useDocumentSections, HeaderSection } from "@/hooks/useDocumentSections";
 import { EnhancedDocumentEditor } from "@/components/EnhancedDocumentEditor";
 import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
-import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface UploadedImage {
   id: string;
@@ -450,109 +451,66 @@ ELITE DOCUMENT REQUIREMENTS:
   };
 
   const handleDownloadPDF = async () => {
-    // Ensure all user-created content (all pages, sections, images, shapes, signatures, logo) is included in export
-    const container = document.createElement("div");
-    container.id = "pdf-export-container";
-
-    const cleanup = () => {
-      if (container.parentElement) document.body.removeChild(container);
-    };
-
-    const waitForImages = async (root: HTMLElement) => {
-      const imgs = Array.from(root.querySelectorAll("img"));
-      await Promise.all(
-        imgs.map(
-          (img) =>
-            new Promise<void>((resolve) => {
-              if (img.complete) return resolve();
-              img.onload = () => resolve();
-              img.onerror = () => resolve();
-            })
-        )
-      );
-    };
-
-    const createShapeElement = (shape: any) => {
-      const el = document.createElement("div");
-      el.style.position = "absolute";
-      el.style.left = `${shape.x}px`;
-      el.style.top = `${shape.y}px`;
-      el.style.width = `${shape.width}px`;
-      el.style.height = `${shape.height}px`;
-      el.style.pointerEvents = "none";
-
-      const color = shape.color || "#111";
-
-      switch (shape.type) {
-        case "circle": {
-          el.style.backgroundColor = color;
-          el.style.borderRadius = "9999px";
-          break;
-        }
-        case "triangle": {
-          el.style.backgroundColor = "transparent";
-          el.style.width = "0";
-          el.style.height = "0";
-          el.style.borderLeft = `${shape.width / 2}px solid transparent`;
-          el.style.borderRight = `${shape.width / 2}px solid transparent`;
-          el.style.borderBottom = `${shape.height}px solid ${color}`;
-          break;
-        }
-        case "line": {
-          el.style.height = "0";
-          el.style.borderTop = `3px solid ${color}`;
-          el.style.transformOrigin = "left center";
-          break;
-        }
-        case "diamond": {
-          el.style.backgroundColor = color;
-          el.style.transform = "rotate(45deg)";
-          break;
-        }
-        case "arrow": {
-          el.innerHTML = `
-            <svg width="${shape.width}" height="${shape.height}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 12h12" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
-              <path d="M13 6l6 6-6 6" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          `;
-          break;
-        }
-        case "star": {
-          el.innerHTML = `
-            <svg width="${shape.width}" height="${shape.height}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="${color}" />
-            </svg>
-          `;
-          break;
-        }
-        case "rectangle":
-        default: {
-          el.style.backgroundColor = color;
-          el.style.borderRadius = "8px";
-          break;
-        }
-      }
-
-      return el;
-    };
-
     try {
       toast({
         title: "Generating PDF...",
         description: `Processing ${pages.length} page(s) with all content`,
       });
 
-      // Keep export DOM in the render tree (avoids blank html2canvas captures)
-      // while remaining invisible/non-interactive to the user.
-      container.style.position = "fixed";
-      container.style.left = "120vw";
-      container.style.top = "0";
-      container.style.width = "794px";
-      container.style.background = "white";
-      container.style.pointerEvents = "none";
-      document.body.appendChild(container);
+      // A4 dimensions in mm
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
+      const createShapeElement = (shape: any) => {
+        const el = document.createElement("div");
+        el.style.position = "absolute";
+        el.style.left = `${shape.x}px`;
+        el.style.top = `${shape.y}px`;
+        el.style.width = `${shape.width}px`;
+        el.style.height = `${shape.height}px`;
+        el.style.pointerEvents = "none";
+
+        const color = shape.color || "#111";
+
+        switch (shape.type) {
+          case "circle":
+            el.style.backgroundColor = color;
+            el.style.borderRadius = "9999px";
+            break;
+          case "triangle":
+            el.style.backgroundColor = "transparent";
+            el.style.width = "0";
+            el.style.height = "0";
+            el.style.borderLeft = `${shape.width / 2}px solid transparent`;
+            el.style.borderRight = `${shape.width / 2}px solid transparent`;
+            el.style.borderBottom = `${shape.height}px solid ${color}`;
+            break;
+          case "line":
+            el.style.height = "0";
+            el.style.borderTop = `3px solid ${color}`;
+            el.style.transformOrigin = "left center";
+            break;
+          case "diamond":
+            el.style.backgroundColor = color;
+            el.style.transform = "rotate(45deg)";
+            break;
+          case "arrow":
+            el.innerHTML = `<svg width="${shape.width}" height="${shape.height}" viewBox="0 0 24 24" fill="none"><path d="M5 12h12" stroke="${color}" stroke-width="3" stroke-linecap="round"/><path d="M13 6l6 6-6 6" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            break;
+          case "star":
+            el.innerHTML = `<svg width="${shape.width}" height="${shape.height}" viewBox="0 0 24 24" fill="none"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="${color}" /></svg>`;
+            break;
+          case "rectangle":
+          default:
+            el.style.backgroundColor = color;
+            el.style.borderRadius = "8px";
+            break;
+        }
+        return el;
+      };
+
+      // Process each page individually
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
         const pageSections = sections.filter(
@@ -568,36 +526,40 @@ ELITE DOCUMENT REQUIREMENTS:
           (sig) => sig.pageId === page.id || (!sig.pageId && page.id === "page-1")
         );
 
-        const pageDiv = document.createElement("div");
-        pageDiv.className = "pdf-page";
-        pageDiv.style.backgroundColor = backgroundColor || "#ffffff";
-        pageDiv.style.fontFamily = fontFamily;
-        pageDiv.style.fontSize = `${fontSize}px`;
-        pageDiv.style.color = textColor || "#000000";
-        pageDiv.style.padding = "40px";
-        pageDiv.style.width = "794px";
-        pageDiv.style.minHeight = "1123px";
-        pageDiv.style.position = "relative";
-        pageDiv.style.boxSizing = "border-box";
-        pageDiv.style.overflow = "visible";
-        pageDiv.style.pageBreakAfter = i < pages.length - 1 ? "always" : "auto";
+        // Create a temporary container for this page
+        const pageContainer = document.createElement("div");
+        pageContainer.style.position = "fixed";
+        pageContainer.style.left = "0";
+        pageContainer.style.top = "0";
+        pageContainer.style.width = "794px";
+        pageContainer.style.height = "1123px";
+        pageContainer.style.backgroundColor = backgroundColor || "#ffffff";
+        pageContainer.style.fontFamily = fontFamily;
+        pageContainer.style.fontSize = `${fontSize}px`;
+        pageContainer.style.color = textColor || "#000000";
+        pageContainer.style.padding = "40px";
+        pageContainer.style.boxSizing = "border-box";
+        pageContainer.style.overflow = "hidden";
+        pageContainer.style.zIndex = "-9999";
+        document.body.appendChild(pageContainer);
 
         // Logo
         if (logoUrl) {
           const logo = document.createElement("img");
           logo.src = logoUrl;
+          logo.crossOrigin = "anonymous";
           logo.style.position = "absolute";
           logo.style.left = "40px";
           logo.style.top = "32px";
           logo.style.height = "56px";
           logo.style.width = "auto";
           logo.style.objectFit = "contain";
-          pageDiv.appendChild(logo);
+          pageContainer.appendChild(logo);
         }
 
-        // Shapes (render behind content)
+        // Shapes
         pageShapes.forEach((shape) => {
-          pageDiv.appendChild(createShapeElement(shape));
+          pageContainer.appendChild(createShapeElement(shape));
         });
 
         // Sections
@@ -613,7 +575,6 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.padding = "16px";
           sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
-          sectionDiv.style.overflow = "visible";
           sectionDiv.style.wordBreak = "break-word";
 
           if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== "none") {
@@ -630,16 +591,12 @@ ELITE DOCUMENT REQUIREMENTS:
             sectionDiv.appendChild(h2);
           } else if (section.type === "table") {
             const tableWrapper = document.createElement("div");
-            tableWrapper.style.overflow = "visible";
-            tableWrapper.innerHTML = `
-              <style>
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                th { background-color: #f5f5f5; font-weight: 600; }
-              </style>
-              ${section.content || ""}
-            `;
+            tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
             sectionDiv.appendChild(tableWrapper);
+          } else if (section.type === "chart") {
+            const chartWrapper = document.createElement("div");
+            chartWrapper.innerHTML = section.content || "";
+            sectionDiv.appendChild(chartWrapper);
           } else {
             if (section.title) {
               const h3 = document.createElement("h3");
@@ -649,7 +606,6 @@ ELITE DOCUMENT REQUIREMENTS:
               h3.textContent = section.title;
               sectionDiv.appendChild(h3);
             }
-
             const contentDiv = document.createElement("div");
             contentDiv.style.whiteSpace = "pre-wrap";
             contentDiv.style.lineHeight = "1.7";
@@ -657,25 +613,24 @@ ELITE DOCUMENT REQUIREMENTS:
             contentDiv.textContent = (section.content || "").toString();
             sectionDiv.appendChild(contentDiv);
           }
-
-          pageDiv.appendChild(sectionDiv);
+          pageContainer.appendChild(sectionDiv);
         });
 
         // Images
         for (const img of pageImages) {
           const imgEl = document.createElement("img");
           imgEl.src = img.url;
+          imgEl.crossOrigin = "anonymous";
           imgEl.style.position = "absolute";
           imgEl.style.left = `${img.x}px`;
           imgEl.style.top = `${img.y}px`;
           imgEl.style.width = `${img.width}px`;
           imgEl.style.height = `${img.height}px`;
           imgEl.style.objectFit = "contain";
-          imgEl.crossOrigin = "anonymous";
-          pageDiv.appendChild(imgEl);
+          pageContainer.appendChild(imgEl);
         }
 
-        // Signature fields
+        // Signatures
         pageSignatures.forEach((sig) => {
           const sigDiv = document.createElement("div");
           sigDiv.style.position = "absolute";
@@ -691,53 +646,54 @@ ELITE DOCUMENT REQUIREMENTS:
           sigDiv.style.color = "#666";
           sigDiv.style.fontSize = "12px";
           sigDiv.textContent = sig.signed ? "✓ Signed" : "Signature Required";
-          pageDiv.appendChild(sigDiv);
+          pageContainer.appendChild(sigDiv);
         });
 
-        // Expand height to include absolutely-positioned elements (prevents clipping)
-        const maxBottom = Math.max(
-          1123,
-          ...pageSections.map((s: any) => (s.y || 0) + (s.height || 0) + 120),
-          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0) + 120),
-          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0) + 120),
-          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0) + 120)
+        // Wait for images to load
+        const imgs = Array.from(pageContainer.querySelectorAll("img"));
+        await Promise.all(
+          imgs.map(
+            (img) =>
+              new Promise<void>((resolve) => {
+                if (img.complete) return resolve();
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              })
+          )
         );
-        pageDiv.style.height = `${maxBottom}px`;
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
-        container.appendChild(pageDiv);
-      }
-
-      await waitForImages(container);
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      const opt = {
-        margin: [10, 10, 10, 10] as [number, number, number, number],
-        filename: `${template?.name || "document"}-${new Date().toISOString().slice(0, 10)}.pdf`,
-        image: { type: "jpeg" as const, quality: 0.98 },
-        html2canvas: {
+        // Capture the page with html2canvas
+        const canvas = await html2canvas(pageContainer, {
           scale: 2,
           useCORS: true,
-          logging: false,
           allowTaint: true,
-          windowWidth: 794,
-          scrollY: 0,
-          scrollX: 0,
-        },
-        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
-        pagebreak: { mode: ["css", "legacy"] as any },
-      };
+          backgroundColor: backgroundColor || "#ffffff",
+          width: 794,
+          height: 1123,
+          logging: false,
+        });
 
-      await html2pdf().set(opt).from(container).save();
+        // Add page to PDF
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
 
-      cleanup();
+        // Cleanup the temporary container
+        document.body.removeChild(pageContainer);
+      }
+
+      // Save the PDF
+      pdf.save(`${template?.name || "document"}-${new Date().toISOString().slice(0, 10)}.pdf`);
 
       toast({
         title: "PDF downloaded successfully!",
-        description: `Document with all content has been saved.`,
+        description: `Document with ${pages.length} page(s) has been saved.`,
       });
     } catch (error) {
       console.error("PDF generation error:", error);
-      cleanup();
       toast({
         title: "Download failed",
         description: "Could not generate PDF. Please try again.",
