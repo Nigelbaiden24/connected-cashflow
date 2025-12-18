@@ -2106,6 +2106,66 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_follow_ups: {
+        Row: {
+          contact_id: string
+          created_at: string
+          follow_up_date: string
+          id: string
+          interaction_id: string | null
+          notes: string | null
+          reminder_sent: boolean | null
+          reminder_sent_at: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          follow_up_date: string
+          id?: string
+          interaction_id?: string | null
+          notes?: string | null
+          reminder_sent?: boolean | null
+          reminder_sent_at?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          follow_up_date?: string
+          id?: string
+          interaction_id?: string | null
+          notes?: string | null
+          reminder_sent?: boolean | null
+          reminder_sent_at?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_follow_ups_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_follow_ups_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "crm_interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_interactions: {
         Row: {
           contact_id: string
@@ -2143,6 +2203,60 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_notifications: {
+        Row: {
+          action_url: string | null
+          contact_id: string | null
+          created_at: string
+          follow_up_id: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          notification_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          contact_id?: string | null
+          created_at?: string
+          follow_up_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          notification_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          contact_id?: string | null
+          created_at?: string
+          follow_up_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_notifications_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_notifications_follow_up_id_fkey"
+            columns: ["follow_up_id"]
+            isOneToOne: false
+            referencedRelation: "crm_follow_ups"
             referencedColumns: ["id"]
           },
         ]
