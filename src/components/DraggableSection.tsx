@@ -299,7 +299,31 @@ export function DraggableSection({
         </div>
       );
     }
-    return null;
+    if (type === "chart") {
+      return (
+        <div 
+          className="w-full h-full flex items-center justify-center"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+    // Default fallback for any content with HTML
+    if (content && (content.includes('<') || content.includes('>'))) {
+      return (
+        <div
+          className="prose max-w-none"
+          style={{ color: textColor }}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+    return (
+      <div className="prose max-w-none">
+        <p className="whitespace-pre-wrap" style={{ color: textColor }}>
+          {content || placeholder || title || "Add content..."}
+        </p>
+      </div>
+    );
   };
 
   return (
