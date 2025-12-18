@@ -185,36 +185,36 @@ serve(async (req) => {
 
       // Return HTML that closes the popup and notifies parent window
       const email = userInfo.mail || userInfo.userPrincipalName || '';
-      return new Response(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Outlook Calendar Connected</title>
-          <style>
-            body { font-family: system-ui; text-align: center; padding: 50px; background: #f9fafb; }
-            .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
-            .success { color: #10b981; font-size: 48px; margin-bottom: 16px; }
-            h1 { color: #111827; font-size: 24px; margin-bottom: 8px; }
-            p { color: #6b7280; margin-bottom: 4px; }
-            .email { color: #3b82f6; font-weight: 500; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="success">✓</div>
-            <h1>Outlook Calendar Connected!</h1>
-            <p>Successfully connected as:</p>
-            <p class="email">${email}</p>
-            <p style="margin-top: 20px; font-size: 14px;">This window will close automatically...</p>
-          </div>
-          <script>
-            window.opener?.postMessage({ type: 'outlook-calendar-connected', email: '${email}' }, '*');
-            setTimeout(() => window.close(), 2500);
-          </script>
-        </body>
-        </html>
-      `, {
-        headers: { ...corsHeaders, 'Content-Type': 'text/html' },
+      const safeEmail = email.replace(/[<>"'&]/g, '');
+      const jsonEmail = JSON.stringify(safeEmail);
+      return new Response(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Outlook Calendar Connected</title>
+  <style>
+    body { font-family: system-ui; text-align: center; padding: 50px; background: #f9fafb; }
+    .container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; }
+    .success { color: #10b981; font-size: 48px; margin-bottom: 16px; }
+    h1 { color: #111827; font-size: 24px; margin-bottom: 8px; }
+    p { color: #6b7280; margin-bottom: 4px; }
+    .email { color: #3b82f6; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="success">✓</div>
+    <h1>Outlook Calendar Connected!</h1>
+    <p>Successfully connected as:</p>
+    <p class="email">${safeEmail}</p>
+    <p style="margin-top: 20px; font-size: 14px;">This window will close automatically...</p>
+  </div>
+  <script>
+    window.opener?.postMessage({ type: 'outlook-calendar-connected', email: ${jsonEmail} }, '*');
+    setTimeout(function() { window.close(); }, 2500);
+  </script>
+</body>
+</html>`, {
+        headers: { ...corsHeaders, 'Content-Type': 'text/html; charset=utf-8' },
       });
     }
 
