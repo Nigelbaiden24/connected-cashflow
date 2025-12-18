@@ -427,14 +427,6 @@ export function EnterpriseChart({
     }
   };
 
-  const getPreviewData = () => {
-    return editData.map(d => ({
-      name: d.label,
-      value: d.value,
-      fill: d.color,
-    }));
-  };
-
   return (
     <div className="relative group">
       {/* Chart Title */}
@@ -803,11 +795,15 @@ export function EnterpriseChart({
 
           {/* Preview */}
           <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-            <Label className="mb-2 block">Preview</Label>
-            <div className="h-[200px]">
+            <Label className="mb-2 block">Preview ({editConfig.type.charAt(0).toUpperCase() + editConfig.type.slice(1)} Chart)</Label>
+            <div className="h-[200px]" key={`preview-${editConfig.type}-${editData.length}-${editData.map(d => d.value).join('-')}`}>
               <ResponsiveContainer width="100%" height="100%">
                 {(() => {
-                  const previewData = getPreviewData();
+                  const previewData = editData.map(d => ({
+                    name: d.label,
+                    value: d.value,
+                    fill: d.color,
+                  }));
 
                   switch (editConfig.type) {
                     case "bar":
@@ -819,7 +815,7 @@ export function EnterpriseChart({
                           <Tooltip />
                           <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                             {previewData.map((entry, index) => (
-                              <Cell key={index} fill={entry.fill} />
+                              <Cell key={`bar-${index}`} fill={entry.fill} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -831,7 +827,14 @@ export function EnterpriseChart({
                           <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                           <YAxis tick={{ fontSize: 10 }} />
                           <Tooltip />
-                          <Line type="monotone" dataKey="value" stroke={previewData[0]?.fill} strokeWidth={2} dot={{ r: 4 }} />
+                          <Line 
+                            type="monotone" 
+                            dataKey="value" 
+                            stroke={previewData[0]?.fill || "#3b82f6"} 
+                            strokeWidth={2} 
+                            dot={{ r: 4, fill: previewData[0]?.fill || "#3b82f6" }}
+                            connectNulls
+                          />
                         </LineChart>
                       );
                     case "area":
@@ -841,10 +844,35 @@ export function EnterpriseChart({
                           <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                           <YAxis tick={{ fontSize: 10 }} />
                           <Tooltip />
-                          <Area type="monotone" dataKey="value" stroke={previewData[0]?.fill} fill={previewData[0]?.fill} fillOpacity={0.3} />
+                          <Area 
+                            type="monotone" 
+                            dataKey="value" 
+                            stroke={previewData[0]?.fill || "#3b82f6"} 
+                            fill={previewData[0]?.fill || "#3b82f6"} 
+                            fillOpacity={0.3} 
+                          />
                         </AreaChart>
                       );
                     case "pie":
+                      return (
+                        <PieChart>
+                          <Pie
+                            data={previewData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={0}
+                            outerRadius={70}
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                          >
+                            {previewData.map((entry, index) => (
+                              <Cell key={`pie-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      );
                     case "donut":
                       return (
                         <PieChart>
@@ -852,12 +880,14 @@ export function EnterpriseChart({
                             data={previewData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={editConfig.type === "donut" ? 40 : 0}
+                            innerRadius={40}
                             outerRadius={70}
                             dataKey="value"
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
                           >
                             {previewData.map((entry, index) => (
-                              <Cell key={index} fill={entry.fill} />
+                              <Cell key={`donut-${index}`} fill={entry.fill} />
                             ))}
                           </Pie>
                           <Tooltip />
@@ -865,17 +895,32 @@ export function EnterpriseChart({
                       );
                     case "radial":
                       return (
-                        <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="80%" barSize={15} data={previewData} startAngle={180} endAngle={-180}>
+                        <RadialBarChart 
+                          cx="50%" 
+                          cy="50%" 
+                          innerRadius="20%" 
+                          outerRadius="80%" 
+                          barSize={15} 
+                          data={previewData} 
+                          startAngle={180} 
+                          endAngle={-180}
+                        >
                           <RadialBar background dataKey="value" cornerRadius={5}>
                             {previewData.map((entry, index) => (
-                              <Cell key={index} fill={entry.fill} />
+                              <Cell key={`radial-${index}`} fill={entry.fill} />
                             ))}
                           </RadialBar>
                           <Tooltip />
+                          <Legend 
+                            iconSize={10} 
+                            layout="horizontal" 
+                            verticalAlign="bottom"
+                            formatter={(value, entry: any) => entry.payload?.name}
+                          />
                         </RadialBarChart>
                       );
                     default:
-                      return <div />;
+                      return <div className="flex items-center justify-center h-full text-muted-foreground">Select a chart type</div>;
                   }
                 })()}
               </ResponsiveContainer>
