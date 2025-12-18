@@ -68,6 +68,7 @@ export function EnhancedDocumentEditor({
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [editTextColor, setEditTextColor] = useState("#000000");
+  const [tableRowColor, setTableRowColor] = useState("#f3f4f6");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [newSectionContent, setNewSectionContent] = useState("");
@@ -309,6 +310,34 @@ export function EnhancedDocumentEditor({
                 />
                 <span className="text-sm text-muted-foreground">{editTextColor}</span>
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Row Colour</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="color"
+                  value={tableRowColor}
+                  onChange={(e) => setTableRowColor(e.target.value)}
+                  className="w-20 h-10"
+                />
+                <span className="text-sm text-muted-foreground">{tableRowColor}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (editingSection && editingSection.type === "table" && editingSection.content) {
+                      const updatedContent = editingSection.content.replace(
+                        /background:\s*[^;]+/g,
+                        `background: ${tableRowColor}`
+                      );
+                      setEditingSection({ ...editingSection, content: updatedContent });
+                    }
+                  }}
+                >
+                  Apply to Table
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Changes the header row colour for tables</p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setEditingSection(null)}>
