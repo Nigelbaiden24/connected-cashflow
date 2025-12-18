@@ -890,73 +890,21 @@ ELITE DOCUMENT REQUIREMENTS:
                     ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
                     : 0;
 
-                  // Generate SVG chart based on type
-                  const maxValue = Math.max(...chartConfig.data.map(d => d.value));
-                  const chartWidth = chartConfig.width - 40;
-                  const chartHeight = chartConfig.height - 60;
-                  
-                  let chartSvg = '';
-                  
-                  if (chartConfig.type === 'bar') {
-                    const barWidth = chartWidth / chartConfig.data.length - 10;
-                    const bars = chartConfig.data.map((d, i) => {
-                      const barHeight = (d.value / maxValue) * chartHeight;
-                      const x = 20 + i * (barWidth + 10);
-                      const y = chartHeight - barHeight + 30;
-                      return `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" fill="${d.color}" rx="4"/>
-                        <text x="${x + barWidth/2}" y="${chartHeight + 48}" text-anchor="middle" font-size="11" fill="#666">${d.label}</text>`;
-                    }).join('');
-                    chartSvg = `<svg width="${chartConfig.width}" height="${chartConfig.height}" xmlns="http://www.w3.org/2000/svg">
-                      <text x="${chartConfig.width/2}" y="20" text-anchor="middle" font-size="14" font-weight="600">${chartConfig.title}</text>
-                      ${bars}
-                    </svg>`;
-                  } else if (chartConfig.type === 'pie') {
-                    const total = chartConfig.data.reduce((sum, d) => sum + d.value, 0);
-                    let startAngle = 0;
-                    const cx = chartConfig.width / 2;
-                    const cy = chartConfig.height / 2 + 10;
-                    const radius = Math.min(chartWidth, chartHeight) / 2 - 20;
-                    const slices = chartConfig.data.map(d => {
-                      const angle = (d.value / total) * 2 * Math.PI;
-                      const endAngle = startAngle + angle;
-                      const x1 = cx + radius * Math.cos(startAngle);
-                      const y1 = cy + radius * Math.sin(startAngle);
-                      const x2 = cx + radius * Math.cos(endAngle);
-                      const y2 = cy + radius * Math.sin(endAngle);
-                      const largeArc = angle > Math.PI ? 1 : 0;
-                      const path = `<path d="M${cx},${cy} L${x1},${y1} A${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z" fill="${d.color}"/>`;
-                      startAngle = endAngle;
-                      return path;
-                    }).join('');
-                    chartSvg = `<svg width="${chartConfig.width}" height="${chartConfig.height}" xmlns="http://www.w3.org/2000/svg">
-                      <text x="${chartConfig.width/2}" y="20" text-anchor="middle" font-size="14" font-weight="600">${chartConfig.title}</text>
-                      ${slices}
-                    </svg>`;
-                  } else if (chartConfig.type === 'line' || chartConfig.type === 'area') {
-                    const points = chartConfig.data.map((d, i) => {
-                      const x = 40 + (i / (chartConfig.data.length - 1)) * (chartWidth - 20);
-                      const y = chartHeight - (d.value / maxValue) * (chartHeight - 30) + 30;
-                      return `${x},${y}`;
-                    }).join(' ');
-                    const areaPath = chartConfig.type === 'area' 
-                      ? `<polygon points="40,${chartHeight + 30} ${points} ${40 + chartWidth - 20},${chartHeight + 30}" fill="${chartConfig.data[0]?.color || '#3b82f6'}" opacity="0.3"/>`
-                      : '';
-                    const labels = chartConfig.data.map((d, i) => {
-                      const x = 40 + (i / (chartConfig.data.length - 1)) * (chartWidth - 20);
-                      return `<text x="${x}" y="${chartHeight + 48}" text-anchor="middle" font-size="11" fill="#666">${d.label}</text>`;
-                    }).join('');
-                    chartSvg = `<svg width="${chartConfig.width}" height="${chartConfig.height}" xmlns="http://www.w3.org/2000/svg">
-                      <text x="${chartConfig.width/2}" y="20" text-anchor="middle" font-size="14" font-weight="600">${chartConfig.title}</text>
-                      ${areaPath}
-                      <polyline points="${points}" fill="none" stroke="${chartConfig.data[0]?.color || '#3b82f6'}" stroke-width="3"/>
-                      ${labels}
-                    </svg>`;
-                  }
+                  // Store chart config as JSON for enterprise chart component
+                  const enterpriseChartConfig = {
+                    type: chartConfig.type,
+                    title: chartConfig.title,
+                    data: chartConfig.data,
+                    showGrid: chartConfig.showGrid ?? true,
+                    showLegend: chartConfig.showLegend ?? true,
+                    gradientEnabled: chartConfig.gradientEnabled ?? true,
+                    animationDuration: chartConfig.animationDuration ?? 1200,
+                  };
 
                   const newSection: any = {
                     id: `chart-${Date.now()}`,
                     title: chartConfig.title,
-                    content: chartSvg,
+                    content: JSON.stringify(enterpriseChartConfig),
                     type: "chart",
                     editable: false,
                     order: sections.length,
