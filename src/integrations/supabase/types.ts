@@ -4008,13 +4008,17 @@ export type Database = {
       }
       purchasable_reports: {
         Row: {
+          category: string | null
           created_at: string
           currency: string
           description: string | null
           download_count: number | null
+          featured: boolean | null
           file_path: string
           id: string
           is_published: boolean | null
+          page_count: number | null
+          preview_images: string[] | null
           price_cents: number
           stripe_price_id: string | null
           thumbnail_url: string | null
@@ -4023,13 +4027,17 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           currency?: string
           description?: string | null
           download_count?: number | null
+          featured?: boolean | null
           file_path: string
           id?: string
           is_published?: boolean | null
+          page_count?: number | null
+          preview_images?: string[] | null
           price_cents?: number
           stripe_price_id?: string | null
           thumbnail_url?: string | null
@@ -4038,13 +4046,17 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           currency?: string
           description?: string | null
           download_count?: number | null
+          featured?: boolean | null
           file_path?: string
           id?: string
           is_published?: boolean | null
+          page_count?: number | null
+          preview_images?: string[] | null
           price_cents?: number
           stripe_price_id?: string | null
           thumbnail_url?: string | null
