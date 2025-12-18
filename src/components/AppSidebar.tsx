@@ -75,6 +75,11 @@ const aiToolsItems = [
     icon: MessageSquare,
   },
   {
+    title: "Tasks",
+    url: "/finance/tasks",
+    icon: ClipboardList,
+  },
+  {
     title: "Calendar",
     url: "/calendar",
     icon: Calendar,

@@ -48,12 +48,7 @@ const investorItems = [
     icon: BarChart3,
   },
   { 
-    title: "Opportunities", 
-    url: "/opportunities", 
-    icon: Briefcase,
-  },
-  { 
-    title: "Research Reports", 
+    title: "Research Reports",
     url: "/investor/research", 
     icon: FileText,
   },
