@@ -832,24 +832,27 @@ export function EnterpriseChart({
               Live Preview - {editConfig.type.charAt(0).toUpperCase() + editConfig.type.slice(1)} Chart
             </Label>
             <div 
-              className="h-[250px] bg-background/50 rounded-md border border-border/50" 
-              key={`preview-${editConfig.type}-${editData.length}-${JSON.stringify(editData)}-${editConfig.showGrid}-${editConfig.showLegend}-${editConfig.gradientEnabled}`}
+              className="h-[250px] bg-background/50 rounded-md border border-border/50"
             >
               <ResponsiveContainer width="100%" height="100%">
                 {(() => {
-                  const previewData = editData.map(d => ({
+                  // Use editData directly for real-time updates
+                  const previewData = editData.map((d) => ({
                     name: d.label,
                     value: d.value,
                     fill: d.color,
                   }));
 
+                  // Create a unique key for chart re-rendering
+                  const chartKey = `${editConfig.type}-${previewData.length}-${previewData.map(d => `${d.name}:${d.value}:${d.fill}`).join(',')}`;
+
                   switch (editConfig.type) {
                     case "bar":
                       return (
-                        <BarChart data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                        <BarChart key={chartKey} data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                           <defs>
                             {previewData.map((entry, index) => (
-                              <linearGradient key={`preview-bar-gradient-${index}`} id={`previewBarGradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                              <linearGradient key={`preview-bar-gradient-${index}`} id={`previewBarGradient-${index}-${entry.fill.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
                                 <stop offset="100%" stopColor={entry.fill} stopOpacity={0.6} />
                               </linearGradient>
@@ -871,11 +874,11 @@ export function EnterpriseChart({
                           />
                           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }} />
                           {editConfig.showLegend !== false && <Legend content={<CustomLegend />} />}
-                          <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={300}>
+                          <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={300} isAnimationActive={false}>
                             {previewData.map((entry, index) => (
                               <Cell 
-                                key={`preview-bar-${index}`} 
-                                fill={editConfig.gradientEnabled !== false ? `url(#previewBarGradient-${index})` : entry.fill} 
+                                key={`preview-bar-${index}-${entry.fill}`} 
+                                fill={editConfig.gradientEnabled !== false ? `url(#previewBarGradient-${index}-${entry.fill.replace('#', '')})` : entry.fill} 
                               />
                             ))}
                           </Bar>
@@ -883,9 +886,9 @@ export function EnterpriseChart({
                       );
                     case "line":
                       return (
-                        <LineChart data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                        <LineChart key={chartKey} data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                           <defs>
-                            <linearGradient id="previewLineGradient" x1="0" y1="0" x2="1" y2="0">
+                            <linearGradient id={`previewLineGradient-${previewData.length}`} x1="0" y1="0" x2="1" y2="0">
                               {previewData.map((entry, index) => (
                                 <stop
                                   key={index}
@@ -912,19 +915,19 @@ export function EnterpriseChart({
                           <Line 
                             type="monotone" 
                             dataKey="value" 
-                            stroke="url(#previewLineGradient)"
+                            stroke={`url(#previewLineGradient-${previewData.length})`}
                             strokeWidth={3} 
                             dot={{ r: 5, fill: 'hsl(var(--background))', strokeWidth: 3, stroke: previewData[0]?.fill || '#3b82f6' }}
                             activeDot={{ r: 7, fill: previewData[0]?.fill || '#3b82f6' }}
-                            animationDuration={300}
+                            isAnimationActive={false}
                           />
                         </LineChart>
                       );
                     case "area":
                       return (
-                        <AreaChart data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                        <AreaChart key={chartKey} data={previewData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                           <defs>
-                            <linearGradient id="previewAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                            <linearGradient id={`previewAreaGradient-${previewData[0]?.fill?.replace('#', '') || 'default'}`} x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor={previewData[0]?.fill || '#3b82f6'} stopOpacity={0.8} />
                               <stop offset="50%" stopColor={previewData[0]?.fill || '#3b82f6'} stopOpacity={0.4} />
                               <stop offset="100%" stopColor={previewData[0]?.fill || '#3b82f6'} stopOpacity={0.05} />
@@ -949,17 +952,17 @@ export function EnterpriseChart({
                             dataKey="value" 
                             stroke={previewData[0]?.fill || '#3b82f6'}
                             strokeWidth={2}
-                            fill="url(#previewAreaGradient)"
-                            animationDuration={300}
+                            fill={`url(#previewAreaGradient-${previewData[0]?.fill?.replace('#', '') || 'default'})`}
+                            isAnimationActive={false}
                           />
                         </AreaChart>
                       );
                     case "pie":
                       return (
-                        <PieChart>
+                        <PieChart key={chartKey}>
                           <defs>
                             {previewData.map((entry, index) => (
-                              <linearGradient key={`preview-pie-gradient-${index}`} id={`previewPieGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                              <linearGradient key={`preview-pie-gradient-${index}`} id={`previewPieGradient-${index}-${entry.fill.replace('#', '')}`} x1="0" y1="0" x2="1" y2="1">
                                 <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
                                 <stop offset="100%" stopColor={entry.fill} stopOpacity={0.7} />
                               </linearGradient>
@@ -975,12 +978,12 @@ export function EnterpriseChart({
                             dataKey="value"
                             label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                             labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                            animationDuration={300}
+                            isAnimationActive={false}
                           >
                             {previewData.map((entry, index) => (
                               <Cell 
-                                key={`preview-pie-${index}`} 
-                                fill={editConfig.gradientEnabled !== false ? `url(#previewPieGradient-${index})` : entry.fill}
+                                key={`preview-pie-${index}-${entry.fill}`} 
+                                fill={editConfig.gradientEnabled !== false ? `url(#previewPieGradient-${index}-${entry.fill.replace('#', '')})` : entry.fill}
                                 stroke="hsl(var(--background))"
                                 strokeWidth={2}
                               />
@@ -992,10 +995,10 @@ export function EnterpriseChart({
                       );
                     case "donut":
                       return (
-                        <PieChart>
+                        <PieChart key={chartKey}>
                           <defs>
                             {previewData.map((entry, index) => (
-                              <linearGradient key={`preview-donut-gradient-${index}`} id={`previewDonutGradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                              <linearGradient key={`preview-donut-gradient-${index}`} id={`previewDonutGradient-${index}-${entry.fill.replace('#', '')}`} x1="0" y1="0" x2="1" y2="1">
                                 <stop offset="0%" stopColor={entry.fill} stopOpacity={1} />
                                 <stop offset="100%" stopColor={entry.fill} stopOpacity={0.7} />
                               </linearGradient>
@@ -1011,12 +1014,12 @@ export function EnterpriseChart({
                             dataKey="value"
                             label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                             labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                            animationDuration={300}
+                            isAnimationActive={false}
                           >
                             {previewData.map((entry, index) => (
                               <Cell 
-                                key={`preview-donut-${index}`} 
-                                fill={editConfig.gradientEnabled !== false ? `url(#previewDonutGradient-${index})` : entry.fill}
+                                key={`preview-donut-${index}-${entry.fill}`} 
+                                fill={editConfig.gradientEnabled !== false ? `url(#previewDonutGradient-${index}-${entry.fill.replace('#', '')})` : entry.fill}
                                 stroke="hsl(var(--background))"
                                 strokeWidth={2}
                               />
@@ -1029,6 +1032,7 @@ export function EnterpriseChart({
                     case "radial":
                       return (
                         <RadialBarChart 
+                          key={chartKey}
                           cx="50%" 
                           cy="50%" 
                           innerRadius="20%" 
@@ -1042,10 +1046,10 @@ export function EnterpriseChart({
                             background={{ fill: 'hsl(var(--muted))' }} 
                             dataKey="value" 
                             cornerRadius={8}
-                            animationDuration={300}
+                            isAnimationActive={false}
                           >
                             {previewData.map((entry, index) => (
-                              <Cell key={`preview-radial-${index}`} fill={entry.fill} />
+                              <Cell key={`preview-radial-${index}-${entry.fill}`} fill={entry.fill} />
                             ))}
                           </RadialBar>
                           <Tooltip content={<CustomTooltip />} />
