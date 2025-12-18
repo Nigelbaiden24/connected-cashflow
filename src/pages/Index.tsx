@@ -197,16 +197,6 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start"
                     onClick={() => {
-                      navigate("/login-business");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    FlowPulse Business
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
                       navigate("/login-investor");
                       setMobileMenuOpen(false);
                     }}
@@ -290,12 +280,6 @@ const Index = () => {
                   onClick={() => navigate('/login')}
                 >
                   FlowPulse Finance
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer py-3 text-base hover:bg-green-500/10 focus:bg-green-500/10"
-                  onClick={() => navigate('/login-business')}
-                >
-                  FlowPulse Business
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer py-3 text-base hover:bg-purple-500/10 focus:bg-purple-500/10"
@@ -504,51 +488,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Business Platform */}
-          <Card className="relative overflow-hidden border-2 border-green-500/30 hover:border-green-500/60 transition-all group bg-gradient-to-br from-green-950/50 to-background backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -top-20 -right-20 w-60 h-60 bg-green-500/30 blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" />
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-emerald-500/20 blur-3xl opacity-0 group-hover:opacity-50 transition-opacity" />
-            
-            <CardHeader className="relative">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-4 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl shadow-lg shadow-green-500/50">
-                  <Building2 className="h-10 w-10 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-3xl bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                    FlowPulse Business
-                  </CardTitle>
-                  <CardDescription className="text-base">For Modern Teams & Enterprises</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="relative space-y-6">
-              <p className="text-muted-foreground leading-relaxed">
-                Comprehensive business management platform with project tracking, team collaboration, CRM, and advanced analytics.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {businessFeatures.map((feature, idx) => (
-                  <div key={idx} className="space-y-2 p-3 rounded-lg bg-green-500/5 border border-green-500/20 hover:bg-green-500/10 transition-colors">
-                    <feature.icon className="h-6 w-6 text-green-400" />
-                    <h4 className="font-semibold text-sm">{feature.title}</h4>
-                    <p className="text-xs text-muted-foreground">{feature.desc}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/30" onClick={() => navigate('/login-business')}>
-                Access Business Platform
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Investor Platform - Full Width Below */}
-        <div className="mt-0">
+          {/* Investor Platform */}
           <Card className="relative overflow-hidden border-2 border-purple-500/30 hover:border-purple-500/60 transition-all group bg-gradient-to-br from-purple-950/50 to-background backdrop-blur-sm">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-fuchsia-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="absolute -top-20 -right-20 w-60 h-60 bg-purple-500/30 blur-3xl opacity-0 group-hover:opacity-70 transition-opacity" />
@@ -573,7 +513,7 @@ const Index = () => {
                 Comprehensive investment management platform with real-time market data, portfolio analytics, and global investment opportunities.
               </p>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 hover:bg-purple-500/10 transition-colors">
                   <BarChart3 className="h-6 w-6 text-purple-400" />
                   <h4 className="font-semibold text-sm">Market Analysis</h4>
@@ -603,6 +543,7 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
       </section>
 
       {/* Benefits Section */}

@@ -175,12 +175,9 @@ const Pricing = () => {
         </div>
 
         <Tabs defaultValue="finance" className="mb-12">
-          <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-3 mb-8 h-auto">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 mb-8 h-auto">
             <TabsTrigger value="finance" className="text-base md:text-lg py-3 px-4">
               FlowPulse Finance
-            </TabsTrigger>
-            <TabsTrigger value="business" className="text-base md:text-lg py-3 px-4">
-              FlowPulse Business
             </TabsTrigger>
             <TabsTrigger value="investor" className="text-base md:text-lg py-3 px-4">
               FlowPulse Investor
@@ -264,86 +261,6 @@ const Pricing = () => {
               ))}
             </div>
           </TabsContent>
-
-          <TabsContent value="business">
-            <div className="mb-6 text-center">
-              <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(142, 76%, 36%)' }}>FlowPulse Business</h2>
-              <p className="text-muted-foreground">Complete business management and operations platform</p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {tiers.map((tier, index) => (
-                <Card
-                  key={`business-${tier.name}`}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
-                    tier.popular ? 'border-2 shadow-lg' : ''
-                  }`}
-                  style={tier.popular ? { borderColor: 'hsl(142, 76%, 36%)' } : {}}
-                >
-                  {tier.popular && (
-                    <div className="absolute top-0 right-0 text-white px-4 py-1 text-sm font-semibold rounded-bl-lg" style={{ background: 'linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))' }}>
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="absolute top-0 left-0 right-0 h-2" style={{ background: `linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))` }} />
-                  
-                  <CardHeader className="pt-8">
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))' }}>
-                      <tier.icon className="h-8 w-8 text-white" />
-                    </div>
-                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    <CardDescription className="text-base">{tier.description}</CardDescription>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="mb-6">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">£{calculateMonthlyEquivalent(tier.monthlyPrice)}</span>
-                        <span className="text-muted-foreground">/{isAnnual ? 'month' : 'month'}</span>
-                      </div>
-                      {isAnnual && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Billed annually at £{calculatePrice(tier.monthlyPrice)}
-                        </p>
-                      )}
-                      {!isAnnual && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Billed monthly
-                        </p>
-                      )}
-                    </div>
-
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-start gap-3">
-                          <div className="rounded-full p-1 flex-shrink-0 mt-0.5" style={{ background: 'linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))' }}>
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-
-                  <CardFooter>
-                    <Button
-                      className="w-full text-white border-0 hover:opacity-90"
-                      size="lg"
-                      style={{ background: 'linear-gradient(to right, hsl(142, 76%, 36%), hsl(142, 70%, 45%))' }}
-                      onClick={() => handleCheckout(
-                        tier.stripePriceId,
-                        'subscription',
-                        tier.name,
-                        'business'
-                      )}
-                      disabled={loading === `business-${tier.name}`}
-                    >
-                      {loading === `business-${tier.name}` ? 'Loading...' : 'Get Started'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-            </TabsContent>
 
           <TabsContent value="investor">
             <div className="mb-6 text-center">
