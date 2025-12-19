@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -55,6 +56,8 @@ import {
   FolderKanban,
   Zap,
   Globe,
+  Crown,
+  ChevronDown,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -67,26 +70,31 @@ const aiToolsItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: LayoutDashboard,
+    badge: null,
   },
   {
     title: "AI Chatbot",
     url: "/theodore",
     icon: MessageSquare,
+    badge: "AI",
   },
   {
     title: "Calendar",
     url: "/calendar",
     icon: Calendar,
+    badge: null,
   },
   {
     title: "Document Generator",
     url: "/finance-ai-generator",
     icon: Sparkles,
+    badge: "AI",
   },
   {
     title: "Market Data",
     url: "/market",
     icon: TrendingUp,
+    badge: "Live",
   },
 ];
 
@@ -187,8 +195,8 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
 
   const getNavClassName = (path: string) => {
     return isActive(path)
-      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-      : "hover:bg-sidebar-accent/50";
+      ? "bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-2 border-primary font-medium shadow-sm"
+      : "hover:bg-muted/80 hover:text-foreground transition-all duration-200";
   };
 
   const getUserInitials = (email: string) => {
@@ -201,51 +209,110 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
       .slice(0, 2);
   };
 
+  const renderBadge = (badge: string | null) => {
+    if (!badge) return null;
+    
+    if (badge === "AI") {
+      return (
+        <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4 bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-600 border-violet-500/30">
+          {badge}
+        </Badge>
+      );
+    }
+    if (badge === "Live") {
+      return (
+        <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4 bg-gradient-to-r from-emerald-500/20 to-green-500/20 text-emerald-600 border-emerald-500/30">
+          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1 animate-pulse" />
+          {badge}
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 h-4">
+        {badge}
+      </Badge>
+    );
+  };
+
   return (
-      <Sidebar 
-        className={`${isCollapsed ? "w-16" : "w-64"} border-r`}
-        collapsible="icon"
-      >
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className={`flex items-center gap-2 px-4 py-2 ${isCollapsed ? 'justify-center px-0' : ''}`}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground flex-shrink-0">
-            <Bot className="h-4 w-4" />
+    <Sidebar 
+      className={`${isCollapsed ? "w-16" : "w-64"} border-r border-border/50 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950`}
+      collapsible="icon"
+    >
+      {/* Premium Header */}
+      <SidebarHeader className="border-b border-white/10 bg-gradient-to-r from-primary/10 to-transparent">
+        <div className={`flex items-center gap-3 px-4 py-4 ${isCollapsed ? 'justify-center px-2' : ''}`}>
+          <div className="relative flex-shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25">
+              <Bot className="h-5 w-5" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
-              <TranslatedText as="span" className="text-sm font-semibold truncate">FlowPulse.io</TranslatedText>
-              <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">Wealth Platform</TranslatedText>
+              <div className="flex items-center gap-1.5">
+                <TranslatedText as="span" className="text-base font-bold text-white tracking-tight">FlowPulse</TranslatedText>
+                <Badge variant="secondary" className="text-[9px] px-1 py-0 h-3.5 bg-amber-500/20 text-amber-400 border-amber-500/30">
+                  PRO
+                </Badge>
+              </div>
+              <TranslatedText as="span" className="text-xs text-slate-400">Wealth Management Platform</TranslatedText>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-4">
         <TooltipProvider>
-          <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel><TranslatedText>AI Tools</TranslatedText></SidebarGroupLabel>}
+          {/* AI Tools Section */}
+          <SidebarGroup className="mb-2">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-3 w-3" />
+                  <TranslatedText>AI Tools</TranslatedText>
+                </div>
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-1">
                 {aiToolsItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center">
-                            <NavLink to={item.url} className={getNavClassName(item.url)}>
+                          <SidebarMenuButton asChild className="justify-center h-10 rounded-lg">
+                            <NavLink 
+                              to={item.url} 
+                              className={`${isActive(item.url) 
+                                ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20' 
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              } transition-all duration-200`}
+                            >
                               <item.icon className="h-4 w-4 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent side="right" className="bg-slate-800 border-slate-700 text-white">
                           <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
+                      <SidebarMenuButton asChild className="h-10 rounded-lg">
+                        <NavLink 
+                          to={item.url} 
+                          className={`${isActive(item.url) 
+                            ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20 border-l-2 border-primary' 
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          } flex items-center gap-3 transition-all duration-200`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isActive(item.url) ? 'bg-primary/20' : 'bg-white/5'
+                          }`}>
+                            <item.icon className="h-4 w-4 flex-shrink-0" />
+                          </div>
+                          <TranslatedText as="span" className="truncate text-sm">{item.title}</TranslatedText>
+                          {renderBadge(item.badge)}
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -255,30 +322,57 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Financial Planning</TranslatedText></SidebarGroupLabel>}
+          {/* Divider */}
+          <div className="mx-3 my-4 border-t border-white/5" />
+
+          {/* Financial Planning Section */}
+          <SidebarGroup className="mb-2">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <PieChart className="h-3 w-3" />
+                  <TranslatedText>Financial Planning</TranslatedText>
+                </div>
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-1">
                 {financialPlanningItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center">
-                            <NavLink to={item.url} className={getNavClassName(item.url)}>
+                          <SidebarMenuButton asChild className="justify-center h-10 rounded-lg">
+                            <NavLink 
+                              to={item.url} 
+                              className={`${isActive(item.url) 
+                                ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20' 
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              } transition-all duration-200`}
+                            >
                               <item.icon className="h-4 w-4 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent side="right" className="bg-slate-800 border-slate-700 text-white">
                           <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
+                      <SidebarMenuButton asChild className="h-10 rounded-lg">
+                        <NavLink 
+                          to={item.url} 
+                          className={`${isActive(item.url) 
+                            ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20 border-l-2 border-primary' 
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          } flex items-center gap-3 transition-all duration-200`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isActive(item.url) ? 'bg-primary/20' : 'bg-white/5'
+                          }`}>
+                            <item.icon className="h-4 w-4 flex-shrink-0" />
+                          </div>
+                          <TranslatedText as="span" className="truncate text-sm">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -288,30 +382,57 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
+          {/* Divider */}
+          <div className="mx-3 my-4 border-t border-white/5" />
+
+          {/* Practice Management Section */}
           <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Practice Management</TranslatedText></SidebarGroupLabel>}
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 px-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="h-3 w-3" />
+                  <TranslatedText>Practice Management</TranslatedText>
+                </div>
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="space-y-1">
                 {practiceManagementItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center">
-                            <NavLink to={item.url} className={getNavClassName(item.url)}>
+                          <SidebarMenuButton asChild className="justify-center h-10 rounded-lg">
+                            <NavLink 
+                              to={item.url} 
+                              className={`${isActive(item.url) 
+                                ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20' 
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              } transition-all duration-200`}
+                            >
                               <item.icon className="h-4 w-4 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent side="right" className="bg-slate-800 border-slate-700 text-white">
                           <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
+                      <SidebarMenuButton asChild className="h-10 rounded-lg">
+                        <NavLink 
+                          to={item.url} 
+                          className={`${isActive(item.url) 
+                            ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20 border-l-2 border-primary' 
+                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                          } flex items-center gap-3 transition-all duration-200`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isActive(item.url) ? 'bg-primary/20' : 'bg-white/5'
+                          }`}>
+                            <item.icon className="h-4 w-4 flex-shrink-0" />
+                          </div>
+                          <TranslatedText as="span" className="truncate text-sm">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -323,21 +444,37 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                   {isCollapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="justify-center">
-                          <NavLink to="/finance/languages" className={getNavClassName("/finance/languages")}>
+                        <SidebarMenuButton asChild className="justify-center h-10 rounded-lg">
+                          <NavLink 
+                            to="/finance/languages" 
+                            className={`${isActive("/finance/languages") 
+                              ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20' 
+                              : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            } transition-all duration-200`}
+                          >
                             <Globe className="h-4 w-4 flex-shrink-0" />
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
+                      <TooltipContent side="right" className="bg-slate-800 border-slate-700 text-white">
                         <TranslatedText as="p">Languages</TranslatedText>
                       </TooltipContent>
                     </Tooltip>
                   ) : (
-                    <SidebarMenuButton asChild>
-                      <NavLink to="/finance/languages" className={`${getNavClassName("/finance/languages")} flex items-center gap-3`}>
-                        <Globe className="h-4 w-4 flex-shrink-0" />
-                        <TranslatedText as="span" className="truncate">Languages</TranslatedText>
+                    <SidebarMenuButton asChild className="h-10 rounded-lg">
+                      <NavLink 
+                        to="/finance/languages" 
+                        className={`${isActive("/finance/languages") 
+                          ? 'bg-gradient-to-r from-primary/30 to-primary/20 text-white shadow-lg shadow-primary/20 border-l-2 border-primary' 
+                          : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        } flex items-center gap-3 transition-all duration-200`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          isActive("/finance/languages") ? 'bg-primary/20' : 'bg-white/5'
+                        }`}>
+                          <Globe className="h-4 w-4 flex-shrink-0" />
+                        </div>
+                        <TranslatedText as="span" className="truncate text-sm">Languages</TranslatedText>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
@@ -348,25 +485,35 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         </TooltipProvider>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
+      {/* Premium Footer */}
+      <SidebarFooter className="border-t border-white/10 bg-gradient-to-t from-slate-950 to-transparent">
         <div className={`p-4 space-y-3 ${isCollapsed ? 'px-2' : ''}`}>
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                {getUserInitials(userEmail)}
-              </AvatarFallback>
-            </Avatar>
+          {/* User Profile Card */}
+          <div className={`flex items-center gap-3 p-2 rounded-xl bg-white/5 ${isCollapsed ? 'justify-center p-2' : ''}`}>
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-9 w-9 ring-2 ring-primary/30 ring-offset-2 ring-offset-slate-900">
+                <AvatarFallback className="text-xs bg-gradient-to-br from-primary to-primary/80 text-white font-semibold">
+                  {getUserInitials(userEmail)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900" />
+            </div>
             {!isCollapsed && (
-              <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-sm font-medium truncate">{userEmail}</span>
-                <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">FlowPulse Advisor</TranslatedText>
+              <div className="flex flex-col min-w-0 overflow-hidden flex-1">
+                <span className="text-sm font-medium text-white truncate">{userEmail.split('@')[0]}</span>
+                <div className="flex items-center gap-1">
+                  <Crown className="h-3 w-3 text-amber-400" />
+                  <TranslatedText as="span" className="text-[11px] text-amber-400 font-medium">Pro Advisor</TranslatedText>
+                </div>
               </div>
             )}
           </div>
+          
+          {/* Sign Out Button */}
           <Button
             variant="ghost"
             size="sm"
-            className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
+            className={`w-full text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200 ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
             onClick={onLogout}
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
