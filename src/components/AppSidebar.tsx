@@ -187,8 +187,8 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
 
   const getNavClassName = (path: string) => {
     return isActive(path)
-      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-      : "hover:bg-sidebar-accent/50";
+      ? "bg-white/20 text-white font-medium shadow-lg backdrop-blur-sm border border-white/20"
+      : "text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300";
   };
 
   const getUserInitials = (email: string) => {
@@ -202,50 +202,74 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   };
 
   return (
-      <Sidebar 
-        className={`${isCollapsed ? "w-16" : "w-64"} border-r`}
-        collapsible="icon"
-      >
-      <SidebarHeader className="border-b border-sidebar-border">
-        <div className={`flex items-center gap-2 px-4 py-2 ${isCollapsed ? 'justify-center px-0' : ''}`}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground flex-shrink-0">
-            <Bot className="h-4 w-4" />
+    <Sidebar 
+      className={`${isCollapsed ? "w-16" : "w-64"} border-r-0 relative overflow-hidden`}
+      collapsible="icon"
+      style={{
+        background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
+      }}
+    >
+      {/* Animated background effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 via-transparent to-transparent" />
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 -left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+        <div className="absolute -bottom-10 right-0 w-48 h-48 bg-white/3 rounded-full blur-3xl" />
+      </div>
+
+      <SidebarHeader className="border-b border-white/10 relative z-10">
+        <div className={`flex items-center gap-3 px-4 py-4 ${isCollapsed ? 'justify-center px-2' : ''}`}>
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-white/30 to-white/10 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
+              <Bot className="h-5 w-5 text-white" />
+            </div>
           </div>
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
-              <TranslatedText as="span" className="text-sm font-semibold truncate">FlowPulse.io</TranslatedText>
-              <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">Wealth Platform</TranslatedText>
+              <TranslatedText as="span" className="text-base font-bold text-white tracking-tight">FlowPulse.io</TranslatedText>
+              <TranslatedText as="span" className="text-xs text-white/60 font-medium">Wealth Platform</TranslatedText>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="relative z-10 px-2">
         <TooltipProvider>
-          <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel><TranslatedText>AI Tools</TranslatedText></SidebarGroupLabel>}
+          <SidebarGroup className="mt-4">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                <TranslatedText>AI Tools</TranslatedText>
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
-              <SidebarMenu>
-                {aiToolsItems.map((item) => (
+              <SidebarMenu className="space-y-1">
+                {aiToolsItems.map((item, index) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center">
-                            <NavLink to={item.url} className={getNavClassName(item.url)}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
+                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
                           <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
+                      <SidebarMenuButton asChild className="h-10">
+                        <NavLink 
+                          to={item.url} 
+                          className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
+                          </div>
+                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -255,30 +279,39 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Financial Planning</TranslatedText></SidebarGroupLabel>}
+          <SidebarGroup className="mt-6">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                <TranslatedText>Financial Planning</TranslatedText>
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
-              <SidebarMenu>
-                {financialPlanningItems.map((item) => (
+              <SidebarMenu className="space-y-1">
+                {financialPlanningItems.map((item, index) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center">
-                            <NavLink to={item.url} className={getNavClassName(item.url)}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
+                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
                           <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
+                      <SidebarMenuButton asChild className="h-10">
+                        <NavLink 
+                          to={item.url} 
+                          className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}
+                        >
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
+                          </div>
+                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -288,30 +321,39 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <SidebarGroup>
-            {!isCollapsed && <SidebarGroupLabel><TranslatedText>Practice Management</TranslatedText></SidebarGroupLabel>}
+          <SidebarGroup className="mt-6">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                <TranslatedText>Practice Management</TranslatedText>
+              </SidebarGroupLabel>
+            )}
             <SidebarGroupContent>
-              <SidebarMenu>
-                {practiceManagementItems.map((item) => (
+              <SidebarMenu className="space-y-1">
+                {practiceManagementItems.map((item, index) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center">
-                            <NavLink to={item.url} className={getNavClassName(item.url)}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
+                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
                             </NavLink>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
                           <TranslatedText as="p">{item.title}</TranslatedText>
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <SidebarMenuButton asChild>
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3`}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <TranslatedText as="span" className="truncate">{item.title}</TranslatedText>
+                      <SidebarMenuButton asChild className="h-10">
+                        <NavLink 
+                          to={item.url} 
+                          className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}
+                        >
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
+                          </div>
+                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
                         </NavLink>
                       </SidebarMenuButton>
                     )}
@@ -323,21 +365,23 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
                   {isCollapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <SidebarMenuButton asChild className="justify-center">
-                          <NavLink to="/finance/languages" className={getNavClassName("/finance/languages")}>
-                            <Globe className="h-4 w-4 flex-shrink-0" />
+                        <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
+                          <NavLink to="/finance/languages" className={`${getNavClassName("/finance/languages")} rounded-xl flex items-center justify-center`}>
+                            <Globe className="h-5 w-5 flex-shrink-0" />
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
+                      <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
                         <TranslatedText as="p">Languages</TranslatedText>
                       </TooltipContent>
                     </Tooltip>
                   ) : (
-                    <SidebarMenuButton asChild>
-                      <NavLink to="/finance/languages" className={`${getNavClassName("/finance/languages")} flex items-center gap-3`}>
-                        <Globe className="h-4 w-4 flex-shrink-0" />
-                        <TranslatedText as="span" className="truncate">Languages</TranslatedText>
+                    <SidebarMenuButton asChild className="h-10">
+                      <NavLink to="/finance/languages" className={`${getNavClassName("/finance/languages")} flex items-center gap-3 px-3 py-2 rounded-xl`}>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                          <Globe className="h-4 w-4 flex-shrink-0 text-white" />
+                        </div>
+                        <TranslatedText as="span" className="truncate font-medium text-sm">Languages</TranslatedText>
                       </NavLink>
                     </SidebarMenuButton>
                   )}
@@ -348,25 +392,28 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         </TooltipProvider>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-white/10 relative z-10">
         <div className={`p-4 space-y-3 ${isCollapsed ? 'px-2' : ''}`}>
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                {getUserInitials(userEmail)}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-white/40 to-white/20 rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
+              <Avatar className="relative h-9 w-9 flex-shrink-0 ring-2 ring-white/20">
+                <AvatarFallback className="text-xs bg-white/20 text-white font-bold backdrop-blur-sm">
+                  {getUserInitials(userEmail)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-sm font-medium truncate">{userEmail}</span>
-                <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">FlowPulse Advisor</TranslatedText>
+                <span className="text-sm font-medium text-white truncate">{userEmail}</span>
+                <TranslatedText as="span" className="text-xs text-white/50 truncate">FlowPulse Advisor</TranslatedText>
               </div>
             )}
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
+            className={`w-full bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
             onClick={onLogout}
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
