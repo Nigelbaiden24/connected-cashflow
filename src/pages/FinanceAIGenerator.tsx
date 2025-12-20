@@ -799,257 +799,250 @@ ELITE DOCUMENT REQUIREMENTS:
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar userEmail="finance@flowpulse.io" onLogout={handleLogout} />
-        <div className="flex-1 flex flex-col">
-          <main className="flex-1">
-            <div className="bg-background flex flex-col h-full">
-              <DocumentEditorToolbar
-                templates={documentTemplates}
-                selectedTemplate={selectedTemplate}
-                onTemplateSelect={handleTemplateSelect}
-                onImageUpload={handleImageUpload}
-                onLogoUpload={handleLogoUpload}
-                backgroundColor={backgroundColor}
-                onBackgroundColorChange={setBackgroundColor}
-                textColor={textColor}
-                onTextColorChange={setTextColor}
-                onDownloadPDF={handleDownloadPDF}
-                onFillDocument={handleFillDocument}
-                onAddPage={handleAddPage}
-                fontFamily={fontFamily}
-                onFontFamilyChange={setFontFamily}
-                fontSize={fontSize}
-                onFontSizeChange={setFontSize}
-                textAlign={textAlign}
-                onTextAlignChange={setTextAlign}
-                zoom={zoom}
-                onZoomChange={setZoom}
-                onUndo={handleUndo}
-                onRedo={handleRedo}
-                canUndo={historyIndex > 0}
-                canRedo={historyIndex < history.length - 1}
-                onAddSection={() => {
-                  const maxY = currentPageSections.length > 0
-                    ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
-                    : 0;
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="bg-background flex flex-col flex-1 min-h-0 overflow-hidden">
+        <DocumentEditorToolbar
+          templates={documentTemplates}
+          selectedTemplate={selectedTemplate}
+          onTemplateSelect={handleTemplateSelect}
+          onImageUpload={handleImageUpload}
+          onLogoUpload={handleLogoUpload}
+          backgroundColor={backgroundColor}
+          onBackgroundColorChange={setBackgroundColor}
+          textColor={textColor}
+          onTextColorChange={setTextColor}
+          onDownloadPDF={handleDownloadPDF}
+          onFillDocument={handleFillDocument}
+          onAddPage={handleAddPage}
+          fontFamily={fontFamily}
+          onFontFamilyChange={setFontFamily}
+          fontSize={fontSize}
+          onFontSizeChange={setFontSize}
+          textAlign={textAlign}
+          onTextAlignChange={setTextAlign}
+          zoom={zoom}
+          onZoomChange={setZoom}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
+          onAddSection={() => {
+            const maxY = currentPageSections.length > 0
+              ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
+              : 0;
 
-                  const newSection: any = {
-                    id: `custom-${Date.now()}`,
-                    title: "New Section",
-                    content: "Click to edit this section...",
-                    type: "body",
-                    editable: true,
-                    placeholder: "Enter content...",
-                    order: sections.length,
-                    x: 50,
-                    y: maxY + 50,
-                    width: 600,
-                    height: 150,
-                    isCustom: true,
-                    pageId: currentPageId,
-                  };
-                  setSections([...sections, newSection]);
-                  toast({
-                    title: "Section added",
-                    description: "New section created on current page",
-                  });
-                }}
-                onAddShape={handleAddShape}
-                pages={pages}
-                currentPageId={currentPageId}
-                onPageChange={setCurrentPageId}
-                onAddSignatureField={handleAddSignatureField}
-                onRequestSignature={handleRequestSignature}
-                signatureFields={signatureFields}
-                onInsertTable={(rows, cols) => {
-                  const maxY = currentPageSections.length > 0
-                    ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
-                    : 0;
+            const newSection: any = {
+              id: `custom-${Date.now()}`,
+              title: "New Section",
+              content: "Click to edit this section...",
+              type: "body",
+              editable: true,
+              placeholder: "Enter content...",
+              order: sections.length,
+              x: 50,
+              y: maxY + 50,
+              width: 600,
+              height: 150,
+              isCustom: true,
+              pageId: currentPageId,
+            };
+            setSections([...sections, newSection]);
+            toast({
+              title: "Section added",
+              description: "New section created on current page",
+            });
+          }}
+          onAddShape={handleAddShape}
+          pages={pages}
+          currentPageId={currentPageId}
+          onPageChange={setCurrentPageId}
+          onAddSignatureField={handleAddSignatureField}
+          onRequestSignature={handleRequestSignature}
+          signatureFields={signatureFields}
+          onInsertTable={(rows, cols) => {
+            const maxY = currentPageSections.length > 0
+              ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
+              : 0;
 
-                  const headers = Array.from({ length: cols }, (_, i) => `Column ${i + 1}`);
-                  const bodyRows = Array.from({ length: rows }, (_, r) =>
-                    `<tr>${headers
+            const headers = Array.from({ length: cols }, (_, i) => `Column ${i + 1}`);
+            const bodyRows = Array.from({ length: rows }, (_, r) =>
+              `<tr>${headers
+                .map(
+                  (_, c) =>
+                    `<td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #e5e7eb;">Row ${r + 1} value ${c + 1}</td>`
+                )
+                .join("")}</tr>`
+            ).join("");
+
+            const tableHtml = `
+              <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
+                <thead>
+                  <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                    ${headers
                       .map(
-                        (_, c) =>
-                          `<td style="padding: 8px 12px; font-size: 13px; border-bottom: 1px solid #e5e7eb;">Row ${r + 1} value ${c + 1}</td>`
+                        (h) =>
+                          `<th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">${h}</th>`
                       )
-                      .join("")}</tr>`
-                  ).join("");
+                      .join("")}
+                  </tr>
+                </thead>
+                <tbody>
+                  ${bodyRows}
+                </tbody>
+              </table>
+            `;
 
-                  const tableHtml = `
-                    <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
-                      <thead>
-                        <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
-                          ${headers
-                            .map(
-                              (h) =>
-                                `<th style="padding: 10px 12px; text-align: left; font-weight: 600; font-size: 13px;">${h}</th>`
-                            )
-                            .join("")}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${bodyRows}
-                      </tbody>
-                    </table>
-                  `;
+            const newSection: any = {
+              id: `table-${Date.now()}`,
+              title: "Data Table",
+              content: tableHtml,
+              type: "table",
+              editable: false,
+              order: sections.length,
+              x: 50,
+              y: maxY + 50,
+              width: 700,
+              height: 160,
+              isCustom: true,
+              pageId: currentPageId,
+            };
 
-                  const newSection: any = {
-                    id: `table-${Date.now()}`,
-                    title: "Data Table",
-                    content: tableHtml,
-                    type: "table",
-                    editable: false,
-                    order: sections.length,
-                    x: 50,
-                    y: maxY + 50,
-                    width: 700,
-                    height: 160,
-                    isCustom: true,
-                    pageId: currentPageId,
-                  };
+            setSections([...sections, newSection]);
+            toast({
+              title: "Table inserted",
+              description: `${rows} x ${cols} table added to the page`,
+            });
+          }}
+          onInsertChart={(chartConfig) => {
+            const maxY = currentPageSections.length > 0
+              ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
+              : 0;
 
-                  setSections([...sections, newSection]);
-                  toast({
-                    title: "Table inserted",
-                    description: `${rows} x ${cols} table added to the page`,
-                  });
-                }}
-                onInsertChart={(chartConfig) => {
-                  const maxY = currentPageSections.length > 0
-                    ? Math.max(...currentPageSections.map(s => (s.y || 0) + (s.height || 100)))
-                    : 0;
+            // Store chart config as JSON for enterprise chart component
+            const enterpriseChartConfig = {
+              type: chartConfig.type,
+              title: chartConfig.title,
+              data: chartConfig.data,
+              showGrid: chartConfig.showGrid ?? true,
+              showLegend: chartConfig.showLegend ?? true,
+              gradientEnabled: chartConfig.gradientEnabled ?? true,
+              animationDuration: chartConfig.animationDuration ?? 1200,
+              width: chartConfig.width,
+              height: chartConfig.height,
+              xAxisLabel: chartConfig.xAxisLabel,
+              yAxisLabel: chartConfig.yAxisLabel,
+              valuePrefix: chartConfig.valuePrefix,
+              valueSuffix: chartConfig.valueSuffix,
+              showValues: chartConfig.showValues,
+            };
 
-                  // Store chart config as JSON for enterprise chart component
-                  const enterpriseChartConfig = {
-                    type: chartConfig.type,
-                    title: chartConfig.title,
-                    data: chartConfig.data,
-                    showGrid: chartConfig.showGrid ?? true,
-                    showLegend: chartConfig.showLegend ?? true,
-                    gradientEnabled: chartConfig.gradientEnabled ?? true,
-                    animationDuration: chartConfig.animationDuration ?? 1200,
-                    width: chartConfig.width,
-                    height: chartConfig.height,
-                    xAxisLabel: chartConfig.xAxisLabel,
-                    yAxisLabel: chartConfig.yAxisLabel,
-                    valuePrefix: chartConfig.valuePrefix,
-                    valueSuffix: chartConfig.valueSuffix,
-                    showValues: chartConfig.showValues,
-                  };
+            const newSection: any = {
+              id: `chart-${Date.now()}`,
+              title: chartConfig.title,
+              content: JSON.stringify(enterpriseChartConfig),
+              type: "chart",
+              editable: false,
+              order: sections.length,
+              x: chartConfig.x,
+              y: chartConfig.y || maxY + 50,
+              width: chartConfig.width,
+              height: chartConfig.height,
+              isCustom: true,
+              pageId: currentPageId,
+            };
 
-                  const newSection: any = {
-                    id: `chart-${Date.now()}`,
-                    title: chartConfig.title,
-                    content: JSON.stringify(enterpriseChartConfig),
-                    type: "chart",
-                    editable: false,
-                    order: sections.length,
-                    x: chartConfig.x,
-                    y: chartConfig.y || maxY + 50,
-                    width: chartConfig.width,
-                    height: chartConfig.height,
-                    isCustom: true,
-                    pageId: currentPageId,
-                  };
+            setSections([...sections, newSection]);
+            toast({
+              title: "Chart inserted",
+              description: `${chartConfig.type} chart added to the page`,
+            });
+          }}
+          onSaveDocument={handleSaveDocument}
+          onLoadDocument={() => handleLoadDocument()}
+          savedDocuments={savedDocuments}
+        />
 
-                  setSections([...sections, newSection]);
-                  toast({
-                    title: "Chart inserted",
-                    description: `${chartConfig.type} chart added to the page`,
-                  });
-                }}
-                onSaveDocument={handleSaveDocument}
-                onLoadDocument={() => handleLoadDocument()}
-                savedDocuments={savedDocuments}
-              />
-
-              <div className="flex-1 overflow-auto">
-                {!selectedTemplate ? (
-                  <div className="flex items-center justify-center h-full pointer-events-none">
-                    <div className="text-center text-muted-foreground pointer-events-auto">
-                      <p className="text-lg">Select a template from the toolbar to get started</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    id="document-preview"
-                    className="w-full h-full"
-                    style={{
-                      transform: `scale(${zoom / 100})`,
-                      transformOrigin: "top left",
-                      fontFamily: fontFamily,
-                      fontSize: `${fontSize}px`,
-                    }}
-                  >
-                    <EnhancedDocumentEditor
-                      sections={currentPageSections}
-                      onSectionsChange={(newSections) => {
-                        // Preserve sections from other pages when updating current page
-                        setSections((prev) => {
-                          const otherPageSections = prev.filter((s) => {
-                            const sectionPageId = (s as any).pageId;
-                            // Keep sections that belong to OTHER pages
-                            if (currentPageId === "page-1") {
-                              return sectionPageId && sectionPageId !== "page-1";
-                            }
-                            return sectionPageId !== currentPageId;
-                          });
-                          return [...otherPageSections, ...newSections];
-                        });
-                        saveToHistory();
-                      }}
-                      onContentChange={(id, content) => {
-                        updateSectionContent(id, content);
-                        saveToHistory();
-                      }}
-                      backgroundColor={backgroundColor}
-                      textColor={textColor}
-                      logoUrl={logoUrl}
-                      uploadedImages={currentPageImages}
-                      onImagePositionChange={handleImagePositionChange}
-                      onImageSizeChange={handleImageSizeChange}
-                      onImageRemove={handleImageRemove}
-                      shapes={currentPageShapes}
-                      onShapePositionChange={handleShapePositionChange}
-                      onShapeSizeChange={handleShapeSizeChange}
-                      onShapeRemove={handleShapeRemove}
-                      onShapeColorChange={handleShapeColorChange}
-                      currentPageId={currentPageId}
-                      signatureFields={signatureFields.filter(f => f.pageId === currentPageId || (!f.pageId && currentPageId === 'page-1'))}
-                      onSignaturePositionChange={(id, x, y) => {
-                        setSignatureFields(signatureFields.map(f => 
-                          f.id === id ? { ...f, x, y } : f
-                        ));
-                      }}
-                      onSignatureSizeChange={(id, width, height) => {
-                        setSignatureFields(signatureFields.map(f => 
-                          f.id === id ? { ...f, width, height } : f
-                        ));
-                      }}
-                      onSignatureRemove={(id) => {
-                        setSignatureFields(signatureFields.filter(f => f.id !== id));
-                      }}
-                      onSignatureSign={(id) => {
-                        setSignatureFields(signatureFields.map(f => 
-                          f.id === id ? { ...f, signed: true } : f
-                        ));
-                        toast({
-                          title: "Document signed",
-                          description: "Signature applied successfully",
-                        });
-                      }}
-                    />
-                  </div>
-                )}
+        <div className="flex-1 overflow-auto">
+          {!selectedTemplate ? (
+            <div className="flex items-center justify-center h-full pointer-events-none">
+              <div className="text-center text-muted-foreground pointer-events-auto">
+                <p className="text-lg">Select a template from the toolbar to get started</p>
               </div>
             </div>
-          </main>
+          ) : (
+            <div
+              id="document-preview"
+              className="w-full h-full"
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: "top left",
+                fontFamily: fontFamily,
+                fontSize: `${fontSize}px`,
+              }}
+            >
+              <EnhancedDocumentEditor
+                sections={currentPageSections}
+                onSectionsChange={(newSections) => {
+                  // Preserve sections from other pages when updating current page
+                  setSections((prev) => {
+                    const otherPageSections = prev.filter((s) => {
+                      const sectionPageId = (s as any).pageId;
+                      // Keep sections that belong to OTHER pages
+                      if (currentPageId === "page-1") {
+                        return sectionPageId && sectionPageId !== "page-1";
+                      }
+                      return sectionPageId !== currentPageId;
+                    });
+                    return [...otherPageSections, ...newSections];
+                  });
+                  saveToHistory();
+                }}
+                onContentChange={(id, content) => {
+                  updateSectionContent(id, content);
+                  saveToHistory();
+                }}
+                backgroundColor={backgroundColor}
+                textColor={textColor}
+                logoUrl={logoUrl}
+                uploadedImages={currentPageImages}
+                onImagePositionChange={handleImagePositionChange}
+                onImageSizeChange={handleImageSizeChange}
+                onImageRemove={handleImageRemove}
+                shapes={currentPageShapes}
+                onShapePositionChange={handleShapePositionChange}
+                onShapeSizeChange={handleShapeSizeChange}
+                onShapeRemove={handleShapeRemove}
+                onShapeColorChange={handleShapeColorChange}
+                currentPageId={currentPageId}
+                signatureFields={signatureFields.filter(f => f.pageId === currentPageId || (!f.pageId && currentPageId === 'page-1'))}
+                onSignaturePositionChange={(id, x, y) => {
+                  setSignatureFields(signatureFields.map(f => 
+                    f.id === id ? { ...f, x, y } : f
+                  ));
+                }}
+                onSignatureSizeChange={(id, width, height) => {
+                  setSignatureFields(signatureFields.map(f => 
+                    f.id === id ? { ...f, width, height } : f
+                  ));
+                }}
+                onSignatureRemove={(id) => {
+                  setSignatureFields(signatureFields.filter(f => f.id !== id));
+                }}
+                onSignatureSign={(id) => {
+                  setSignatureFields(signatureFields.map(f => 
+                    f.id === id ? { ...f, signed: true } : f
+                  ));
+                  toast({
+                    title: "Document signed",
+                    description: "Signature applied successfully",
+                  });
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
-    </SidebarProvider>
+    </div>
   );
 };
 

@@ -524,26 +524,26 @@ export default function PublicReports() {
                       </div>
                     </div>
                     
-                    <CardHeader className="pb-2 pt-6">
-                      <CardTitle className="text-lg line-clamp-2 text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-violet-400 group-hover:bg-clip-text transition-all">
+                    <CardHeader className="pb-3 pt-6 px-6">
+                      <CardTitle className="text-xl font-bold line-clamp-2 text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-violet-400 group-hover:bg-clip-text transition-all leading-tight">
                         {report.title}
                       </CardTitle>
                     </CardHeader>
                     
-                    <CardContent className="flex-1 pb-4">
-                      <CardDescription className="line-clamp-2 text-sm text-white/50">
+                    <CardContent className="flex-1 pb-4 px-6">
+                      <CardDescription className="line-clamp-3 text-sm text-white/70 leading-relaxed">
                         {report.description || "Premium research report with expert analysis and actionable insights."}
                       </CardDescription>
                       
-                      <div className="flex items-center gap-4 mt-4 text-xs text-white/40">
+                      <div className="flex items-center gap-4 mt-4 text-sm text-white/60">
                         {report.page_count && (
-                          <span className="flex items-center gap-1">
-                            <FileText className="h-3 w-3" />
+                          <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                            <FileText className="h-3.5 w-3.5" />
                             {report.page_count} pages
                           </span>
                         )}
-                        <span className="flex items-center gap-1">
-                          <Download className="h-3 w-3" />
+                        <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                          <Download className="h-3.5 w-3.5" />
                           {report.download_count} downloads
                         </span>
                       </div>
@@ -553,13 +553,13 @@ export default function PublicReports() {
                       <Button 
                         onClick={() => handlePurchase(report)}
                         disabled={purchasing === report.id}
-                        className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/20 border-0 h-12"
+                        className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/20 border-0 h-12 text-base font-semibold"
                       >
                         {purchasing === report.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
                           <>
-                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            <ShoppingCart className="h-5 w-5 mr-2" />
                             Buy Now
                           </>
                         )}
