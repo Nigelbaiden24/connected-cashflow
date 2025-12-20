@@ -215,162 +215,170 @@ export default function Reports() {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            <TranslatedText>Investment Research</TranslatedText>
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            <TranslatedText>Access comprehensive market analysis and investment insights</TranslatedText>
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {isAdmin && <AdminReportUpload platform="finance" onUploadSuccess={fetchReports} />}
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search reports by title, description, or type..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="w-full sm:w-[280px]">
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[400px]">
-            <SelectItem value="all"><TranslatedText>All Reports</TranslatedText></SelectItem>
-            {reportTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <div className="h-48 bg-muted" />
-              <CardContent className="p-6 space-y-3">
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-3 bg-muted rounded w-full" />
-                <div className="h-3 bg-muted rounded w-2/3" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : filteredReports.length === 0 ? (
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2"><TranslatedText>No Reports Available</TranslatedText></h3>
-            <p className="text-muted-foreground text-center max-w-md">
-              {searchQuery 
-                ? <><TranslatedText>No reports match</TranslatedText> "{searchQuery}"</>
-                : <TranslatedText>Research reports and analysis will appear here once they are published.</TranslatedText>}
+    <div className="min-h-full bg-background">
+      <div className="container mx-auto p-6 space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+              <TranslatedText>Investment Research</TranslatedText>
+            </h1>
+            <p className="text-muted-foreground mt-2 text-base">
+              <TranslatedText>Access comprehensive market analysis and investment insights</TranslatedText>
             </p>
+          </div>
+          <div className="flex gap-2">
+            {isAdmin && <AdminReportUpload platform="finance" onUploadSuccess={fetchReports} />}
+          </div>
+        </div>
+
+        {/* Search and Filter Section */}
+        <Card className="border border-border bg-card shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search reports by title, description, or type..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-background border-border"
+                />
+              </div>
+              <Select value={selectedType} onValueChange={setSelectedType}>
+                <SelectTrigger className="w-full sm:w-[280px] bg-background border-border">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  <SelectItem value="all"><TranslatedText>All Reports</TranslatedText></SelectItem>
+                  {reportTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-12">
-          {Object.entries(groupedReports).map(([category, categoryReports]) => {
-            const categoryConfig = reportCategories[category as keyof typeof reportCategories];
-            const IconComponent = categoryConfig?.icon || Activity;
-            const colorClass = categoryConfig?.color || "from-gray-600 to-slate-600";
-            
-            return (
-              <div key={category} className="space-y-6">
-                {/* Category Header */}
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 bg-gradient-to-br ${colorClass} rounded-xl shadow-lg`}>
-                    <IconComponent className="h-6 w-6 text-white" />
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse border border-border">
+                <div className="h-48 bg-muted" />
+                <CardContent className="p-6 space-y-3">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-full" />
+                  <div className="h-3 bg-muted rounded w-2/3" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredReports.length === 0 ? (
+          <Card className="border border-border bg-card">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="p-4 rounded-full bg-muted mb-4">
+                <FileText className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-foreground"><TranslatedText>No Reports Available</TranslatedText></h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                {searchQuery 
+                  ? <><TranslatedText>No reports match</TranslatedText> "{searchQuery}"</>
+                  : <TranslatedText>Research reports and analysis will appear here once they are published.</TranslatedText>}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-12">
+            {Object.entries(groupedReports).map(([category, categoryReports]) => {
+              const categoryConfig = reportCategories[category as keyof typeof reportCategories];
+              const IconComponent = categoryConfig?.icon || Activity;
+              const colorClass = categoryConfig?.color || "from-gray-600 to-slate-600";
+              
+              return (
+                <div key={category} className="space-y-6">
+                  {/* Category Header */}
+                  <div className="flex items-center gap-4 pb-4 border-b border-border">
+                    <div className={`p-3 bg-gradient-to-br ${colorClass} rounded-xl shadow-lg`}>
+                      <IconComponent className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold text-foreground">{category}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {categoryReports.length} <TranslatedText>report</TranslatedText>{categoryReports.length !== 1 ? 's' : ''} <TranslatedText>available</TranslatedText>
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold">{category}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {categoryReports.length} <TranslatedText>report</TranslatedText>{categoryReports.length !== 1 ? 's' : ''} <TranslatedText>available</TranslatedText>
-                    </p>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                {/* Reports Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {categoryReports.map((report) => (
-                    <Card key={report.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
-                      <div className={`relative h-48 ${report.thumbnail_url ? '' : `bg-gradient-to-br ${colorClass} opacity-10`} flex items-center justify-center overflow-hidden`}>
-                        {report.thumbnail_url ? (
-                          <img 
-                            src={report.thumbnail_url} 
-                            alt={report.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <FileText className="h-20 w-20 text-foreground opacity-20" />
-                        )}
-                        <Badge variant="secondary" className="absolute top-4 right-4 text-xs">
-                          {report.report_type}
-                        </Badge>
-                      </div>
-                      <CardContent className="p-6">
-                        <div className="space-y-4">
-                          <div>
-                            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors leading-tight">
-                              {report.title}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                              <Calendar className="h-3.5 w-3.5" />
-                              <span className="text-xs">
-                                {new Date(report.published_date).toLocaleDateString('en-GB', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })}
-                              </span>
+                  
+                  {/* Reports Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {categoryReports.map((report) => (
+                      <Card key={report.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-border bg-card">
+                        <div className={`relative h-48 ${report.thumbnail_url ? '' : `bg-gradient-to-br ${colorClass}`} flex items-center justify-center overflow-hidden`}>
+                          {report.thumbnail_url ? (
+                            <img 
+                              src={report.thumbnail_url} 
+                              alt={report.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <FileText className="h-20 w-20 text-white/40" />
+                          )}
+                          <Badge className="absolute top-4 right-4 text-xs bg-background/90 text-foreground border border-border shadow-sm">
+                            {report.report_type}
+                          </Badge>
+                        </div>
+                        <CardContent className="p-6 bg-card">
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors leading-tight text-foreground">
+                                {report.title}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(report.published_date).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                            {report.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                                {report.description}
+                              </p>
+                            )}
+                            <div className="flex gap-2 pt-2">
+                              <Button 
+                                onClick={() => viewReport(report)}
+                                variant="outline"
+                                className="flex-1 border-border hover:bg-accent hover:text-accent-foreground"
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                <TranslatedText>View</TranslatedText>
+                              </Button>
+                              <Button 
+                                onClick={() => downloadReport(report)}
+                                className="flex-1"
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                <TranslatedText>Download</TranslatedText>
+                              </Button>
                             </div>
                           </div>
-                          {report.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                              {report.description}
-                            </p>
-                          )}
-                          <div className="flex gap-2">
-                            <Button 
-                              onClick={() => viewReport(report)}
-                              variant="outline"
-                              className="flex-1 group/btn hover:bg-primary hover:text-primary-foreground transition-all"
-                            >
-                              <Eye className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                              <TranslatedText>View</TranslatedText>
-                            </Button>
-                            <Button 
-                              onClick={() => downloadReport(report)}
-                              className="flex-1 group/btn"
-                            >
-                              <Download className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                              <TranslatedText>Download</TranslatedText>
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
