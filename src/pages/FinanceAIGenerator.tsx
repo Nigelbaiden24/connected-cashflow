@@ -577,6 +577,8 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
           sectionDiv.style.wordBreak = "break-word";
+          sectionDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
+          sectionDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
 
           if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== "none") {
             sectionDiv.style.border = `1px solid ${(section as any).styling?.borderColor || "#e5e7eb"}`;
@@ -584,10 +586,12 @@ ELITE DOCUMENT REQUIREMENTS:
 
           if (section.type === "heading") {
             const h2 = document.createElement("h2");
-            h2.style.fontSize = "28px";
+            const headingSize = Math.max((section as any).fontSize || 28, 24);
+            h2.style.fontSize = `${headingSize}px`;
             h2.style.fontWeight = "700";
             h2.style.marginBottom = "16px";
             h2.style.lineHeight = "1.3";
+            h2.style.fontFamily = (section as any).fontFamily || fontFamily;
             h2.textContent = (section.content || section.title || "").toString();
             sectionDiv.appendChild(h2);
           } else if (section.type === "table") {
@@ -633,16 +637,18 @@ ELITE DOCUMENT REQUIREMENTS:
           } else {
             if (section.title) {
               const h3 = document.createElement("h3");
-              h3.style.fontSize = "20px";
+              h3.style.fontSize = `${Math.max((section as any).fontSize || 16, 16) + 4}px`;
               h3.style.fontWeight = "600";
               h3.style.marginBottom = "12px";
+              h3.style.fontFamily = (section as any).fontFamily || fontFamily;
               h3.textContent = section.title;
               sectionDiv.appendChild(h3);
             }
             const contentDiv = document.createElement("div");
             contentDiv.style.whiteSpace = "pre-wrap";
             contentDiv.style.lineHeight = "1.7";
-            contentDiv.style.fontSize = "14px";
+            contentDiv.style.fontSize = `${(section as any).fontSize || 14}px`;
+            contentDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
             contentDiv.textContent = (section.content || "").toString();
             sectionDiv.appendChild(contentDiv);
           }
