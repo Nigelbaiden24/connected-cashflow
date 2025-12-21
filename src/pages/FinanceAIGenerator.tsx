@@ -1007,7 +1007,7 @@ ELITE DOCUMENT REQUIREMENTS:
             });
           }}
           onSaveDocument={handleSaveDocument}
-          onLoadDocument={() => handleLoadDocument()}
+          onLoadDocument={(docId) => handleLoadDocument(docId)}
           savedDocuments={savedDocuments}
         />
 

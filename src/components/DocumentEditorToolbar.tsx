@@ -115,7 +115,7 @@ interface DocumentEditorToolbarProps {
   onInsertTable: (rows: number, cols: number) => void;
   onInsertChart?: (chartConfig: ChartConfig) => void;
   onSaveDocument?: () => void;
-  onLoadDocument?: () => void;
+  onLoadDocument?: (docId: string) => void;
   savedDocuments?: Array<{ id: string; name: string; savedAt: string }>;
 }
 
@@ -750,7 +750,7 @@ export function DocumentEditorToolbar({
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start text-left h-auto py-2"
-                      onClick={() => onLoadDocument()}
+                      onClick={() => onLoadDocument(doc.id)}
                     >
                       <div className="flex flex-col items-start">
                         <span className="text-xs font-medium">{doc.name}</span>
