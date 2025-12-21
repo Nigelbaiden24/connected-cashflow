@@ -527,20 +527,20 @@ ELITE DOCUMENT REQUIREMENTS:
           (sig) => sig.pageId === page.id || (!sig.pageId && page.id === "page-1")
         );
 
-        // Create a temporary container for this page
+      // Create a temporary container for this page
         const pageContainer = document.createElement("div");
         pageContainer.style.position = "fixed";
-        pageContainer.style.left = "0";
+        pageContainer.style.left = "-9999px";
         pageContainer.style.top = "0";
         pageContainer.style.width = "794px";
-        pageContainer.style.height = "1123px";
+        pageContainer.style.minHeight = "1123px";
         pageContainer.style.backgroundColor = backgroundColor || "#ffffff";
         pageContainer.style.fontFamily = fontFamily;
         pageContainer.style.fontSize = `${fontSize}px`;
         pageContainer.style.color = textColor || "#000000";
         pageContainer.style.padding = "40px";
         pageContainer.style.boxSizing = "border-box";
-        pageContainer.style.overflow = "hidden";
+        pageContainer.style.overflow = "visible";
         pageContainer.style.zIndex = "-9999";
         document.body.appendChild(pageContainer);
 
@@ -696,23 +696,72 @@ ELITE DOCUMENT REQUIREMENTS:
         );
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Capture the page with html2canvas
+        // Get the actual height of the content
+        const actualHeight = Math.max(1123, pageContainer.scrollHeight);
+        
+        // Capture the page with html2canvas - capture full content
         const canvas = await html2canvas(pageContainer, {
           scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: backgroundColor || "#ffffff",
           width: 794,
-          height: 1123,
+          height: actualHeight,
+          windowWidth: 794,
+          windowHeight: actualHeight,
           logging: false,
         });
 
-        // Add page to PDF
-        const imgData = canvas.toDataURL("image/jpeg", 0.95);
-        if (i > 0) {
-          pdf.addPage();
+        // Calculate how many PDF pages this content needs
+        const pdfPageHeight = 297; // A4 height in mm
+        const pdfPageWidth = 210; // A4 width in mm
+        const canvasHeight = canvas.height;
+        const canvasWidth = canvas.width;
+        
+        // Scale factor to fit width
+        const scaleFactor = pdfPageWidth / (canvasWidth / 2); // divide by 2 because scale is 2
+        const scaledHeight = (canvasHeight / 2) * scaleFactor;
+        
+        // If content fits in one page, add normally
+        if (scaledHeight <= pdfPageHeight) {
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
+          if (i > 0 || pdf.getNumberOfPages() > 1) {
+            pdf.addPage();
+          }
+          pdf.addImage(imgData, "JPEG", 0, 0, pdfPageWidth, scaledHeight);
+        } else {
+          // Content spans multiple pages - split it
+          const pdfPagesNeeded = Math.ceil(scaledHeight / pdfPageHeight);
+          const sliceHeight = Math.floor(canvasHeight / pdfPagesNeeded);
+          
+          for (let j = 0; j < pdfPagesNeeded; j++) {
+            // Create a canvas for this slice
+            const sliceCanvas = document.createElement("canvas");
+            sliceCanvas.width = canvasWidth;
+            sliceCanvas.height = sliceHeight;
+            const ctx = sliceCanvas.getContext("2d");
+            
+            if (ctx) {
+              // Draw the slice from the main canvas
+              ctx.drawImage(
+                canvas,
+                0, j * sliceHeight, // source x, y
+                canvasWidth, sliceHeight, // source width, height
+                0, 0, // dest x, y
+                canvasWidth, sliceHeight // dest width, height
+              );
+              
+              const sliceImgData = sliceCanvas.toDataURL("image/jpeg", 0.95);
+              
+              if (i > 0 || j > 0 || pdf.getNumberOfPages() > 1) {
+                pdf.addPage();
+              }
+              
+              const sliceScaledHeight = (sliceHeight / 2) * scaleFactor;
+              pdf.addImage(sliceImgData, "JPEG", 0, 0, pdfPageWidth, sliceScaledHeight);
+            }
+          }
         }
-        pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
 
         // Cleanup the temporary container
         document.body.removeChild(pageContainer);
