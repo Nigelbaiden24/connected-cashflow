@@ -531,18 +531,18 @@ export default function PublicReports() {
                     </CardHeader>
                     
                     <CardContent className="flex-1 pb-4 px-6">
-                      <CardDescription className="line-clamp-3 text-sm text-white/70 leading-relaxed">
+                      <CardDescription className="line-clamp-3 text-sm text-foreground/80 leading-relaxed">
                         {report.description || "Premium research report with expert analysis and actionable insights."}
                       </CardDescription>
                       
-                      <div className="flex items-center gap-4 mt-4 text-sm text-white/60">
+                      <div className="flex items-center gap-4 mt-4 text-sm text-foreground/70">
                         {report.page_count && (
-                          <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                          <span className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-full">
                             <FileText className="h-3.5 w-3.5" />
                             {report.page_count} pages
                           </span>
                         )}
-                        <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                        <span className="flex items-center gap-1.5 bg-muted px-3 py-1.5 rounded-full">
                           <Download className="h-3.5 w-3.5" />
                           {report.download_count} downloads
                         </span>
