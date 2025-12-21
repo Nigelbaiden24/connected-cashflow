@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Edit2, Trash2, Wand2, GripVertical, Palette } from "lucide-react";
+import { Edit2, Trash2, Wand2, GripVertical, Palette, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EnterpriseChart, LegacyChartConfig } from "./EnterpriseChart";
 
 interface DraggableSectionProps {
@@ -29,12 +36,15 @@ interface DraggableSectionProps {
   height: number;
   isFirst: boolean;
   textColor?: string;
+  fontFamily?: string;
+  fontSize?: number;
   onPositionChange: (id: string, x: number, y: number) => void;
   onSizeChange: (id: string, width: number, height: number) => void;
   onEdit: () => void;
   onDelete: () => void;
   onGenerateContent: () => void;
   onContentChange?: (id: string, content: string) => void;
+  onStyleChange?: (id: string, style: { fontFamily?: string; fontSize?: number; textColor?: string }) => void;
 }
 
 const defaultColors = [
@@ -59,12 +69,15 @@ export function DraggableSection({
   height,
   isFirst,
   textColor = "#000000",
+  fontFamily = "Inter",
+  fontSize = 14,
   onPositionChange,
   onSizeChange,
   onEdit,
   onDelete,
   onGenerateContent,
   onContentChange,
+  onStyleChange,
 }: DraggableSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -77,8 +90,16 @@ export function DraggableSection({
   const [showChartEditor, setShowChartEditor] = useState(false);
   const [chartData, setChartData] = useState("");
   const [chartTitle, setChartTitle] = useState("");
+  const [showStylePopover, setShowStylePopover] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const cellInputRef = useRef<HTMLInputElement>(null);
+
+  const fonts = [
+    "Inter", "Arial", "Times New Roman", "Georgia", "Verdana", 
+    "Helvetica", "Courier New", "Playfair Display", "Roboto", 
+    "Open Sans", "Lato", "Montserrat"
+  ];
+  const fontSizes = [10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
 
   const parsedChartConfig = useMemo<LegacyChartConfig | null>(() => {
     if (type !== "chart") return null;
@@ -224,9 +245,15 @@ export function DraggableSection({
   }, [isDragging, isResizing, dragStart, id, x, y, width, height, onPositionChange, onSizeChange]);
 
   const renderContent = () => {
+    const sectionStyle = { 
+      color: textColor, 
+      fontFamily: fontFamily,
+      fontSize: `${fontSize}px`
+    };
+
     if (type === "heading" || type === "subheading") {
       return (
-        <h2 className="text-2xl font-bold mb-4" style={{ color: textColor }}>
+        <h2 className="font-bold mb-4" style={{ ...sectionStyle, fontSize: `${Math.max(fontSize, 24)}px` }}>
           {content || title}
         </h2>
       );
@@ -234,7 +261,7 @@ export function DraggableSection({
     if (type === "body") {
       return (
         <div className="prose max-w-none">
-          <p className="whitespace-pre-wrap" style={{ color: textColor }}>
+          <p className="whitespace-pre-wrap" style={sectionStyle}>
             {content || placeholder || "Add content..."}
           </p>
         </div>
@@ -243,9 +270,9 @@ export function DraggableSection({
     if (type === "list") {
       const items = content ? content.split("\n").filter(Boolean) : [];
       return (
-        <ul className="list-disc list-inside space-y-2">
+        <ul className="list-disc list-inside space-y-2" style={{ fontFamily, fontSize: `${fontSize}px` }}>
           {items.map((item, idx) => (
-            <li key={idx} className="text-foreground/80">
+            <li key={idx} style={{ color: textColor }}>
               {item.replace(/^[ -•]\s*/, "")}
             </li>
           ))}
@@ -503,14 +530,14 @@ export function DraggableSection({
       return (
         <div
           className="prose max-w-none"
-          style={{ color: textColor }}
+          style={{ color: textColor, fontFamily, fontSize: `${fontSize}px` }}
           dangerouslySetInnerHTML={{ __html: content }}
         />
       );
     }
     return (
       <div className="prose max-w-none">
-        <p className="whitespace-pre-wrap" style={{ color: textColor }}>
+        <p className="whitespace-pre-wrap" style={{ color: textColor, fontFamily, fontSize: `${fontSize}px` }}>
           {content || placeholder || title || "Add content..."}
         </p>
       </div>
@@ -547,7 +574,78 @@ export function DraggableSection({
 
         {/* Action Buttons */}
         {isHovered && !isDragging && !isResizing && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 rounded-md p-1">
+          <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 rounded-md p-1 shadow-sm border border-border/50">
+            {/* Font Style Button */}
+            <Popover open={showStylePopover} onOpenChange={setShowStylePopover}>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  title="Font & Size"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Type className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-64 p-3 z-[200] bg-popover border-border shadow-xl" 
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium">Font Family</Label>
+                    <Select
+                      value={fontFamily}
+                      onValueChange={(value) => onStyleChange?.(id, { fontFamily: value })}
+                    >
+                      <SelectTrigger className="h-9 text-xs bg-background">
+                        <SelectValue placeholder="Select font" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border shadow-xl z-[300]">
+                        {fonts.map((font) => (
+                          <SelectItem key={font} value={font} style={{ fontFamily: font }} className="text-xs">
+                            {font}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium">Font Size</Label>
+                    <Select
+                      value={fontSize.toString()}
+                      onValueChange={(value) => onStyleChange?.(id, { fontSize: parseInt(value) })}
+                    >
+                      <SelectTrigger className="h-9 text-xs bg-background">
+                        <SelectValue placeholder="Select size" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border shadow-xl z-[300]">
+                        {fontSizes.map((size) => (
+                          <SelectItem key={size} value={size.toString()} className="text-xs">
+                            {size}px
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium">Text Color</Label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        type="color"
+                        value={textColor}
+                        onChange={(e) => onStyleChange?.(id, { textColor: e.target.value })}
+                        className="w-12 h-9 p-1 cursor-pointer"
+                      />
+                      <span className="text-xs text-muted-foreground font-mono">{textColor}</span>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <Button
               size="sm"
               variant="ghost"

@@ -10,6 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,12 +75,21 @@ export function EnhancedDocumentEditor({
 }: EnhancedDocumentEditorProps) {
   const [editingSection, setEditingSection] = useState<HeaderSection | null>(null);
   const [editTextColor, setEditTextColor] = useState("#000000");
+  const [editFontFamily, setEditFontFamily] = useState("Inter");
+  const [editFontSize, setEditFontSize] = useState(14);
   const [tableRowColor, setTableRowColor] = useState("#f3f4f6");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [newSectionContent, setNewSectionContent] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+
+  const fonts = [
+    "Inter", "Arial", "Times New Roman", "Georgia", "Verdana", 
+    "Helvetica", "Courier New", "Playfair Display", "Roboto", 
+    "Open Sans", "Lato", "Montserrat"
+  ];
+  const fontSizes = [10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48];
 
   const handleSectionPositionChange = (id: string, x: number, y: number) => {
     const newSections = sections.map((s) =>
@@ -91,14 +107,16 @@ export function EnhancedDocumentEditor({
 
   const handleEditSection = (section: HeaderSection) => {
     setEditingSection(section);
-    setEditTextColor(section.textColor || textColor || "#000000");
+    setEditTextColor((section as any).textColor || textColor || "#000000");
+    setEditFontFamily((section as any).fontFamily || "Inter");
+    setEditFontSize((section as any).fontSize || 14);
   };
 
   const handleSaveEdit = () => {
     if (editingSection) {
       const updatedSections = sections.map((s) =>
         s.id === editingSection.id
-          ? { ...s, content: editingSection.content, textColor: editTextColor }
+          ? { ...s, content: editingSection.content, title: editingSection.title, textColor: editTextColor, fontFamily: editFontFamily, fontSize: editFontSize }
           : s
       );
       onSectionsChange(updatedSections);
@@ -199,13 +217,21 @@ export function EnhancedDocumentEditor({
           width={section.width}
           height={section.height}
           isFirst={index === 0}
-          textColor={section.textColor || textColor}
+          textColor={(section as any).textColor || textColor}
+          fontFamily={(section as any).fontFamily || "Inter"}
+          fontSize={(section as any).fontSize || 14}
           onPositionChange={handleSectionPositionChange}
           onSizeChange={handleSectionSizeChange}
           onEdit={() => handleEditSection(section)}
           onDelete={() => handleDeleteSection(section.id)}
           onGenerateContent={() => handleGenerateContent(section)}
           onContentChange={onContentChange}
+          onStyleChange={(id, style) => {
+            const newSections = sections.map((s) =>
+              s.id === id ? { ...s, ...style } : s
+            );
+            onSectionsChange(newSections);
+          }}
         />
       ))}
 
@@ -298,6 +324,38 @@ export function EnhancedDocumentEditor({
                 }
                 rows={10}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Font Family</Label>
+                <Select value={editFontFamily} onValueChange={setEditFontFamily}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-[300]">
+                    {fonts.map((font) => (
+                      <SelectItem key={font} value={font} style={{ fontFamily: font }}>
+                        {font}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Font Size</Label>
+                <Select value={editFontSize.toString()} onValueChange={(v) => setEditFontSize(parseInt(v))}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover z-[300]">
+                    {fontSizes.map((size) => (
+                      <SelectItem key={size} value={size.toString()}>
+                        {size}px
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Text Color</Label>
