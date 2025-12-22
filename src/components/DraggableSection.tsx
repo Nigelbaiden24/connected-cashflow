@@ -603,7 +603,7 @@ export function DraggableSection({
                       <SelectTrigger className="h-9 text-xs bg-background">
                         <SelectValue placeholder="Select font" />
                       </SelectTrigger>
-                      <SelectContent className="bg-popover border-border shadow-xl z-[300]">
+                      <SelectContent portalled={false} className="bg-popover border-border shadow-xl z-[300]">
                         {fonts.map((font) => (
                           <SelectItem key={font} value={font} style={{ fontFamily: font }} className="text-xs">
                             {font}
@@ -621,7 +621,7 @@ export function DraggableSection({
                       <SelectTrigger className="h-9 text-xs bg-background">
                         <SelectValue placeholder="Select size" />
                       </SelectTrigger>
-                      <SelectContent className="bg-popover border-border shadow-xl z-[300]">
+                      <SelectContent portalled={false} className="bg-popover border-border shadow-xl z-[300]">
                         {fontSizes.map((size) => (
                           <SelectItem key={size} value={size.toString()} className="text-xs">
                             {size}px
