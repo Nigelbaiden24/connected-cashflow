@@ -75,7 +75,7 @@ const FinanceAIGenerator = () => {
   }, []);
   
   // Filter sections by current page
-  const currentPageSections = sections.filter(s => (s as any).pageId === currentPageId || (!( s as any).pageId && currentPageId === 'page-1'));
+  const currentPageSections = sections.filter(s => s.pageId === currentPageId || (!s.pageId && currentPageId === 'page-1'));
   const currentPageShapes = shapes.filter(s => (s as any).pageId === currentPageId || (!(s as any).pageId && currentPageId === 'page-1'));
   const currentPageImages = uploadedImages.filter(img => (img as any).pageId === currentPageId || (!(img as any).pageId && currentPageId === 'page-1'));
 
@@ -1041,7 +1041,7 @@ ELITE DOCUMENT REQUIREMENTS:
                   // Preserve sections from other pages when updating current page
                   setSections((prev) => {
                     const otherPageSections = prev.filter((s) => {
-                      const sectionPageId = (s as any).pageId;
+                      const sectionPageId = s.pageId;
                       // Keep sections that belong to OTHER pages
                       if (currentPageId === "page-1") {
                         return sectionPageId && sectionPageId !== "page-1";
