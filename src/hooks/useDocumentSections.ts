@@ -16,6 +16,9 @@ export interface HeaderSection {
   placeholder?: string;
   defaultContent?: string;
   textColor?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  pageId?: string;
 }
 
 export function useDocumentSections(templateSections: any[] = []) {
@@ -40,6 +43,9 @@ export function useDocumentSections(templateSections: any[] = []) {
         editable: section.editable,
         placeholder: section.placeholder || "",
         defaultContent: section.defaultContent,
+        fontFamily: "Inter",
+        fontSize: 14,
+        textColor: "#000000",
       }));
     
     setSections(initialSections);
