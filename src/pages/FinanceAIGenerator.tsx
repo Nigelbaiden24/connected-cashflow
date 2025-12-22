@@ -702,72 +702,51 @@ ELITE DOCUMENT REQUIREMENTS:
         );
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Get the actual height of the content
-        const actualHeight = Math.max(1123, pageContainer.scrollHeight);
-        
-        // Capture the page with html2canvas - capture full content
+        // Determine how tall this page's content actually is (absolute-positioned elements don't affect scrollHeight)
+        const contentBottom = Math.max(
+          1123,
+          ...pageSections.map((s: any) => (s.y || 0) + (s.height || 0) + 32),
+          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0)),
+          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0)),
+          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0)),
+        );
+
+        const captureHeight = Math.ceil(Math.max(1123, contentBottom + 80));
+        pageContainer.style.height = `${captureHeight}px`;
+        pageContainer.style.minHeight = `${captureHeight}px`;
+
+        // Capture the page with html2canvas (full content), then scale to fit ONE A4 page
         const canvas = await html2canvas(pageContainer, {
           scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: backgroundColor || "#ffffff",
           width: 794,
-          height: actualHeight,
+          height: captureHeight,
           windowWidth: 794,
-          windowHeight: actualHeight,
+          windowHeight: captureHeight,
           logging: false,
         });
 
-        // Calculate how many PDF pages this content needs
-        const pdfPageHeight = 297; // A4 height in mm
-        const pdfPageWidth = 210; // A4 width in mm
-        const canvasHeight = canvas.height;
-        const canvasWidth = canvas.width;
-        
-        // Scale factor to fit width
-        const scaleFactor = pdfPageWidth / (canvasWidth / 2); // divide by 2 because scale is 2
-        const scaledHeight = (canvasHeight / 2) * scaleFactor;
-        
-        // If content fits in one page, add normally
-        if (scaledHeight <= pdfPageHeight) {
-          const imgData = canvas.toDataURL("image/jpeg", 0.95);
-          if (i > 0 || pdf.getNumberOfPages() > 1) {
-            pdf.addPage();
-          }
-          pdf.addImage(imgData, "JPEG", 0, 0, pdfPageWidth, scaledHeight);
-        } else {
-          // Content spans multiple pages - split it
-          const pdfPagesNeeded = Math.ceil(scaledHeight / pdfPageHeight);
-          const sliceHeight = Math.floor(canvasHeight / pdfPagesNeeded);
-          
-          for (let j = 0; j < pdfPagesNeeded; j++) {
-            // Create a canvas for this slice
-            const sliceCanvas = document.createElement("canvas");
-            sliceCanvas.width = canvasWidth;
-            sliceCanvas.height = sliceHeight;
-            const ctx = sliceCanvas.getContext("2d");
-            
-            if (ctx) {
-              // Draw the slice from the main canvas
-              ctx.drawImage(
-                canvas,
-                0, j * sliceHeight, // source x, y
-                canvasWidth, sliceHeight, // source width, height
-                0, 0, // dest x, y
-                canvasWidth, sliceHeight // dest width, height
-              );
-              
-              const sliceImgData = sliceCanvas.toDataURL("image/jpeg", 0.95);
-              
-              if (i > 0 || j > 0 || pdf.getNumberOfPages() > 1) {
-                pdf.addPage();
-              }
-              
-              const sliceScaledHeight = (sliceHeight / 2) * scaleFactor;
-              pdf.addImage(sliceImgData, "JPEG", 0, 0, pdfPageWidth, sliceScaledHeight);
-            }
-          }
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+        if (i > 0) {
+          pdf.addPage();
         }
+
+        const pdfPageWidth = 210;
+        const pdfPageHeight = 297;
+
+        // Fit-to-page (contain) so Page 1 never spills across multiple PDF pages
+        let renderW = pdfPageWidth;
+        let renderH = (canvas.height / canvas.width) * renderW;
+        if (renderH > pdfPageHeight) {
+          const scale = pdfPageHeight / renderH;
+          renderW = renderW * scale;
+          renderH = pdfPageHeight;
+        }
+
+        pdf.addImage(imgData, "JPEG", 0, 0, renderW, renderH);
 
         // Cleanup the temporary container
         document.body.removeChild(pageContainer);

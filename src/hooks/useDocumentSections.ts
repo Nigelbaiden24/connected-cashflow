@@ -44,7 +44,12 @@ export function useDocumentSections(templateSections: any[] = []) {
         placeholder: section.placeholder || "",
         defaultContent: section.defaultContent,
         fontFamily: "Inter",
-        fontSize: 14,
+        fontSize:
+          section.type === "heading"
+            ? 28
+            : section.type === "subheading"
+              ? 20
+              : 14,
         textColor: "#000000",
       }));
     
