@@ -607,17 +607,24 @@ ELITE DOCUMENT REQUIREMENTS:
             chartWrapper.style.alignItems = "center";
             chartWrapper.style.justifyContent = "center";
             
-            // Try to find the rendered chart element in the actual document
-            const existingChartEl = document.querySelector(`[data-section-id="${section.id}"] .recharts-wrapper`);
+            // Try to find the rendered chart element - check multiple selectors for different chart types (pie, radial, bar, line, etc.)
+            const sectionEl = document.querySelector(`[data-section-id="${section.id}"]`);
+            const existingChartEl = sectionEl?.querySelector('.recharts-wrapper') ||
+                                   sectionEl?.querySelector('.recharts-responsive-container') ||
+                                   sectionEl?.querySelector('svg.recharts-surface')?.parentElement ||
+                                   sectionEl?.querySelector('[class*="recharts"]');
             if (existingChartEl) {
               try {
+                // Wait for animations to complete
+                await new Promise(resolve => setTimeout(resolve, 150));
                 // Capture the chart as an image
                 const chartCanvas = await html2canvas(existingChartEl as HTMLElement, {
                   scale: 2,
                   useCORS: true,
                   allowTaint: true,
-                  backgroundColor: "transparent",
+                  backgroundColor: "#ffffff",
                   logging: false,
+                  foreignObjectRendering: false,
                 });
                 const chartImg = document.createElement("img");
                 chartImg.src = chartCanvas.toDataURL("image/png");
