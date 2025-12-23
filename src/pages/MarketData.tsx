@@ -75,12 +75,12 @@ const MarketData = () => {
   ];
 
   const commodities = [
-    { name: "Gold", symbol: "XAU", price: "2,031.40", change: "-0.5%", trend: "down", unit: "/oz", dayHigh: "2,048.20", dayLow: "2,024.80", ytd: "+9.2%" },
-    { name: "Silver", symbol: "XAG", price: "24.87", change: "+0.8%", trend: "up", unit: "/oz", dayHigh: "25.12", dayLow: "24.56", ytd: "+3.4%" },
-    { name: "Crude Oil (WTI)", symbol: "CL", price: "89.73", change: "+1.2%", trend: "up", unit: "/bbl", dayHigh: "90.45", dayLow: "88.92", ytd: "+12.8%" },
-    { name: "Natural Gas", symbol: "NG", price: "2.89", change: "-2.1%", trend: "down", unit: "/MMBtu", dayHigh: "2.98", dayLow: "2.85", ytd: "-34.2%" },
-    { name: "Copper", symbol: "HG", price: "3.87", change: "+0.6%", trend: "up", unit: "/lb", dayHigh: "3.91", dayLow: "3.84", ytd: "+2.1%" },
-    { name: "Platinum", symbol: "PL", price: "912.50", change: "+1.4%", trend: "up", unit: "/oz", dayHigh: "918.30", dayLow: "906.20", ytd: "-8.6%" },
+    { name: "Gold", symbol: "XAU", price: "1,605.12", change: "-0.5%", trend: "down", unit: "/oz", dayHigh: "1,618.56", dayLow: "1,599.84", ytd: "+9.2%" },
+    { name: "Silver", symbol: "XAG", price: "19.66", change: "+0.8%", trend: "up", unit: "/oz", dayHigh: "19.85", dayLow: "19.41", ytd: "+3.4%" },
+    { name: "Crude Oil (Brent)", symbol: "CL", price: "70.89", change: "+1.2%", trend: "up", unit: "/bbl", dayHigh: "71.46", dayLow: "70.25", ytd: "+12.8%" },
+    { name: "Natural Gas", symbol: "NG", price: "2.28", change: "-2.1%", trend: "down", unit: "/MMBtu", dayHigh: "2.35", dayLow: "2.25", ytd: "-34.2%" },
+    { name: "Copper", symbol: "HG", price: "3.06", change: "+0.6%", trend: "up", unit: "/lb", dayHigh: "3.09", dayLow: "3.03", ytd: "+2.1%" },
+    { name: "Platinum", symbol: "PL", price: "721.08", change: "+1.4%", trend: "up", unit: "/oz", dayHigh: "725.66", dayLow: "716.10", ytd: "-8.6%" },
   ];
 
   const fetchMarketData = async () => {
@@ -543,7 +543,7 @@ const MarketData = () => {
                   
                   <div className="flex items-end justify-between">
                     <div>
-                      <span className="text-2xl font-bold">${commodity.price}</span>
+                      <span className="text-2xl font-bold">£{commodity.price}</span>
                       <p className="text-xs text-muted-foreground mt-1">per {commodity.unit.replace('/', '')}</p>
                     </div>
                     <div className={`flex items-center gap-1 px-3 py-1.5 rounded-lg ${
