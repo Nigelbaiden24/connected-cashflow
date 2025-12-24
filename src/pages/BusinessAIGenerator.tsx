@@ -55,7 +55,7 @@ const BusinessAIGenerator = () => {
   const [shapes, setShapes] = useState<Array<{ id: string; type: string; x: number; y: number; width: number; height: number; color: string }>>([]);
   const [pages, setPages] = useState<Array<{ id: string; name: string }>>([{ id: 'page-1', name: 'Page 1' }]);
   const [currentPageId, setCurrentPageId] = useState('page-1');
-  const [signatureFields, setSignatureFields] = useState<Array<{ id: string; x: number; y: number; width: number; height: number; signed: boolean; pageId: string }>>([]);
+  const [signatureFields, setSignatureFields] = useState<Array<{ id: string; x: number; y: number; width: number; height: number; signed: boolean; pageId: string; signatureData?: string }>>([]);
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
   const { toast } = useToast();
   
@@ -573,25 +573,34 @@ ELITE DOCUMENT REQUIREMENTS:
             tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
             sectionDiv.appendChild(tableWrapper);
           } else if (section.type === "chart") {
-            // For charts, capture the rendered chart from DOM
+            // For charts, capture the entire section including title
             const chartWrapper = document.createElement("div");
             chartWrapper.style.width = "100%";
             chartWrapper.style.height = "100%";
             chartWrapper.style.display = "flex";
+            chartWrapper.style.flexDirection = "column";
             chartWrapper.style.alignItems = "center";
-            chartWrapper.style.justifyContent = "center";
+            chartWrapper.style.justifyContent = "flex-start";
             
-            // Try to find the rendered chart element - check multiple selectors for different chart types (pie, radial, bar, line, etc.)
+            // Try to find the rendered chart element - capture the entire group including title
             const sectionEl = document.querySelector(`[data-section-id="${section.id}"]`);
-            const existingChartEl = sectionEl?.querySelector('.recharts-wrapper') ||
-                                   sectionEl?.querySelector('.recharts-responsive-container') ||
-                                   sectionEl?.querySelector('svg.recharts-surface')?.parentElement ||
-                                   sectionEl?.querySelector('[class*="recharts"]');
+            // First try to capture the parent div that includes title + chart (the .relative.group container)
+            const chartContainerWithTitle = sectionEl?.querySelector('.relative.group') || sectionEl;
+            const existingChartEl = chartContainerWithTitle?.querySelector('.recharts-wrapper') ||
+                                   chartContainerWithTitle?.querySelector('.recharts-responsive-container') ||
+                                   chartContainerWithTitle?.querySelector('svg.recharts-surface')?.parentElement ||
+                                   chartContainerWithTitle?.querySelector('[class*="recharts"]');
             if (existingChartEl) {
               try {
                 // Wait for animations to complete
                 await new Promise(resolve => setTimeout(resolve, 150));
-                const chartCanvas = await html2canvas(existingChartEl as HTMLElement, {
+                
+                // Try to capture the whole chart container (including title) first
+                const elementToCapture = (chartContainerWithTitle && chartContainerWithTitle !== sectionEl) 
+                  ? chartContainerWithTitle 
+                  : existingChartEl;
+                
+                const chartCanvas = await html2canvas(elementToCapture as HTMLElement, {
                   scale: 2,
                   useCORS: true,
                   allowTaint: true,
@@ -645,6 +654,7 @@ ELITE DOCUMENT REQUIREMENTS:
           pageContainer.appendChild(imgEl);
         }
 
+        // Signatures - render actual signature image if signed
         pageSignatures.forEach((sig) => {
           const sigDiv = document.createElement("div");
           sigDiv.style.position = "absolute";
@@ -652,14 +662,39 @@ ELITE DOCUMENT REQUIREMENTS:
           sigDiv.style.top = `${sig.y}px`;
           sigDiv.style.width = `${sig.width}px`;
           sigDiv.style.height = `${sig.height}px`;
-          sigDiv.style.border = "2px dashed #999";
+          sigDiv.style.border = sig.signed ? "2px solid #22c55e" : "2px dashed #999";
           sigDiv.style.borderRadius = "6px";
           sigDiv.style.display = "flex";
+          sigDiv.style.flexDirection = "column";
           sigDiv.style.alignItems = "center";
           sigDiv.style.justifyContent = "center";
-          sigDiv.style.color = "#666";
-          sigDiv.style.fontSize = "12px";
-          sigDiv.textContent = sig.signed ? "✓ Signed" : "Signature Required";
+          sigDiv.style.backgroundColor = sig.signed ? "#f0fdf4" : "transparent";
+          sigDiv.style.padding = "8px";
+          
+          if (sig.signed && (sig as any).signatureData) {
+            // Render actual signature image
+            const sigImg = document.createElement("img");
+            sigImg.src = (sig as any).signatureData;
+            sigImg.style.maxWidth = "100%";
+            sigImg.style.maxHeight = "calc(100% - 20px)";
+            sigImg.style.objectFit = "contain";
+            sigDiv.appendChild(sigImg);
+            
+            const dateText = document.createElement("p");
+            dateText.style.fontSize = "10px";
+            dateText.style.color = "#16a34a";
+            dateText.style.marginTop = "4px";
+            dateText.textContent = new Date().toLocaleDateString();
+            sigDiv.appendChild(dateText);
+          } else if (sig.signed) {
+            sigDiv.style.color = "#16a34a";
+            sigDiv.style.fontSize = "12px";
+            sigDiv.textContent = "✓ Signed";
+          } else {
+            sigDiv.style.color = "#666";
+            sigDiv.style.fontSize = "12px";
+            sigDiv.textContent = "Signature Required";
+          }
           pageContainer.appendChild(sigDiv);
         });
 
@@ -992,9 +1027,9 @@ ELITE DOCUMENT REQUIREMENTS:
                       onSignatureRemove={(id) => {
                         setSignatureFields(signatureFields.filter(f => f.id !== id));
                       }}
-                      onSignatureSign={(id) => {
+                      onSignatureSign={(id, signatureData) => {
                         setSignatureFields(signatureFields.map(f => 
-                          f.id === id ? { ...f, signed: true } : f
+                          f.id === id ? { ...f, signed: true, signatureData } : f
                         ));
                         toast({
                           title: "Document signed",

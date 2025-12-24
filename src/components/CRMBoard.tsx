@@ -17,6 +17,7 @@ import { ColumnManager } from "./crm/ColumnManager";
 import { CustomTableColumnManager, ColumnConfig } from "./crm/CustomTableColumnManager";
 import { AILeadScoringBadge } from "./crm/AILeadScoringBadge";
 import { BulkAIScoring } from "./crm/BulkAIScoring";
+import { NextActionAI } from "./crm/NextActionAI";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface CRMTable {
@@ -675,6 +676,9 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Next Action AI Panel - Default Tab */}
+      <NextActionAI contacts={contacts} selectedContactIds={selectedContacts} />
+
       {/* AI Scoring Panel */}
       {showAIPanel && (
         <BulkAIScoring contacts={contacts} onComplete={fetchContacts} />
