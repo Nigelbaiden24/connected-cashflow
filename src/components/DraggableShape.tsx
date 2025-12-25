@@ -47,6 +47,25 @@ export function DraggableShape({
   }, [color]);
 
   useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (isDragging) {
+        const newX = x + (e.clientX - dragStart.x);
+        const newY = y + (e.clientY - dragStart.y);
+        onPositionChange(id, newX, newY);
+        setDragStart({ x: e.clientX, y: e.clientY });
+      } else if (isResizing) {
+        const newWidth = Math.max(50, width + (e.clientX - dragStart.x));
+        const newHeight = Math.max(50, height + (e.clientY - dragStart.y));
+        onSizeChange(id, newWidth, newHeight);
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         const newX = x + (e.clientX - dragStart.x);
@@ -67,16 +86,40 @@ export function DraggableShape({
     };
 
     if (isDragging || isResizing) {
+      document.addEventListener("pointermove", handlePointerMove);
+      document.addEventListener("pointerup", handlePointerUp);
+      document.addEventListener("pointercancel", handlePointerUp);
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+      document.removeEventListener("pointercancel", handlePointerUp);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, isResizing, x, y, width, height, dragStart, id, onPositionChange, onSizeChange]);
 
+  // Unified pointer handlers for mouse and touch
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handleResizePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  // Legacy mouse handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -161,11 +204,13 @@ export function DraggableShape({
 
   return (
     <div
-      className="absolute cursor-move group"
+      className="absolute cursor-move group touch-none"
       style={{ left: x, top: y }}
+      onPointerDown={handlePointerDown}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
     >
       {renderShape()}
       
@@ -225,7 +270,8 @@ export function DraggableShape({
           </div>
           
           <div
-            className="absolute bottom-0 right-0 h-4 w-4 bg-primary cursor-se-resize rounded-full border-2 border-background"
+            className="absolute bottom-0 right-0 h-6 w-6 bg-primary cursor-se-resize rounded-full border-2 border-background touch-none"
+            onPointerDown={handleResizePointerDown}
             onMouseDown={handleResizeMouseDown}
           />
         </>

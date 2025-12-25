@@ -774,19 +774,49 @@ ELITE DOCUMENT REQUIREMENTS:
           pdf.addPage();
         }
 
-        const pdfPageWidth = 210;
-        const pdfPageHeight = 297;
+        // Calculate how many PDF pages we need for this canvas
+        const pdfPageHeightPx = 1123; // A4 at 96dpi
+        const totalPdfPages = Math.ceil(captureHeight / pdfPageHeightPx);
 
-        // Fit-to-page (contain) so Page 1 never spills across multiple PDF pages
-        let renderW = pdfPageWidth;
-        let renderH = (canvas.height / canvas.width) * renderW;
-        if (renderH > pdfPageHeight) {
-          const scale = pdfPageHeight / renderH;
-          renderW = renderW * scale;
-          renderH = pdfPageHeight;
+        if (totalPdfPages <= 1) {
+          // Single page - fit to page
+          let renderW = pdfWidth;
+          let renderH = (canvas.height / canvas.width) * renderW;
+          if (renderH > pdfHeight) {
+            const scale = pdfHeight / renderH;
+            renderW = renderW * scale;
+            renderH = pdfHeight;
+          }
+          pdf.addImage(imgData, "JPEG", 0, 0, renderW, renderH);
+        } else {
+          // Multi-page: slice the canvas across PDF pages
+          for (let pdfPageIdx = 0; pdfPageIdx < totalPdfPages; pdfPageIdx++) {
+            if (pdfPageIdx > 0) {
+              pdf.addPage();
+            }
+            
+            // Create a slice of the canvas for this PDF page
+            const sliceCanvas = document.createElement("canvas");
+            const sliceCtx = sliceCanvas.getContext("2d");
+            const sliceStartY = pdfPageIdx * pdfPageHeightPx * 2; // *2 because scale is 2
+            const sliceHeight = Math.min(pdfPageHeightPx * 2, canvas.height - sliceStartY);
+            
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = sliceHeight;
+            
+            if (sliceCtx) {
+              sliceCtx.drawImage(
+                canvas,
+                0, sliceStartY, canvas.width, sliceHeight,
+                0, 0, canvas.width, sliceHeight
+              );
+              
+              const sliceImgData = sliceCanvas.toDataURL("image/jpeg", 0.95);
+              const sliceRatio = sliceHeight / (pdfPageHeightPx * 2);
+              pdf.addImage(sliceImgData, "JPEG", 0, 0, pdfWidth, pdfHeight * sliceRatio);
+            }
+          }
         }
-
-        pdf.addImage(imgData, "JPEG", 0, 0, renderW, renderH);
 
         // Cleanup the temporary container
         document.body.removeChild(pageContainer);
