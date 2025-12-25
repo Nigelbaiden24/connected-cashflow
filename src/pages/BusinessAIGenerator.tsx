@@ -505,29 +505,40 @@ ELITE DOCUMENT REQUIREMENTS:
         return el;
       };
 
+      // Process each page individually
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
-        const pageSections = sections.filter((s) => (s as any).pageId === page.id || (!(s as any).pageId && page.id === "page-1"));
-        const pageShapes = shapes.filter((s) => (s as any).pageId === page.id || (!(s as any).pageId && page.id === "page-1"));
-        const pageImages = uploadedImages.filter((img) => (img as any).pageId === page.id || (!(img as any).pageId && page.id === "page-1"));
-        const pageSignatures = signatureFields.filter((sig) => sig.pageId === page.id || (!sig.pageId && page.id === "page-1"));
+        const pageSections = sections.filter(
+          (s) => (s as any).pageId === page.id || (!(s as any).pageId && page.id === "page-1")
+        );
+        const pageShapes = shapes.filter(
+          (s) => (s as any).pageId === page.id || (!(s as any).pageId && page.id === "page-1")
+        );
+        const pageImages = uploadedImages.filter(
+          (img) => (img as any).pageId === page.id || (!(img as any).pageId && page.id === "page-1")
+        );
+        const pageSignatures = signatureFields.filter(
+          (sig) => sig.pageId === page.id || (!sig.pageId && page.id === "page-1")
+        );
 
+        // Create a temporary container for this page
         const pageContainer = document.createElement("div");
         pageContainer.style.position = "fixed";
-        pageContainer.style.left = "0";
+        pageContainer.style.left = "-9999px";
         pageContainer.style.top = "0";
         pageContainer.style.width = "794px";
-        pageContainer.style.height = "1123px";
+        pageContainer.style.minHeight = "1123px";
         pageContainer.style.backgroundColor = backgroundColor || "#ffffff";
         pageContainer.style.fontFamily = fontFamily;
         pageContainer.style.fontSize = `${fontSize}px`;
         pageContainer.style.color = textColor || "#000000";
         pageContainer.style.padding = "40px";
         pageContainer.style.boxSizing = "border-box";
-        pageContainer.style.overflow = "hidden";
+        pageContainer.style.overflow = "visible";
         pageContainer.style.zIndex = "-9999";
         document.body.appendChild(pageContainer);
 
+        // Logo
         if (logoUrl) {
           const logo = document.createElement("img");
           logo.src = logoUrl;
@@ -537,12 +548,16 @@ ELITE DOCUMENT REQUIREMENTS:
           logo.style.top = "32px";
           logo.style.height = "56px";
           logo.style.width = "auto";
+          logo.style.objectFit = "contain";
           pageContainer.appendChild(logo);
         }
 
-        pageShapes.forEach((shape) => pageContainer.appendChild(createShapeElement(shape)));
+        // Shapes
+        pageShapes.forEach((shape) => {
+          pageContainer.appendChild(createShapeElement(shape));
+        });
 
-        // Sections - use for...of to allow await for chart capture
+        // Sections - use for...of to allow await
         for (const section of pageSections) {
           const sectionDiv = document.createElement("div");
           sectionDiv.style.position = "absolute";
@@ -556,6 +571,8 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
           sectionDiv.style.wordBreak = "break-word";
+          sectionDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
+          sectionDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
 
           if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== "none") {
             sectionDiv.style.border = `1px solid ${(section as any).styling?.borderColor || "#e5e7eb"}`;
@@ -563,14 +580,17 @@ ELITE DOCUMENT REQUIREMENTS:
 
           if (section.type === "heading") {
             const h2 = document.createElement("h2");
-            h2.style.fontSize = "28px";
+            const headingSize = Math.max((section as any).fontSize || 28, 24);
+            h2.style.fontSize = `${headingSize}px`;
             h2.style.fontWeight = "700";
             h2.style.marginBottom = "16px";
+            h2.style.lineHeight = "1.3";
+            h2.style.fontFamily = (section as any).fontFamily || fontFamily;
             h2.textContent = (section.content || section.title || "").toString();
             sectionDiv.appendChild(h2);
           } else if (section.type === "table") {
             const tableWrapper = document.createElement("div");
-            tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
+            tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
             sectionDiv.appendChild(tableWrapper);
           } else if (section.type === "chart") {
             // For charts, capture the entire section including title
@@ -584,7 +604,6 @@ ELITE DOCUMENT REQUIREMENTS:
             
             // Try to find the rendered chart element - capture the entire group including title
             const sectionEl = document.querySelector(`[data-section-id="${section.id}"]`);
-            // First try to capture the parent div that includes title + chart (the .relative.group container)
             const chartContainerWithTitle = sectionEl?.querySelector('.relative.group') || sectionEl;
             const existingChartEl = chartContainerWithTitle?.querySelector('.recharts-wrapper') ||
                                    chartContainerWithTitle?.querySelector('.recharts-responsive-container') ||
@@ -592,10 +611,7 @@ ELITE DOCUMENT REQUIREMENTS:
                                    chartContainerWithTitle?.querySelector('[class*="recharts"]');
             if (existingChartEl) {
               try {
-                // Wait for animations to complete
                 await new Promise(resolve => setTimeout(resolve, 150));
-                
-                // Try to capture the whole chart container (including title) first
                 const elementToCapture = (chartContainerWithTitle && chartContainerWithTitle !== sectionEl) 
                   ? chartContainerWithTitle 
                   : existingChartEl;
@@ -625,22 +641,25 @@ ELITE DOCUMENT REQUIREMENTS:
           } else {
             if (section.title) {
               const h3 = document.createElement("h3");
-              h3.style.fontSize = "20px";
+              h3.style.fontSize = `${Math.max((section as any).fontSize || 16, 16) + 4}px`;
               h3.style.fontWeight = "600";
               h3.style.marginBottom = "12px";
+              h3.style.fontFamily = (section as any).fontFamily || fontFamily;
               h3.textContent = section.title;
               sectionDiv.appendChild(h3);
             }
             const contentDiv = document.createElement("div");
             contentDiv.style.whiteSpace = "pre-wrap";
             contentDiv.style.lineHeight = "1.7";
-            contentDiv.style.fontSize = "14px";
+            contentDiv.style.fontSize = `${(section as any).fontSize || 14}px`;
+            contentDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
             contentDiv.textContent = (section.content || "").toString();
             sectionDiv.appendChild(contentDiv);
           }
           pageContainer.appendChild(sectionDiv);
         }
 
+        // Images
         for (const img of pageImages) {
           const imgEl = document.createElement("img");
           imgEl.src = img.url;
@@ -672,7 +691,6 @@ ELITE DOCUMENT REQUIREMENTS:
           sigDiv.style.padding = "8px";
           
           if (sig.signed && (sig as any).signatureData) {
-            // Render actual signature image
             const sigImg = document.createElement("img");
             sigImg.src = (sig as any).signatureData;
             sigImg.style.maxWidth = "100%";
@@ -698,32 +716,107 @@ ELITE DOCUMENT REQUIREMENTS:
           pageContainer.appendChild(sigDiv);
         });
 
+        // Wait for images to load
         const imgs = Array.from(pageContainer.querySelectorAll("img"));
-        await Promise.all(imgs.map((img) => new Promise<void>((resolve) => {
-          if (img.complete) return resolve();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-        })));
+        await Promise.all(
+          imgs.map(
+            (img) =>
+              new Promise<void>((resolve) => {
+                if (img.complete) return resolve();
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              })
+          )
+        );
         await new Promise((resolve) => setTimeout(resolve, 100));
 
+        // Determine how tall this page's content actually is
+        const contentBottom = Math.max(
+          1123,
+          ...pageSections.map((s: any) => (s.y || 0) + (s.height || 0) + 32),
+          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0)),
+          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0)),
+          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0)),
+        );
+
+        const captureHeight = Math.ceil(Math.max(1123, contentBottom + 80));
+        pageContainer.style.height = `${captureHeight}px`;
+        pageContainer.style.minHeight = `${captureHeight}px`;
+
+        // Capture the page with html2canvas
         const canvas = await html2canvas(pageContainer, {
           scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: backgroundColor || "#ffffff",
           width: 794,
-          height: 1123,
+          height: captureHeight,
+          windowWidth: 794,
+          windowHeight: captureHeight,
           logging: false,
         });
 
         const imgData = canvas.toDataURL("image/jpeg", 0.95);
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        // Calculate how many PDF pages we need for this canvas
+        const pdfPageHeightPx = 1123; // A4 at 96dpi
+        const totalPdfPages = Math.ceil(captureHeight / pdfPageHeightPx);
+
+        if (totalPdfPages <= 1) {
+          // Single page - fit to page
+          let renderW = pdfWidth;
+          let renderH = (canvas.height / canvas.width) * renderW;
+          if (renderH > pdfHeight) {
+            const scale = pdfHeight / renderH;
+            renderW = renderW * scale;
+            renderH = pdfHeight;
+          }
+          pdf.addImage(imgData, "JPEG", 0, 0, renderW, renderH);
+        } else {
+          // Multi-page: slice the canvas across PDF pages
+          for (let pdfPageIdx = 0; pdfPageIdx < totalPdfPages; pdfPageIdx++) {
+            if (pdfPageIdx > 0) {
+              pdf.addPage();
+            }
+            
+            // Create a slice of the canvas for this PDF page
+            const sliceCanvas = document.createElement("canvas");
+            const sliceCtx = sliceCanvas.getContext("2d");
+            const sliceStartY = pdfPageIdx * pdfPageHeightPx * 2; // *2 because scale is 2
+            const sliceHeight = Math.min(pdfPageHeightPx * 2, canvas.height - sliceStartY);
+            
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = sliceHeight;
+            
+            if (sliceCtx) {
+              sliceCtx.drawImage(
+                canvas,
+                0, sliceStartY, canvas.width, sliceHeight,
+                0, 0, canvas.width, sliceHeight
+              );
+              
+              const sliceImgData = sliceCanvas.toDataURL("image/jpeg", 0.95);
+              const sliceRatio = sliceHeight / (pdfPageHeightPx * 2);
+              pdf.addImage(sliceImgData, "JPEG", 0, 0, pdfWidth, pdfHeight * sliceRatio);
+            }
+          }
+        }
+
+        // Cleanup the temporary container
         document.body.removeChild(pageContainer);
       }
 
+      // Save the PDF
       pdf.save(`${template?.name || "document"}-${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast({ title: "PDF downloaded!", description: `Document with ${pages.length} page(s) has been saved.` });
+
+      toast({
+        title: "PDF downloaded successfully!",
+        description: `Document with ${pages.length} page(s) has been saved.`,
+      });
     } catch (error) {
       console.error("PDF generation error:", error);
       toast({ title: "Download failed", description: "Could not generate PDF. Please try again.", variant: "destructive" });

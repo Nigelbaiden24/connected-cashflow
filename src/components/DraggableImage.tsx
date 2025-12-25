@@ -31,6 +31,36 @@ export function DraggableImage({
   const [isHovered, setIsHovered] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
 
+  // Unified pointer handlers for mouse and touch
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    if ((e.target as HTMLElement).closest('button')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const rect = imageRef.current?.parentElement?.getBoundingClientRect();
+    if (!rect) return;
+    
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - x,
+      y: e.clientY - y
+    });
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handleResizePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY
+    });
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  // Legacy mouse handlers
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
     if ((e.target as HTMLElement).closest('button')) return; // Don't drag when clicking buttons
@@ -58,6 +88,40 @@ export function DraggableImage({
   };
 
   useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        const rect = imageRef.current?.parentElement?.getBoundingClientRect();
+        if (!rect) return;
+        
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        
+        // Keep within parent bounds
+        const maxX = rect.width - width;
+        const maxY = rect.height - height;
+        
+        onPositionChange(
+          id, 
+          Math.max(0, Math.min(maxX, newX)), 
+          Math.max(0, Math.min(maxY, newY))
+        );
+      } else if (isResizing) {
+        e.preventDefault();
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+        const newWidth = Math.max(50, width + deltaX);
+        const newHeight = Math.max(50, height + deltaY);
+        onSizeChange(id, newWidth, newHeight);
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         e.preventDefault();
@@ -93,11 +157,17 @@ export function DraggableImage({
     };
 
     if (isDragging || isResizing) {
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -106,7 +176,7 @@ export function DraggableImage({
   return (
     <div
       ref={imageRef}
-      className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
+      className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''} touch-none`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -115,9 +185,11 @@ export function DraggableImage({
         zIndex: isHovered || isDragging || isResizing ? 100 : 50,
         userSelect: 'none'
       }}
+      onPointerDown={handlePointerDown}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
     >
       <div className="relative w-full h-full">
         {/* Image */}
@@ -152,10 +224,11 @@ export function DraggableImage({
 
             {/* Resize handle */}
             <div
-              className="absolute -bottom-2 -right-2 w-6 h-6 bg-primary rounded-full cursor-nwse-resize shadow-lg flex items-center justify-center"
+              className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full cursor-nwse-resize shadow-lg flex items-center justify-center touch-none"
+              onPointerDown={handleResizePointerDown}
               onMouseDown={handleResizeMouseDown}
             >
-              <div className="w-2 h-2 bg-background rounded-full" />
+              <div className="w-3 h-3 bg-background rounded-full" />
             </div>
           </>
         )}

@@ -173,6 +173,42 @@ export function DraggableSection({
     };
   }, [type, content]);
 
+  // Unified pointer handler for mouse and touch
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-no-drag="true"]')) return;
+    if (target.closest('button')) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = sectionRef.current?.parentElement?.getBoundingClientRect();
+    if (!rect) return;
+
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - x,
+      y: e.clientY - y,
+    });
+
+    // Capture pointer for smooth tracking outside element
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handleResizePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY
+    });
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  // Legacy mouse handlers for backwards compat
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
 
@@ -204,6 +240,39 @@ export function DraggableSection({
   };
 
   useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        const rect = sectionRef.current?.parentElement?.getBoundingClientRect();
+        if (!rect) return;
+        
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        
+        const maxX = rect.width - width;
+        const maxY = rect.height - height;
+        
+        onPositionChange(
+          id, 
+          Math.max(0, Math.min(maxX, newX)), 
+          Math.max(0, Math.min(maxY, newY))
+        );
+      } else if (isResizing) {
+        e.preventDefault();
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+        const newWidth = Math.max(200, width + deltaX);
+        const newHeight = Math.max(50, height + deltaY);
+        onSizeChange(id, newWidth, newHeight);
+        setDragStart({ x: e.clientX, y: e.clientY });
+      }
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         e.preventDefault();
@@ -238,11 +307,17 @@ export function DraggableSection({
     };
 
     if (isDragging || isResizing) {
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
@@ -552,7 +627,7 @@ export function DraggableSection({
     <div
       ref={sectionRef}
       data-section-id={id}
-      className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
+      className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''} touch-none`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -561,9 +636,11 @@ export function DraggableSection({
         zIndex: isHovered || isDragging || isResizing ? 100 : 50,
         userSelect: 'none'
       }}
+      onPointerDown={handlePointerDown}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
     >
       <div className="relative w-full h-full p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all bg-background/50">
         {/* Drag Handle */}
@@ -687,7 +764,8 @@ export function DraggableSection({
         {/* Resize Handle */}
         {(isHovered || isResizing) && !isDragging && (
           <div
-            className="absolute bottom-0 right-0 w-4 h-4 bg-primary/50 cursor-nwse-resize"
+            className="absolute bottom-0 right-0 w-6 h-6 bg-primary/50 cursor-nwse-resize touch-none"
+            onPointerDown={handleResizePointerDown}
             onMouseDown={handleResizeMouseDown}
             style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
           />
