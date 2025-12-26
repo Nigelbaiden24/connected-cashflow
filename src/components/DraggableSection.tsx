@@ -642,10 +642,10 @@ export function DraggableSection({
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
     >
-      <div className="relative w-full h-full p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all bg-background/50">
-        {/* Drag Handle */}
+    <div className="relative w-full h-full p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all bg-background/50">
+        {/* Drag Handle - always visible on mobile */}
         {(isHovered || isDragging) && !isResizing && (
-          <div className="absolute -left-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute -left-2 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             <GripVertical className="h-5 w-5 text-primary cursor-grab" />
           </div>
         )}
@@ -653,9 +653,9 @@ export function DraggableSection({
         {/* Content */}
         <div className="w-full">{renderContent()}</div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons - always visible on mobile */}
         {isHovered && !isDragging && !isResizing && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 rounded-md p-1 shadow-sm border border-border/50">
+          <div className="absolute top-2 right-2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-background/90 rounded-md p-1 shadow-sm border border-border/50">
             {/* Font Style Button */}
             <Popover open={showStylePopover} onOpenChange={setShowStylePopover}>
               <PopoverTrigger asChild>
@@ -761,14 +761,15 @@ export function DraggableSection({
           </div>
         )}
 
-        {/* Resize Handle */}
+        {/* Resize Handle - larger touch target on mobile */}
         {(isHovered || isResizing) && !isDragging && (
           <div
-            className="absolute bottom-0 right-0 w-6 h-6 bg-primary/50 cursor-nwse-resize touch-none"
+            className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary cursor-nwse-resize touch-none rounded-full flex items-center justify-center"
             onPointerDown={handleResizePointerDown}
             onMouseDown={handleResizeMouseDown}
-            style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
-          />
+          >
+            <div className="w-3 h-3 bg-background rounded-full" />
+          </div>
         )}
 
         {/* Visual Indicator when dragging or resizing */}

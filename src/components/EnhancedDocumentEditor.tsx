@@ -195,8 +195,8 @@ export function EnhancedDocumentEditor({
 
   return (
     <div
-      className="w-full h-full overflow-auto p-8 relative"
-      style={{ backgroundColor, minHeight: "1000px" }}
+      className="w-full h-full overflow-auto p-8 relative touch-none"
+      style={{ backgroundColor, minHeight: "1000px", touchAction: "none" }}
     >
       {logoUrl && (
         <div className="absolute top-8 left-8 z-10">
