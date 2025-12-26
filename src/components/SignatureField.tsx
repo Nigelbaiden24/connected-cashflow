@@ -42,9 +42,35 @@ export function SignatureField({
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const [showSignDialog, setShowSignDialog] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
 
+  // Unified pointer handlers for mobile and desktop
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if ((e.target as HTMLElement).classList.contains('resize-handle')) {
+      setIsResizing(true);
+      setResizeStart({ x: e.clientX, y: e.clientY, width, height });
+    } else {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - x, y: e.clientY - y });
+    }
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handleResizePointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    setResizeStart({ x: e.clientX, y: e.clientY, width, height });
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  // Legacy mouse handlers for backwards compat
   const handleMouseDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).classList.contains('resize-handle')) {
       setIsResizing(true);
@@ -55,64 +81,107 @@ export function SignatureField({
     }
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-      onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
-    } else if (isResizing) {
-      const deltaX = e.clientX - resizeStart.x;
-      const deltaY = e.clientY - resizeStart.y;
-      const newWidth = Math.max(150, resizeStart.width + deltaX);
-      const newHeight = Math.max(60, resizeStart.height + deltaY);
-      onSizeChange(id, newWidth, newHeight);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setIsResizing(false);
-  };
-
   useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (isDragging) {
+        e.preventDefault();
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
+      } else if (isResizing) {
+        e.preventDefault();
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        const newWidth = Math.max(150, resizeStart.width + deltaX);
+        const newHeight = Math.max(60, resizeStart.height + deltaY);
+        onSizeChange(id, newWidth, newHeight);
+      }
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
+      } else if (isResizing) {
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        const newWidth = Math.max(150, resizeStart.width + deltaX);
+        const newHeight = Math.max(60, resizeStart.height + deltaY);
+        onSizeChange(id, newWidth, newHeight);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
     if (isDragging || isResizing) {
+      document.addEventListener('pointermove', handlePointerMove);
+      document.addEventListener('pointerup', handlePointerUp);
+      document.addEventListener('pointercancel', handlePointerUp);
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, isResizing, dragStart, resizeStart, id, onPositionChange, onSizeChange]);
+
+  // Canvas drawing functions - support touch
+  const getCanvasPos = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    
+    const rect = canvas.getBoundingClientRect();
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0];
+      return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
       };
     }
-  }, [isDragging, isResizing]);
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
 
-  // Canvas drawing functions
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
+    const pos = getCanvasPos(e);
     setIsDrawing(true);
-    setLastPos({ x, y });
+    setLastPos(pos);
     
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.beginPath();
-      ctx.moveTo(x, y);
+      ctx.moveTo(pos.x, pos.y);
     }
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
     if (!isDrawing) return;
     
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const pos = getCanvasPos(e);
     
     const ctx = canvas.getContext('2d');
     if (ctx) {
@@ -123,10 +192,10 @@ export function SignatureField({
       
       ctx.beginPath();
       ctx.moveTo(lastPos.x, lastPos.y);
-      ctx.lineTo(x, y);
+      ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
       
-      setLastPos({ x, y });
+      setLastPos(pos);
     }
   };
 
@@ -140,7 +209,8 @@ export function SignatureField({
     
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
   };
 
@@ -177,17 +247,21 @@ export function SignatureField({
   return (
     <>
       <div
+        ref={fieldRef}
         className={`absolute border-2 ${
           signed 
             ? 'border-green-500 bg-green-50' 
             : 'border-primary bg-primary/5'
-        } rounded-lg shadow-lg ${isDragging || isResizing ? 'cursor-move' : ''} group`}
+        } rounded-lg shadow-lg ${isDragging || isResizing ? 'cursor-move' : ''} group touch-none`}
         style={{
           left: `${x}px`,
           top: `${y}px`,
           width: `${width}px`,
           height: `${height}px`,
+          touchAction: "none",
+          userSelect: "none",
         }}
+        onPointerDown={handlePointerDown}
         onMouseDown={handleMouseDown}
         onClick={handleFieldClick}
       >
@@ -215,13 +289,13 @@ export function SignatureField({
             <div className="text-center">
               <FileSignature className="h-6 w-6 text-primary mx-auto mb-2" />
               <p className="text-xs font-semibold text-primary">Signature Required</p>
-              <p className="text-xs text-muted-foreground">Click to sign</p>
+              <p className="text-xs text-muted-foreground">Tap to sign</p>
             </div>
           )}
         </div>
 
         {/* Drag Handle */}
-        <div className="absolute top-0 left-0 right-0 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 rounded-t-lg cursor-move">
+        <div className="absolute top-0 left-0 right-0 h-8 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-primary/10 rounded-t-lg cursor-move">
           <GripVertical className="h-4 w-4 text-primary" />
         </div>
 
@@ -229,7 +303,7 @@ export function SignatureField({
         <Button
           variant="destructive"
           size="icon"
-          className="absolute -top-2 -right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute -top-2 -right-2 h-7 w-7 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
           onClick={(e) => {
             e.stopPropagation();
             onRemove(id);
@@ -238,13 +312,13 @@ export function SignatureField({
           <X className="h-3 w-3" />
         </Button>
 
-        {/* Resize Handle */}
+        {/* Resize Handle - larger for touch */}
         <div
-          className="resize-handle absolute bottom-0 right-0 w-4 h-4 bg-primary cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{
-            clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
-          }}
-        />
+          className="resize-handle absolute -bottom-2 -right-2 w-8 h-8 bg-primary cursor-se-resize opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center touch-none"
+          onPointerDown={handleResizePointerDown}
+        >
+          <div className="w-3 h-3 bg-background rounded-full" />
+        </div>
       </div>
 
       {/* Signature Drawing Dialog */}
@@ -259,7 +333,7 @@ export function SignatureField({
           
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Use your mouse or touchpad to draw your signature in the box below.
+              Use your finger or mouse to draw your signature in the box below.
             </p>
             
             <div className="border-2 border-dashed border-border rounded-lg p-2 bg-white">
@@ -267,11 +341,15 @@ export function SignatureField({
                 ref={canvasRef}
                 width={400}
                 height={150}
-                className="w-full cursor-crosshair border border-border/50 rounded"
+                className="w-full cursor-crosshair border border-border/50 rounded touch-none"
+                style={{ touchAction: "none" }}
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={stopDrawing}
                 onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
               />
             </div>
             

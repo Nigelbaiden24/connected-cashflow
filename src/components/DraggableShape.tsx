@@ -214,18 +214,19 @@ export function DraggableShape({
     >
       {renderShape()}
       
-      {isHovered && (
+      {/* Controls - always visible on mobile */}
+      {(isHovered || isDragging || isResizing) && (
         <>
-          <div className="absolute -top-10 left-0 flex gap-1 bg-background border rounded-md p-1 shadow-lg">
+          <div className="absolute -top-12 left-0 flex gap-1 bg-background border rounded-md p-1 shadow-lg">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-7 w-7"
+                  className="h-8 w-8"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Palette className="h-3 w-3" />
+                  <Palette className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-64" onClick={(e) => e.stopPropagation()}>
@@ -259,21 +260,24 @@ export function DraggableShape({
             <Button
               variant="destructive"
               size="icon"
-              className="h-7 w-7"
+              className="h-8 w-8"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemove(id);
               }}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
           
+          {/* Resize handle - larger for touch */}
           <div
-            className="absolute bottom-0 right-0 h-6 w-6 bg-primary cursor-se-resize rounded-full border-2 border-background touch-none"
+            className="absolute -bottom-2 -right-2 h-10 w-10 bg-primary cursor-se-resize rounded-full border-2 border-background touch-none flex items-center justify-center"
             onPointerDown={handleResizePointerDown}
             onMouseDown={handleResizeMouseDown}
-          />
+          >
+            <div className="w-4 h-4 bg-background rounded-full" />
+          </div>
         </>
       )}
     </div>

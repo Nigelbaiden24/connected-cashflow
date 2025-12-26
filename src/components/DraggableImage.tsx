@@ -200,11 +200,11 @@ export function DraggableImage({
           draggable={false}
         />
 
-        {/* Controls - visible on hover */}
-        {isHovered && !isDragging && !isResizing && (
+        {/* Controls - always visible on mobile, hover on desktop */}
+        {(isHovered || isDragging || isResizing) && (
           <>
             {/* Move handle */}
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-background border rounded px-2 py-1 flex items-center gap-2 shadow-lg">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-background border rounded px-2 py-1 flex items-center gap-2 shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <Move className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Drag to move</span>
             </div>
@@ -213,7 +213,7 @@ export function DraggableImage({
             <Button
               variant="destructive"
               size="sm"
-              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full shadow-lg"
+              className="absolute -top-2 -right-2 h-7 w-7 p-0 rounded-full shadow-lg"
               onClick={(e) => {
                 e.stopPropagation();
                 onRemove(id);
@@ -222,13 +222,13 @@ export function DraggableImage({
               <X className="h-3 w-3" />
             </Button>
 
-            {/* Resize handle */}
+            {/* Resize handle - larger touch target */}
             <div
-              className="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full cursor-nwse-resize shadow-lg flex items-center justify-center touch-none"
+              className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full cursor-nwse-resize shadow-lg flex items-center justify-center touch-none"
               onPointerDown={handleResizePointerDown}
               onMouseDown={handleResizeMouseDown}
             >
-              <div className="w-3 h-3 bg-background rounded-full" />
+              <div className="w-4 h-4 bg-background rounded-full" />
             </div>
           </>
         )}
