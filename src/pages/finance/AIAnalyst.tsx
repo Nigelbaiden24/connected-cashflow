@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Send, Loader2, TrendingUp, Shield, BarChart3, FileText, Lightbulb, Sparkles } from "lucide-react";
+import { Brain, Loader2, TrendingUp, Shield, BarChart3, FileText, Lightbulb, Sparkles } from "lucide-react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
@@ -15,8 +15,13 @@ export default function FinanceAIAnalyst() {
   const [company, setCompany] = useState("");
   const [response, setResponse] = useState("");
   const [activeTab, setActiveTab] = useState("fundamental");
-  const { analyzeWithAI, isLoading } = useAIAnalyst("investment");
   const { toast } = useToast();
+
+  const { analyzeWithAI, isLoading } = useAIAnalyst({
+    onDelta: (text) => setResponse((prev) => prev + text),
+    onDone: () => toast({ title: "Analysis Complete" }),
+    onError: (error) => toast({ title: "Error", description: error, variant: "destructive" }),
+  });
 
   const quickPrompts: Record<string, string[]> = {
     fundamental: [
@@ -63,11 +68,7 @@ export default function FinanceAIAnalyst() {
       : `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} analysis: ${query}`;
 
     setResponse("");
-    analyzeWithAI(fullQuery, {
-      onDelta: (chunk: string) => setResponse(prev => prev + chunk),
-      onDone: () => toast({ title: "Analysis Complete" }),
-      onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" })
-    });
+    await analyzeWithAI(fullQuery, activeTab, company || undefined);
   };
 
   const handleQuickPrompt = (prompt: string) => {

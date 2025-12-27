@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { LineChart, TrendingUp, TrendingDown, BarChart3, Loader2, Upload, Brain, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Line, ComposedChart } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 interface Benchmark {
   name: string;
@@ -21,6 +21,7 @@ interface MarketTrend {
   description: string;
   impact: string;
   timeframe?: string;
+  category?: string;
 }
 
 export default function FinanceBenchmarkingTrends() {
@@ -265,7 +266,7 @@ export default function FinanceBenchmarkingTrends() {
                       ) : (
                         <BarChart3 className="h-5 w-5 text-yellow-500" />
                       )}
-                      <Badge variant="outline">{trend.category}</Badge>
+                      {trend.category && <Badge variant="outline">{trend.category}</Badge>}
                     </div>
                     <CardTitle className="text-lg">{trend.title}</CardTitle>
                   </CardHeader>

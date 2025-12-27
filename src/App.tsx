@@ -33,6 +33,13 @@ import Watchlists from "./pages/investor/Watchlists";
 import Languages from "./pages/investor/Languages";
 import BusinessLanguages from "./pages/business/Languages";
 import FinanceLanguages from "./pages/finance/Languages";
+import FinanceMarketCommentary from "./pages/finance/MarketCommentary";
+import FinanceModelPortfolios from "./pages/finance/ModelPortfolios";
+import FinanceBenchmarkingTrends from "./pages/finance/BenchmarkingTrends";
+import FinanceAIAnalyst from "./pages/finance/AIAnalyst";
+import FinanceWatchlists from "./pages/finance/Watchlists";
+import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
+import FundETFDatabase from "./pages/finance/FundETFDatabase";
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
@@ -332,6 +339,56 @@ const App = () => {
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <Settings />
+                </FinanceLayout>
+              )
+            } />
+            
+            <Route path="/finance/commentary" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceMarketCommentary />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/portfolios" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceModelPortfolios />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/trends" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceBenchmarkingTrends />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/ai-analyst" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceAIAnalyst />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/watchlists" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceWatchlists />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/screeners" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceScreenersDiscovery />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/fund-database" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FundETFDatabase />
                 </FinanceLayout>
               )
             } />

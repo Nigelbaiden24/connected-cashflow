@@ -24,7 +24,12 @@ export default function FinanceMarketCommentary() {
   const [commentaries, setCommentaries] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { analyzeWithAI, isLoading: aiLoading } = useAIAnalyst("market");
+
+  const { analyzeWithAI, isLoading: aiLoading } = useAIAnalyst({
+    onDelta: (text) => setAiResponse((prev) => prev + text),
+    onDone: () => toast({ title: "Analysis complete" }),
+    onError: (error) => toast({ title: "Error", description: error, variant: "destructive" }),
+  });
 
   useEffect(() => {
     fetchCommentaries();
@@ -50,11 +55,7 @@ export default function FinanceMarketCommentary() {
     if (!aiQuery.trim()) return;
     
     setAiResponse("");
-    analyzeWithAI(aiQuery, {
-      onDelta: (chunk: string) => setAiResponse(prev => prev + chunk),
-      onDone: () => toast({ title: "Analysis complete" }),
-      onError: (err: Error) => toast({ title: "Error", description: err.message, variant: "destructive" })
-    });
+    await analyzeWithAI(aiQuery, "market");
     setAiQuery("");
   };
 
