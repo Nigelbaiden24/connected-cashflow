@@ -13,7 +13,9 @@ import {
   Filter, 
   ChevronDown, 
   X,
-  RotateCcw
+  RotateCcw,
+  SlidersHorizontal,
+  Sparkles
 } from "lucide-react";
 import { fundCategories, fundProviders, assetClasses, fundTypes } from "@/data/fundDatabase";
 import type { FundSearchFilters as FiltersType } from "@/types/fund";
@@ -65,45 +67,67 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
   ].reduce((sum, count) => sum + (count || 0), 0);
 
   return (
-    <Card>
-      <CardHeader className="pb-4">
+    <Card className="border-border/50 bg-gradient-to-br from-background to-muted/20 overflow-hidden">
+      <CardHeader className="pb-4 border-b border-border/50 bg-muted/30">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5 text-primary" />
-            Search & Filter
+          <CardTitle className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Filter className="h-4 w-4 text-primary" />
+            </div>
+            <span>Search & Filter</span>
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">{resultCount} funds</Badge>
+            <Badge 
+              variant="secondary" 
+              className="px-3 py-1 bg-primary/10 text-primary border-0 font-semibold"
+            >
+              {resultCount.toLocaleString()} funds
+            </Badge>
             {activeFilterCount > 0 && (
-              <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1">
-                <RotateCcw className="h-3 w-3" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={resetFilters} 
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
                 Clear ({activeFilterCount})
               </Button>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         {/* Main Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Search by fund name, ISIN, or ticker..."
             value={filters.searchQuery || ""}
             onChange={(e) => updateFilter("searchQuery", e.target.value)}
-            className="pl-10"
+            className="pl-11 h-11 bg-background border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all"
           />
+          {filters.searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={() => updateFilter("searchQuery", "")}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
 
         {/* Quick Filters */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
-            <Label className="text-xs text-muted-foreground">Fund Type</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Fund Type</Label>
             <Select 
               value={filters.fundTypes?.[0] || "all"} 
               onValueChange={(v) => updateFilter("fundTypes", v === "all" ? [] : [v])}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 bg-background border-border/50 hover:border-primary/30 transition-colors">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -115,13 +139,13 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
             </Select>
           </div>
 
-          <div>
-            <Label className="text-xs text-muted-foreground">Asset Class</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Asset Class</Label>
             <Select 
               value={filters.assetClasses?.[0] || "all"} 
               onValueChange={(v) => updateFilter("assetClasses", v === "all" ? [] : [v])}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 bg-background border-border/50 hover:border-primary/30 transition-colors">
                 <SelectValue placeholder="All Assets" />
               </SelectTrigger>
               <SelectContent>
@@ -133,13 +157,13 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
             </Select>
           </div>
 
-          <div>
-            <Label className="text-xs text-muted-foreground">Provider</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Provider</Label>
             <Select 
               value={filters.providers?.[0] || "all"} 
               onValueChange={(v) => updateFilter("providers", v === "all" ? [] : [v])}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 bg-background border-border/50 hover:border-primary/30 transition-colors">
                 <SelectValue placeholder="All Providers" />
               </SelectTrigger>
               <SelectContent>
@@ -151,13 +175,13 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
             </Select>
           </div>
 
-          <div>
-            <Label className="text-xs text-muted-foreground">Category</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-muted-foreground">Category</Label>
             <Select 
               value={filters.categories?.[0] || "all"} 
               onValueChange={(v) => updateFilter("categories", v === "all" ? [] : [v])}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 bg-background border-border/50 hover:border-primary/30 transition-colors">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -173,22 +197,28 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
         {/* Advanced Filters */}
         <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between">
-              <span className="flex items-center gap-2">
-                <Filter className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              className="w-full justify-between h-10 hover:bg-muted/50 group"
+            >
+              <span className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                <SlidersHorizontal className="h-4 w-4" />
                 Advanced Filters
               </span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isAdvancedOpen ? 'rotate-180' : ''}`} />
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-4 pt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Risk Rating */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">
-                  Risk Rating (SRRI): {filters.riskRatingMin || 1} - {filters.riskRatingMax || 7}
+              <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/50">
+                <Label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                  <span>Risk Rating (SRRI)</span>
+                  <Badge variant="outline" className="text-[10px] px-1.5">
+                    {filters.riskRatingMin || 1} - {filters.riskRatingMax || 7}
+                  </Badge>
                 </Label>
-                <div className="px-2">
+                <div className="px-2 pt-2">
                   <Slider
                     value={[filters.riskRatingMin || 1, filters.riskRatingMax || 7]}
                     min={1}
@@ -198,68 +228,81 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
                       updateFilter("riskRatingMin", min);
                       updateFilter("riskRatingMax", max);
                     }}
+                    className="[&_[role=slider]]:bg-primary [&_[role=slider]]:border-primary"
                   />
+                </div>
+                <div className="flex justify-between text-[10px] text-muted-foreground px-1">
+                  <span>Low Risk</span>
+                  <span>High Risk</span>
                 </div>
               </div>
 
               {/* Max OCF */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Max OCF (%)</Label>
+              <div className="space-y-2 p-4 rounded-lg bg-muted/30 border border-border/50">
+                <Label className="text-xs font-medium text-muted-foreground">Max OCF (%)</Label>
                 <Input
                   type="number"
                   step="0.01"
                   placeholder="e.g., 0.50"
                   value={filters.ocfMax || ""}
                   onChange={(e) => updateFilter("ocfMax", e.target.value ? parseFloat(e.target.value) : undefined)}
+                  className="h-10 bg-background border-border/50"
                 />
               </div>
 
               {/* Min AUM */}
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Min AUM (£M)</Label>
+              <div className="space-y-2 p-4 rounded-lg bg-muted/30 border border-border/50">
+                <Label className="text-xs font-medium text-muted-foreground">Min AUM (£M)</Label>
                 <Input
                   type="number"
                   placeholder="e.g., 100"
                   value={filters.aumMin || ""}
                   onChange={(e) => updateFilter("aumMin", e.target.value ? parseFloat(e.target.value) : undefined)}
+                  className="h-10 bg-background border-border/50"
                 />
               </div>
             </div>
 
             {/* Toggle Filters */}
-            <div className="flex flex-wrap gap-6">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap gap-4 p-4 rounded-lg bg-muted/30 border border-border/50">
+              <div className="flex items-center gap-2.5">
                 <Switch
                   checked={filters.ucitsOnly || false}
                   onCheckedChange={(v) => updateFilter("ucitsOnly", v)}
+                  className="data-[state=checked]:bg-primary"
                 />
-                <Label className="text-sm">UCITS Only</Label>
+                <Label className="text-sm cursor-pointer">UCITS Only</Label>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <Switch
                   checked={filters.accumulatingOnly || false}
                   onCheckedChange={(v) => updateFilter("accumulatingOnly", v)}
+                  className="data-[state=checked]:bg-primary"
                 />
-                <Label className="text-sm">Accumulating Only</Label>
+                <Label className="text-sm cursor-pointer">Accumulating Only</Label>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <Switch
                   checked={filters.esgOnly || false}
                   onCheckedChange={(v) => updateFilter("esgOnly", v)}
+                  className="data-[state=checked]:bg-emerald-500"
                 />
-                <Label className="text-sm">ESG Funds Only</Label>
+                <Label className="text-sm cursor-pointer flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                  ESG Funds Only
+                </Label>
               </div>
             </div>
 
             {/* Sort Options */}
             <div className="flex gap-4">
-              <div className="flex-1">
-                <Label className="text-xs text-muted-foreground">Sort By</Label>
+              <div className="flex-1 space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Sort By</Label>
                 <Select 
                   value={filters.sortBy || "name"} 
                   onValueChange={(v) => updateFilter("sortBy", v as FiltersType['sortBy'])}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 bg-background border-border/50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -272,13 +315,13 @@ export function FundSearchFilters({ filters, onFiltersChange, resultCount }: Fun
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-32">
-                <Label className="text-xs text-muted-foreground">Order</Label>
+              <div className="w-36 space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">Order</Label>
                 <Select 
                   value={filters.sortOrder || "asc"} 
                   onValueChange={(v) => updateFilter("sortOrder", v as 'asc' | 'desc')}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 bg-background border-border/50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
