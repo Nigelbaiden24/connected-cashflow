@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Database, Search, Scale, Sparkles, FileText, BarChart3 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Database, Search, Scale, Sparkles, TrendingUp, Shield, DollarSign, BarChart3, PieChart, Globe, Download, Bookmark } from "lucide-react";
 import { fundDatabase } from "@/data/fundDatabase";
 import { FundSearchFilters } from "@/components/fund-database/FundSearchFilters";
 import { FundTable } from "@/components/fund-database/FundTable";
@@ -79,75 +80,219 @@ export default function FundETFDatabase() {
     toast({ title: "Added to comparison", description: fund.name });
   };
 
+  // Calculate stats
+  const totalAUM = fundDatabase.reduce((sum, f) => sum + f.aum, 0);
+  const avgOCF = (fundDatabase.reduce((sum, f) => sum + f.costs.ocf, 0) / fundDatabase.length).toFixed(2);
+  const avgReturn = (fundDatabase.reduce((sum, f) => sum + f.performance.oneYearReturn, 0) / fundDatabase.length).toFixed(1);
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Database className="h-8 w-8 text-primary" />
-            Fund & ETF Database
-          </h1>
-          <p className="text-muted-foreground mt-1">Morningstar-style research platform for UK IFAs</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Premium Header */}
+      <div className="relative overflow-hidden border-b border-border/50 bg-gradient-to-r from-primary/5 via-primary/10 to-chart-2/5">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.15),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--chart-2)/0.1),transparent_50%)]" />
+        
+        <div className="relative p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                  <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
+                    <Database className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                    Fund & ETF Database
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    Enterprise research platform for UK IFAs • {fundDatabase.length.toLocaleString()}+ funds
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {selectedFunds.length > 0 && (
+                <Badge variant="secondary" className="px-3 py-1.5 bg-primary/10 text-primary border-primary/20">
+                  {selectedFunds.length} selected
+                </Badge>
+              )}
+              {comparisonFunds.length > 0 && (
+                <Button 
+                  onClick={() => setShowComparison(!showComparison)} 
+                  variant={showComparison ? "default" : "outline"}
+                  className={showComparison ? "shadow-lg shadow-primary/25" : "border-primary/30 hover:border-primary/50"}
+                >
+                  <Scale className="h-4 w-4 mr-2" />
+                  Compare ({comparisonFunds.length})
+                </Button>
+              )}
+              <Button variant="outline" size="icon" className="border-border/50">
+                <Bookmark className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" className="border-border/50">
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+            <Card className="bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-chart-1/20 to-chart-1/10 flex items-center justify-center">
+                    <Database className="h-5 w-5 text-chart-1" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Funds</p>
+                    <p className="text-lg font-bold">{fundDatabase.length.toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-chart-2/20 to-chart-2/10 flex items-center justify-center">
+                    <Globe className="h-5 w-5 text-chart-2" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Combined AUM</p>
+                    <p className="text-lg font-bold">${(totalAUM / 1000).toFixed(0)}B</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Avg. 1Y Return</p>
+                    <p className="text-lg font-bold text-emerald-500">+{avgReturn}%</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-chart-4/20 to-chart-4/10 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-chart-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Avg. OCF</p>
+                    <p className="text-lg font-bold">{avgOCF}%</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-        {comparisonFunds.length > 0 && (
-          <Button onClick={() => setShowComparison(!showComparison)} variant={showComparison ? "default" : "outline"}>
-            <Scale className="h-4 w-4 mr-2" />
-            Compare ({comparisonFunds.length})
-          </Button>
-        )}
       </div>
 
-      {showComparison && comparisonFunds.length > 0 && (
-        <FundComparison 
-          funds={comparisonFunds} 
-          onRemoveFund={(isin) => setComparisonFunds(prev => prev.filter(f => f.isin !== isin))}
-          onClose={() => setShowComparison(false)}
-        />
-      )}
+      {/* Main Content */}
+      <div className="p-6 space-y-6">
+        {showComparison && comparisonFunds.length > 0 && (
+          <FundComparison 
+            funds={comparisonFunds} 
+            onRemoveFund={(isin) => setComparisonFunds(prev => prev.filter(f => f.isin !== isin))}
+            onClose={() => setShowComparison(false)}
+          />
+        )}
 
-      <Tabs defaultValue="search" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="search"><Search className="h-4 w-4 mr-2" />Search</TabsTrigger>
-          <TabsTrigger value="ai"><Sparkles className="h-4 w-4 mr-2" />AI Analyst</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="search" className="space-y-6">
+          <TabsList className="bg-muted/50 backdrop-blur-sm p-1 h-auto">
+            <TabsTrigger value="search" className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2.5 gap-2">
+              <Search className="h-4 w-4" />
+              <span>Search & Filter</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2.5 gap-2">
+              <Sparkles className="h-4 w-4" />
+              <span>AI Analyst</span>
+            </TabsTrigger>
+            <TabsTrigger value="screener" className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2.5 gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Screener</span>
+            </TabsTrigger>
+            <TabsTrigger value="watchlist" className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2.5 gap-2">
+              <Bookmark className="h-4 w-4" />
+              <span>Watchlist</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="search" className="space-y-4">
-          <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className={viewingFund ? "lg:col-span-2" : "lg:col-span-3"}>
-              <FundTable 
-                funds={filteredFunds} 
-                selectedFunds={selectedFunds} 
-                onSelectFund={handleSelectFund}
-                onViewFund={setViewingFund}
-                onAddToComparison={handleAddToComparison}
-              />
+          <TabsContent value="search" className="space-y-4 mt-0">
+            <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className={viewingFund ? "lg:col-span-2" : "lg:col-span-3"}>
+                <FundTable 
+                  funds={filteredFunds} 
+                  selectedFunds={selectedFunds} 
+                  onSelectFund={handleSelectFund}
+                  onViewFund={setViewingFund}
+                  onAddToComparison={handleAddToComparison}
+                />
+              </div>
+              {viewingFund && (
+                <FundDetailPanel 
+                  fund={viewingFund} 
+                  onClose={() => setViewingFund(null)}
+                  onAddToComparison={handleAddToComparison}
+                />
+              )}
             </div>
-            {viewingFund && (
-              <FundDetailPanel 
-                fund={viewingFund} 
-                onClose={() => setViewingFund(null)}
-                onAddToComparison={handleAddToComparison}
-              />
-            )}
-          </div>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="ai">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
-              <FundTable 
-                funds={filteredFunds.slice(0, 10)} 
-                selectedFunds={selectedFunds} 
-                onSelectFund={handleSelectFund}
-                onViewFund={setViewingFund}
-                onAddToComparison={handleAddToComparison}
-              />
+          <TabsContent value="ai" className="mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
+                <FundTable 
+                  funds={filteredFunds.slice(0, 10)} 
+                  selectedFunds={selectedFunds} 
+                  onSelectFund={handleSelectFund}
+                  onViewFund={setViewingFund}
+                  onAddToComparison={handleAddToComparison}
+                />
+              </div>
+              <AIFundInsights fund={viewingFund || undefined} />
             </div>
-            <AIFundInsights fund={viewingFund || undefined} />
-          </div>
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+
+          <TabsContent value="screener" className="mt-0">
+            <Card className="border-border/50">
+              <CardContent className="py-12 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4">
+                  <BarChart3 className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Advanced Fund Screener</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Build custom screens using performance, risk, cost, and ESG criteria. Coming soon.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="watchlist" className="mt-0">
+            <Card className="border-border/50">
+              <CardContent className="py-12 text-center">
+                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-chart-2/20 to-chart-2/5 flex items-center justify-center mx-auto mb-4">
+                  <Bookmark className="h-8 w-8 text-chart-2" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Personal Watchlist</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Save and monitor your favorite funds with custom alerts and notes. Coming soon.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

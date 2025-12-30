@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { X, Download, Plus } from "lucide-react";
+import { X, Download, Scale, Trophy, Star } from "lucide-react";
 import type { CompleteFund } from "@/types/fund";
 
 interface FundComparisonProps {
@@ -23,13 +23,6 @@ export function FundComparison({ funds, onRemoveFund, onClose }: FundComparisonP
     if (rating <= 2) return "text-emerald-500";
     if (rating <= 4) return "text-amber-500";
     return "text-red-500";
-  };
-
-  const getBestValue = (values: number[], higherIsBetter: boolean) => {
-    if (higherIsBetter) {
-      return Math.max(...values);
-    }
-    return Math.min(...values.filter(v => v > 0));
   };
 
   const metrics = [
@@ -105,21 +98,41 @@ export function FundComparison({ funds, onRemoveFund, onClose }: FundComparisonP
       (lowerBetter && numValue === Math.min(...allValues.filter(v => v > 0)))
     );
     
-    const bestClass = isBest ? 'font-bold text-primary' : '';
-    
     switch (format) {
       case 'percent':
-        return <span className={bestClass}>{numValue.toFixed(2)}%</span>;
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <span className={isBest ? 'font-bold text-primary' : ''}>{numValue.toFixed(2)}%</span>
+            {isBest && <Trophy className="h-3.5 w-3.5 text-primary" />}
+          </div>
+        );
       case 'percent_int':
-        return <span className={bestClass}>{numValue}%</span>;
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <span className={isBest ? 'font-bold text-primary' : ''}>{numValue}%</span>
+            {isBest && <Trophy className="h-3.5 w-3.5 text-primary" />}
+          </div>
+        );
       case 'return':
-        return <span className={`${getReturnColor(numValue)} ${bestClass}`}>{numValue.toFixed(1)}%</span>;
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <span className={`${getReturnColor(numValue)} ${isBest ? 'font-bold' : ''}`}>
+              {numValue > 0 ? '+' : ''}{numValue.toFixed(1)}%
+            </span>
+            {isBest && <Trophy className="h-3.5 w-3.5 text-primary" />}
+          </div>
+        );
       case 'risk':
-        return <span className={`${getRiskColor(numValue)} ${bestClass}`}>{numValue}/7</span>;
+        return <span className={`font-semibold ${getRiskColor(numValue)}`}>{numValue}/7</span>;
       case 'number':
-        return <span className={bestClass}>{typeof value === 'number' ? value.toFixed(2) : value}</span>;
+        return (
+          <div className="flex items-center justify-end gap-1.5">
+            <span className={isBest ? 'font-bold text-primary' : ''}>{typeof value === 'number' ? value.toFixed(2) : value}</span>
+            {isBest && <Trophy className="h-3.5 w-3.5 text-primary" />}
+          </div>
+        );
       default:
-        return <span className={bestClass}>{value}</span>;
+        return <span>{value}</span>;
     }
   };
 
@@ -128,40 +141,49 @@ export function FundComparison({ funds, onRemoveFund, onClose }: FundComparisonP
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          Fund Comparison
-          <Badge variant="secondary">{funds.length} funds</Badge>
+    <Card className="w-full border-border/50 bg-gradient-to-br from-background to-muted/10 overflow-hidden">
+      <CardHeader className="flex-row items-center justify-between border-b border-border/50 bg-muted/30">
+        <CardTitle className="flex items-center gap-2.5">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-chart-2/20 to-chart-2/5 flex items-center justify-center">
+            <Scale className="h-5 w-5 text-chart-2" />
+          </div>
+          <div>
+            <span className="block">Fund Comparison</span>
+            <Badge variant="secondary" className="mt-1 bg-chart-2/10 text-chart-2 border-0 text-xs">
+              {funds.length} funds selected
+            </Badge>
+          </div>
         </CardTitle>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="border-border/50 hover:border-primary/30">
             <Download className="h-4 w-4 mr-2" />
-            Export Comparison
+            Export
           </Button>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9">
             <X className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <ScrollArea className="w-full">
           <div className="min-w-max">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-48 sticky left-0 bg-background z-10">Metric</TableHead>
+                <TableRow className="border-b border-border/50 hover:bg-transparent">
+                  <TableHead className="w-52 sticky left-0 bg-background z-10 font-semibold">Metric</TableHead>
                   {funds.map(fund => (
-                    <TableHead key={fund.isin} className="min-w-[200px]">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="font-medium text-sm">{fund.name.slice(0, 30)}...</div>
-                          <div className="text-xs text-muted-foreground font-mono">{fund.isin}</div>
+                    <TableHead key={fund.isin} className="min-w-[220px]">
+                      <div className="flex items-start justify-between gap-2 pr-2">
+                        <div className="space-y-1">
+                          <div className="font-semibold text-sm text-foreground line-clamp-2">{fund.name}</div>
+                          <div className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-1.5 py-0.5 rounded inline-block">
+                            {fund.isin}
+                          </div>
                         </div>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-6 w-6"
+                          className="h-6 w-6 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 flex-shrink-0"
                           onClick={() => onRemoveFund(fund.isin)}
                         >
                           <X className="h-3 w-3" />
@@ -174,8 +196,11 @@ export function FundComparison({ funds, onRemoveFund, onClose }: FundComparisonP
               <TableBody>
                 {metrics.map(section => (
                   <>
-                    <TableRow key={section.category} className="bg-muted/50">
-                      <TableCell colSpan={funds.length + 1} className="font-semibold">
+                    <TableRow key={section.category} className="bg-muted/40 hover:bg-muted/40">
+                      <TableCell 
+                        colSpan={funds.length + 1} 
+                        className="font-semibold text-sm text-foreground py-2.5 sticky left-0 bg-muted/40"
+                      >
                         {section.category}
                       </TableCell>
                     </TableRow>
@@ -188,12 +213,12 @@ export function FundComparison({ funds, onRemoveFund, onClose }: FundComparisonP
                         : undefined;
                       
                       return (
-                        <TableRow key={metric.label}>
-                          <TableCell className="sticky left-0 bg-background text-muted-foreground">
+                        <TableRow key={metric.label} className="border-b border-border/30 hover:bg-muted/30">
+                          <TableCell className="sticky left-0 bg-background text-muted-foreground text-sm font-medium py-2.5">
                             {metric.label}
                           </TableCell>
                           {funds.map(fund => (
-                            <TableCell key={fund.isin}>
+                            <TableCell key={fund.isin} className="text-sm py-2.5">
                               {formatValue(
                                 metric.getValue(fund), 
                                 metric.format,

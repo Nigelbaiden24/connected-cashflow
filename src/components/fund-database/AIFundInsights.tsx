@@ -14,7 +14,9 @@ import {
   Lightbulb,
   AlertTriangle,
   FileText,
-  RefreshCw
+  RefreshCw,
+  Bot,
+  Zap
 } from "lucide-react";
 import type { CompleteFund } from "@/types/fund";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,12 +32,12 @@ export function AIFundInsights({ fund, className }: AIFundInsightsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const quickPrompts = [
-    { icon: TrendingUp, label: "Performance Analysis", prompt: "Analyze the performance of this fund vs its benchmark and peers" },
-    { icon: Shield, label: "Risk Assessment", prompt: "Assess the risk metrics and suitability for different investor profiles" },
-    { icon: DollarSign, label: "Cost Analysis", prompt: "Compare the costs to similar funds and evaluate value for money" },
-    { icon: Lightbulb, label: "Alternative Suggestions", prompt: "Suggest alternative funds with similar objectives but potentially better characteristics" },
-    { icon: FileText, label: "Client Commentary", prompt: "Generate a plain-English summary suitable for a client report" },
-    { icon: AlertTriangle, label: "Risk Flags", prompt: "Identify any red flags or concerns with this fund" }
+    { icon: TrendingUp, label: "Performance Analysis", prompt: "Analyze the performance of this fund vs its benchmark and peers", color: "text-emerald-500 bg-emerald-500/10" },
+    { icon: Shield, label: "Risk Assessment", prompt: "Assess the risk metrics and suitability for different investor profiles", color: "text-blue-500 bg-blue-500/10" },
+    { icon: DollarSign, label: "Cost Analysis", prompt: "Compare the costs to similar funds and evaluate value for money", color: "text-amber-500 bg-amber-500/10" },
+    { icon: Lightbulb, label: "Alternatives", prompt: "Suggest alternative funds with similar objectives but potentially better characteristics", color: "text-purple-500 bg-purple-500/10" },
+    { icon: FileText, label: "Client Commentary", prompt: "Generate a plain-English summary suitable for a client report", color: "text-chart-2 bg-chart-2/10" },
+    { icon: AlertTriangle, label: "Risk Flags", prompt: "Identify any red flags or concerns with this fund", color: "text-red-500 bg-red-500/10" }
   ];
 
   const handleSubmit = async (promptText: string) => {
@@ -132,34 +134,47 @@ Please provide a comprehensive, UK IFA-focused analysis.
 
   if (!fund) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            AI Fund Insights
+      <Card className={`${className} border-border/50 bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden`}>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)]" />
+        <CardHeader className="relative">
+          <CardTitle className="flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
+            <span>AI Fund Insights</span>
           </CardTitle>
           <CardDescription>Select a fund to get AI-powered analysis</CardDescription>
         </CardHeader>
-        <CardContent className="text-center py-8 text-muted-foreground">
-          <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-20" />
-          <p>Select a fund from the list to generate AI insights</p>
+        <CardContent className="relative text-center py-16">
+          <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-muted/50 to-muted/20 flex items-center justify-center mx-auto mb-6">
+            <Bot className="h-10 w-10 text-muted-foreground/50" />
+          </div>
+          <p className="text-muted-foreground max-w-xs mx-auto">
+            Select a fund from the table to unlock AI-powered insights, analysis, and recommendations
+          </p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className={className}>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          AI Fund Insights
+    <Card className={`${className} border-border/50 bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden`}>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)]" />
+      <CardHeader className="pb-3 relative border-b border-border/50">
+        <CardTitle className="flex items-center gap-2.5">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <span className="block">AI Fund Insights</span>
+            <span className="text-xs font-normal text-muted-foreground">Powered by GPT-4</span>
+          </div>
         </CardTitle>
-        <CardDescription className="truncate">
-          {fund.name}
+        <CardDescription className="truncate mt-2 p-2 rounded-lg bg-muted/30 border border-border/50 text-sm">
+          <span className="font-medium text-foreground">{fund.name}</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4 relative">
         {/* Quick Prompts */}
         <div className="grid grid-cols-2 gap-2">
           {quickPrompts.map((item, i) => (
@@ -167,28 +182,30 @@ Please provide a comprehensive, UK IFA-focused analysis.
               key={i}
               variant="outline"
               size="sm"
-              className="justify-start text-xs h-auto py-2"
+              className="justify-start text-xs h-auto py-2.5 px-3 border-border/50 hover:border-primary/30 hover:bg-primary/5 group transition-all"
               onClick={() => handleSubmit(item.prompt)}
               disabled={isLoading}
             >
-              <item.icon className="h-3 w-3 mr-1 flex-shrink-0" />
+              <div className={`h-6 w-6 rounded-md ${item.color} flex items-center justify-center mr-2 group-hover:scale-110 transition-transform`}>
+                <item.icon className="h-3.5 w-3.5" />
+              </div>
               <span className="truncate">{item.label}</span>
             </Button>
           ))}
         </div>
 
         {/* Custom Query */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <Textarea
             placeholder="Ask a custom question about this fund..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="min-h-[60px] text-sm"
+            className="min-h-[70px] text-sm bg-background border-border/50 focus:border-primary/50 resize-none"
           />
           <Button 
             onClick={() => handleSubmit(query)} 
             disabled={!query.trim() || isLoading}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
           >
             {isLoading ? (
               <>
@@ -197,7 +214,7 @@ Please provide a comprehensive, UK IFA-focused analysis.
               </>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
+                <Zap className="h-4 w-4 mr-2" />
                 Get AI Insight
               </>
             )}
@@ -208,7 +225,7 @@ Please provide a comprehensive, UK IFA-focused analysis.
         {response && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1.5 bg-primary/10 text-primary border-0">
                 <Sparkles className="h-3 w-3" />
                 AI Analysis
               </Badge>
@@ -216,12 +233,14 @@ Please provide a comprehensive, UK IFA-focused analysis.
                 variant="ghost" 
                 size="sm"
                 onClick={() => setResponse("")}
+                className="h-7 text-xs text-muted-foreground hover:text-foreground"
               >
-                <RefreshCw className="h-3 w-3" />
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Clear
               </Button>
             </div>
-            <ScrollArea className="h-[300px] rounded-lg border bg-muted/30 p-4">
-              <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+            <ScrollArea className="h-[320px] rounded-xl border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 p-4">
+              <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap leading-relaxed">
                 {response}
               </div>
             </ScrollArea>
