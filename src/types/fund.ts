@@ -183,6 +183,43 @@ export interface FundBenchmark {
   peerGroupRank: number;
 }
 
+// Morningstar-style proprietary ratings
+export interface FundRatings {
+  // Star Rating (1-5) - Historical risk-adjusted performance
+  starRating?: 1 | 2 | 3 | 4 | 5;
+  starRatingDate?: string;
+  
+  // Analyst Rating - Forward-looking qualitative assessment
+  analystRating?: 'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative';
+  analystRatingDate?: string;
+  analystRatingRationale?: string;
+  
+  // Category rating
+  categoryRank?: number; // percentile rank in category (1-100)
+  
+  // Style Box coordinates (1-3 for each dimension)
+  styleBoxEquity?: {
+    size: 1 | 2 | 3; // 1=Large, 2=Mid, 3=Small
+    style: 1 | 2 | 3; // 1=Value, 2=Blend, 3=Growth
+  };
+  
+  styleBoxFixedIncome?: {
+    creditQuality: 1 | 2 | 3; // 1=High, 2=Medium, 3=Low
+    sensitivity: 1 | 2 | 3; // 1=Limited, 2=Moderate, 3=Extensive
+  };
+  
+  // Admin-assigned quality metrics
+  peopleRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
+  processRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
+  parentRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
+  performanceRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
+  priceRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
+  
+  // Last rated by admin
+  ratedBy?: string;
+  ratedAt?: string;
+}
+
 export interface AIInsight {
   type: 'performance' | 'risk' | 'cost' | 'alternative' | 'warning';
   severity: 'info' | 'warning' | 'critical';
@@ -199,6 +236,7 @@ export interface CompleteFund extends FundMaster {
   exposure: FundExposure;
   classification: FundClassification;
   benchmark: FundBenchmark;
+  ratings?: FundRatings; // Morningstar-style proprietary ratings
   aiInsights?: AIInsight[];
   lastUpdated: string;
 }
