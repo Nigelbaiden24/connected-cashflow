@@ -13,9 +13,11 @@ import {
   Star,
   Plus,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Settings
 } from "lucide-react";
 import type { CompleteFund } from "@/types/fund";
+import { StarRating, AnalystRatingBadge, PillarRatings } from "./FundRatingBadges";
 
 interface FundTableProps {
   funds: CompleteFund[];
@@ -23,6 +25,8 @@ interface FundTableProps {
   onSelectFund: (isin: string) => void;
   onViewFund: (fund: CompleteFund) => void;
   onAddToComparison: (fund: CompleteFund) => void;
+  onEditRatings?: (fund: CompleteFund) => void;
+  isAdmin?: boolean;
 }
 
 export function FundTable({ 
@@ -30,7 +34,9 @@ export function FundTable({
   selectedFunds, 
   onSelectFund, 
   onViewFund,
-  onAddToComparison 
+  onAddToComparison,
+  onEditRatings,
+  isAdmin = false
 }: FundTableProps) {
   const getReturnColor = (value: number) => {
     if (value > 0) return "text-emerald-500";
@@ -97,15 +103,15 @@ export function FundTable({
                 />
               </TableHead>
               <TableHead className="min-w-[280px] font-semibold text-foreground">Fund</TableHead>
+              <TableHead className="font-semibold text-foreground">Rating</TableHead>
               <TableHead className="font-semibold text-foreground">Type</TableHead>
               <TableHead className="text-right font-semibold text-foreground">OCF</TableHead>
               <TableHead className="text-right font-semibold text-foreground">AUM</TableHead>
               <TableHead className="text-right font-semibold text-foreground">1Y</TableHead>
               <TableHead className="text-right font-semibold text-foreground">3Y</TableHead>
-              <TableHead className="text-right font-semibold text-foreground">5Y</TableHead>
-              <TableHead className="text-center font-semibold text-foreground">Quartile</TableHead>
+              <TableHead className="text-center font-semibold text-foreground">Q</TableHead>
               <TableHead className="text-center font-semibold text-foreground">Risk</TableHead>
-              <TableHead className="w-24"></TableHead>
+              <TableHead className="w-28"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -152,6 +158,27 @@ export function FundTable({
                     </div>
                   </div>
                 </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <div className="space-y-1.5">
+                    {fund.ratings?.starRating ? (
+                      <StarRating rating={fund.ratings.starRating} size="sm" />
+                    ) : (
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <Star key={s} className="h-3 w-3 text-muted-foreground/20" />
+                        ))}
+                      </div>
+                    )}
+                    {fund.ratings?.analystRating ? (
+                      <AnalystRatingBadge rating={fund.ratings.analystRating} size="sm" />
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">Not rated</span>
+                    )}
+                    {fund.ratings && (fund.ratings.peopleRating || fund.ratings.processRating) && (
+                      <PillarRatings ratings={fund.ratings} compact />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <div className="space-y-1.5">
                     <Badge variant="outline" className={`text-xs ${getTypeColor(fund.fundType)}`}>
@@ -193,21 +220,18 @@ export function FundTable({
                 <TableCell className={`text-right font-medium ${getReturnColor(fund.performance.threeYearReturn)}`}>
                   {fund.performance.threeYearReturn > 0 ? '+' : ''}{fund.performance.threeYearReturn.toFixed(1)}%
                 </TableCell>
-                <TableCell className={`text-right font-medium ${getReturnColor(fund.performance.fiveYearReturn)}`}>
-                  {fund.performance.fiveYearReturn > 0 ? '+' : ''}{fund.performance.fiveYearReturn.toFixed(1)}%
-                </TableCell>
                 <TableCell className="text-center">
                   {(() => {
                     const q = getQuartileBadge(fund.performance.quartileRank1Y);
                     return (
-                      <Badge className={`${q.bg} ${q.text} ${q.border} border font-semibold`}>
+                      <Badge className={`${q.bg} ${q.text} ${q.border} border font-semibold text-[10px] px-1.5`}>
                         Q{fund.performance.quartileRank1Y}
                       </Badge>
                     );
                   })()}
                 </TableCell>
                 <TableCell className="text-center">
-                  <Badge className={`${getRiskColor(fund.risk.srriRating)} border font-semibold`}>
+                  <Badge className={`${getRiskColor(fund.risk.srriRating)} border font-semibold text-[10px] px-1.5`}>
                     {fund.risk.srriRating}/7
                   </Badge>
                 </TableCell>
@@ -220,7 +244,7 @@ export function FundTable({
                             size="icon" 
                             variant="ghost" 
                             onClick={() => onViewFund(fund)}
-                            className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                            className="h-7 w-7 hover:bg-primary/10 hover:text-primary"
                           >
                             <ChevronRight className="h-4 w-4" />
                           </Button>
@@ -235,7 +259,7 @@ export function FundTable({
                             size="icon" 
                             variant="ghost" 
                             onClick={() => onAddToComparison(fund)}
-                            className="h-8 w-8 hover:bg-chart-2/10 hover:text-chart-2"
+                            className="h-7 w-7 hover:bg-chart-2/10 hover:text-chart-2"
                           >
                             <Scale className="h-4 w-4" />
                           </Button>
@@ -243,6 +267,23 @@ export function FundTable({
                         <TooltipContent>Add to Comparison</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
+                    {isAdmin && onEditRatings && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => onEditRatings(fund)}
+                              className="h-7 w-7 hover:bg-amber-500/10 hover:text-amber-600"
+                            >
+                              <Settings className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Edit Ratings</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

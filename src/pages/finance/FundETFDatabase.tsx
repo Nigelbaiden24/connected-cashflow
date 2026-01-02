@@ -3,14 +3,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Database, Search, Scale, Sparkles, TrendingUp, Shield, DollarSign, BarChart3, PieChart, Globe, Download, Bookmark } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Database, Search, Scale, Sparkles, TrendingUp, Shield, DollarSign, BarChart3, PieChart, Globe, Download, Bookmark, Settings, Star, Award } from "lucide-react";
 import { fundDatabase } from "@/data/fundDatabase";
 import { FundSearchFilters } from "@/components/fund-database/FundSearchFilters";
 import { FundTable } from "@/components/fund-database/FundTable";
 import { FundDetailPanel } from "@/components/fund-database/FundDetailPanel";
 import { FundComparison } from "@/components/fund-database/FundComparison";
 import { AIFundInsights } from "@/components/fund-database/AIFundInsights";
-import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
+import { AdminFundScoring } from "@/components/fund-database/AdminFundScoring";
+import type { CompleteFund, FundSearchFilters as FiltersType, FundRatings } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
 
 export default function FundETFDatabase() {
@@ -19,10 +22,21 @@ export default function FundETFDatabase() {
   const [viewingFund, setViewingFund] = useState<CompleteFund | null>(null);
   const [comparisonFunds, setComparisonFunds] = useState<CompleteFund[]>([]);
   const [showComparison, setShowComparison] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [editingFund, setEditingFund] = useState<CompleteFund | null>(null);
+  const [fundRatingsOverrides, setFundRatingsOverrides] = useState<Record<string, FundRatings>>({});
   const { toast } = useToast();
 
+  // Apply rating overrides to fund database
+  const fundsWithOverrides = useMemo(() => {
+    return fundDatabase.map(fund => ({
+      ...fund,
+      ratings: fundRatingsOverrides[fund.isin] || fund.ratings
+    }));
+  }, [fundRatingsOverrides]);
+
   const filteredFunds = useMemo(() => {
-    let result = [...fundDatabase];
+    let result = [...fundsWithOverrides];
 
     if (filters.searchQuery) {
       const q = filters.searchQuery.toLowerCase();
@@ -60,7 +74,7 @@ export default function FundETFDatabase() {
     });
 
     return result;
-  }, [filters]);
+  }, [filters, fundsWithOverrides]);
 
   const handleSelectFund = (isin: string) => {
     setSelectedFunds(prev => prev.includes(isin) ? prev.filter(i => i !== isin) : [...prev, isin]);
@@ -80,10 +94,16 @@ export default function FundETFDatabase() {
     toast({ title: "Added to comparison", description: fund.name });
   };
 
+  const handleSaveRatings = (isin: string, ratings: FundRatings) => {
+    setFundRatingsOverrides(prev => ({ ...prev, [isin]: ratings }));
+    setEditingFund(null);
+  };
+
   // Calculate stats
   const totalAUM = fundDatabase.reduce((sum, f) => sum + f.aum, 0);
   const avgOCF = (fundDatabase.reduce((sum, f) => sum + f.costs.ocf, 0) / fundDatabase.length).toFixed(2);
   const avgReturn = (fundDatabase.reduce((sum, f) => sum + f.performance.oneYearReturn, 0) / fundDatabase.length).toFixed(1);
+  const ratedFunds = fundDatabase.filter(f => f.ratings?.starRating).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -107,13 +127,25 @@ export default function FundETFDatabase() {
                     Fund & ETF Database
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    Enterprise research platform for UK IFAs • {fundDatabase.length.toLocaleString()}+ funds
+                    Enterprise research platform for UK IFAs • {fundDatabase.length.toLocaleString()} funds
                   </p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Admin Mode Toggle */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50">
+                <Settings className="h-4 w-4 text-muted-foreground" />
+                <Label htmlFor="admin-mode" className="text-xs text-muted-foreground cursor-pointer">Admin</Label>
+                <Switch 
+                  id="admin-mode" 
+                  checked={isAdminMode} 
+                  onCheckedChange={setIsAdminMode}
+                  className="scale-75"
+                />
+              </div>
+              
               {selectedFunds.length > 0 && (
                 <Badge variant="secondary" className="px-3 py-1.5 bg-primary/10 text-primary border-primary/20">
                   {selectedFunds.length} selected
@@ -139,7 +171,7 @@ export default function FundETFDatabase() {
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
             <Card className="bg-background/60 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -192,6 +224,19 @@ export default function FundETFDatabase() {
                 </div>
               </CardContent>
             </Card>
+            <Card className="bg-background/60 backdrop-blur-sm border-border/50 hover:border-amber-500/30 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center">
+                    <Star className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Rated Funds</p>
+                    <p className="text-lg font-bold">{ratedFunds}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -229,16 +274,25 @@ export default function FundETFDatabase() {
           <TabsContent value="search" className="space-y-4 mt-0">
             <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className={viewingFund ? "lg:col-span-2" : "lg:col-span-3"}>
+              <div className={viewingFund || editingFund ? "lg:col-span-2" : "lg:col-span-3"}>
                 <FundTable 
                   funds={filteredFunds} 
                   selectedFunds={selectedFunds} 
                   onSelectFund={handleSelectFund}
                   onViewFund={setViewingFund}
                   onAddToComparison={handleAddToComparison}
+                  onEditRatings={isAdminMode ? setEditingFund : undefined}
+                  isAdmin={isAdminMode}
                 />
               </div>
-              {viewingFund && (
+              {editingFund && isAdminMode && (
+                <AdminFundScoring 
+                  fund={editingFund}
+                  onSave={handleSaveRatings}
+                  onClose={() => setEditingFund(null)}
+                />
+              )}
+              {viewingFund && !editingFund && (
                 <FundDetailPanel 
                   fund={viewingFund} 
                   onClose={() => setViewingFund(null)}
@@ -253,11 +307,12 @@ export default function FundETFDatabase() {
               <div className="space-y-4">
                 <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
                 <FundTable 
-                  funds={filteredFunds.slice(0, 10)} 
+                  funds={filteredFunds.slice(0, 15)} 
                   selectedFunds={selectedFunds} 
                   onSelectFund={handleSelectFund}
                   onViewFund={setViewingFund}
                   onAddToComparison={handleAddToComparison}
+                  isAdmin={false}
                 />
               </div>
               <AIFundInsights fund={viewingFund || undefined} />
