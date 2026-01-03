@@ -59,9 +59,9 @@ const Login = ({ onLogin }: LoginProps) => {
   };
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white">
+    <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-2">
+      {/* Left Side - Branding (visible on both mobile and desktop) */}
+      <div className="flex flex-col justify-between p-8 lg:p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white lg:min-h-screen">
         <div>
           <img 
             src={flowpulseLogo} 
@@ -75,7 +75,7 @@ const Login = ({ onLogin }: LoginProps) => {
           </p>
         </div>
         
-        <div className="space-y-6">
+        <div className="hidden lg:block space-y-6">
           <div className="flex items-start gap-4">
             <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
               <TrendingUp className="h-6 w-6" />
@@ -107,22 +107,14 @@ const Login = ({ onLogin }: LoginProps) => {
           </div>
         </div>
         
-        <div className="text-sm text-blue-100">
+        <div className="hidden lg:block text-sm text-blue-100">
           © 2024 FlowPulse Finance. All rights reserved.
         </div>
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="flex items-center justify-center p-8 bg-background">
+      <div className="flex items-center justify-center p-8 bg-background flex-1">
         <div className="w-full max-w-md space-y-8">
-          <div className="lg:hidden text-center mb-8">
-            <img 
-              src={flowpulseLogo} 
-              alt="FlowPulse Finance" 
-              className="h-10 mx-auto mb-4 cursor-pointer" 
-              onClick={() => window.location.href = '/'}
-            />
-          </div>
           
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Sign in to your account</h2>

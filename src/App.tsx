@@ -44,7 +44,6 @@ import InvestorFundETFDatabase from "./pages/investor/FundETFDatabase";
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
-import Paraplanning from "./pages/Paraplanning";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -131,7 +130,6 @@ const App = () => {
           <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
-          <Route path="/paraplanning" element={<Paraplanning />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
