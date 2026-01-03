@@ -73,7 +73,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "FlowPulse Contacts <onboarding@resend.dev>",
       to: ["support@flowpulse.co.uk"],
-      subject: `New Contact: ${name} - ${sourcePage || "Paraplanning"}`,
+      subject: `New Contact: ${name} - ${sourcePage || "Website"}`,
       html: emailHtml,
     });
 
