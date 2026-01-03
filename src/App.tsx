@@ -40,6 +40,7 @@ import FinanceAIAnalyst from "./pages/finance/AIAnalyst";
 import FinanceWatchlists from "./pages/finance/Watchlists";
 import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
 import FundETFDatabase from "./pages/finance/FundETFDatabase";
+import InvestorFundETFDatabase from "./pages/investor/FundETFDatabase";
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
@@ -536,6 +537,9 @@ const App = () => {
           } />
           <Route path="/investor/languages" element={
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Languages /></InvestorLayout>
+          } />
+          <Route path="/investor/fund-database" element={
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorFundETFDatabase /></InvestorLayout>
           } />
           
           <Route path="/admin/login" element={<AdminLogin />} />

@@ -108,7 +108,7 @@ export default function FundETFDatabase() {
                     Fund & ETF Database
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    Enterprise research platform for UK IFAs • {fundDatabase.length.toLocaleString()} funds
+                    Research platform for investors • {fundDatabase.length.toLocaleString()} funds
                   </p>
                 </div>
               </div>
