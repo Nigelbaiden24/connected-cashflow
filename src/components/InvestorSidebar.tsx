@@ -89,6 +89,11 @@ const investorItems = [
     icon: Search,
   },
   { 
+    title: "Fund & ETF Database", 
+    url: "/investor/fund-database", 
+    icon: Database,
+  },
+  { 
     title: "AI Analyst", 
     url: "/investor/ai-analyst", 
     icon: Brain,
