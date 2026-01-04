@@ -74,15 +74,23 @@ export function DraggableImage({
       // Get parent bounds for constraining
       const rect = imageRef.current?.parentElement?.getBoundingClientRect();
       if (rect) {
-        const maxX = rect.width - width;
-        const maxY = rect.height - height;
+        const rawMaxX = rect.width - width;
+        const rawMaxY = rect.height - height;
+
+        // If the element is larger than the viewport (common on mobile), allow negative
+        // coordinates so it can still be moved left↔right / up↕down.
+        const minX = Math.min(0, rawMaxX);
+        const maxX = Math.max(0, rawMaxX);
+        const minY = Math.min(0, rawMaxY);
+        const maxY = Math.max(0, rawMaxY);
+
         onPositionChange(
           id,
-          Math.max(0, Math.min(maxX, newX)),
-          Math.max(0, Math.min(maxY, newY))
+          Math.max(minX, Math.min(maxX, newX)),
+          Math.max(minY, Math.min(maxY, newY))
         );
       } else {
-        onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
+        onPositionChange(id, newX, newY);
       }
     } else if (isResizing) {
       const deltaX = e.clientX - dragStartRef.current.x;
