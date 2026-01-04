@@ -195,8 +195,15 @@ export function EnhancedDocumentEditor({
 
   return (
     <div
-      className="w-full h-full overflow-auto p-8 relative touch-none"
-      style={{ backgroundColor, minHeight: "1000px", touchAction: "none" }}
+      className="w-full h-full overflow-auto p-8 relative"
+      style={{
+        backgroundColor,
+        minHeight: "1000px",
+        // Canvas styles for free-form dragging
+        touchAction: 'none',
+        WebkitOverflowScrolling: 'auto',
+        overflowX: 'visible',
+      }}
     >
       {logoUrl && (
         <div className="absolute top-8 left-8 z-10">
