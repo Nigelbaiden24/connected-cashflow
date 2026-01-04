@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { X, Move } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,166 +27,119 @@ export function DraggableImage({
 }: DraggableImageProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const initialPosRef = useRef({ x: 0, y: 0 });
+  const initialSizeRef = useRef({ width: 0, height: 0 });
 
-  // Unified pointer handlers for mouse and touch
-  const handlePointerDown = (e: React.PointerEvent) => {
+  // Unified pointer handler for mouse and touch - full XY movement
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (e.button !== 0 && e.pointerType === 'mouse') return;
     if ((e.target as HTMLElement).closest('button')) return;
+    
     e.preventDefault();
     e.stopPropagation();
-    
-    const rect = imageRef.current?.parentElement?.getBoundingClientRect();
-    if (!rect) return;
     
     setIsDragging(true);
-    setDragStart({
-      x: e.clientX - x,
-      y: e.clientY - y
-    });
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    initialPosRef.current = { x, y };
+    
+    // Capture pointer for smooth tracking
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
+  }, [x, y]);
 
-  const handleResizePointerDown = (e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsResizing(true);
-    setDragStart({
-      x: e.clientX,
-      y: e.clientY
-    });
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  // Legacy mouse handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return; // Only left click
-    if ((e.target as HTMLElement).closest('button')) return; // Don't drag when clicking buttons
+  const handleResizePointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const rect = imageRef.current?.parentElement?.getBoundingClientRect();
-    if (!rect) return;
-    
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX - x,
-      y: e.clientY - y
-    });
-  };
-
-  const handleResizeMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
     setIsResizing(true);
-    setDragStart({
-      x: e.clientX,
-      y: e.clientY
-    });
-  };
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    initialSizeRef.current = { width, height };
+    
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [width, height]);
+
+  // Handle pointer move - full XY axis movement
+  const handlePointerMove = useCallback((e: PointerEvent) => {
+    e.preventDefault();
+    
+    if (isDragging) {
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
+      
+      const newX = initialPosRef.current.x + deltaX;
+      const newY = initialPosRef.current.y + deltaY;
+      
+      // Get parent bounds for constraining
+      const rect = imageRef.current?.parentElement?.getBoundingClientRect();
+      if (rect) {
+        const maxX = rect.width - width;
+        const maxY = rect.height - height;
+        onPositionChange(
+          id,
+          Math.max(0, Math.min(maxX, newX)),
+          Math.max(0, Math.min(maxY, newY))
+        );
+      } else {
+        onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
+      }
+    } else if (isResizing) {
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
+      
+      const newWidth = Math.max(50, initialSizeRef.current.width + deltaX);
+      const newHeight = Math.max(50, initialSizeRef.current.height + deltaY);
+      
+      onSizeChange(id, newWidth, newHeight);
+    }
+  }, [isDragging, isResizing, id, width, height, onPositionChange, onSizeChange]);
+
+  const handlePointerUp = useCallback(() => {
+    setIsDragging(false);
+    setIsResizing(false);
+  }, []);
+
+  // Prevent touch scroll during drag
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (isDragging || isResizing) {
+      e.preventDefault();
+    }
+  }, [isDragging, isResizing]);
 
   useEffect(() => {
-    const handlePointerMove = (e: PointerEvent) => {
-      if (isDragging) {
-        e.preventDefault();
-        const rect = imageRef.current?.parentElement?.getBoundingClientRect();
-        if (!rect) return;
-        
-        const newX = e.clientX - dragStart.x;
-        const newY = e.clientY - dragStart.y;
-        
-        // Keep within parent bounds
-        const maxX = rect.width - width;
-        const maxY = rect.height - height;
-        
-        onPositionChange(
-          id, 
-          Math.max(0, Math.min(maxX, newX)), 
-          Math.max(0, Math.min(maxY, newY))
-        );
-      } else if (isResizing) {
-        e.preventDefault();
-        const deltaX = e.clientX - dragStart.x;
-        const deltaY = e.clientY - dragStart.y;
-        const newWidth = Math.max(50, width + deltaX);
-        const newHeight = Math.max(50, height + deltaY);
-        onSizeChange(id, newWidth, newHeight);
-        setDragStart({ x: e.clientX, y: e.clientY });
-      }
-    };
-
-    const handlePointerUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        e.preventDefault();
-        const rect = imageRef.current?.parentElement?.getBoundingClientRect();
-        if (!rect) return;
-        
-        const newX = e.clientX - dragStart.x;
-        const newY = e.clientY - dragStart.y;
-        
-        // Keep within parent bounds
-        const maxX = rect.width - width;
-        const maxY = rect.height - height;
-        
-        onPositionChange(
-          id, 
-          Math.max(0, Math.min(maxX, newX)), 
-          Math.max(0, Math.min(maxY, newY))
-        );
-      } else if (isResizing) {
-        e.preventDefault();
-        const deltaX = e.clientX - dragStart.x;
-        const deltaY = e.clientY - dragStart.y;
-        const newWidth = Math.max(50, width + deltaX);
-        const newHeight = Math.max(50, height + deltaY);
-        onSizeChange(id, newWidth, newHeight);
-        setDragStart({ x: e.clientX, y: e.clientY });
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
-    };
-
     if (isDragging || isResizing) {
-      document.addEventListener('pointermove', handlePointerMove);
+      // Add listeners with { passive: false } to allow preventDefault on touch
+      document.addEventListener('pointermove', handlePointerMove, { passive: false });
       document.addEventListener('pointerup', handlePointerUp);
       document.addEventListener('pointercancel', handlePointerUp);
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchStart as any, { passive: false });
     }
 
     return () => {
       document.removeEventListener('pointermove', handlePointerMove);
       document.removeEventListener('pointerup', handlePointerUp);
       document.removeEventListener('pointercancel', handlePointerUp);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchStart as any);
     };
-  }, [isDragging, isResizing, dragStart, id, x, y, width, height, onPositionChange, onSizeChange]);
+  }, [isDragging, isResizing, handlePointerMove, handlePointerUp, handleTouchStart]);
 
   return (
     <div
       ref={imageRef}
-      className={`absolute group ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''} touch-none`}
+      className={`absolute group select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
         width: `${width}px`,
         height: `${height}px`,
         zIndex: isHovered || isDragging || isResizing ? 100 : 50,
-        userSelect: 'none'
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        transform: 'translate3d(0, 0, 0)', // GPU acceleration for smooth mobile rendering
       }}
       onPointerDown={handlePointerDown}
-      onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
@@ -196,7 +149,7 @@ export function DraggableImage({
         <img
           src={src}
           alt="Document"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain pointer-events-none"
           draggable={false}
         />
 
@@ -204,7 +157,7 @@ export function DraggableImage({
         {(isHovered || isDragging || isResizing) && (
           <>
             {/* Move handle */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-background border rounded px-2 py-1 flex items-center gap-2 shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-background border rounded px-2 py-1 flex items-center gap-2 shadow-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none">
               <Move className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs text-muted-foreground">Drag to move</span>
             </div>
@@ -224,11 +177,11 @@ export function DraggableImage({
 
             {/* Resize handle - larger touch target */}
             <div
-              className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full cursor-nwse-resize shadow-lg flex items-center justify-center touch-none"
+              className="absolute -bottom-2 -right-2 w-12 h-12 bg-primary rounded-full cursor-nwse-resize shadow-lg flex items-center justify-center select-none"
+              style={{ touchAction: 'none' }}
               onPointerDown={handleResizePointerDown}
-              onMouseDown={handleResizeMouseDown}
             >
-              <div className="w-4 h-4 bg-background rounded-full" />
+              <div className="w-4 h-4 bg-background rounded-full pointer-events-none" />
             </div>
           </>
         )}
