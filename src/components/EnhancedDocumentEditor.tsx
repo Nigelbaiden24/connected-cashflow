@@ -195,14 +195,15 @@ export function EnhancedDocumentEditor({
 
   return (
     <div
-      className="w-full h-full overflow-auto p-8 relative"
+      className="w-full h-full p-8 relative"
       style={{
         backgroundColor,
-        minHeight: "1000px",
-        // Canvas styles for free-form dragging
-        touchAction: 'none',
-        WebkitOverflowScrolling: 'auto',
-        overflowX: 'visible',
+        minHeight: "1200px",
+        minWidth: "900px",
+        // Allow scrolling on the canvas - draggable items handle their own touchAction
+        overflowX: 'auto',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
       {logoUrl && (

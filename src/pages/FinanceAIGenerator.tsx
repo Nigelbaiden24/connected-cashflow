@@ -1066,7 +1066,13 @@ ELITE DOCUMENT REQUIREMENTS:
           savedDocuments={savedDocuments}
         />
 
-        <div className="flex-1 overflow-auto">
+        <div 
+          className="flex-1"
+          style={{
+            overflow: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {!selectedTemplate ? (
             <div className="flex items-center justify-center h-full pointer-events-none">
               <div className="text-center text-muted-foreground pointer-events-auto">
@@ -1076,12 +1082,14 @@ ELITE DOCUMENT REQUIREMENTS:
           ) : (
             <div
               id="document-preview"
-              className="w-full h-full"
+              className="w-full"
               style={{
                 transform: `scale(${zoom / 100})`,
                 transformOrigin: "top left",
                 fontFamily: fontFamily,
                 fontSize: `${fontSize}px`,
+                minHeight: '1200px',
+                minWidth: '900px',
               }}
             >
               <EnhancedDocumentEditor
