@@ -359,7 +359,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[90vh] md:min-h-screen">
+      <section className="relative overflow-hidden h-[60vh] md:h-[65vh]">
         {/* Background Image with Lighter Overlay */}
         <div className="absolute inset-0">
           <img 
@@ -371,27 +371,30 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
         </div>
 
-        <div className="relative container mx-auto px-6 py-40 md:py-52 pb-32 text-center">
-          <div className="max-w-6xl mx-auto space-y-12">
+        <div className="relative container mx-auto px-6 py-20 md:py-28 text-center flex flex-col justify-center h-full">
+          <div className="max-w-6xl mx-auto space-y-8">
             <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
               <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
                 ✨ AI-Powered Workflow Intelligence
               </span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white drop-shadow-2xl">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white drop-shadow-2xl">
               <span className="block mb-2">Transform Your Workflow with</span>
               <span className="font-space-grotesk bg-gradient-to-r from-blue-300 via-cyan-300 to-green-300 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
                 FlowPulse Intelligence
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
+            <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Enterprise platforms powered by AI for financial advisors and modern businesses
             </p>
           </div>
         </div>
       </section>
+
+      {/* White Space Separator */}
+      <div className="bg-white py-16 md:py-24"></div>
 
       {/* Platforms Showcase */}
       <section className="w-full pt-8 pb-16 relative z-10">
