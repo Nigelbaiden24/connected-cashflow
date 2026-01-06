@@ -17,7 +17,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 md:pl-64 peer-data-[state=collapsed]:md:pl-16 transition-[padding] duration-200">
           {/* Mobile Header with Menu Trigger */}
           <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:hidden">
             <SidebarTrigger>
