@@ -16,7 +16,7 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full investor-theme">
         <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col w-full md:ml-64">
+        <div className="flex-1 flex flex-col min-w-0 md:pl-64 peer-data-[state=collapsed]:md:pl-16 transition-[padding] duration-200">
           {/* Mobile Header with Menu Trigger */}
           <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
             <SidebarTrigger>
