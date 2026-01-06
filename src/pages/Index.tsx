@@ -242,42 +242,42 @@ const Index = () => {
           <nav className="hidden md:flex items-center gap-12">
             <button 
               onClick={() => navigate('/login')}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
+              className="text-foreground text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               FlowPulse Finance
             </button>
 
             <button 
               onClick={() => navigate('/login-investor')}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
+              className="text-foreground text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               FlowPulse Investor
             </button>
 
             <button 
               onClick={() => navigate('/reports')}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
+              className="text-foreground text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               Reports
             </button>
 
             <button 
               onClick={() => navigate('/pricing')}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
+              className="text-foreground text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               Pricing
             </button>
 
             <button 
               onClick={() => navigate('/about')}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
+              className="text-foreground text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               About
             </button>
 
             <button 
               onClick={() => navigate('/contact')}
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
+              className="text-foreground text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               Contact
             </button>
