@@ -43,11 +43,12 @@ interface Report {
 }
 
 const categoryConfig: Record<string, { icon: typeof TrendingUp; color: string; bgColor: string }> = {
-  "Market Analysis": { icon: TrendingUp, color: "text-blue-600", bgColor: "bg-blue-50" },
-  "Research": { icon: BarChart3, color: "text-indigo-600", bgColor: "bg-indigo-50" },
-  "Industry Reports": { icon: Globe, color: "text-emerald-600", bgColor: "bg-emerald-50" },
+  "Market Commentary": { icon: TrendingUp, color: "text-blue-600", bgColor: "bg-blue-50" },
+  "Research & Analysis": { icon: BarChart3, color: "text-indigo-600", bgColor: "bg-indigo-50" },
+  "Sector & Industry": { icon: Globe, color: "text-emerald-600", bgColor: "bg-emerald-50" },
+  "Portfolio & Performance": { icon: Briefcase, color: "text-purple-600", bgColor: "bg-purple-50" },
   "Risk & Compliance": { icon: Shield, color: "text-red-600", bgColor: "bg-red-50" },
-  "Strategic": { icon: Briefcase, color: "text-amber-600", bgColor: "bg-amber-50" },
+  "Strategic Planning": { icon: FileText, color: "text-amber-600", bgColor: "bg-amber-50" },
   "General": { icon: FileText, color: "text-slate-600", bgColor: "bg-slate-50" },
 };
 

@@ -26,12 +26,12 @@ interface PurchasableReport {
 }
 
 const categories = [
-  "Market Analysis",
-  "Research",
-  "Industry Reports",
-  "Risk & Compliance",
-  "Strategic",
-  "General"
+  { value: "Market Commentary", label: "Market Commentary" },
+  { value: "Research & Analysis", label: "Research & Analysis" },
+  { value: "Sector & Industry", label: "Sector & Industry" },
+  { value: "Portfolio & Performance", label: "Portfolio & Performance" },
+  { value: "Risk & Compliance", label: "Risk & Compliance" },
+  { value: "Strategic Planning", label: "Strategic Planning" },
 ];
 
 export function PurchasableReportUpload() {
@@ -41,7 +41,7 @@ export function PurchasableReportUpload() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "General",
+    category: "Market Commentary",
     pageCount: "",
     readingTime: "",
     authorName: "FlowPulse Research Team",
@@ -162,7 +162,7 @@ export function PurchasableReportUpload() {
 
       toast.success("Report uploaded successfully!");
       setFormData({ 
-        title: "", description: "", category: "General", pageCount: "", readingTime: "",
+        title: "", description: "", category: "Market Commentary", pageCount: "", readingTime: "",
         authorName: "FlowPulse Research Team", authorTitle: "", teaserContent: "",
         keyInsights: "", tags: "", file: null, thumbnail: null, contentImages: []
       });
@@ -266,11 +266,11 @@ export function PurchasableReportUpload() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
                   <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent className="bg-background z-50">
-                    {categories.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+                    {categories.map((cat) => (<SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
