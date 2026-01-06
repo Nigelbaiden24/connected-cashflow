@@ -134,7 +134,7 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/reports" element={<PublicReports />} />
+          {/* Route hidden for future use: <Route path="/reports" element={<PublicReports />} /> */}
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
             

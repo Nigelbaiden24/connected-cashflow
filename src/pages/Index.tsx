@@ -198,16 +198,6 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
-                      navigate("/reports");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Reports
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
                       navigate("/pricing");
                       setMobileMenuOpen(false);
                     }}
@@ -252,13 +242,6 @@ const Index = () => {
               className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               FlowPulse Investor
-            </button>
-
-            <button 
-              onClick={() => navigate('/reports')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              Reports
             </button>
 
             <button 
