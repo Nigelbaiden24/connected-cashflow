@@ -394,7 +394,15 @@ const Index = () => {
       </section>
 
       {/* White Space Separator */}
-      <div className="bg-white py-16 md:py-24"></div>
+      <div className="bg-white py-16 md:py-24 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold">
+          <span className="text-blue-600">Expert Financial</span>{" "}
+          <span className="text-green-600">research reports</span>
+        </h2>
+        <p className="mt-3 text-gray-800 text-base md:text-lg">
+          sourced by professional human analysts
+        </p>
+      </div>
 
 
       {/* Benefits Section */}
