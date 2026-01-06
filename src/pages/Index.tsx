@@ -239,60 +239,47 @@ const Index = () => {
             </SheetContent>
           </Sheet>
           
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-12">
             <button 
               onClick={() => navigate('/login')}
-              className="relative font-space-grotesk font-semibold text-lg group"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
             >
-              <span className="relative z-10">FlowPulse Finance</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+              FlowPulse Finance
             </button>
 
             <button 
               onClick={() => navigate('/login-investor')}
-              className="relative font-space-grotesk font-semibold text-lg group"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
             >
-              <span className="relative z-10">FlowPulse Investor</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+              FlowPulse Investor
             </button>
-
 
             <button 
               onClick={() => navigate('/reports')}
-              className="relative font-space-grotesk font-semibold text-lg group"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
             >
-              <span className="relative z-10">Reports</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+              Reports
             </button>
 
             <button 
               onClick={() => navigate('/pricing')}
-              className="relative font-space-grotesk font-semibold text-lg group"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
             >
-              <span className="relative z-10">Pricing</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+              Pricing
             </button>
 
             <button 
               onClick={() => navigate('/about')}
-              className="relative font-space-grotesk font-semibold text-lg group"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
             >
-              <span className="relative z-10">About</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+              About
             </button>
 
             <button 
               onClick={() => navigate('/contact')}
-              className="relative font-space-grotesk font-semibold text-lg group"
+              className="text-muted-foreground hover:text-foreground transition-colors text-sm font-light tracking-wide"
             >
-              <span className="relative z-10">Contact</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-green-500/20 to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 via-green-400 to-purple-400 group-hover:w-full transition-all duration-300" />
+              Contact
             </button>
           </nav>
 
