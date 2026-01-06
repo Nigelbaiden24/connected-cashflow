@@ -18,13 +18,9 @@ interface PurchasableReport {
   description: string | null;
   thumbnail_url: string | null;
   file_path: string;
-  price_cents: number;
-  currency: string;
   is_published: boolean;
-  download_count: number;
   created_at: string;
   category: string | null;
-  preview_images: string[] | null;
   page_count: number | null;
   featured: boolean | null;
 }
@@ -45,12 +41,17 @@ export function PurchasableReportUpload() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    price: "",
     category: "General",
     pageCount: "",
+    readingTime: "",
+    authorName: "FlowPulse Research Team",
+    authorTitle: "",
+    teaserContent: "",
+    keyInsights: "",
+    tags: "",
     file: null as File | null,
     thumbnail: null as File | null,
-    previewImages: [] as File[],
+    contentImages: [] as File[],
   });
 
   useEffect(() => {
@@ -76,14 +77,13 @@ export function PurchasableReportUpload() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.file || !formData.title || !formData.price) {
-      toast.error("Please fill in all required fields");
+    if (!formData.file || !formData.title) {
+      toast.error("Please fill in title and upload a file");
       return;
     }
 
     setUploading(true);
     try {
-      // Upload report file
       const fileExt = formData.file.name.split(".").pop();
       const fileName = `purchasable/${Date.now()}.${fileExt}`;
       
@@ -93,7 +93,6 @@ export function PurchasableReportUpload() {
 
       if (uploadError) throw uploadError;
 
-      // Upload thumbnail if provided
       let thumbnailUrl = null;
       if (formData.thumbnail) {
         const thumbExt = formData.thumbnail.name.split(".").pop();
@@ -111,27 +110,33 @@ export function PurchasableReportUpload() {
         }
       }
 
-      // Upload preview images if provided
-      const previewUrls: string[] = [];
-      for (const previewFile of formData.previewImages) {
-        const prevExt = previewFile.name.split(".").pop();
-        const prevName = `previews/${Date.now()}-${Math.random().toString(36).substring(7)}.${prevExt}`;
+      const contentImageUrls: string[] = [];
+      for (const imgFile of formData.contentImages) {
+        const imgExt = imgFile.name.split(".").pop();
+        const imgName = `content/${Date.now()}-${Math.random().toString(36).substring(7)}.${imgExt}`;
         
-        const { error: prevError } = await supabase.storage
+        const { error: imgError } = await supabase.storage
           .from("reports")
-          .upload(prevName, previewFile);
+          .upload(imgName, imgFile);
 
-        if (!prevError) {
+        if (!imgError) {
           const { data: urlData } = supabase.storage
             .from("reports")
-            .getPublicUrl(prevName);
-          previewUrls.push(urlData.publicUrl);
+            .getPublicUrl(imgName);
+          contentImageUrls.push(urlData.publicUrl);
         }
       }
 
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Insert report record
+      const keyInsights = formData.keyInsights 
+        ? formData.keyInsights.split('\n').map(s => s.trim()).filter(Boolean) 
+        : [];
+      
+      const tags = formData.tags 
+        ? formData.tags.split(',').map(s => s.trim()).filter(Boolean) 
+        : [];
+
       const { error: insertError } = await supabase
         .from("purchasable_reports")
         .insert({
@@ -139,26 +144,27 @@ export function PurchasableReportUpload() {
           description: formData.description || null,
           file_path: fileName,
           thumbnail_url: thumbnailUrl,
-          price_cents: Math.round(parseFloat(formData.price) * 100),
+          price_cents: 0,
           currency: "GBP",
           uploaded_by: user?.id,
           category: formData.category,
           page_count: formData.pageCount ? parseInt(formData.pageCount) : null,
-          preview_images: previewUrls.length > 0 ? previewUrls : null,
+          teaser_content: formData.teaserContent || null,
+          key_insights: keyInsights.length > 0 ? keyInsights : null,
+          author_name: formData.authorName || null,
+          author_title: formData.authorTitle || null,
+          reading_time: formData.readingTime || null,
+          tags: tags.length > 0 ? tags : null,
+          content_images: contentImageUrls.length > 0 ? contentImageUrls : null,
         });
 
       if (insertError) throw insertError;
 
       toast.success("Report uploaded successfully!");
       setFormData({ 
-        title: "", 
-        description: "", 
-        price: "", 
-        category: "General",
-        pageCount: "",
-        file: null, 
-        thumbnail: null,
-        previewImages: []
+        title: "", description: "", category: "General", pageCount: "", readingTime: "",
+        authorName: "FlowPulse Research Team", authorTitle: "", teaserContent: "",
+        keyInsights: "", tags: "", file: null, thumbnail: null, contentImages: []
       });
       fetchReports();
     } catch (error: any) {
@@ -217,20 +223,20 @@ export function PurchasableReportUpload() {
     }
   };
 
-  const handlePreviewImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleContentImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       setFormData(prev => ({
         ...prev,
-        previewImages: [...prev.previewImages, ...Array.from(files)]
+        contentImages: [...prev.contentImages, ...Array.from(files)]
       }));
     }
   };
 
-  const removePreviewImage = (index: number) => {
+  const removeContentImage = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      previewImages: prev.previewImages.filter((_, i) => i !== index)
+      contentImages: prev.contentImages.filter((_, i) => i !== index)
     }));
   };
 
@@ -240,15 +246,14 @@ export function PurchasableReportUpload() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Upload Purchasable Report
+            Upload Lead Magnet Report
           </CardTitle>
           <CardDescription>
-            Upload reports that users can purchase and download from the public reports shop
+            Create research reports with teaser content visible to all visitors. Full content requires signup.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleUpload} className="space-y-6">
-            {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Report Title *</Label>
@@ -261,148 +266,99 @@ export function PurchasableReportUpload() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="price">Price (GBP) *</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  placeholder="e.g., 49.99"
-                  required
-                />
+                <Label htmlFor="category">Category</Label>
+                <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    {categories.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pageCount">Page Count</Label>
+                <Input id="pageCount" type="number" min="1" value={formData.pageCount}
+                  onChange={(e) => setFormData({ ...formData, pageCount: e.target.value })} placeholder="e.g., 25" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="readingTime">Reading Time</Label>
+                <Input id="readingTime" value={formData.readingTime}
+                  onChange={(e) => setFormData({ ...formData, readingTime: e.target.value })} placeholder="e.g., 10 min read" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tags">Tags (comma-separated)</Label>
+                <Input id="tags" value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="e.g., Equities, Q4, UK" />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(v) => setFormData({ ...formData, category: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="authorName">Author Name</Label>
+                <Input id="authorName" value={formData.authorName}
+                  onChange={(e) => setFormData({ ...formData, authorName: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pageCount">Page Count</Label>
-                <Input
-                  id="pageCount"
-                  type="number"
-                  min="1"
-                  value={formData.pageCount}
-                  onChange={(e) => setFormData({ ...formData, pageCount: e.target.value })}
-                  placeholder="e.g., 25"
-                />
+                <Label htmlFor="authorTitle">Author Title</Label>
+                <Input id="authorTitle" value={formData.authorTitle}
+                  onChange={(e) => setFormData({ ...formData, authorTitle: e.target.value })} placeholder="e.g., Senior Analyst" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Brief description of the report content..."
-                rows={4}
-              />
+              <Label htmlFor="description">Short Description</Label>
+              <Textarea id="description" value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Brief summary shown in cards..." rows={2} />
             </div>
 
-            {/* File Uploads */}
+            <div className="space-y-2">
+              <Label htmlFor="keyInsights">Key Insights (one per line)</Label>
+              <Textarea id="keyInsights" value={formData.keyInsights}
+                onChange={(e) => setFormData({ ...formData, keyInsights: e.target.value })}
+                placeholder="Markets showing compression across majors&#10;Key support levels holding&#10;Watch for breakout in Q1" rows={4} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="teaserContent">Teaser Content (visible before signup)</Label>
+              <Textarea id="teaserContent" value={formData.teaserContent}
+                onChange={(e) => setFormData({ ...formData, teaserContent: e.target.value })}
+                placeholder="Write the opening paragraphs that visitors can read before signing up..." rows={6} />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="file">Report File (PDF) *</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
-                  required
-                  className="cursor-pointer"
-                />
-                {formData.file && (
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {formData.file.name}
-                  </p>
-                )}
+                <Input id="file" type="file" accept=".pdf,.doc,.docx"
+                  onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })} required className="cursor-pointer" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="thumbnail">Thumbnail Image</Label>
-                <Input
-                  id="thumbnail"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.files?.[0] || null })}
-                  className="cursor-pointer"
-                />
-                {formData.thumbnail && (
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {formData.thumbnail.name}
-                  </p>
-                )}
+                <Input id="thumbnail" type="file" accept="image/*"
+                  onChange={(e) => setFormData({ ...formData, thumbnail: e.target.files?.[0] || null })} className="cursor-pointer" />
               </div>
             </div>
 
-            {/* Preview Images */}
             <div className="space-y-3">
-              <Label className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Page Preview Images (optional)
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Upload screenshots of report pages to show customers a preview before purchase
-              </p>
-              
+              <Label className="flex items-center gap-2"><Eye className="h-4 w-4" />Content Images (charts, graphics)</Label>
               <div className="flex flex-wrap gap-3">
-                {formData.previewImages.map((file, idx) => (
+                {formData.contentImages.map((file, idx) => (
                   <div key={idx} className="relative group">
-                    <div className="w-24 h-32 bg-muted rounded-lg flex items-center justify-center text-xs text-center p-2 border">
-                      {file.name.slice(0, 15)}...
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removePreviewImage(idx)}
-                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                    <div className="w-24 h-20 bg-muted rounded-lg flex items-center justify-center text-xs text-center p-2 border">{file.name.slice(0, 12)}...</div>
+                    <button type="button" onClick={() => removeContentImage(idx)}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3" /></button>
                   </div>
                 ))}
-                
-                <label className="w-24 h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
-                  <Plus className="h-6 w-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground mt-1">Add Page</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePreviewImageAdd}
-                    className="hidden"
-                  />
+                <label className="w-24 h-20 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                  <Plus className="h-5 w-5 text-muted-foreground" /><span className="text-xs text-muted-foreground mt-1">Add</span>
+                  <input type="file" accept="image/*" multiple onChange={handleContentImageAdd} className="hidden" />
                 </label>
               </div>
             </div>
 
             <Button type="submit" disabled={uploading} className="w-full">
-              {uploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Report
-                </>
-              )}
+              {uploading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Uploading...</>) : (<><Upload className="mr-2 h-4 w-4" />Upload Report</>)}
             </Button>
           </form>
         </CardContent>
@@ -411,17 +367,13 @@ export function PurchasableReportUpload() {
       <Card>
         <CardHeader>
           <CardTitle>Uploaded Reports</CardTitle>
-          <CardDescription>Manage your purchasable reports - toggle publish status, feature reports, or delete them</CardDescription>
+          <CardDescription>Manage lead magnet reports</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
           ) : reports.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No reports uploaded yet
-            </p>
+            <p className="text-center text-muted-foreground py-8">No reports uploaded yet</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -430,8 +382,6 @@ export function PurchasableReportUpload() {
                     <TableHead className="w-[80px]">Preview</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead className="text-center">Downloads</TableHead>
                     <TableHead className="text-center">Featured</TableHead>
                     <TableHead className="text-center">Published</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -442,63 +392,27 @@ export function PurchasableReportUpload() {
                     <TableRow key={report.id}>
                       <TableCell>
                         {report.thumbnail_url ? (
-                          <img
-                            src={report.thumbnail_url}
-                            alt={report.title}
-                            className="w-16 h-12 object-cover rounded"
-                          />
+                          <img src={report.thumbnail_url} alt={report.title} className="w-16 h-12 object-cover rounded" />
                         ) : (
-                          <div className="w-16 h-12 bg-muted rounded flex items-center justify-center">
-                            <Image className="h-6 w-6 text-muted-foreground" />
-                          </div>
+                          <div className="w-16 h-12 bg-muted rounded flex items-center justify-center"><Image className="h-6 w-6 text-muted-foreground" /></div>
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-[200px]">
-                          <p className="font-medium truncate">{report.title}</p>
-                          {report.page_count && (
-                            <p className="text-xs text-muted-foreground">{report.page_count} pages</p>
-                          )}
-                        </div>
+                        <p className="font-medium truncate max-w-[200px]">{report.title}</p>
+                        {report.page_count && <p className="text-xs text-muted-foreground">{report.page_count} pages</p>}
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{report.category || "General"}</Badge>
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        £{(report.price_cents / 100).toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-center">{report.download_count}</TableCell>
+                      <TableCell><Badge variant="outline">{report.category || "General"}</Badge></TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <Switch
-                            checked={report.featured || false}
-                            onCheckedChange={() => toggleFeatured(report.id, report.featured)}
-                          />
-                          {report.featured && (
-                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          )}
+                          <Switch checked={report.featured || false} onCheckedChange={() => toggleFeatured(report.id, report.featured)} />
+                          {report.featured && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <Switch
-                            checked={report.is_published}
-                            onCheckedChange={() => togglePublished(report.id, report.is_published)}
-                          />
-                          <Badge variant={report.is_published ? "default" : "secondary"}>
-                            {report.is_published ? "Live" : "Draft"}
-                          </Badge>
-                        </div>
+                        <Switch checked={report.is_published} onCheckedChange={() => togglePublished(report.id, report.is_published)} />
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteReport(report.id, report.file_path)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteReport(report.id, report.file_path)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     </TableRow>
                   ))}

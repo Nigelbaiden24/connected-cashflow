@@ -97,6 +97,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import Install from "./pages/Install";
 import PublicReports from "./pages/PublicReports";
+import ReportDetail from "./pages/ReportDetail";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +136,7 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/reports" element={<PublicReports />} />
+          <Route path="/reports/:id" element={<ReportDetail />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
             

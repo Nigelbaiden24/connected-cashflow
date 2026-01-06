@@ -4122,7 +4122,11 @@ export type Database = {
       }
       purchasable_reports: {
         Row: {
+          author_name: string | null
+          author_title: string | null
           category: string | null
+          charts_data: Json | null
+          content_images: string[] | null
           created_at: string
           currency: string
           description: string | null
@@ -4131,17 +4135,25 @@ export type Database = {
           file_path: string
           id: string
           is_published: boolean | null
+          key_insights: string[] | null
           page_count: number | null
           preview_images: string[] | null
           price_cents: number
+          reading_time: string | null
           stripe_price_id: string | null
+          tags: string[] | null
+          teaser_content: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
           uploaded_by: string | null
         }
         Insert: {
+          author_name?: string | null
+          author_title?: string | null
           category?: string | null
+          charts_data?: Json | null
+          content_images?: string[] | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -4150,17 +4162,25 @@ export type Database = {
           file_path: string
           id?: string
           is_published?: boolean | null
+          key_insights?: string[] | null
           page_count?: number | null
           preview_images?: string[] | null
           price_cents?: number
+          reading_time?: string | null
           stripe_price_id?: string | null
+          tags?: string[] | null
+          teaser_content?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
           uploaded_by?: string | null
         }
         Update: {
+          author_name?: string | null
+          author_title?: string | null
           category?: string | null
+          charts_data?: Json | null
+          content_images?: string[] | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -4169,10 +4189,14 @@ export type Database = {
           file_path?: string
           id?: string
           is_published?: boolean | null
+          key_insights?: string[] | null
           page_count?: number | null
           preview_images?: string[] | null
           price_cents?: number
+          reading_time?: string | null
           stripe_price_id?: string | null
+          tags?: string[] | null
+          teaser_content?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
