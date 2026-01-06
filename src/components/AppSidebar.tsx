@@ -241,19 +241,12 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
 
   return (
     <Sidebar 
-      className={`${isCollapsed ? "w-16" : "w-64"} border-r-0 relative overflow-hidden [&>[data-sidebar=sidebar]]:!bg-transparent`}
+      className={`${isCollapsed ? "w-16" : "w-64"} border-r-0`}
       collapsible="icon"
       style={{
-        ["--sidebar-background" as string]: "transparent",
+        background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
       }}
     >
-      {/* Full height gradient background */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
-        }}
-      />
       {/* Animated background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 via-transparent to-transparent" />
