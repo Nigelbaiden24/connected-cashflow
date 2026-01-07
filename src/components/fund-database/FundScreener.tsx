@@ -266,7 +266,7 @@ export function FundScreener({ onViewFund, onAddToComparison }: FundScreenerProp
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Min. AUM</span>
-                    <span className="font-mono text-primary">${criteria.minAUM}M</span>
+                    <span className="font-mono text-primary">£{criteria.minAUM}M</span>
                   </div>
                   <Slider
                     value={[criteria.minAUM]}
