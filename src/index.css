@@ -153,34 +153,27 @@ All colors MUST be HSL.
     --sidebar-ring: 142 76% 36%;
   }
 
-  /* Investor Platform Purple Theme - Enterprise Grade */
+  /* Investor Platform Purple Theme */
   .investor-theme {
-    --primary: 265 85% 58%; /* Rich violet */
+    --primary: 270 75% 55%; /* Professional purple */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 280 75% 68%; /* Soft lavender */
+    --secondary: 280 70% 65%; /* Lighter purple */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 255 90% 65%; /* Electric indigo */
+    --accent: 270 75% 60%;
     --accent-foreground: 0 0% 100%;
 
-    --ring: 265 85% 58%;
+    --ring: 270 75% 55%;
 
-    /* Enterprise sidebar with deep gradient base */
-    --sidebar-background: 265 45% 18%; /* Deep plum base */
-    --sidebar-foreground: 270 20% 95%;
-    --sidebar-primary: 265 85% 65%; /* Vibrant purple */
+    --sidebar-background: 270 75% 45%; /* Darker purple sidebar */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 270 75% 55%; /* Purple */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 60% 35%; /* Muted active state */
-    --sidebar-accent-foreground: 270 20% 98%;
-    --sidebar-border: 265 40% 25%;
-    --sidebar-ring: 265 85% 58%;
-    
-    /* Enhanced investor gradients */
-    --investor-gradient-start: 265 45% 18%;
-    --investor-gradient-mid: 270 55% 22%;
-    --investor-gradient-end: 280 50% 15%;
-    --investor-glow: 265 85% 65%;
+    --sidebar-accent: 270 75% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 270 75% 35%;
+    --sidebar-ring: 270 75% 45%;
   }
 
   .admin-theme {
