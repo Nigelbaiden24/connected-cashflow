@@ -10,13 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare } from "lucide-react";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { DemoRequests } from "@/components/admin/DemoRequests";
 import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { PurchasableReportUpload } from "@/components/admin/PurchasableReportUpload";
+import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 
 interface Profile {
   user_id: string;
@@ -584,6 +585,13 @@ export default function AdminDashboard() {
                 Users
               </TabsTrigger>
               <TabsTrigger 
+                value="enquiries"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500/90 data-[state=active]:to-orange-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-orange-500/30 transition-all hover:bg-white/5"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Enquiries
+              </TabsTrigger>
+              <TabsTrigger 
                 value="demo-requests"
                 className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
               >
@@ -673,6 +681,11 @@ export default function AdminDashboard() {
           {/* User Management Tab */}
           <TabsContent value="users">
             <UserManagement />
+          </TabsContent>
+
+          {/* Enquiries Tab */}
+          <TabsContent value="enquiries">
+            <PlatformEnquiries />
           </TabsContent>
 
           {/* Demo Requests Tab */}
