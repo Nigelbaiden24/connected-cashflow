@@ -135,7 +135,7 @@ Please provide a comprehensive, UK IFA-focused analysis.
   if (!fund) {
     return (
       <Card className={`${className} border-border/50 bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden`}>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)] pointer-events-none" />
         <CardHeader className="relative">
           <CardTitle className="flex items-center gap-2.5">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
@@ -159,7 +159,7 @@ Please provide a comprehensive, UK IFA-focused analysis.
 
   return (
     <Card className={`${className} border-border/50 bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden`}>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.1),transparent_60%)] pointer-events-none" />
       <CardHeader className="pb-3 relative border-b border-border/50">
         <CardTitle className="flex items-center gap-2.5">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
