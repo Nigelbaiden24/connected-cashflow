@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrendingUp, Eye, EyeOff, Lock, Mail, CheckCircle2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, Eye, EyeOff, Lock, Mail, CheckCircle2, User, Phone, Building, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
@@ -19,6 +21,14 @@ const Login = ({ onLogin }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Enquiry form state
+  const [enquiryName, setEnquiryName] = useState("");
+  const [enquiryEmail, setEnquiryEmail] = useState("");
+  const [enquiryPhone, setEnquiryPhone] = useState("");
+  const [enquiryCompany, setEnquiryCompany] = useState("");
+  const [enquiryMessage, setEnquiryMessage] = useState("");
+  const [isSubmittingEnquiry, setIsSubmittingEnquiry] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +65,44 @@ const Login = ({ onLogin }: LoginProps) => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEnquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingEnquiry(true);
+
+    try {
+      const { error } = await supabase.from("contact_submissions").insert({
+        name: enquiryName,
+        email: enquiryEmail,
+        phone: enquiryPhone || null,
+        company: enquiryCompany || null,
+        message: enquiryMessage,
+        source_page: "finance-login",
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Enquiry Submitted",
+        description: "Thank you! A member of our team will be in touch shortly.",
+      });
+
+      // Reset form
+      setEnquiryName("");
+      setEnquiryEmail("");
+      setEnquiryPhone("");
+      setEnquiryCompany("");
+      setEnquiryMessage("");
+    } catch (error: any) {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit enquiry. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingEnquiry(false);
     }
   };
 
@@ -112,80 +160,190 @@ const Login = ({ onLogin }: LoginProps) => {
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
+      {/* Right Side - Login/Enquiry Forms */}
       <div className="flex items-center justify-center p-8 bg-background flex-1">
-        <div className="w-full max-w-md space-y-8">
-          
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Sign in to your account</h2>
-            <p className="text-muted-foreground mt-2">
-              Access your financial advisory dashboard
-            </p>
-          </div>
+        <div className="w-full max-w-md space-y-6">
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="enquiry">Make an Enquiry</TabsTrigger>
+            </TabsList>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="advisor@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
+            <TabsContent value="signin" className="space-y-6 mt-6">
+              <div>
+                <h2 className="text-3xl font-bold tracking-tight">Sign in to your account</h2>
+                <p className="text-muted-foreground mt-2">
+                  Access your financial advisory dashboard
+                </p>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </Label>
-                <button type="button" className="text-sm text-primary hover:underline">
-                  Forgot password?
-                </button>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
-                  required
-                />
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email Address
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="advisor@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-medium">
+                      Password
+                    </Label>
+                    <button type="button" className="text-sm text-primary hover:underline">
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
+                  type="submit"
+                  className="w-full h-11 text-base"
+                  disabled={isLoading}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                  {isLoading ? "Signing in..." : "Sign in"}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="enquiry" className="space-y-6 mt-6">
+              <div>
+                <h2 className="text-3xl font-bold tracking-tight">Request Access</h2>
+                <p className="text-muted-foreground mt-2">
+                  Interested in FlowPulse Finance? Submit your details and our team will contact you.
+                </p>
+              </div>
+
+              <form onSubmit={handleEnquirySubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="enquiry-name">Full Name *</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="enquiry-name"
+                      type="text"
+                      placeholder="John Smith"
+                      value={enquiryName}
+                      onChange={(e) => setEnquiryName(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="enquiry-email">Email Address *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="enquiry-email"
+                      type="email"
+                      placeholder="john@company.com"
+                      value={enquiryEmail}
+                      onChange={(e) => setEnquiryEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="enquiry-phone">Phone</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="enquiry-phone"
+                        type="tel"
+                        placeholder="+44 7123..."
+                        value={enquiryPhone}
+                        onChange={(e) => setEnquiryPhone(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="enquiry-company">Company</Label>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="enquiry-company"
+                        type="text"
+                        placeholder="Company Ltd"
+                        value={enquiryCompany}
+                        onChange={(e) => setEnquiryCompany(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="enquiry-message">Message *</Label>
+                  <Textarea
+                    id="enquiry-message"
+                    placeholder="Tell us about your requirements and how we can help..."
+                    value={enquiryMessage}
+                    onChange={(e) => setEnquiryMessage(e.target.value)}
+                    className="min-h-[100px]"
+                    required
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-11 text-base"
+                  disabled={isSubmittingEnquiry}
+                >
+                  {isSubmittingEnquiry ? (
+                    "Submitting..."
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Submit Enquiry
+                    </>
                   )}
                 </Button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-11 text-base"
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
+              </form>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
