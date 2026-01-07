@@ -191,11 +191,11 @@ export default function PublicReports() {
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
-              onClick={() => navigate("/")} 
+              onClick={() => navigate(-1)} 
               className="text-slate-600 hover:text-slate-900"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Home
+              Back
             </Button>
             <Button 
               onClick={() => navigate("/login")}
