@@ -570,13 +570,16 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
           sectionDiv.style.top = `${Math.max(0, section.y)}px`;
           sectionDiv.style.width = `${Math.min(section.width, 714)}px`;
+          // Remove fixed height - let content determine height
           sectionDiv.style.minHeight = `${section.height}px`;
+          sectionDiv.style.height = "auto";
           sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
           sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || "transparent";
           sectionDiv.style.padding = "16px";
           sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
           sectionDiv.style.wordBreak = "break-word";
+          sectionDiv.style.overflow = "visible";
           sectionDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
           sectionDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
 
@@ -664,7 +667,10 @@ ELITE DOCUMENT REQUIREMENTS:
             contentDiv.style.lineHeight = "1.7";
             contentDiv.style.fontSize = `${(section as any).fontSize || 14}px`;
             contentDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
-            contentDiv.textContent = (section.content || "").toString();
+            contentDiv.style.overflow = "visible";
+            // Use innerHTML with proper escaping to preserve line breaks
+            const contentText = (section.content || "").toString();
+            contentDiv.innerHTML = contentText.replace(/\n/g, '<br>');
             sectionDiv.appendChild(contentDiv);
           }
           pageContainer.appendChild(sectionDiv);
@@ -740,18 +746,34 @@ ELITE DOCUMENT REQUIREMENTS:
               })
           )
         );
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 150));
 
-        // Determine how tall this page's content actually is (absolute-positioned elements don't affect scrollHeight)
-        const contentBottom = Math.max(
+        // Calculate actual content height by measuring rendered section elements
+        const sectionElements = Array.from(pageContainer.querySelectorAll('div[style*="position: absolute"]'));
+        let maxContentBottom = 1123;
+        
+        sectionElements.forEach((el) => {
+          const element = el as HTMLElement;
+          const top = parseInt(element.style.top) || 0;
+          const actualHeight = element.getBoundingClientRect().height || parseInt(element.style.minHeight) || 0;
+          maxContentBottom = Math.max(maxContentBottom, top + actualHeight + 60);
+        });
+
+        // Also check original section data for minimum heights
+        const dataContentBottom = Math.max(
           1123,
-          ...pageSections.map((s: any) => (s.y || 0) + (s.height || 0) + 32),
-          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0)),
-          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0)),
-          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0)),
+          ...pageSections.map((s: any) => {
+            // Estimate actual content height based on text length
+            const textLength = ((s.content || '') + (s.title || '')).length;
+            const estimatedHeight = Math.max(s.height || 0, Math.ceil(textLength / 50) * 24);
+            return (s.y || 0) + estimatedHeight + 60;
+          }),
+          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0) + 20),
+          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0) + 20),
+          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0) + 20),
         );
 
-        const captureHeight = Math.ceil(Math.max(1123, contentBottom + 80));
+        const captureHeight = Math.ceil(Math.max(maxContentBottom, dataContentBottom, 1123));
         pageContainer.style.height = `${captureHeight}px`;
         pageContainer.style.minHeight = `${captureHeight}px`;
 
