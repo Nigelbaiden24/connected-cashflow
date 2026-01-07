@@ -35,7 +35,7 @@ export function FundComparison({ funds, onRemoveFund, onClose }: FundComparisonP
         { label: "Structure", getValue: (f: CompleteFund) => f.structure, format: 'text' },
         { label: "Share Class", getValue: (f: CompleteFund) => f.shareClass, format: 'text' },
         { label: "Domicile", getValue: (f: CompleteFund) => f.domicile, format: 'text' },
-        { label: "AUM", getValue: (f: CompleteFund) => `$${f.aum.toLocaleString()}M`, format: 'text' },
+        { label: "AUM", getValue: (f: CompleteFund) => `£${f.aum.toLocaleString()}M`, format: 'text' },
       ]
     },
     {

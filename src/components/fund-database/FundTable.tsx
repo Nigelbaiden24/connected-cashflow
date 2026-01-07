@@ -69,8 +69,8 @@ export function FundTable({
   };
 
   const formatAUM = (aum: number) => {
-    if (aum >= 1000) return `$${(aum / 1000).toFixed(1)}B`;
-    return `$${aum}M`;
+    if (aum >= 1000) return `£${(aum / 1000).toFixed(1)}B`;
+    return `£${aum}M`;
   };
 
   const getTypeColor = (type: string) => {

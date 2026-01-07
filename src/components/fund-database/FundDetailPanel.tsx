@@ -153,7 +153,7 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">AUM</span>
-                  <span className="font-medium">${fund.aum.toLocaleString()}M</span>
+                  <span className="font-medium">£{fund.aum.toLocaleString()}M</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Launch Date</span>
