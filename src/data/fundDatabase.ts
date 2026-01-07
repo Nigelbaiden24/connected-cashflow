@@ -3200,36 +3200,80 @@ export const fundDatabase: CompleteFund[] = [
 
 // Helper function to generate additional funds with realistic data
 function generateAdditionalFunds(): CompleteFund[] {
-  const additionalFunds: CompleteFund[] = [
-    createFund("IE00BK5BQT80", "VWRP", "Vanguard FTSE All-World UCITS ETF (USD) Acc", "Vanguard", "ETF", "Passive", 28500, 19.8, 11.5, 13.2, 5, "Gold", 0.22),
-    createFund("IE00B4X9L533", "HMWO", "HSBC MSCI World UCITS ETF USD", "HSBC", "ETF", "Passive", 8200, 21.5, 11.8, 13.5, 4, "Silver", 0.15),
-    createFund("IE00B3RBWM25", "VFEM", "Vanguard FTSE Emerging Markets UCITS ETF", "Vanguard", "ETF", "Passive", 4800, 10.2, 1.8, 4.5, 3, "Bronze", 0.22),
-    createFund("GB00B99C0657", "N/A", "Baillie Gifford American Fund B Acc", "Baillie Gifford", "OEIC", "Active", 6500, 28.5, 8.2, 18.5, 4, "Silver", 0.51),
-    createFund("GB00B0XWNQ21", "N/A", "Jupiter UK Special Situations Fund I Acc", "Jupiter", "OEIC", "Active", 2100, 8.5, 4.2, 6.8, 3, "Bronze", 0.74),
-    createFund("IE00B52MJY50", "AGGH", "iShares Core Global Aggregate Bond UCITS ETF", "iShares", "ETF", "Passive", 12500, 2.8, -2.5, 0.8, 4, "Silver", 0.10),
-    createFund("IE00BF4RFH31", "IUSQ", "iShares MSCI ACWI UCITS ETF USD (Acc)", "iShares", "ETF", "Passive", 9800, 20.5, 10.8, 12.5, 4, "Silver", 0.20),
-    createFund("LU0099575291", "N/A", "Fidelity Global Technology Fund A Acc", "Fidelity", "SICAV", "Active", 15200, 32.5, 15.8, 22.5, 5, "Gold", 0.89),
-    createFund("GB00B4TZHH95", "N/A", "JOHCM UK Equity Income Fund A GBP Acc", "JOHCM", "OEIC", "Active", 1850, 12.5, 8.5, 7.2, 3, "Bronze", 0.62),
-    createFund("IE00BYX2JD69", "IWDA", "iShares Core MSCI World UCITS ETF EUR Acc", "iShares", "ETF", "Passive", 42000, 22.1, 12.2, 14.0, 5, "Gold", 0.20),
-    createFund("LU0690374615", "N/A", "Pictet Global Environmental Opportunities P", "Pictet", "SICAV", "Active", 8500, 18.5, 6.8, 12.5, 4, "Silver", 0.80),
-    createFund("IE00B3WJKG14", "IUSA", "iShares S&P 500 UCITS ETF (Dist)", "iShares", "ETF", "Passive", 15200, 25.8, 14.5, 15.8, 5, "Gold", 0.07),
-    createFund("GB00B39RMM81", "N/A", "M&G Global Dividend Fund A Acc", "M&G", "OEIC", "Active", 3200, 15.2, 8.8, 10.5, 4, "Bronze", 0.65),
-    createFund("IE00B4L5YX21", "IJPN", "iShares Core MSCI Japan IMI UCITS ETF", "iShares", "ETF", "Passive", 5500, 18.2, 5.5, 8.2, 4, "Silver", 0.15),
-    createFund("LU0048578792", "N/A", "Fidelity European Fund A Acc EUR", "Fidelity", "SICAV", "Active", 4800, 12.5, 6.2, 9.5, 3, "Bronze", 0.92),
-    createFund("IE00BZ02LR44", "EMIM", "iShares Core MSCI EM IMI ESG UCITS ETF", "iShares", "ETF", "Passive", 6200, 11.5, 2.5, 5.2, 3, "Silver", 0.18),
-    createFund("GB00B8JYLC77", "N/A", "Rathbone Global Opportunities Fund S Acc", "Rathbone", "OEIC", "Active", 2800, 22.5, 10.5, 14.8, 4, "Silver", 0.70),
-    createFund("IE00BFNM3J75", "SMEA", "iShares MSCI Europe SRI UCITS ETF EUR Acc", "iShares", "ETF", "Passive", 3500, 14.2, 7.5, 10.2, 4, "Silver", 0.20),
-    createFund("LU0171310443", "N/A", "BlackRock World Healthscience Fund A2 USD", "BlackRock", "SICAV", "Active", 7800, 8.5, 5.2, 12.5, 3, "Bronze", 0.82),
-    createFund("IE00B6R52259", "ISAC", "iShares MSCI ACWI UCITS ETF", "iShares", "ETF", "Passive", 8500, 19.8, 10.2, 12.0, 4, "Silver", 0.20),
-    createFund("GB00B7W6PR65", "N/A", "Artemis US Select Fund I Acc GBP", "Artemis", "OEIC", "Active", 1500, 24.5, 12.8, 16.2, 4, "Silver", 0.79),
-    createFund("IE00BK5H8015", "WCLD", "WisdomTree Cloud Computing UCITS ETF", "WisdomTree", "ETF", "Passive", 850, 28.5, 2.5, 15.8, 3, "Neutral", 0.40),
-    createFund("GB00BD0GCQ41", "N/A", "Ninety One UK Alpha Fund A Acc", "Ninety One", "OEIC", "Active", 1200, 10.5, 5.8, 8.2, 3, "Bronze", 0.82),
-    createFund("IE00BF0M6N54", "JREG", "JPM Global Equity Multi-Factor UCITS ETF", "JPMorgan", "ETF", "Smart Beta", 2500, 18.5, 9.5, 11.8, 4, "Silver", 0.20)
+  const providers = ["Vanguard", "iShares", "Fidelity", "JPMorgan", "HSBC", "Invesco", "Amundi", "Xtrackers", "SPDR", "Legal & General", "Schroders", "BlackRock", "BNY Mellon", "Franklin Templeton", "PIMCO", "Aberdeen", "Artemis", "Baillie Gifford", "Jupiter", "M&G", "Ninety One", "Rathbone", "JOHCM", "Polar Capital", "Liontrust"];
+  
+  const categories = [
+    { name: "Global Large-Cap Blend Equity", assetClass: "Equity", benchmark: "MSCI World Index" },
+    { name: "Global Large-Cap Growth Equity", assetClass: "Equity", benchmark: "MSCI World Growth Index" },
+    { name: "Global Large-Cap Value Equity", assetClass: "Equity", benchmark: "MSCI World Value Index" },
+    { name: "US Large-Cap Blend Equity", assetClass: "Equity", benchmark: "S&P 500 Index" },
+    { name: "US Technology Equity", assetClass: "Equity", benchmark: "NASDAQ 100 Index" },
+    { name: "UK Large-Cap Equity", assetClass: "Equity", benchmark: "FTSE 100 Index" },
+    { name: "UK All-Cap Equity", assetClass: "Equity", benchmark: "FTSE All-Share Index" },
+    { name: "Europe Large-Cap Equity", assetClass: "Equity", benchmark: "MSCI Europe Index" },
+    { name: "Emerging Markets Equity", assetClass: "Equity", benchmark: "MSCI Emerging Markets Index" },
+    { name: "Japan Equity", assetClass: "Equity", benchmark: "TOPIX Index" },
+    { name: "Asia Pacific Equity", assetClass: "Equity", benchmark: "MSCI AC Asia Pacific Index" },
+    { name: "Global Small-Cap Equity", assetClass: "Equity", benchmark: "MSCI World Small Cap Index" },
+    { name: "Global High Dividend Yield Equity", assetClass: "Equity", benchmark: "MSCI World High Dividend Yield Index" },
+    { name: "Thematic - Clean Energy", assetClass: "Equity", benchmark: "S&P Global Clean Energy Index" },
+    { name: "Thematic - Healthcare", assetClass: "Equity", benchmark: "MSCI World Healthcare Index" },
+    { name: "Thematic - Technology", assetClass: "Equity", benchmark: "MSCI World IT Index" },
+    { name: "Global Government Bond", assetClass: "Fixed Income", benchmark: "Bloomberg Global Aggregate Govt Index" },
+    { name: "UK Government Bond", assetClass: "Fixed Income", benchmark: "FTSE Actuaries UK Gilts All Stocks Index" },
+    { name: "EUR Corporate Bond", assetClass: "Fixed Income", benchmark: "Bloomberg Euro Aggregate Corporate Index" },
+    { name: "Global High Yield Bond", assetClass: "Fixed Income", benchmark: "Bloomberg Global High Yield Index" },
+    { name: "Emerging Market Bond", assetClass: "Fixed Income", benchmark: "JPM EMBI Global Diversified Index" },
+    { name: "Multi-Asset Balanced", assetClass: "Multi-Asset", benchmark: "60/40 Global Equity/Bond" },
+    { name: "Multi-Asset Growth", assetClass: "Multi-Asset", benchmark: "80/20 Global Equity/Bond" },
+    { name: "Multi-Asset Income", assetClass: "Multi-Asset", benchmark: "40/60 Global Equity/Bond" },
+    { name: "Global Real Estate", assetClass: "Alternatives", benchmark: "FTSE EPRA Nareit Global Index" },
+    { name: "Commodities Broad", assetClass: "Commodity", benchmark: "Bloomberg Commodity Index" }
   ];
+
+  const fundNames = [
+    "Core", "Select", "Strategic", "Enhanced", "Prime", "Alpha", "Plus", "Focus", "Sustainable", "ESG", "SRI", "Climate", "Leaders", "Opportunities", "Income", "Growth", "Dividend", "Value", "Quality", "Momentum", "Multi-Factor", "Index", "Tracker", "Active", "Dynamic", "Flexible", "Adaptive", "Smart Beta", "Optimised", "Concentrated"
+  ];
+
+  const fundTypesArr: Array<'ETF' | 'OEIC' | 'SICAV'> = ["ETF", "OEIC", "SICAV"];
+  const structures: Array<'Active' | 'Passive' | 'Smart Beta'> = ["Active", "Passive", "Smart Beta"];
+  const analystRatings: Array<'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative'> = ["Gold", "Silver", "Bronze", "Neutral", "Negative"];
+  
+  const additionalFunds: CompleteFund[] = [];
+  
+  // Generate funds to reach 500 total
+  for (let i = 0; i < 475; i++) {
+    const provider = providers[i % providers.length];
+    const category = categories[i % categories.length];
+    const fundName = fundNames[i % fundNames.length];
+    const fundType = fundTypesArr[i % 3];
+    const structure = structures[i % 3];
+    
+    const domicile = fundType === "ETF" ? (i % 2 === 0 ? "Ireland" : "Luxembourg") : (i % 3 === 0 ? "UK" : i % 3 === 1 ? "Luxembourg" : "Ireland");
+    const isinPrefix = domicile === "Ireland" ? "IE" : domicile === "UK" ? "GB" : "LU";
+    const isin = `${isinPrefix}00${String(i + 1000).padStart(7, '0')}${String.fromCharCode(65 + (i % 26))}`;
+    
+    const baseReturn = category.assetClass === "Equity" ? 12 + Math.random() * 18 : category.assetClass === "Fixed Income" ? 2 + Math.random() * 6 : 6 + Math.random() * 10;
+    const return1Y = Math.round((baseReturn + (Math.random() - 0.5) * 10) * 10) / 10;
+    const return3Y = Math.round((baseReturn * 0.7 + (Math.random() - 0.5) * 5) * 10) / 10;
+    const return5Y = Math.round((baseReturn * 0.8 + (Math.random() - 0.5) * 4) * 10) / 10;
+    
+    const ocf = structure === "Passive" ? 0.05 + Math.random() * 0.20 : structure === "Smart Beta" ? 0.15 + Math.random() * 0.25 : 0.40 + Math.random() * 0.60;
+    const starRating = (Math.min(5, Math.max(1, Math.round(2.5 + Math.random() * 2.5)))) as 1|2|3|4|5;
+    const analystRating = analystRatings[Math.floor(Math.random() * 5)];
+    const aum = Math.round(200 + Math.random() * 30000);
+    
+    const fullName = `${provider} ${category.name.split(' ')[0]} ${fundName} ${fundType === "ETF" ? "UCITS ETF" : "Fund"}`;
+    
+    additionalFunds.push(createFund(isin, fundType === "ETF" ? isin.slice(0, 4) : "N/A", fullName, provider, fundType, structure, aum, return1Y, return3Y, return5Y, starRating, analystRating, Math.round(ocf * 100) / 100, category.name, category.assetClass, category.benchmark));
+  }
+  
   return additionalFunds;
 }
 
-function createFund(isin: string, ticker: string, name: string, provider: string, fundType: 'ETF' | 'OEIC' | 'SICAV', structure: 'Active' | 'Passive' | 'Smart Beta', aum: number, return1Y: number, return3Y: number, return5Y: number, starRating: 1|2|3|4|5, analystRating: 'Gold'|'Silver'|'Bronze'|'Neutral'|'Negative', ocf: number): CompleteFund {
+function createFund(isin: string, ticker: string, name: string, provider: string, fundType: 'ETF' | 'OEIC' | 'SICAV', structure: 'Active' | 'Passive' | 'Smart Beta', aum: number, return1Y: number, return3Y: number, return5Y: number, starRating: 1|2|3|4|5, analystRating: 'Gold'|'Silver'|'Bronze'|'Neutral'|'Negative', ocf: number, category: string = "Global Large-Cap Blend Equity", assetClass: string = "Equity", benchmark: string = "MSCI World Index"): CompleteFund {
+  const volatility = assetClass === "Equity" ? 12 + Math.random() * 8 : assetClass === "Fixed Income" ? 3 + Math.random() * 5 : 8 + Math.random() * 6;
+  
   return {
     isin,
     ticker: ticker === "N/A" ? undefined : ticker,
@@ -3241,113 +3285,121 @@ function createFund(isin: string, ticker: string, name: string, provider: string
     domicile: isin.startsWith("IE") ? "Ireland" : isin.startsWith("GB") ? "UK" : "Luxembourg",
     currency: fundType === "ETF" ? "USD" : "GBP",
     ucitsStatus: true,
-    launchDate: "2015-01-01",
-    shareClass: "Accumulating",
-    category: "Global Large-Cap Blend Equity",
-    subcategory: "Developed Markets",
-    assetClass: "Equity",
+    launchDate: `${2010 + Math.floor(Math.random() * 12)}-${String(1 + Math.floor(Math.random() * 12)).padStart(2, '0')}-01`,
+    shareClass: Math.random() > 0.3 ? "Accumulating" : "Income",
+    category,
+    subcategory: category,
+    assetClass: assetClass as "Equity" | "Fixed Income" | "Multi-Asset" | "Alternatives" | "Money Market" | "Commodity",
     aum,
     aumCurrency: "USD",
     status: "Open",
     performance: {
-      dailyNav: 100 + Math.random() * 50,
+      dailyNav: 80 + Math.random() * 120,
       navDate: "2024-12-27",
-      ytdReturn: return1Y * 0.85,
-      oneMonthReturn: return1Y * 0.08,
-      threeMonthReturn: return1Y * 0.25,
-      sixMonthReturn: return1Y * 0.55,
+      ytdReturn: Math.round(return1Y * 0.85 * 10) / 10,
+      oneMonthReturn: Math.round(return1Y * 0.08 * 10) / 10,
+      threeMonthReturn: Math.round(return1Y * 0.25 * 10) / 10,
+      sixMonthReturn: Math.round(return1Y * 0.55 * 10) / 10,
       oneYearReturn: return1Y,
       threeYearReturn: return3Y,
       fiveYearReturn: return5Y,
-      sinceInceptionReturn: return5Y * 0.9,
-      rollingOneYear: [return1Y, return1Y * 0.9, return1Y * 0.8, return1Y * 1.1, return1Y * 0.95],
-      rollingThreeYear: [return3Y, return3Y * 0.9, return3Y * 1.1, return3Y * 0.85, return3Y],
-      benchmarkName: "MSCI World Index",
-      benchmarkReturn1Y: return1Y - 0.5,
-      benchmarkReturn3Y: return3Y - 0.3,
-      benchmarkReturn5Y: return5Y - 0.2,
-      excessReturn1Y: 0.5,
-      excessReturn3Y: 0.3,
-      excessReturn5Y: 0.2,
-      quartileRank1Y: starRating >= 4 ? 1 : starRating === 3 ? 2 : 3,
-      quartileRank3Y: starRating >= 4 ? 2 : 3,
-      quartileRank5Y: starRating >= 4 ? 1 : 2
+      sinceInceptionReturn: Math.round(return5Y * 0.9 * 10) / 10,
+      rollingOneYear: [return1Y, return1Y * 0.9, return1Y * 0.8, return1Y * 1.1, return1Y * 0.95].map(v => Math.round(v * 10) / 10),
+      rollingThreeYear: [return3Y, return3Y * 0.9, return3Y * 1.1, return3Y * 0.85, return3Y].map(v => Math.round(v * 10) / 10),
+      benchmarkName: benchmark,
+      benchmarkReturn1Y: Math.round((return1Y - 0.5) * 10) / 10,
+      benchmarkReturn3Y: Math.round((return3Y - 0.3) * 10) / 10,
+      benchmarkReturn5Y: Math.round((return5Y - 0.2) * 10) / 10,
+      excessReturn1Y: Math.round((0.2 + Math.random() * 0.8) * 10) / 10,
+      excessReturn3Y: Math.round((0.1 + Math.random() * 0.5) * 10) / 10,
+      excessReturn5Y: Math.round((0.1 + Math.random() * 0.4) * 10) / 10,
+      quartileRank1Y: (starRating >= 4 ? 1 : starRating === 3 ? 2 : 3) as 1|2|3|4,
+      quartileRank3Y: (starRating >= 4 ? 2 : 3) as 1|2|3|4,
+      quartileRank5Y: (starRating >= 4 ? 1 : 2) as 1|2|3|4
     },
     risk: {
-      volatility1Y: 12 + Math.random() * 5,
-      volatility3Y: 14 + Math.random() * 4,
-      volatility5Y: 15 + Math.random() * 3,
-      sharpeRatio1Y: 0.8 + Math.random() * 1.2,
-      sharpeRatio3Y: 0.5 + Math.random() * 0.5,
-      sharpeRatio5Y: 0.6 + Math.random() * 0.4,
-      sortinoRatio1Y: 1.2 + Math.random() * 1.5,
-      sortinoRatio3Y: 0.7 + Math.random() * 0.6,
-      maxDrawdown: -(25 + Math.random() * 15),
+      volatility1Y: Math.round(volatility * 10) / 10,
+      volatility3Y: Math.round((volatility + Math.random() * 2) * 10) / 10,
+      volatility5Y: Math.round((volatility + Math.random() * 3) * 10) / 10,
+      sharpeRatio1Y: Math.round((0.5 + Math.random() * 1.5) * 100) / 100,
+      sharpeRatio3Y: Math.round((0.3 + Math.random() * 0.8) * 100) / 100,
+      sharpeRatio5Y: Math.round((0.4 + Math.random() * 0.7) * 100) / 100,
+      sortinoRatio1Y: Math.round((0.8 + Math.random() * 2) * 100) / 100,
+      sortinoRatio3Y: Math.round((0.5 + Math.random() * 1) * 100) / 100,
+      maxDrawdown: Math.round(-(15 + Math.random() * 25) * 10) / 10,
       maxDrawdownDate: "2020-03-23",
-      currentDrawdown: -(Math.random() * 5),
-      alpha3Y: Math.random() * 0.5,
-      beta3Y: 0.95 + Math.random() * 0.1,
-      rSquared: 0.95 + Math.random() * 0.05,
-      trackingError: Math.random() * 2,
-      informationRatio: Math.random() * 2,
-      downsideDeviation: 8 + Math.random() * 4,
-      downsideCaptureRatio: 95 + Math.random() * 10,
-      upsideCaptureRatio: 98 + Math.random() * 5,
-      srriRating: (Math.min(7, Math.max(1, Math.round(3 + Math.random() * 3)))) as 1|2|3|4|5|6|7
+      currentDrawdown: Math.round(-(Math.random() * 8) * 10) / 10,
+      alpha3Y: Math.round(Math.random() * 0.8 * 100) / 100,
+      beta3Y: Math.round((0.9 + Math.random() * 0.2) * 100) / 100,
+      rSquared: Math.round((0.92 + Math.random() * 0.08) * 1000) / 1000,
+      trackingError: Math.round(Math.random() * 3 * 100) / 100,
+      informationRatio: Math.round(Math.random() * 2 * 100) / 100,
+      downsideDeviation: Math.round((6 + Math.random() * 6) * 10) / 10,
+      downsideCaptureRatio: Math.round(90 + Math.random() * 15),
+      upsideCaptureRatio: Math.round(95 + Math.random() * 10),
+      srriRating: (Math.min(7, Math.max(1, Math.round(2 + Math.random() * 4)))) as 1|2|3|4|5|6|7
     },
     costs: {
       ocf,
-      amc: ocf * 0.9,
-      transactionCosts: ocf * 0.1,
+      amc: Math.round(ocf * 0.9 * 100) / 100,
+      transactionCosts: Math.round(ocf * 0.1 * 100) / 100,
       entryFee: 0,
       exitFee: 0,
-      totalCostOfOwnership: ocf * 1.05,
+      totalCostOfOwnership: Math.round(ocf * 1.05 * 100) / 100,
       platformDiscountAvailable: structure === "Active",
       ocfHistory: [{ date: "2024-01-01", ocf }]
     },
     exposure: {
       topHoldings: [
-        { name: "Apple Inc", isin: "US0378331005", weight: 4 + Math.random() * 3, sector: "Technology", country: "USA" },
-        { name: "Microsoft Corp", isin: "US5949181045", weight: 3.5 + Math.random() * 3, sector: "Technology", country: "USA" }
+        { name: "Apple Inc", isin: "US0378331005", weight: Math.round((3 + Math.random() * 4) * 10) / 10, sector: "Technology", country: "USA" },
+        { name: "Microsoft Corp", isin: "US5949181045", weight: Math.round((2.5 + Math.random() * 4) * 10) / 10, sector: "Technology", country: "USA" },
+        { name: "NVIDIA Corp", isin: "US67066G1040", weight: Math.round((2 + Math.random() * 3) * 10) / 10, sector: "Technology", country: "USA" }
       ],
-      numberOfHoldings: Math.round(100 + Math.random() * 2000),
-      top10Weight: 20 + Math.random() * 15,
-      sectorExposure: [{ sector: "Technology", weight: 25 + Math.random() * 10 }, { sector: "Financials", weight: 12 + Math.random() * 8 }],
-      regionExposure: [{ region: "North America", weight: 60 + Math.random() * 15 }, { region: "Europe", weight: 15 + Math.random() * 10 }],
-      assetClassExposure: [{ assetClass: "Equity", weight: 99 }],
-      currencyExposure: [{ currency: "USD", weight: 65 + Math.random() * 15 }],
-      esgRating: ["AAA", "AA", "A", "BBB"][Math.floor(Math.random() * 4)] as "AAA"|"AA"|"A"|"BBB",
-      carbonIntensity: 100 + Math.random() * 100,
-      sustainabilityScore: 18 + Math.random() * 8
+      numberOfHoldings: Math.round(50 + Math.random() * 2000),
+      top10Weight: Math.round((18 + Math.random() * 20) * 10) / 10,
+      sectorExposure: [
+        { sector: "Technology", weight: Math.round((20 + Math.random() * 15) * 10) / 10 },
+        { sector: "Financials", weight: Math.round((10 + Math.random() * 10) * 10) / 10 },
+        { sector: "Healthcare", weight: Math.round((8 + Math.random() * 8) * 10) / 10 }
+      ],
+      regionExposure: [
+        { region: "North America", weight: Math.round((55 + Math.random() * 20) * 10) / 10 },
+        { region: "Europe", weight: Math.round((15 + Math.random() * 15) * 10) / 10 }
+      ],
+      assetClassExposure: [{ assetClass: assetClass, weight: 99 }],
+      currencyExposure: [{ currency: "USD", weight: Math.round((60 + Math.random() * 20) * 10) / 10 }],
+      esgRating: ["AAA", "AA", "A", "BBB", "BB"][Math.floor(Math.random() * 5)] as "AAA"|"AA"|"A"|"BBB"|"BB",
+      carbonIntensity: Math.round(80 + Math.random() * 150),
+      sustainabilityScore: Math.round((16 + Math.random() * 12) * 10) / 10
     },
     classification: {
-      marketCapStyle: "Large",
-      valueGrowthStyle: "Blend",
-      riskBand: "Medium",
+      marketCapStyle: assetClass === "Equity" ? (["Large", "Mid", "Small"][Math.floor(Math.random() * 3)] as "Large"|"Mid"|"Small") : undefined,
+      valueGrowthStyle: assetClass === "Equity" ? (["Value", "Blend", "Growth"][Math.floor(Math.random() * 3)] as "Value"|"Blend"|"Growth") : undefined,
+      riskBand: (["Low", "Medium", "High"][Math.floor(Math.random() * 3)]) as "Low"|"Medium"|"High",
       liquidityBand: "Daily",
-      esgApproach: "Integration",
-      sfdcClassification: "Article 6"
+      esgApproach: (["Integration", "Exclusion", "Impact", "Best-in-Class"] as const)[Math.floor(Math.random() * 4)],
+      sfdcClassification: (["Article 6", "Article 8", "Article 9"] as const)[Math.floor(Math.random() * 3)]
     },
     benchmark: {
-      primaryBenchmark: "MSCI World Index",
-      primaryBenchmarkTicker: "MXWO",
-      peerGroup: "Global Large-Cap Blend Equity",
-      peerGroupSize: 250,
-      peerGroupRank: Math.round(10 + Math.random() * 100)
+      primaryBenchmark: benchmark,
+      primaryBenchmarkTicker: benchmark.split(' ')[0].toUpperCase(),
+      peerGroup: category,
+      peerGroupSize: Math.round(80 + Math.random() * 200),
+      peerGroupRank: Math.round(5 + Math.random() * 80)
     },
     ratings: {
       starRating,
       starRatingDate: "2024-12-15",
       analystRating,
       analystRatingDate: "2024-11-20",
-      analystRatingRationale: `${analystRating}-rated fund with ${structure.toLowerCase()} management approach.`,
-      categoryRank: Math.round(5 + Math.random() * 50),
-      styleBoxEquity: { size: 1, style: 2 },
-      peopleRating: starRating >= 4 ? "High" : starRating === 3 ? "Above Average" : "Average",
-      processRating: starRating >= 4 ? "High" : "Above Average",
-      parentRating: ["High", "Above Average", "Average"][Math.floor(Math.random() * 3)] as "High"|"Above Average"|"Average",
-      performanceRating: starRating >= 4 ? "High" : starRating === 3 ? "Above Average" : "Average",
-      priceRating: ocf <= 0.25 ? "High" : ocf <= 0.5 ? "Above Average" : "Average"
+      analystRatingRationale: `${analystRating}-rated ${structure.toLowerCase()} ${category.toLowerCase()} fund from ${provider}.`,
+      categoryRank: Math.round(3 + Math.random() * 60),
+      styleBoxEquity: assetClass === "Equity" ? { size: Math.ceil(Math.random() * 3) as 1|2|3, style: Math.ceil(Math.random() * 3) as 1|2|3 } : undefined,
+      peopleRating: (starRating >= 4 ? "High" : starRating === 3 ? "Above Average" : "Average") as "High"|"Above Average"|"Average"|"Below Average"|"Low",
+      processRating: (starRating >= 4 ? "High" : "Above Average") as "High"|"Above Average"|"Average"|"Below Average"|"Low",
+      parentRating: (["High", "Above Average", "Average"][Math.floor(Math.random() * 3)]) as "High"|"Above Average"|"Average"|"Below Average"|"Low",
+      performanceRating: (starRating >= 4 ? "High" : starRating === 3 ? "Above Average" : "Average") as "High"|"Above Average"|"Average"|"Below Average"|"Low",
+      priceRating: (ocf <= 0.25 ? "High" : ocf <= 0.5 ? "Above Average" : "Average") as "High"|"Above Average"|"Average"|"Below Average"|"Low"
     },
     aiInsights: [],
     lastUpdated: "2024-12-27T10:00:00Z"
