@@ -570,15 +570,21 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
           sectionDiv.style.top = `${Math.max(0, section.y)}px`;
           sectionDiv.style.width = `${Math.min(section.width, 714)}px`;
-          // Remove fixed height - let content determine height
-          sectionDiv.style.minHeight = `${section.height}px`;
+          // Calculate height based on content length
+          const contentLength = ((section.content || '') + (section.title || '')).toString().length;
+          const charsPerLine = Math.floor((section.width || 600) / 8);
+          const estimatedLines = Math.ceil(contentLength / charsPerLine);
+          const contentHeight = Math.max(section.height, estimatedLines * 24 + 60);
+          sectionDiv.style.minHeight = `${contentHeight}px`;
           sectionDiv.style.height = "auto";
           sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
           sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || "transparent";
           sectionDiv.style.padding = "16px";
           sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
+          sectionDiv.style.wordWrap = "break-word";
           sectionDiv.style.wordBreak = "break-word";
+          sectionDiv.style.overflowWrap = "break-word";
           sectionDiv.style.overflow = "visible";
           sectionDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
           sectionDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
@@ -748,34 +754,31 @@ ELITE DOCUMENT REQUIREMENTS:
         );
         await new Promise((resolve) => setTimeout(resolve, 150));
 
-        // Calculate actual content height by measuring rendered section elements
-        const sectionElements = Array.from(pageContainer.querySelectorAll('div[style*="position: absolute"]'));
-        let maxContentBottom = 1123;
-        
-        sectionElements.forEach((el) => {
-          const element = el as HTMLElement;
-          const top = parseInt(element.style.top) || 0;
-          const actualHeight = element.getBoundingClientRect().height || parseInt(element.style.minHeight) || 0;
-          maxContentBottom = Math.max(maxContentBottom, top + actualHeight + 60);
-        });
+        // Calculate content height from actual section data - don't rely on getBoundingClientRect for offscreen elements
+        // Calculate based on actual content length for text sections
+        const calculateSectionHeight = (s: any) => {
+          const contentLength = ((s.content || '') + (s.title || '')).toString().length;
+          const lineHeight = 24; // approximate pixels per line
+          const charsPerLine = Math.floor((s.width || 600) / 8); // approximate chars per line based on width
+          const estimatedLines = Math.ceil(contentLength / charsPerLine);
+          const contentHeight = estimatedLines * lineHeight + 60; // add padding
+          return Math.max(s.height || 100, contentHeight);
+        };
 
-        // Also check original section data for minimum heights
-        const dataContentBottom = Math.max(
-          1123,
-          ...pageSections.map((s: any) => {
-            // Estimate actual content height based on text length
-            const textLength = ((s.content || '') + (s.title || '')).length;
-            const estimatedHeight = Math.max(s.height || 0, Math.ceil(textLength / 50) * 24);
-            return (s.y || 0) + estimatedHeight + 60;
-          }),
+        const contentBottoms = [
+          1123, // minimum A4 height
+          ...pageSections.map((s: any) => (s.y || 0) + calculateSectionHeight(s)),
           ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0) + 20),
           ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0) + 20),
           ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0) + 20),
-        );
+        ];
 
-        const captureHeight = Math.ceil(Math.max(maxContentBottom, dataContentBottom, 1123));
+        const captureHeight = Math.ceil(Math.max(...contentBottoms));
         pageContainer.style.height = `${captureHeight}px`;
         pageContainer.style.minHeight = `${captureHeight}px`;
+        
+        // Force layout recalculation
+        pageContainer.offsetHeight;
 
         // Capture the page with html2canvas (full content), then scale to fit ONE A4 page
         const canvas = await html2canvas(pageContainer, {
