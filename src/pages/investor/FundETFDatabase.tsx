@@ -10,6 +10,8 @@ import { FundTable } from "@/components/fund-database/FundTable";
 import { FundDetailPanel } from "@/components/fund-database/FundDetailPanel";
 import { FundComparison } from "@/components/fund-database/FundComparison";
 import { AIFundInsights } from "@/components/fund-database/AIFundInsights";
+import { FundScreener } from "@/components/fund-database/FundScreener";
+import { FundWatchlist } from "@/components/fund-database/FundWatchlist";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
 
@@ -281,31 +283,11 @@ export default function FundETFDatabase() {
           </TabsContent>
 
           <TabsContent value="screener" className="mt-0">
-            <Card className="border-border/50">
-              <CardContent className="py-12 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-4">
-                  <BarChart3 className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Advanced Fund Screener</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Build custom screens using performance, risk, cost, and ESG criteria. Coming soon.
-                </p>
-              </CardContent>
-            </Card>
+            <FundScreener onViewFund={setViewingFund} onAddToComparison={handleAddToComparison} />
           </TabsContent>
 
           <TabsContent value="watchlist" className="mt-0">
-            <Card className="border-border/50">
-              <CardContent className="py-12 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-chart-2/20 to-chart-2/5 flex items-center justify-center mx-auto mb-4">
-                  <Bookmark className="h-8 w-8 text-chart-2" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Personal Watchlist</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Save and monitor your favorite funds with custom alerts and notes. Coming soon.
-                </p>
-              </CardContent>
-            </Card>
+            <FundWatchlist onViewFund={setViewingFund} />
           </TabsContent>
         </Tabs>
       </div>
