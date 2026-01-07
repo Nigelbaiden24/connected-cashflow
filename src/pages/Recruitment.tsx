@@ -19,7 +19,7 @@ import { RecruitmentHero } from "@/components/recruitment/RecruitmentHero";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import AboutUs from "./AboutUs";
+import Features from "./Features";
 
 export default function Recruitment() {
   const navigate = useNavigate();
@@ -151,7 +151,7 @@ export default function Recruitment() {
   ];
 
   if (currentSection === "about") {
-    return <AboutUs />;
+    return <Features />;
   }
 
   if (currentSection === "tech") {

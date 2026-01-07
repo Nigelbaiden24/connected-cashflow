@@ -87,7 +87,7 @@ import DocumentEditorPage from "./pages/DocumentEditorPage";
 import AutomationCenter from "./pages/AutomationCenter";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
-import AboutUs from "./pages/AboutUs";
+import Features from "./pages/Features";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Pricing from "./pages/Pricing";
@@ -131,7 +131,8 @@ const App = () => {
           <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
-          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/about-us" element={<Features />} />
+          <Route path="/features" element={<Features />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/pricing" element={<Pricing />} />
