@@ -767,9 +767,6 @@ ELITE DOCUMENT REQUIREMENTS:
         // Measure actual rendered height (to avoid missing/overlapping content from width/line-wrap differences)
         const A4_W_PX = 794; // A4 @ 96dpi
         const A4_H_PX = 1123;
-        const EXPORT_WIDTH_PX = 900;
-        const EXPORT_MIN_HEIGHT_PX = 1200;
-        const EXPORT_PADDING_PX = 32;
 
         const positionedChildren = Array.from(pageContainer.children).filter((el) => {
           const h = el as HTMLElement;
