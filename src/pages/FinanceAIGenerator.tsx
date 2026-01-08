@@ -527,18 +527,22 @@ ELITE DOCUMENT REQUIREMENTS:
           (sig) => sig.pageId === page.id || (!sig.pageId && page.id === "page-1")
         );
 
-      // Create a temporary container for this page
+        // Create a temporary container for this page (match generator canvas sizing)
+        const EXPORT_WIDTH_PX = 900;
+        const EXPORT_MIN_HEIGHT_PX = 1200;
+        const EXPORT_PADDING_PX = 32;
+
         const pageContainer = document.createElement("div");
         pageContainer.style.position = "fixed";
         pageContainer.style.left = "-9999px";
         pageContainer.style.top = "0";
-        pageContainer.style.width = "794px";
-        pageContainer.style.minHeight = "1123px";
+        pageContainer.style.width = `${EXPORT_WIDTH_PX}px`;
+        pageContainer.style.minHeight = `${EXPORT_MIN_HEIGHT_PX}px`;
         pageContainer.style.backgroundColor = backgroundColor || "#ffffff";
         pageContainer.style.fontFamily = fontFamily;
         pageContainer.style.fontSize = `${fontSize}px`;
         pageContainer.style.color = textColor || "#000000";
-        pageContainer.style.padding = "40px";
+        pageContainer.style.padding = `${EXPORT_PADDING_PX}px`;
         pageContainer.style.boxSizing = "border-box";
         pageContainer.style.overflow = "visible";
         pageContainer.style.zIndex = "-9999";
@@ -569,23 +573,17 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.position = "absolute";
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
           sectionDiv.style.top = `${Math.max(0, section.y)}px`;
-          sectionDiv.style.width = `${Math.min(section.width, 714)}px`;
-          // Calculate height based on content length
-          const contentLength = ((section.content || '') + (section.title || '')).toString().length;
-          const charsPerLine = Math.floor((section.width || 600) / 8);
-          const estimatedLines = Math.ceil(contentLength / charsPerLine);
-          const contentHeight = Math.max(section.height, estimatedLines * 24 + 60);
-          sectionDiv.style.minHeight = `${contentHeight}px`;
+          sectionDiv.style.width = `${Math.max(1, section.width)}px`;
+          // Match generator behavior: minHeight from stored height, then let content expand naturally
+          sectionDiv.style.minHeight = `${Math.max(1, section.height)}px`;
           sectionDiv.style.height = "auto";
           sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
           sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || "transparent";
           sectionDiv.style.padding = "16px";
           sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
-          sectionDiv.style.wordWrap = "break-word";
           sectionDiv.style.wordBreak = "break-word";
-          sectionDiv.style.overflowWrap = "break-word";
-          sectionDiv.style.overflow = "visible";
+          sectionDiv.style.overflowWrap = "anywhere";
           sectionDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
           sectionDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
 
@@ -598,7 +596,7 @@ ELITE DOCUMENT REQUIREMENTS:
             const headingSize = Math.max((section as any).fontSize || 28, 24);
             h2.style.fontSize = `${headingSize}px`;
             h2.style.fontWeight = "700";
-            h2.style.marginBottom = "16px";
+            h2.style.margin = "0 0 16px 0";
             h2.style.lineHeight = "1.3";
             h2.style.fontFamily = (section as any).fontFamily || fontFamily;
             h2.textContent = (section.content || section.title || "").toString();
@@ -616,25 +614,25 @@ ELITE DOCUMENT REQUIREMENTS:
             chartWrapper.style.flexDirection = "column";
             chartWrapper.style.alignItems = "center";
             chartWrapper.style.justifyContent = "flex-start";
-            
+
             // Try to find the rendered chart element - capture the entire group including title
             const sectionEl = document.querySelector(`[data-section-id="${section.id}"]`);
             // First try to capture the parent div that includes title + chart (the .relative.group container)
             const chartContainerWithTitle = sectionEl?.querySelector('.relative.group') || sectionEl;
             const existingChartEl = chartContainerWithTitle?.querySelector('.recharts-wrapper') ||
-                                   chartContainerWithTitle?.querySelector('.recharts-responsive-container') ||
-                                   chartContainerWithTitle?.querySelector('svg.recharts-surface')?.parentElement ||
-                                   chartContainerWithTitle?.querySelector('[class*="recharts"]');
+              chartContainerWithTitle?.querySelector('.recharts-responsive-container') ||
+              chartContainerWithTitle?.querySelector('svg.recharts-surface')?.parentElement ||
+              chartContainerWithTitle?.querySelector('[class*="recharts"]');
             if (existingChartEl) {
               try {
                 // Wait for animations to complete
-                await new Promise(resolve => setTimeout(resolve, 150));
-                
+                await new Promise((resolve) => setTimeout(resolve, 150));
+
                 // Try to capture the whole chart container (including title) first
-                const elementToCapture = (chartContainerWithTitle && chartContainerWithTitle !== sectionEl) 
-                  ? chartContainerWithTitle 
+                const elementToCapture = (chartContainerWithTitle && chartContainerWithTitle !== sectionEl)
+                  ? chartContainerWithTitle
                   : existingChartEl;
-                
+
                 const chartCanvas = await html2canvas(elementToCapture as HTMLElement, {
                   scale: 2,
                   useCORS: true,
@@ -663,22 +661,34 @@ ELITE DOCUMENT REQUIREMENTS:
               const h3 = document.createElement("h3");
               h3.style.fontSize = `${Math.max((section as any).fontSize || 16, 16) + 4}px`;
               h3.style.fontWeight = "600";
-              h3.style.marginBottom = "12px";
+              h3.style.margin = "0 0 12px 0";
               h3.style.fontFamily = (section as any).fontFamily || fontFamily;
               h3.textContent = section.title;
               sectionDiv.appendChild(h3);
             }
-            const contentDiv = document.createElement("div");
-            contentDiv.style.whiteSpace = "pre-wrap";
-            contentDiv.style.lineHeight = "1.7";
-            contentDiv.style.fontSize = `${(section as any).fontSize || 14}px`;
-            contentDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
-            contentDiv.style.overflow = "visible";
-            // Use innerHTML with proper escaping to preserve line breaks
+
             const contentText = (section.content || "").toString();
-            contentDiv.innerHTML = contentText.replace(/\n/g, '<br>');
-            sectionDiv.appendChild(contentDiv);
+
+            // Mirror DraggableSection: if it looks like HTML, render HTML; otherwise render as pre-wrapped text
+            if (contentText && (contentText.includes("<") || contentText.includes(">"))) {
+              const htmlDiv = document.createElement("div");
+              htmlDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
+              htmlDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
+              htmlDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
+              htmlDiv.innerHTML = contentText;
+              sectionDiv.appendChild(htmlDiv);
+            } else {
+              const p = document.createElement("p");
+              p.style.whiteSpace = "pre-wrap";
+              p.style.lineHeight = "1.5";
+              p.style.margin = "0";
+              p.style.fontFamily = (section as any).fontFamily || fontFamily;
+              p.style.fontSize = `${(section as any).fontSize || fontSize}px`;
+              p.textContent = contentText || section.title || "";
+              sectionDiv.appendChild(p);
+            }
           }
+
           pageContainer.appendChild(sectionDiv);
         }
 
@@ -754,41 +764,41 @@ ELITE DOCUMENT REQUIREMENTS:
         );
         await new Promise((resolve) => setTimeout(resolve, 150));
 
-        // Calculate content height from actual section data - don't rely on getBoundingClientRect for offscreen elements
-        // Calculate based on actual content length for text sections
-        const calculateSectionHeight = (s: any) => {
-          const contentLength = ((s.content || '') + (s.title || '')).toString().length;
-          const lineHeight = 24; // approximate pixels per line
-          const charsPerLine = Math.floor((s.width || 600) / 8); // approximate chars per line based on width
-          const estimatedLines = Math.ceil(contentLength / charsPerLine);
-          const contentHeight = estimatedLines * lineHeight + 60; // add padding
-          return Math.max(s.height || 100, contentHeight);
-        };
+        // Measure actual rendered height (to avoid missing/overlapping content from width/line-wrap differences)
+        const A4_W_PX = 794; // A4 @ 96dpi
+        const A4_H_PX = 1123;
+        const EXPORT_WIDTH_PX = 900;
+        const EXPORT_MIN_HEIGHT_PX = 1200;
+        const EXPORT_PADDING_PX = 32;
 
-        const contentBottoms = [
-          1123, // minimum A4 height
-          ...pageSections.map((s: any) => (s.y || 0) + calculateSectionHeight(s)),
-          ...pageImages.map((img: any) => (img.y || 0) + (img.height || 0) + 20),
-          ...pageShapes.map((sh: any) => (sh.y || 0) + (sh.height || 0) + 20),
-          ...pageSignatures.map((sig: any) => (sig.y || 0) + (sig.height || 0) + 20),
-        ];
+        const positionedChildren = Array.from(pageContainer.children).filter((el) => {
+          const h = el as HTMLElement;
+          return h?.style?.position === "absolute";
+        }) as HTMLElement[];
 
-        const captureHeight = Math.ceil(Math.max(...contentBottoms));
+        let maxContentBottom = EXPORT_MIN_HEIGHT_PX;
+        for (const el of positionedChildren) {
+          const top = Number.parseFloat(el.style.top || "0") || 0;
+          const height = el.offsetHeight || Number.parseFloat(el.style.height || "0") || Number.parseFloat(el.style.minHeight || "0") || 0;
+          maxContentBottom = Math.max(maxContentBottom, top + height + EXPORT_PADDING_PX);
+        }
+
+        const captureHeight = Math.ceil(Math.max(maxContentBottom, EXPORT_MIN_HEIGHT_PX));
         pageContainer.style.height = `${captureHeight}px`;
         pageContainer.style.minHeight = `${captureHeight}px`;
-        
+
         // Force layout recalculation
         pageContainer.offsetHeight;
 
-        // Capture the page with html2canvas (full content), then scale to fit ONE A4 page
+        // Capture the page with html2canvas
         const canvas = await html2canvas(pageContainer, {
           scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: backgroundColor || "#ffffff",
-          width: 794,
+          width: EXPORT_WIDTH_PX,
           height: captureHeight,
-          windowWidth: 794,
+          windowWidth: EXPORT_WIDTH_PX,
           windowHeight: captureHeight,
           logging: false,
         });
@@ -799,18 +809,18 @@ ELITE DOCUMENT REQUIREMENTS:
           pdf.addPage();
         }
 
-        // Calculate how many PDF pages we need for this canvas
-        const pdfPageHeightPx = 1123; // A4 at 96dpi
+        // Slice into A4 pages (in px) based on current export width, preserving aspect ratio
+        const pdfPageHeightPx = Math.round(EXPORT_WIDTH_PX * (A4_H_PX / A4_W_PX));
         const totalPdfPages = Math.ceil(captureHeight / pdfPageHeightPx);
 
         if (totalPdfPages <= 1) {
-          // Single page - fit to page
+          // Single page
           let renderW = pdfWidth;
           let renderH = (canvas.height / canvas.width) * renderW;
           if (renderH > pdfHeight) {
             const scale = pdfHeight / renderH;
             renderW = renderW * scale;
-            renderH = pdfHeight;
+            renderH = renderH * scale;
           }
           pdf.addImage(imgData, "JPEG", 0, 0, renderW, renderH);
         } else {
@@ -819,26 +829,32 @@ ELITE DOCUMENT REQUIREMENTS:
             if (pdfPageIdx > 0) {
               pdf.addPage();
             }
-            
-            // Create a slice of the canvas for this PDF page
+
             const sliceCanvas = document.createElement("canvas");
             const sliceCtx = sliceCanvas.getContext("2d");
             const sliceStartY = pdfPageIdx * pdfPageHeightPx * 2; // *2 because scale is 2
             const sliceHeight = Math.min(pdfPageHeightPx * 2, canvas.height - sliceStartY);
-            
+
             sliceCanvas.width = canvas.width;
             sliceCanvas.height = sliceHeight;
-            
+
             if (sliceCtx) {
               sliceCtx.drawImage(
                 canvas,
-                0, sliceStartY, canvas.width, sliceHeight,
-                0, 0, canvas.width, sliceHeight
+                0,
+                sliceStartY,
+                canvas.width,
+                sliceHeight,
+                0,
+                0,
+                canvas.width,
+                sliceHeight
               );
-              
+
               const sliceImgData = sliceCanvas.toDataURL("image/jpeg", 0.95);
-              const sliceRatio = sliceHeight / (pdfPageHeightPx * 2);
-              pdf.addImage(sliceImgData, "JPEG", 0, 0, pdfWidth, pdfHeight * sliceRatio);
+              const sliceRenderW = pdfWidth;
+              const sliceRenderH = (sliceCanvas.height / sliceCanvas.width) * sliceRenderW;
+              pdf.addImage(sliceImgData, "JPEG", 0, 0, sliceRenderW, sliceRenderH);
             }
           }
         }
