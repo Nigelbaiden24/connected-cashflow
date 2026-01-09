@@ -576,39 +576,55 @@ ELITE DOCUMENT REQUIREMENTS:
           sectionDiv.style.left = `${Math.max(0, section.x)}px`;
           sectionDiv.style.top = `${Math.max(0, section.y)}px`;
           sectionDiv.style.width = `${Math.max(1, section.width)}px`;
-          // Match generator behavior: minHeight from stored height, then let content expand naturally
+          // Match DraggableSection: the positioned box uses minHeight, but padding is inside
           sectionDiv.style.minHeight = `${Math.max(1, section.height)}px`;
-          sectionDiv.style.height = "auto";
-          sectionDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
-          sectionDiv.style.backgroundColor = (section as any).styling?.backgroundColor || "transparent";
-          sectionDiv.style.padding = "16px";
-          sectionDiv.style.borderRadius = "8px";
           sectionDiv.style.boxSizing = "border-box";
-          sectionDiv.style.wordBreak = "break-word";
-          sectionDiv.style.overflowWrap = "anywhere";
-          sectionDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
-          sectionDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
+
+          const sectionInner = document.createElement("div");
+          sectionInner.style.position = "relative";
+          sectionInner.style.width = "100%";
+          sectionInner.style.minHeight = `${Math.max(1, section.height)}px`;
+          sectionInner.style.boxSizing = "border-box";
+          sectionInner.style.padding = "16px";
+          sectionInner.style.borderRadius = "8px";
+          sectionInner.style.wordBreak = "break-word";
+          sectionInner.style.overflowWrap = "anywhere";
+
+          // Visual styling (keep similar to DraggableSection, but without affecting layout sizing)
+          sectionInner.style.backgroundColor = (section as any).styling?.backgroundColor || "rgba(255,255,255,0.5)";
 
           if ((section as any).styling?.borderStyle && (section as any).styling?.borderStyle !== "none") {
-            sectionDiv.style.border = `1px solid ${(section as any).styling?.borderColor || "#e5e7eb"}`;
+            sectionInner.style.border = `1px solid ${(section as any).styling?.borderColor || "#e5e7eb"}`;
           }
+
+          sectionDiv.appendChild(sectionInner);
+
+          const resolvedTextColor = (section as any).styling?.textColor || (section as any).textColor || textColor;
+          const resolvedFontFamily = (section as any).fontFamily || fontFamily;
+          const resolvedFontSize = (section as any).fontSize || fontSize;
 
           if (section.type === "heading") {
             const h2 = document.createElement("h2");
-            const headingSize = Math.max((section as any).fontSize || 28, 24);
+            const headingSize = Math.max(resolvedFontSize || 28, 24);
             h2.style.fontSize = `${headingSize}px`;
             h2.style.fontWeight = "700";
             h2.style.margin = "0 0 16px 0";
             h2.style.lineHeight = "1.3";
-            h2.style.fontFamily = (section as any).fontFamily || fontFamily;
+            h2.style.fontFamily = resolvedFontFamily;
+            h2.style.color = resolvedTextColor;
             h2.textContent = (section.content || section.title || "").toString();
-            sectionDiv.appendChild(h2);
+            sectionInner.appendChild(h2);
           } else if (section.type === "table") {
             const tableWrapper = document.createElement("div");
-            tableWrapper.innerHTML = `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background:#f5f5f5;font-weight:600}</style>${section.content || ""}`;
-            sectionDiv.appendChild(tableWrapper);
+            tableWrapper.style.color = resolvedTextColor;
+            tableWrapper.style.fontFamily = resolvedFontFamily;
+            tableWrapper.style.fontSize = `${resolvedFontSize}px`;
+            tableWrapper.innerHTML = section.content || "";
+            sectionInner.appendChild(tableWrapper);
           } else if (section.type === "chart") {
-            // For charts, capture the entire section including title
+            // Charts must honor the section's defined box height to avoid collapsing/overlap
+            sectionDiv.style.height = `${Math.max(1, section.height)}px`;
+
             const chartWrapper = document.createElement("div");
             chartWrapper.style.width = "100%";
             chartWrapper.style.height = "100%";
@@ -617,20 +633,18 @@ ELITE DOCUMENT REQUIREMENTS:
             chartWrapper.style.alignItems = "center";
             chartWrapper.style.justifyContent = "flex-start";
 
-            // Try to find the rendered chart element - capture the entire group including title
+            // Capture the rendered chart from the live editor (current page)
             const sectionEl = document.querySelector(`[data-section-id="${section.id}"]`);
-            // First try to capture the parent div that includes title + chart (the .relative.group container)
             const chartContainerWithTitle = sectionEl?.querySelector('.relative.group') || sectionEl;
             const existingChartEl = chartContainerWithTitle?.querySelector('.recharts-wrapper') ||
               chartContainerWithTitle?.querySelector('.recharts-responsive-container') ||
               chartContainerWithTitle?.querySelector('svg.recharts-surface')?.parentElement ||
               chartContainerWithTitle?.querySelector('[class*="recharts"]');
+
             if (existingChartEl) {
               try {
-                // Wait for animations to complete
                 await new Promise((resolve) => setTimeout(resolve, 150));
 
-                // Try to capture the whole chart container (including title) first
                 const elementToCapture = (chartContainerWithTitle && chartContainerWithTitle !== sectionEl)
                   ? chartContainerWithTitle
                   : existingChartEl;
@@ -643,6 +657,7 @@ ELITE DOCUMENT REQUIREMENTS:
                   logging: false,
                   foreignObjectRendering: false,
                 });
+
                 const chartImg = document.createElement("img");
                 chartImg.src = chartCanvas.toDataURL("image/png");
                 chartImg.style.maxWidth = "100%";
@@ -654,19 +669,20 @@ ELITE DOCUMENT REQUIREMENTS:
                 chartWrapper.innerHTML = "<p style='color:#666;text-align:center;'>Chart</p>";
               }
             } else {
-              // Fallback: show placeholder for chart
               chartWrapper.innerHTML = "<p style='color:#666;text-align:center;padding:20px;'>Chart visualization</p>";
             }
-            sectionDiv.appendChild(chartWrapper);
+
+            sectionInner.appendChild(chartWrapper);
           } else {
             if (section.title) {
               const h3 = document.createElement("h3");
-              h3.style.fontSize = `${Math.max((section as any).fontSize || 16, 16) + 4}px`;
+              h3.style.fontSize = `${Math.max(resolvedFontSize || 16, 16) + 4}px`;
               h3.style.fontWeight = "600";
               h3.style.margin = "0 0 12px 0";
-              h3.style.fontFamily = (section as any).fontFamily || fontFamily;
+              h3.style.fontFamily = resolvedFontFamily;
+              h3.style.color = resolvedTextColor;
               h3.textContent = section.title;
-              sectionDiv.appendChild(h3);
+              sectionInner.appendChild(h3);
             }
 
             const contentText = (section.content || "").toString();
@@ -674,20 +690,21 @@ ELITE DOCUMENT REQUIREMENTS:
             // Mirror DraggableSection: if it looks like HTML, render HTML; otherwise render as pre-wrapped text
             if (contentText && (contentText.includes("<") || contentText.includes(">"))) {
               const htmlDiv = document.createElement("div");
-              htmlDiv.style.fontFamily = (section as any).fontFamily || fontFamily;
-              htmlDiv.style.fontSize = `${(section as any).fontSize || fontSize}px`;
-              htmlDiv.style.color = (section as any).styling?.textColor || (section as any).textColor || textColor;
+              htmlDiv.style.fontFamily = resolvedFontFamily;
+              htmlDiv.style.fontSize = `${resolvedFontSize}px`;
+              htmlDiv.style.color = resolvedTextColor;
               htmlDiv.innerHTML = contentText;
-              sectionDiv.appendChild(htmlDiv);
+              sectionInner.appendChild(htmlDiv);
             } else {
               const p = document.createElement("p");
               p.style.whiteSpace = "pre-wrap";
               p.style.lineHeight = "1.5";
               p.style.margin = "0";
-              p.style.fontFamily = (section as any).fontFamily || fontFamily;
-              p.style.fontSize = `${(section as any).fontSize || fontSize}px`;
+              p.style.fontFamily = resolvedFontFamily;
+              p.style.fontSize = `${resolvedFontSize}px`;
+              p.style.color = resolvedTextColor;
               p.textContent = contentText || section.title || "";
-              sectionDiv.appendChild(p);
+              sectionInner.appendChild(p);
             }
           }
 
