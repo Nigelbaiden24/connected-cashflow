@@ -463,6 +463,11 @@ ELITE DOCUMENT REQUIREMENTS:
       const pdfHeight = 297;
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
+      // Export canvas sizing (must match generator canvas behavior)
+      const EXPORT_WIDTH_PX = 900;
+      const EXPORT_MIN_HEIGHT_PX = 1200;
+      const EXPORT_PADDING_PX = 32;
+
       const createShapeElement = (shape: any) => {
         const el = document.createElement("div");
         el.style.position = "absolute";
@@ -528,9 +533,6 @@ ELITE DOCUMENT REQUIREMENTS:
         );
 
         // Create a temporary container for this page (match generator canvas sizing)
-        const EXPORT_WIDTH_PX = 900;
-        const EXPORT_MIN_HEIGHT_PX = 1200;
-        const EXPORT_PADDING_PX = 32;
 
         const pageContainer = document.createElement("div");
         pageContainer.style.position = "fixed";
