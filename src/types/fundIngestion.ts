@@ -39,6 +39,15 @@ export interface IngestibleFund {
   fundManager: string;
   managementCompany: string;
   
+  // FUND CATEGORY (for distinguishing property funds)
+  fundCategory?: 'standard' | 'property';
+  subcategory?: string;
+  assetClass?: string;
+  aum?: number;
+  ocf?: number;
+  benchmark?: string;
+  distributionPolicy?: string;
+  
   // BASIC PERFORMANCE (MANDATORY)
   latestNav: number;
   navDate: string; // YYYY-MM-DD
