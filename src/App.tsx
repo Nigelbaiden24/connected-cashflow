@@ -41,6 +41,7 @@ import FinanceWatchlists from "./pages/finance/Watchlists";
 import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
 import FundETFDatabase from "./pages/finance/FundETFDatabase";
 import StocksCryptoDatabase from "./pages/StocksCryptoDatabase";
+import RealTimeMarketDatabase from "./pages/RealTimeMarketDatabase";
 import InvestorFundETFDatabase from "./pages/investor/FundETFDatabase";
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
@@ -404,6 +405,13 @@ const App = () => {
               )
             } />
             <Route path="/finance/stocks-crypto" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <RealTimeMarketDatabase />
+                </FinanceLayout>
+              )
+            } />
+            <Route path="/finance/stocks-crypto-admin" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
                   <StocksCryptoDatabase />
