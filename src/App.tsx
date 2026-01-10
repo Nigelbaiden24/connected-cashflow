@@ -40,6 +40,7 @@ import FinanceAIAnalyst from "./pages/finance/AIAnalyst";
 import FinanceWatchlists from "./pages/finance/Watchlists";
 import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
 import FundETFDatabase from "./pages/finance/FundETFDatabase";
+import StocksCryptoDatabase from "./pages/StocksCryptoDatabase";
 import InvestorFundETFDatabase from "./pages/investor/FundETFDatabase";
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
@@ -402,6 +403,13 @@ const App = () => {
                 </FinanceLayout>
               )
             } />
+            <Route path="/finance/stocks-crypto" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <StocksCryptoDatabase />
+                </FinanceLayout>
+              )
+            } />
             
             <Route path="/finance/languages" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
@@ -552,6 +560,9 @@ const App = () => {
             } />
             <Route path="/investor/opportunities" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityIntelligence /></InvestorLayout>
+            } />
+            <Route path="/investor/stocks-crypto" element={
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><StocksCryptoDatabase /></InvestorLayout>
             } />
             
             <Route path="/admin/login" element={<AdminLogin />} />

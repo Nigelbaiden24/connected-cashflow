@@ -4715,6 +4715,159 @@ export type Database = {
         }
         Relationships: []
       }
+      stocks_crypto: {
+        Row: {
+          all_time_high: number | null
+          all_time_low: number | null
+          analyst_rating: string | null
+          asset_type: string
+          beta: number | null
+          blockchain: string | null
+          circulating_supply: number | null
+          consensus_mechanism: string | null
+          created_at: string
+          created_by: string | null
+          current_price: number | null
+          description: string | null
+          dividend_yield: number | null
+          eps: number | null
+          exchange: string | null
+          fifty_two_week_high: number | null
+          fifty_two_week_low: number | null
+          id: string
+          industry: string | null
+          investment_thesis: string | null
+          is_featured: boolean | null
+          key_watchpoints: string | null
+          last_updated_by: string | null
+          launch_date: string | null
+          logo_url: string | null
+          market_cap: number | null
+          name: string
+          overall_score: number | null
+          pe_ratio: number | null
+          price_change_1y: number | null
+          price_change_24h: number | null
+          price_change_30d: number | null
+          price_change_7d: number | null
+          price_currency: string | null
+          rating_rationale: string | null
+          risks: string | null
+          score_fundamentals: number | null
+          score_momentum: number | null
+          score_risk: number | null
+          score_technicals: number | null
+          sector: string | null
+          status: string | null
+          strengths: string | null
+          suitable_investor_type: string | null
+          symbol: string
+          total_supply: number | null
+          updated_at: string
+          volume_24h: number | null
+        }
+        Insert: {
+          all_time_high?: number | null
+          all_time_low?: number | null
+          analyst_rating?: string | null
+          asset_type: string
+          beta?: number | null
+          blockchain?: string | null
+          circulating_supply?: number | null
+          consensus_mechanism?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_price?: number | null
+          description?: string | null
+          dividend_yield?: number | null
+          eps?: number | null
+          exchange?: string | null
+          fifty_two_week_high?: number | null
+          fifty_two_week_low?: number | null
+          id?: string
+          industry?: string | null
+          investment_thesis?: string | null
+          is_featured?: boolean | null
+          key_watchpoints?: string | null
+          last_updated_by?: string | null
+          launch_date?: string | null
+          logo_url?: string | null
+          market_cap?: number | null
+          name: string
+          overall_score?: number | null
+          pe_ratio?: number | null
+          price_change_1y?: number | null
+          price_change_24h?: number | null
+          price_change_30d?: number | null
+          price_change_7d?: number | null
+          price_currency?: string | null
+          rating_rationale?: string | null
+          risks?: string | null
+          score_fundamentals?: number | null
+          score_momentum?: number | null
+          score_risk?: number | null
+          score_technicals?: number | null
+          sector?: string | null
+          status?: string | null
+          strengths?: string | null
+          suitable_investor_type?: string | null
+          symbol: string
+          total_supply?: number | null
+          updated_at?: string
+          volume_24h?: number | null
+        }
+        Update: {
+          all_time_high?: number | null
+          all_time_low?: number | null
+          analyst_rating?: string | null
+          asset_type?: string
+          beta?: number | null
+          blockchain?: string | null
+          circulating_supply?: number | null
+          consensus_mechanism?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_price?: number | null
+          description?: string | null
+          dividend_yield?: number | null
+          eps?: number | null
+          exchange?: string | null
+          fifty_two_week_high?: number | null
+          fifty_two_week_low?: number | null
+          id?: string
+          industry?: string | null
+          investment_thesis?: string | null
+          is_featured?: boolean | null
+          key_watchpoints?: string | null
+          last_updated_by?: string | null
+          launch_date?: string | null
+          logo_url?: string | null
+          market_cap?: number | null
+          name?: string
+          overall_score?: number | null
+          pe_ratio?: number | null
+          price_change_1y?: number | null
+          price_change_24h?: number | null
+          price_change_30d?: number | null
+          price_change_7d?: number | null
+          price_currency?: string | null
+          rating_rationale?: string | null
+          risks?: string | null
+          score_fundamentals?: number | null
+          score_momentum?: number | null
+          score_risk?: number | null
+          score_technicals?: number | null
+          sector?: string | null
+          status?: string | null
+          strengths?: string | null
+          suitable_investor_type?: string | null
+          symbol?: string
+          total_supply?: number | null
+          updated_at?: string
+          volume_24h?: number | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null

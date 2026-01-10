@@ -95,6 +95,11 @@ const investorItems = [
     icon: Database,
   },
   { 
+    title: "Stocks & Crypto", 
+    url: "/investor/stocks-crypto", 
+    icon: TrendingUp,
+  },
+  { 
     title: "AI Analyst", 
     url: "/investor/ai-analyst", 
     icon: Brain,

@@ -128,6 +128,11 @@ const researchToolsItems = [
     icon: BarChart3,
   },
   {
+    title: "Stocks & Crypto",
+    url: "/finance/stocks-crypto",
+    icon: TrendingUp,
+  },
+  {
     title: "Opportunity Intelligence",
     url: "/finance/opportunities",
     icon: Lightbulb,

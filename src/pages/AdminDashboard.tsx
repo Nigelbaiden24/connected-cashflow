@@ -10,8 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin } from "lucide-react";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
+import { StocksCryptoAdmin } from "@/components/admin/StocksCryptoAdmin";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -690,6 +691,13 @@ export default function AdminDashboard() {
               >
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Opportunities
+              </TabsTrigger>
+              <TabsTrigger 
+                value="stocks-crypto"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/90 data-[state=active]:to-cyan-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-cyan-500/30 transition-all hover:bg-white/5"
+              >
+                <Bitcoin className="h-4 w-4 mr-2" />
+                Stocks & Crypto
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1421,6 +1429,11 @@ export default function AdminDashboard() {
               <OpportunityUpload />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Stocks & Crypto Admin Tab */}
+        <TabsContent value="stocks-crypto">
+          <StocksCryptoAdmin />
         </TabsContent>
       </Tabs>
       </div>
