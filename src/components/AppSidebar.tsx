@@ -55,6 +55,7 @@ import {
   FolderKanban,
   Zap,
   Globe,
+  Lightbulb,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -125,6 +126,11 @@ const researchToolsItems = [
     title: "Fund & ETF Database",
     url: "/finance/fund-database",
     icon: BarChart3,
+  },
+  {
+    title: "Opportunity Intelligence",
+    url: "/finance/opportunities",
+    icon: Lightbulb,
   },
 ];
 
