@@ -189,7 +189,7 @@ export interface FundRatings {
   starRating?: 1 | 2 | 3 | 4 | 5;
   starRatingDate?: string;
   
-  // Analyst Rating - Forward-looking qualitative assessment
+  // Forward-Looking Analyst Rating (Medalist Rating)
   analystRating?: 'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative';
   analystRatingDate?: string;
   analystRatingRationale?: string;
@@ -208,16 +208,31 @@ export interface FundRatings {
     sensitivity: 1 | 2 | 3; // 1=Limited, 2=Moderate, 3=Extensive
   };
   
-  // Admin-assigned quality metrics
+  // Analyst Conviction Scores (0-5 numeric sliders)
+  peopleScore?: number; // 0-5
+  processScore?: number; // 0-5
+  parentScore?: number; // 0-5
+  priceScore?: number; // 0-5
+  overallConvictionScore?: number; // Auto-calculated average
+  
+  // Legacy pillar ratings (text-based, kept for backwards compatibility)
   peopleRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
   processRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
   parentRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
   performanceRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
   priceRating?: 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
   
+  // Analyst Written Commentary
+  investmentThesis?: string;
+  strengths?: string;
+  risks?: string;
+  suitableInvestorType?: string;
+  keyWatchpoints?: string;
+  
   // Last rated by admin
   ratedBy?: string;
   ratedAt?: string;
+  lastAnalystReviewDate?: string;
 }
 
 export interface AIInsight {

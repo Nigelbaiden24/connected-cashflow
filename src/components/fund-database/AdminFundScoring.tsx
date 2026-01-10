@@ -18,11 +18,12 @@ import {
   Award,
   Save,
   X,
-  CheckCircle,
-  AlertCircle
 } from "lucide-react";
 import type { CompleteFund, FundRatings } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
+
+// Re-export the new comprehensive panel
+export { AdminFundScoringPanel } from "./AdminFundScoringPanel";
 
 interface AdminFundScoringProps {
   fund: CompleteFund;
@@ -33,6 +34,9 @@ interface AdminFundScoringProps {
 type AnalystRating = 'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative';
 type PillarRating = 'High' | 'Above Average' | 'Average' | 'Below Average' | 'Low';
 
+/**
+ * @deprecated Use AdminFundScoringPanel for the full analyst backend experience
+ */
 export function AdminFundScoring({ fund, onSave, onClose }: AdminFundScoringProps) {
   const { toast } = useToast();
   const existingRatings = fund.ratings || {};
@@ -60,6 +64,7 @@ export function AdminFundScoring({ fund, onSave, onClose }: AdminFundScoringProp
       priceRating,
       ratedBy: 'Admin',
       ratedAt: new Date().toISOString(),
+      lastAnalystReviewDate: new Date().toISOString(),
       categoryRank: existingRatings.categoryRank,
       styleBoxEquity: existingRatings.styleBoxEquity,
       styleBoxFixedIncome: existingRatings.styleBoxFixedIncome
@@ -162,7 +167,7 @@ export function AdminFundScoring({ fund, onSave, onClose }: AdminFundScoringProp
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-primary" />
-              <Label className="text-sm font-semibold">Analyst Rating</Label>
+              <Label className="text-sm font-semibold">Forward-Looking Analyst Rating</Label>
             </div>
             <p className="text-xs text-muted-foreground">
               Forward-looking assessment of the fund's ability to outperform peers
