@@ -30,7 +30,7 @@ import type { FundRatings } from "@/types/fund";
 import type { IngestibleFund } from "@/types/fundIngestion";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { allFunds } from "@/data/funds";
+import { allFunds, propertyFunds } from "@/data/funds";
 
 type AnalystRating = 'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative';
 
@@ -43,6 +43,7 @@ export function FundScoringAdmin() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFund, setSelectedFund] = useState<AdminFund | null>(null);
+  const [fundCategoryFilter, setFundCategoryFilter] = useState<'all' | 'standard' | 'property'>('all');
   
   // Forward-Looking Medalist Rating
   const [analystRating, setAnalystRating] = useState<AnalystRating>('Neutral');
@@ -60,17 +61,27 @@ export function FundScoringAdmin() {
   const [suitableInvestorType, setSuitableInvestorType] = useState('');
   const [keyWatchpoints, setKeyWatchpoints] = useState('');
 
-  // Filter funds based on search
+  // Filter funds based on search and category
   const filteredFunds = useMemo(() => {
-    const fundsWithRatings: AdminFund[] = allFunds.map(f => ({ ...f, ratings: undefined }));
-    if (!searchQuery) return fundsWithRatings.slice(0, 20);
+    let fundsToFilter = allFunds;
+    
+    // Filter by category first
+    if (fundCategoryFilter === 'property') {
+      fundsToFilter = allFunds.filter(f => f.fundCategory === 'property');
+    } else if (fundCategoryFilter === 'standard') {
+      fundsToFilter = allFunds.filter(f => f.fundCategory !== 'property');
+    }
+    
+    const fundsWithRatings: AdminFund[] = fundsToFilter.map(f => ({ ...f, ratings: undefined }));
+    if (!searchQuery) return fundsWithRatings.slice(0, 30);
     const query = searchQuery.toLowerCase();
     return fundsWithRatings.filter(f => 
       f.fundName.toLowerCase().includes(query) || 
       f.isin.toLowerCase().includes(query) ||
-      f.managementCompany.toLowerCase().includes(query)
-    ).slice(0, 20);
-  }, [searchQuery]);
+      f.managementCompany.toLowerCase().includes(query) ||
+      (f.subcategory?.toLowerCase().includes(query))
+    ).slice(0, 30);
+  }, [searchQuery, fundCategoryFilter]);
 
   // Auto-calculate overall conviction score
   const overallConvictionScore = useMemo(() => {
@@ -164,6 +175,34 @@ export function FundScoringAdmin() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
+          {/* Category Filter */}
+          <div className="flex gap-1 p-1 bg-zinc-900 rounded-lg">
+            <Button
+              size="sm"
+              variant={fundCategoryFilter === 'all' ? 'default' : 'ghost'}
+              onClick={() => setFundCategoryFilter('all')}
+              className={`flex-1 text-xs ${fundCategoryFilter === 'all' ? 'bg-amber-600' : 'text-zinc-400'}`}
+            >
+              All
+            </Button>
+            <Button
+              size="sm"
+              variant={fundCategoryFilter === 'standard' ? 'default' : 'ghost'}
+              onClick={() => setFundCategoryFilter('standard')}
+              className={`flex-1 text-xs ${fundCategoryFilter === 'standard' ? 'bg-blue-600' : 'text-zinc-400'}`}
+            >
+              Standard
+            </Button>
+            <Button
+              size="sm"
+              variant={fundCategoryFilter === 'property' ? 'default' : 'ghost'}
+              onClick={() => setFundCategoryFilter('property')}
+              className={`flex-1 text-xs ${fundCategoryFilter === 'property' ? 'bg-emerald-600' : 'text-zinc-400'}`}
+            >
+              Property
+            </Button>
+          </div>
+          
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
             <Input
@@ -174,7 +213,7 @@ export function FundScoringAdmin() {
             />
           </div>
           
-          <ScrollArea className="h-[500px]">
+          <ScrollArea className="h-[450px]">
             <div className="space-y-2">
               {filteredFunds.map((fund) => (
                 <div
@@ -186,8 +225,18 @@ export function FundScoringAdmin() {
                       : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800/50'
                   }`}
                 >
-                  <p className="font-medium text-sm text-white line-clamp-1">{fund.fundName}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm text-white line-clamp-1">{fund.fundName}</p>
+                    {fund.fundCategory === 'property' && (
+                      <Badge className="text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                        Property
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-zinc-400">{fund.isin} • {fund.managementCompany}</p>
+                  {fund.subcategory && (
+                    <p className="text-xs text-zinc-500 mt-1">{fund.subcategory}</p>
+                  )}
                   {fund.ratings?.analystRating && (
                     <Badge className={`mt-2 text-xs ${getAnalystBadgeStyle(fund.ratings.analystRating)}`}>
                       {fund.ratings.analystRating}
