@@ -3377,6 +3377,8 @@ export type Database = {
       }
       opportunity_products: {
         Row: {
+          age_condition_commentary: string | null
+          age_condition_score: number | null
           analyst_rating: string | null
           annual_revenue: number | null
           authenticity_verified: boolean | null
@@ -3384,6 +3386,8 @@ export type Database = {
           bedrooms: number | null
           business_stage: string | null
           category: string
+          complexity_commentary: string | null
+          complexity_score: number | null
           condition: string | null
           country: string | null
           created_at: string
@@ -3393,13 +3397,18 @@ export type Database = {
           founding_year: number | null
           full_description: string | null
           gallery_images: string[] | null
+          geographic_regulatory_commentary: string | null
+          geographic_regulatory_score: number | null
           id: string
           industry: string | null
           investment_thesis: string | null
           key_watchpoints: string | null
           last_analyst_review_date: string | null
+          liquidity_commentary: string | null
           liquidity_score: number | null
           location: string | null
+          market_sentiment_commentary: string | null
+          market_sentiment_score: number | null
           overall_conviction_score: number | null
           price: number | null
           price_currency: string | null
@@ -3408,6 +3417,7 @@ export type Database = {
           provenance: string | null
           quality_score: number | null
           rental_yield: number | null
+          risk_commentary: string | null
           risk_score: number | null
           risks: string | null
           short_description: string | null
@@ -3418,12 +3428,16 @@ export type Database = {
           suitable_investor_type: string | null
           thumbnail_url: string | null
           title: string
+          transparency_commentary: string | null
+          transparency_score: number | null
           updated_at: string
           uploaded_by: string | null
           value_score: number | null
           year_built: number | null
         }
         Insert: {
+          age_condition_commentary?: string | null
+          age_condition_score?: number | null
           analyst_rating?: string | null
           annual_revenue?: number | null
           authenticity_verified?: boolean | null
@@ -3431,6 +3445,8 @@ export type Database = {
           bedrooms?: number | null
           business_stage?: string | null
           category: string
+          complexity_commentary?: string | null
+          complexity_score?: number | null
           condition?: string | null
           country?: string | null
           created_at?: string
@@ -3440,13 +3456,18 @@ export type Database = {
           founding_year?: number | null
           full_description?: string | null
           gallery_images?: string[] | null
+          geographic_regulatory_commentary?: string | null
+          geographic_regulatory_score?: number | null
           id?: string
           industry?: string | null
           investment_thesis?: string | null
           key_watchpoints?: string | null
           last_analyst_review_date?: string | null
+          liquidity_commentary?: string | null
           liquidity_score?: number | null
           location?: string | null
+          market_sentiment_commentary?: string | null
+          market_sentiment_score?: number | null
           overall_conviction_score?: number | null
           price?: number | null
           price_currency?: string | null
@@ -3455,6 +3476,7 @@ export type Database = {
           provenance?: string | null
           quality_score?: number | null
           rental_yield?: number | null
+          risk_commentary?: string | null
           risk_score?: number | null
           risks?: string | null
           short_description?: string | null
@@ -3465,12 +3487,16 @@ export type Database = {
           suitable_investor_type?: string | null
           thumbnail_url?: string | null
           title: string
+          transparency_commentary?: string | null
+          transparency_score?: number | null
           updated_at?: string
           uploaded_by?: string | null
           value_score?: number | null
           year_built?: number | null
         }
         Update: {
+          age_condition_commentary?: string | null
+          age_condition_score?: number | null
           analyst_rating?: string | null
           annual_revenue?: number | null
           authenticity_verified?: boolean | null
@@ -3478,6 +3504,8 @@ export type Database = {
           bedrooms?: number | null
           business_stage?: string | null
           category?: string
+          complexity_commentary?: string | null
+          complexity_score?: number | null
           condition?: string | null
           country?: string | null
           created_at?: string
@@ -3487,13 +3515,18 @@ export type Database = {
           founding_year?: number | null
           full_description?: string | null
           gallery_images?: string[] | null
+          geographic_regulatory_commentary?: string | null
+          geographic_regulatory_score?: number | null
           id?: string
           industry?: string | null
           investment_thesis?: string | null
           key_watchpoints?: string | null
           last_analyst_review_date?: string | null
+          liquidity_commentary?: string | null
           liquidity_score?: number | null
           location?: string | null
+          market_sentiment_commentary?: string | null
+          market_sentiment_score?: number | null
           overall_conviction_score?: number | null
           price?: number | null
           price_currency?: string | null
@@ -3502,6 +3535,7 @@ export type Database = {
           provenance?: string | null
           quality_score?: number | null
           rental_yield?: number | null
+          risk_commentary?: string | null
           risk_score?: number | null
           risks?: string | null
           short_description?: string | null
@@ -3512,6 +3546,8 @@ export type Database = {
           suitable_investor_type?: string | null
           thumbnail_url?: string | null
           title?: string
+          transparency_commentary?: string | null
+          transparency_score?: number | null
           updated_at?: string
           uploaded_by?: string | null
           value_score?: number | null
