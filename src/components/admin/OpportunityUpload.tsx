@@ -61,6 +61,11 @@ interface OpportunityForm {
   value_score: number;
   liquidity_score: number;
   risk_score: number;
+  transparency_score: number;
+  complexity_score: number;
+  market_sentiment_score: number;
+  age_condition_score: number;
+  geographic_regulatory_score: number;
   
   // Commentary
   investment_thesis: string;
@@ -68,6 +73,15 @@ interface OpportunityForm {
   risks: string;
   suitable_investor_type: string;
   key_watchpoints: string;
+  
+  // Dimension-specific commentary
+  liquidity_commentary: string;
+  transparency_commentary: string;
+  risk_commentary: string;
+  complexity_commentary: string;
+  market_sentiment_commentary: string;
+  age_condition_commentary: string;
+  geographic_regulatory_commentary: string;
   
   // Real Estate specific
   property_type: string;
@@ -110,11 +124,23 @@ const initialForm: OpportunityForm = {
   value_score: 3,
   liquidity_score: 3,
   risk_score: 3,
+  transparency_score: 3,
+  complexity_score: 3,
+  market_sentiment_score: 3,
+  age_condition_score: 3,
+  geographic_regulatory_score: 3,
   investment_thesis: "",
   strengths: "",
   risks: "",
   suitable_investor_type: "",
   key_watchpoints: "",
+  liquidity_commentary: "",
+  transparency_commentary: "",
+  risk_commentary: "",
+  complexity_commentary: "",
+  market_sentiment_commentary: "",
+  age_condition_commentary: "",
+  geographic_regulatory_commentary: "",
   property_type: "",
   bedrooms: "",
   bathrooms: "",
@@ -140,7 +166,7 @@ export function OpportunityUpload() {
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
-  const overallScore = ((form.quality_score + form.value_score + form.liquidity_score + form.risk_score) / 4).toFixed(1);
+  const overallScore = ((form.quality_score + form.value_score + form.liquidity_score + form.risk_score + form.transparency_score + form.complexity_score + form.market_sentiment_score + form.age_condition_score + form.geographic_regulatory_score) / 9).toFixed(1);
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -202,12 +228,24 @@ export function OpportunityUpload() {
         value_score: form.value_score,
         liquidity_score: form.liquidity_score,
         risk_score: form.risk_score,
+        transparency_score: form.transparency_score,
+        complexity_score: form.complexity_score,
+        market_sentiment_score: form.market_sentiment_score,
+        age_condition_score: form.age_condition_score,
+        geographic_regulatory_score: form.geographic_regulatory_score,
         overall_conviction_score: parseFloat(overallScore),
         investment_thesis: form.investment_thesis || null,
         strengths: form.strengths || null,
         risks: form.risks || null,
         suitable_investor_type: form.suitable_investor_type || null,
         key_watchpoints: form.key_watchpoints || null,
+        liquidity_commentary: form.liquidity_commentary || null,
+        transparency_commentary: form.transparency_commentary || null,
+        risk_commentary: form.risk_commentary || null,
+        complexity_commentary: form.complexity_commentary || null,
+        market_sentiment_commentary: form.market_sentiment_commentary || null,
+        age_condition_commentary: form.age_condition_commentary || null,
+        geographic_regulatory_commentary: form.geographic_regulatory_commentary || null,
         property_type: form.category === "real_estate" ? form.property_type : null,
         bedrooms: form.category === "real_estate" && form.bedrooms ? parseInt(form.bedrooms) : null,
         bathrooms: form.category === "real_estate" && form.bathrooms ? parseInt(form.bathrooms) : null,
@@ -257,9 +295,9 @@ export function OpportunityUpload() {
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
-            <TabsTrigger value="ratings">Ratings</TabsTrigger>
-            <TabsTrigger value="commentary">Commentary</TabsTrigger>
-            <TabsTrigger value="details">Product Details</TabsTrigger>
+            <TabsTrigger value="ratings">Product Scoring</TabsTrigger>
+            <TabsTrigger value="commentary">Analysis</TabsTrigger>
+            <TabsTrigger value="details">Category Details</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -398,26 +436,31 @@ export function OpportunityUpload() {
             </Card>
           </TabsContent>
 
-          {/* Ratings Tab */}
+          {/* Product Scoring Tab */}
           <TabsContent value="ratings" className="space-y-4 mt-4">
-            <Card>
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
               <CardHeader>
-                <CardTitle>Analyst Rating</CardTitle>
-                <CardDescription>Forward-looking analyst assessment</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-primary" />
+                  Product-Specific Scoring
+                </CardTitle>
+                <CardDescription>
+                  Score each dimension based on the product type. These scores help investors assess opportunities across different asset classes.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label>Forward-Looking Analyst Rating</Label>
                   <Select value={form.analyst_rating} onValueChange={(v) => updateForm("analyst_rating", v)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select rating" />
+                      <SelectValue placeholder="Select overall rating" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Gold">🥇 Gold</SelectItem>
-                      <SelectItem value="Silver">🥈 Silver</SelectItem>
-                      <SelectItem value="Bronze">🥉 Bronze</SelectItem>
-                      <SelectItem value="Neutral">⚪ Neutral</SelectItem>
-                      <SelectItem value="Negative">🔴 Negative</SelectItem>
+                      <SelectItem value="Gold">🥇 Gold - Highest Conviction</SelectItem>
+                      <SelectItem value="Silver">🥈 Silver - Strong Conviction</SelectItem>
+                      <SelectItem value="Bronze">🥉 Bronze - Moderate Conviction</SelectItem>
+                      <SelectItem value="Neutral">⚪ Neutral - Hold / Monitor</SelectItem>
+                      <SelectItem value="Negative">🔴 Negative - Avoid / Concerns</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -432,22 +475,27 @@ export function OpportunityUpload() {
                     Overall: {overallScore}/5
                   </Badge>
                 </CardTitle>
-                <CardDescription>Rate each dimension from 0-5</CardDescription>
+                <CardDescription>Rate each dimension from 0-5. Each score has its own commentary field.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {[
-                  { key: "quality_score", label: "Quality", description: "Overall quality and condition" },
-                  { key: "value_score", label: "Value", description: "Value for money proposition" },
-                  { key: "liquidity_score", label: "Liquidity", description: "Ease of exit/resale" },
-                  { key: "risk_score", label: "Risk (inverted)", description: "Lower = higher risk" }
-                ].map(({ key, label, description }) => (
-                  <div key={key} className="space-y-3">
+                  { key: "liquidity_score", commentaryKey: "liquidity_commentary", label: "Liquidity", description: "Time to sell, market depth, transaction frequency" },
+                  { key: "transparency_score", commentaryKey: "transparency_commentary", label: "Transparency", description: "Availability of valuation data, public filings, ownership clarity" },
+                  { key: "risk_score", commentaryKey: "risk_commentary", label: "Risk Profile", description: "Volatility of historical value (for art, businesses, property indices)" },
+                  { key: "complexity_score", commentaryKey: "complexity_commentary", label: "Complexity", description: "Legal structures, foreign jurisdiction, tax implications" },
+                  { key: "market_sentiment_score", commentaryKey: "market_sentiment_commentary", label: "Market Sentiment", description: "Past performance trends, demand scarcity, peer pricing" },
+                  { key: "age_condition_score", commentaryKey: "age_condition_commentary", label: "Age / Condition", description: "For art, property, collectibles - physical state & age factors" },
+                  { key: "geographic_regulatory_score", commentaryKey: "geographic_regulatory_commentary", label: "Geographic / Regulatory Risk", description: "Especially for overseas assets - jurisdictional & regulatory concerns" },
+                  { key: "quality_score", commentaryKey: null, label: "Quality", description: "Overall quality assessment" },
+                  { key: "value_score", commentaryKey: null, label: "Value", description: "Value for money proposition" }
+                ].map(({ key, commentaryKey, label, description }) => (
+                  <div key={key} className="space-y-3 p-4 border rounded-lg bg-muted/30">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Label>{label}</Label>
+                        <Label className="text-base font-semibold">{label}</Label>
                         <p className="text-xs text-muted-foreground">{description}</p>
                       </div>
-                      <Badge variant="outline">{form[key as keyof OpportunityForm]}/5</Badge>
+                      <Badge variant="outline" className="text-lg">{form[key as keyof OpportunityForm]}/5</Badge>
                     </div>
                     <Slider
                       value={[form[key as keyof OpportunityForm] as number]}
@@ -457,6 +505,18 @@ export function OpportunityUpload() {
                       step={0.5}
                       className="w-full"
                     />
+                    {commentaryKey && (
+                      <div className="pt-2">
+                        <Label className="text-sm text-muted-foreground">Commentary</Label>
+                        <Textarea
+                          value={form[commentaryKey as keyof OpportunityForm] as string}
+                          onChange={(e) => updateForm(commentaryKey as keyof OpportunityForm, e.target.value)}
+                          placeholder={`Explain ${label.toLowerCase()} assessment...`}
+                          rows={2}
+                          className="mt-1"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </CardContent>
