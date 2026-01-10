@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star } from "lucide-react";
+import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -674,6 +675,13 @@ export default function AdminDashboard() {
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 Shop Reports
+              </TabsTrigger>
+              <TabsTrigger 
+                value="fund-scoring"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500/90 data-[state=active]:to-amber-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-amber-500/30 transition-all hover:bg-white/5"
+              >
+                <Star className="h-4 w-4 mr-2" />
+                Fund Scoring
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1382,6 +1390,11 @@ export default function AdminDashboard() {
         {/* Purchasable Reports Tab */}
         <TabsContent value="purchasable-reports">
           <PurchasableReportUpload />
+        </TabsContent>
+
+        {/* Fund Scoring Tab */}
+        <TabsContent value="fund-scoring">
+          <FundScoringAdmin />
         </TabsContent>
       </Tabs>
       </div>
