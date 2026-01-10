@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb } from "lucide-react";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
@@ -19,6 +19,7 @@ import { DemoRequests } from "@/components/admin/DemoRequests";
 import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { PurchasableReportUpload } from "@/components/admin/PurchasableReportUpload";
 import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
+import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 
 interface Profile {
   user_id: string;
@@ -682,6 +683,13 @@ export default function AdminDashboard() {
               >
                 <Star className="h-4 w-4 mr-2" />
                 Fund Scoring
+              </TabsTrigger>
+              <TabsTrigger 
+                value="opportunities"
+                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/90 data-[state=active]:to-purple-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-purple-500/30 transition-all hover:bg-white/5"
+              >
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Opportunities
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1395,6 +1403,24 @@ export default function AdminDashboard() {
         {/* Fund Scoring Tab */}
         <TabsContent value="fund-scoring">
           <FundScoringAdmin />
+        </TabsContent>
+
+        {/* Opportunity Intelligence Upload Tab */}
+        <TabsContent value="opportunities">
+          <Card className="bg-gradient-to-br from-zinc-900 to-black border-white/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Lightbulb className="h-5 w-5 text-purple-400" />
+                Upload Opportunity
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Add investment opportunities for Real Estate, Private Businesses, and Collectibles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <OpportunityUpload />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
       </div>

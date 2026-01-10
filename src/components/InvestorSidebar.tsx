@@ -17,7 +17,8 @@ import {
   Shield,
   Eye,
   Languages,
-  ClipboardList
+  ClipboardList,
+  Lightbulb
 } from "lucide-react";
 import {
   Sidebar,
@@ -117,6 +118,11 @@ const investorItems = [
     title: "Risk & Compliance", 
     url: "/investor/risk-compliance", 
     icon: Shield,
+  },
+  { 
+    title: "Opportunity Intelligence", 
+    url: "/investor/opportunities", 
+    icon: Lightbulb,
   },
   { 
     title: "Watchlists", 

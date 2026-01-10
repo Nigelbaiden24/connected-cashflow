@@ -3375,6 +3375,150 @@ export type Database = {
           },
         ]
       }
+      opportunity_products: {
+        Row: {
+          analyst_rating: string | null
+          annual_revenue: number | null
+          authenticity_verified: boolean | null
+          bathrooms: number | null
+          bedrooms: number | null
+          business_stage: string | null
+          category: string
+          condition: string | null
+          country: string | null
+          created_at: string
+          employee_count: number | null
+          estimated_appreciation: number | null
+          featured: boolean | null
+          founding_year: number | null
+          full_description: string | null
+          gallery_images: string[] | null
+          id: string
+          industry: string | null
+          investment_thesis: string | null
+          key_watchpoints: string | null
+          last_analyst_review_date: string | null
+          liquidity_score: number | null
+          location: string | null
+          overall_conviction_score: number | null
+          price: number | null
+          price_currency: string | null
+          product_details: Json | null
+          property_type: string | null
+          provenance: string | null
+          quality_score: number | null
+          rental_yield: number | null
+          risk_score: number | null
+          risks: string | null
+          short_description: string | null
+          square_footage: number | null
+          status: string | null
+          strengths: string | null
+          sub_category: string
+          suitable_investor_type: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          value_score: number | null
+          year_built: number | null
+        }
+        Insert: {
+          analyst_rating?: string | null
+          annual_revenue?: number | null
+          authenticity_verified?: boolean | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          business_stage?: string | null
+          category: string
+          condition?: string | null
+          country?: string | null
+          created_at?: string
+          employee_count?: number | null
+          estimated_appreciation?: number | null
+          featured?: boolean | null
+          founding_year?: number | null
+          full_description?: string | null
+          gallery_images?: string[] | null
+          id?: string
+          industry?: string | null
+          investment_thesis?: string | null
+          key_watchpoints?: string | null
+          last_analyst_review_date?: string | null
+          liquidity_score?: number | null
+          location?: string | null
+          overall_conviction_score?: number | null
+          price?: number | null
+          price_currency?: string | null
+          product_details?: Json | null
+          property_type?: string | null
+          provenance?: string | null
+          quality_score?: number | null
+          rental_yield?: number | null
+          risk_score?: number | null
+          risks?: string | null
+          short_description?: string | null
+          square_footage?: number | null
+          status?: string | null
+          strengths?: string | null
+          sub_category: string
+          suitable_investor_type?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          value_score?: number | null
+          year_built?: number | null
+        }
+        Update: {
+          analyst_rating?: string | null
+          annual_revenue?: number | null
+          authenticity_verified?: boolean | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          business_stage?: string | null
+          category?: string
+          condition?: string | null
+          country?: string | null
+          created_at?: string
+          employee_count?: number | null
+          estimated_appreciation?: number | null
+          featured?: boolean | null
+          founding_year?: number | null
+          full_description?: string | null
+          gallery_images?: string[] | null
+          id?: string
+          industry?: string | null
+          investment_thesis?: string | null
+          key_watchpoints?: string | null
+          last_analyst_review_date?: string | null
+          liquidity_score?: number | null
+          location?: string | null
+          overall_conviction_score?: number | null
+          price?: number | null
+          price_currency?: string | null
+          product_details?: Json | null
+          property_type?: string | null
+          provenance?: string | null
+          quality_score?: number | null
+          rental_yield?: number | null
+          risk_score?: number | null
+          risks?: string | null
+          short_description?: string | null
+          square_footage?: number | null
+          status?: string | null
+          strengths?: string | null
+          sub_category?: string
+          suitable_investor_type?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          value_score?: number | null
+          year_built?: number | null
+        }
+        Relationships: []
+      }
       payroll_items: {
         Row: {
           created_at: string

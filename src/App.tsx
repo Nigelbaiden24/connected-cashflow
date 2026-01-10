@@ -44,6 +44,7 @@ import InvestorFundETFDatabase from "./pages/investor/FundETFDatabase";
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
+import OpportunityIntelligence from "./pages/OpportunityIntelligence";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -394,6 +395,13 @@ const App = () => {
                 </FinanceLayout>
               )
             } />
+            <Route path="/finance/opportunities" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <OpportunityIntelligence />
+                </FinanceLayout>
+              )
+            } />
             
             <Route path="/finance/languages" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
@@ -539,12 +547,15 @@ const App = () => {
           <Route path="/investor/languages" element={
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Languages /></InvestorLayout>
           } />
-          <Route path="/investor/fund-database" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorFundETFDatabase /></InvestorLayout>
-          } />
-          
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/investor/fund-database" element={
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorFundETFDatabase /></InvestorLayout>
+            } />
+            <Route path="/investor/opportunities" element={
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityIntelligence /></InvestorLayout>
+            } />
+            
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
