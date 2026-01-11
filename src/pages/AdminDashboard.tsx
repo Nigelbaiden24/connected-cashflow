@@ -546,29 +546,30 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen admin-theme bg-black">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="container mx-auto p-6 space-y-6">
-        {/* Header with glossy black theme */}
-        <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-black via-zinc-950 to-black border border-white/10 shadow-2xl backdrop-blur-xl">
-          {/* Glossy overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/20 pointer-events-none"></div>
+        {/* Header with enterprise light theme */}
+        <div className="relative overflow-hidden rounded-2xl p-8 bg-white border border-slate-200 shadow-xl">
+          {/* Subtle gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
           
           <div className="relative z-10 flex items-center justify-between">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg">
-                  <LayoutDashboard className="h-8 w-8 text-primary" />
+                <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg shadow-primary/20">
+                  <LayoutDashboard className="h-8 w-8 text-white" />
                 </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-700 to-slate-600 bg-clip-text text-transparent">
                   Admin Dashboard
                 </h1>
               </div>
-              <p className="text-zinc-400 text-lg">Upload and manage investor platform content</p>
+              <p className="text-slate-500 text-lg">Upload and manage investor platform content</p>
             </div>
             <div className="flex gap-3">
               <Button 
                 onClick={handleLogout}
-                className="bg-gradient-to-r from-red-500/20 to-red-600/20 hover:from-red-500/30 hover:to-red-600/30 text-white border border-red-500/30 backdrop-blur-sm shadow-lg transition-all"
+                variant="outline"
+                className="bg-white hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 shadow-sm transition-all"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -579,122 +580,122 @@ export default function AdminDashboard() {
 
         <Tabs defaultValue="users" className="w-full">
           <div className="overflow-x-auto pb-2 -mx-2 px-2">
-            <TabsList className="inline-flex min-w-max gap-1 bg-gradient-to-br from-zinc-950 to-black p-2 backdrop-blur-sm border border-white/10 rounded-xl shadow-2xl">
+            <TabsList className="inline-flex min-w-max gap-1 bg-white p-2 border border-slate-200 rounded-xl shadow-sm">
               <TabsTrigger 
                 value="users"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Users className="h-4 w-4 mr-2" />
                 Users
               </TabsTrigger>
               <TabsTrigger 
                 value="enquiries"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500/90 data-[state=active]:to-orange-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-orange-500/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Enquiries
               </TabsTrigger>
               <TabsTrigger 
                 value="demo-requests"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Calendar className="h-4 w-4 mr-2" />
                 Demo Requests
               </TabsTrigger>
               <TabsTrigger 
                 value="reports"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Reports
               </TabsTrigger>
               <TabsTrigger 
                 value="newsletters"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Newspaper className="h-4 w-4 mr-2" />
                 Newsletters
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolios"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Portfolios
               </TabsTrigger>
               <TabsTrigger 
                 value="commentary"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Commentary
               </TabsTrigger>
               <TabsTrigger 
                 value="learning"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <BookOpen className="h-4 w-4 mr-2" />
                 Learning
               </TabsTrigger>
               <TabsTrigger 
                 value="videos"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Video className="h-4 w-4 mr-2" />
                 Videos
               </TabsTrigger>
               <TabsTrigger 
                 value="watchlists"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <List className="h-4 w-4 mr-2" />
                 Watchlists
               </TabsTrigger>
               <TabsTrigger 
                 value="risk-compliance"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Shield className="h-4 w-4 mr-2" />
                 Risk & Compliance
               </TabsTrigger>
               <TabsTrigger 
                 value="alerts"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/90 data-[state=active]:to-primary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-primary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Bell className="h-4 w-4 mr-2" />
                 Signals & Alerts
               </TabsTrigger>
               <TabsTrigger 
                 value="market-trends"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-secondary/90 data-[state=active]:to-secondary/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-secondary/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <TrendingUp className="h-4 w-4 mr-2" />
                 Market Trends
               </TabsTrigger>
               <TabsTrigger 
                 value="purchasable-reports"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500/90 data-[state=active]:to-green-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-green-500/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 Shop Reports
               </TabsTrigger>
               <TabsTrigger 
                 value="fund-scoring"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500/90 data-[state=active]:to-amber-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-amber-500/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Star className="h-4 w-4 mr-2" />
                 Fund Scoring
               </TabsTrigger>
               <TabsTrigger 
                 value="opportunities"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/90 data-[state=active]:to-purple-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-purple-500/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Opportunities
               </TabsTrigger>
               <TabsTrigger 
                 value="stocks-crypto"
-                className="whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/90 data-[state=active]:to-cyan-600/70 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border data-[state=active]:border-cyan-500/30 transition-all hover:bg-white/5"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
               >
                 <Bitcoin className="h-4 w-4 mr-2" />
                 Stocks & Crypto
@@ -728,26 +729,26 @@ export default function AdminDashboard() {
 
               {/* General Reports Upload */}
               <TabsContent value="general">
-                <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-                  <CardHeader className="border-b border-white/10 bg-gradient-to-r from-primary/10 to-transparent">
-                    <CardTitle className="flex items-center gap-2 text-2xl text-white">
+                <Card className="border-slate-200 shadow-lg bg-white">
+                  <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                       <FileBarChart className="h-6 w-6 text-primary" />
                       General Reports Upload
                     </CardTitle>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-slate-500">
                       Upload reports for Finance, Business, or Investor platforms. Select platform, report type, and assign to specific users.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Upload PDF reports for any FlowPulse platform
                         </p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Select Finance, Business, or Investor platform
                         </p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Choose report type and assign to specific users
                         </p>
                       </div>
@@ -759,26 +760,26 @@ export default function AdminDashboard() {
 
               {/* Research Reports for Investor Platform */}
               <TabsContent value="research">
-                <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-                  <CardHeader className="border-b border-white/10 bg-gradient-to-r from-secondary/10 to-transparent">
-                    <CardTitle className="flex items-center gap-2 text-2xl text-white">
+                <Card className="border-slate-200 shadow-lg bg-white">
+                  <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                       <FileBarChart className="h-6 w-6 text-secondary" />
                       Investor Research Reports
                     </CardTitle>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-slate-500">
                       Upload research reports that will appear in the FlowPulse Investor Research Reports tab
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Upload PDF research reports for investors
                         </p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Reports will appear in the Investor Research Reports section
                         </p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Assign to specific users or make available to all investors
                         </p>
                       </div>
@@ -790,26 +791,26 @@ export default function AdminDashboard() {
 
               {/* Analysis Reports for Investor Platform */}
               <TabsContent value="analysis">
-                <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-                  <CardHeader className="border-b border-white/10 bg-gradient-to-r from-primary/10 to-transparent">
-                    <CardTitle className="flex items-center gap-2 text-2xl text-white">
+                <Card className="border-slate-200 shadow-lg bg-white">
+                  <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                       <FileBarChart className="h-6 w-6 text-primary" />
                       Investor Analysis Reports
                     </CardTitle>
-                    <CardDescription className="text-zinc-400">
+                    <CardDescription className="text-slate-500">
                       Upload analysis reports that will appear in the FlowPulse Investor Analysis Reports tab
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-slate-600">
                           • Upload PDF analysis reports for investors
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-slate-600">
                           • Reports will appear in the Investor Analysis Reports section
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-slate-600">
                           • Assign to specific users or make available to all investors
                         </p>
                       </div>
@@ -823,13 +824,13 @@ export default function AdminDashboard() {
 
           {/* Newsletters Tab */}
           <TabsContent value="newsletters">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-secondary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <Newspaper className="h-6 w-6 text-secondary" />
                   Upload Newsletter
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Upload newsletters for all investors</CardDescription>
+                <CardDescription className="text-slate-500">Upload newsletters for all investors</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleNewsletterUpload} className="space-y-4">
@@ -886,13 +887,13 @@ export default function AdminDashboard() {
 
           {/* Portfolios Tab */}
           <TabsContent value="portfolios">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-primary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <TrendingUp className="h-6 w-6 text-primary" />
                   Upload Model Portfolio
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Upload model portfolios for investors to view</CardDescription>
+                <CardDescription className="text-slate-500">Upload model portfolios for investors to view</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handlePortfolioUpload} className="space-y-4">
@@ -939,13 +940,13 @@ export default function AdminDashboard() {
 
           {/* Commentary Tab */}
           <TabsContent value="commentary">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-secondary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <FileText className="h-6 w-6 text-secondary" />
                   Upload Market Commentary
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Upload market analysis and commentary</CardDescription>
+                <CardDescription className="text-slate-500">Upload market analysis and commentary</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleCommentaryUpload} className="space-y-4">
@@ -992,13 +993,13 @@ export default function AdminDashboard() {
 
           {/* Learning Tab */}
           <TabsContent value="learning">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-primary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <BookOpen className="h-6 w-6 text-primary" />
                   Upload Learning Content
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Upload educational content for all 6 Learning Hub categories</CardDescription>
+                <CardDescription className="text-slate-500">Upload educational content for all 6 Learning Hub categories</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleLearningUpload} className="space-y-4">
@@ -1180,13 +1181,13 @@ export default function AdminDashboard() {
 
           {/* Videos Tab */}
           <TabsContent value="videos">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-secondary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <Video className="h-6 w-6 text-secondary" />
                   Upload Video
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Upload video content for investors</CardDescription>
+                <CardDescription className="text-slate-500">Upload video content for investors</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleVideoUpload} className="space-y-4">
@@ -1243,13 +1244,13 @@ export default function AdminDashboard() {
 
           {/* Watchlists Tab */}
           <TabsContent value="watchlists">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-primary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <List className="h-6 w-6 text-primary" />
                   Create Public Watchlist
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Create watchlists that all investors can view</CardDescription>
+                <CardDescription className="text-slate-500">Create watchlists that all investors can view</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleWatchlistUpload} className="space-y-4">
@@ -1295,13 +1296,13 @@ export default function AdminDashboard() {
 
           {/* Risk & Compliance Tab */}
           <TabsContent value="risk-compliance">
-            <Card className="border-white/10 shadow-2xl bg-gradient-to-br from-zinc-950 to-black backdrop-blur-xl">
-              <CardHeader className="border-b border-white/10 bg-gradient-to-r from-secondary/10 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+            <Card className="border-slate-200 shadow-lg bg-white">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                   <Shield className="h-6 w-6 text-secondary" />
                   Upload Risk & Compliance Content
                 </CardTitle>
-                <CardDescription className="text-zinc-400">Upload risk analysis and compliance monitoring content for investors</CardDescription>
+                <CardDescription className="text-slate-500">Upload risk analysis and compliance monitoring content for investors</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleRiskComplianceUpload} className="space-y-4">
@@ -1415,13 +1416,13 @@ export default function AdminDashboard() {
 
         {/* Opportunity Intelligence Upload Tab */}
         <TabsContent value="opportunities">
-          <Card className="bg-gradient-to-br from-zinc-900 to-black border-white/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-white">
-                <Lightbulb className="h-5 w-5 text-purple-400" />
+          <Card className="bg-white border-slate-200 shadow-lg">
+            <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
+                <Lightbulb className="h-5 w-5 text-purple-600" />
                 Upload Opportunity
               </CardTitle>
-              <CardDescription className="text-zinc-400">
+              <CardDescription className="text-slate-500">
                 Add investment opportunities for Real Estate, Private Businesses, and Collectibles
               </CardDescription>
             </CardHeader>
