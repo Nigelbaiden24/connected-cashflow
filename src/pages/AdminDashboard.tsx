@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical } from "lucide-react";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
 import { StocksCryptoAdmin } from "@/components/admin/StocksCryptoAdmin";
+import { ResearchAdmin } from "@/components/admin/ResearchAdmin";
 import { AlertsForm } from "@/components/admin/AlertsForm";
 import { MarketTrendsUpload } from "@/components/admin/MarketTrendsUpload";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -699,6 +700,13 @@ export default function AdminDashboard() {
               >
                 <Bitcoin className="h-4 w-4 mr-2" />
                 Stocks & Crypto
+              </TabsTrigger>
+              <TabsTrigger 
+                value="research-engine"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+              >
+                <FlaskConical className="h-4 w-4 mr-2" />
+                Research Engine
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1435,6 +1443,11 @@ export default function AdminDashboard() {
         {/* Stocks & Crypto Admin Tab */}
         <TabsContent value="stocks-crypto">
           <StocksCryptoAdmin />
+        </TabsContent>
+
+        {/* Research Engine Tab */}
+        <TabsContent value="research-engine">
+          <ResearchAdmin />
         </TabsContent>
       </Tabs>
       </div>
