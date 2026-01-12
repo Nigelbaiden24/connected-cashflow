@@ -107,3 +107,6 @@ verify_jwt = false
 
 [functions.crm-follow-up-reminder]
 verify_jwt = false
+
+[functions.generate-research-report]
+verify_jwt = true
