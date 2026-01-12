@@ -110,3 +110,6 @@ verify_jwt = false
 
 [functions.generate-research-report]
 verify_jwt = true
+
+[functions.orchestrate-report]
+verify_jwt = false

@@ -18,6 +18,7 @@ import Dashboard from "./pages/Dashboard";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorResearchReports from "./pages/investor/ResearchReports";
 import ResearchReportsPage from "./pages/ResearchReports";
+import OrchestratedReportsPage from "./pages/OrchestratedReports";
 import AnalysisReports from "./pages/investor/AnalysisReports";
 import MarketCommentary from "./pages/investor/MarketCommentary";
 import ModelPortfolios from "./pages/investor/ModelPortfolios";
@@ -576,6 +577,7 @@ const App = () => {
             
             {/* Research Reports Page */}
             <Route path="/research-reports" element={<ResearchReportsPage />} />
+            <Route path="/report-generator" element={<OrchestratedReportsPage />} />
             
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
