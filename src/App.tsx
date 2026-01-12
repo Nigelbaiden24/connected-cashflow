@@ -16,7 +16,8 @@ import LoginBusiness from "./pages/LoginBusiness";
 import LoginInvestor from "./pages/LoginInvestor";
 import Dashboard from "./pages/Dashboard";
 import InvestorDashboard from "./pages/InvestorDashboard";
-import ResearchReports from "./pages/investor/ResearchReports";
+import InvestorResearchReports from "./pages/investor/ResearchReports";
+import ResearchReportsPage from "./pages/ResearchReports";
 import AnalysisReports from "./pages/investor/AnalysisReports";
 import MarketCommentary from "./pages/investor/MarketCommentary";
 import ModelPortfolios from "./pages/investor/ModelPortfolios";
@@ -519,7 +520,7 @@ const App = () => {
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
           } />
           <Route path="/investor/research" element={
-            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ResearchReports /></InvestorLayout>
+            !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorResearchReports /></InvestorLayout>
           } />
           <Route path="/investor/analysis" element={
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><AnalysisReports /></InvestorLayout>
@@ -572,6 +573,9 @@ const App = () => {
             <Route path="/investor/stocks-crypto" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><StocksCryptoDatabase /></InvestorLayout>
             } />
+            
+            {/* Research Reports Page */}
+            <Route path="/research-reports" element={<ResearchReportsPage />} />
             
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
