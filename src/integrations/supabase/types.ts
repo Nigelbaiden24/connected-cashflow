@@ -3659,6 +3659,51 @@ export type Database = {
         }
         Relationships: []
       }
+      orchestrated_reports: {
+        Row: {
+          asset_id: string | null
+          asset_name: string | null
+          asset_type: string | null
+          created_at: string
+          generated_at: string | null
+          id: string
+          report_content: Json
+          report_title: string
+          selected_modules: string[]
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          asset_id?: string | null
+          asset_name?: string | null
+          asset_type?: string | null
+          created_at?: string
+          generated_at?: string | null
+          id?: string
+          report_content: Json
+          report_title: string
+          selected_modules: string[]
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          asset_id?: string | null
+          asset_name?: string | null
+          asset_type?: string | null
+          created_at?: string
+          generated_at?: string | null
+          id?: string
+          report_content?: Json
+          report_title?: string
+          selected_modules?: string[]
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payroll_items: {
         Row: {
           created_at: string
