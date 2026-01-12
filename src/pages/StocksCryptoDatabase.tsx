@@ -187,20 +187,20 @@ export default function StocksCryptoDatabase() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* Header Section */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-6">
+      <div className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+        <div className="container mx-auto px-6 py-5">
           <div className="flex items-start justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Layers className="h-7 w-7 text-primary" />
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/25">
+                <Layers className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                   Securities Research Database
                 </h1>
-                <p className="text-muted-foreground text-sm mt-0.5">
+                <p className="text-slate-500 text-sm mt-0.5">
                   Institutional-grade analysis across {assets.length} securities
                 </p>
               </div>
@@ -211,16 +211,16 @@ export default function StocksCryptoDatabase() {
                 size="sm" 
                 onClick={fetchAssets}
                 disabled={isRefreshing}
-                className="gap-2"
+                className="gap-2 bg-white hover:bg-slate-50 border-slate-200 text-slate-700"
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button variant="outline" size="sm" className="gap-2 bg-white hover:bg-slate-50 border-slate-200 text-slate-700">
                 <Bookmark className="h-4 w-4" />
                 Watchlist
               </Button>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button size="sm" className="gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md shadow-primary/20">
                 <Download className="h-4 w-4" />
                 Export
               </Button>
@@ -266,33 +266,33 @@ export default function StocksCryptoDatabase() {
         </div>
 
         {/* Filters */}
-        <Card className="border-border/50">
+        <Card className="border-slate-200/80 bg-white shadow-sm">
           <CardContent className="p-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="relative flex-1 min-w-[280px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   placeholder="Search by name or ticker..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background"
+                  className="pl-10 bg-slate-50/50 border-slate-200 focus:bg-white"
                 />
               </div>
               <Select value={assetTypeFilter} onValueChange={setAssetTypeFilter}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] bg-white border-slate-200">
                   <SelectValue placeholder="Asset Class" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Classes</SelectItem>
                   <SelectItem value="stock">Equities</SelectItem>
                   <SelectItem value="crypto">Digital Assets</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={sectorFilter} onValueChange={setSectorFilter}>
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-[160px] bg-white border-slate-200">
                   <SelectValue placeholder="Sector" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Sectors</SelectItem>
                   {sectors.map(sector => (
                     <SelectItem key={sector} value={sector!}>{sector}</SelectItem>
@@ -300,10 +300,10 @@ export default function StocksCryptoDatabase() {
                 </SelectContent>
               </Select>
               <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] bg-white border-slate-200">
                   <SelectValue placeholder="Rating" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="all">All Ratings</SelectItem>
                   <SelectItem value="Gold">🏆 Gold</SelectItem>
                   <SelectItem value="Silver">🥈 Silver</SelectItem>
@@ -313,18 +313,18 @@ export default function StocksCryptoDatabase() {
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[160px]">
-                  <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectTrigger className="w-[160px] bg-white border-slate-200">
+                  <ArrowUpDown className="h-4 w-4 mr-2 text-slate-400" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   <SelectItem value="market_cap">Market Cap</SelectItem>
                   <SelectItem value="price_change_24h">24h Performance</SelectItem>
                   <SelectItem value="overall_score">Analyst Score</SelectItem>
                   <SelectItem value="name">Alphabetical</SelectItem>
                 </SelectContent>
               </Select>
-              <Badge variant="secondary" className="ml-auto">
+              <Badge className="ml-auto bg-primary/10 text-primary border-0 font-medium">
                 {filteredAssets.length} results
               </Badge>
             </div>
@@ -333,26 +333,26 @@ export default function StocksCryptoDatabase() {
 
         {/* Main Content */}
         <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="all" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsList className="bg-white border border-slate-200 p-1 shadow-sm">
+            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md">
               All Securities
             </TabsTrigger>
-            <TabsTrigger value="stocks" className="data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <TabsTrigger value="stocks" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md gap-2">
               <BarChart3 className="h-4 w-4" />
               Equities
             </TabsTrigger>
-            <TabsTrigger value="crypto" className="data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <TabsTrigger value="crypto" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md gap-2">
               <Bitcoin className="h-4 w-4" />
               Digital Assets
             </TabsTrigger>
-            <TabsTrigger value="top-rated" className="data-[state=active]:bg-background data-[state=active]:shadow-sm gap-2">
+            <TabsTrigger value="top-rated" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md gap-2">
               <Star className="h-4 w-4" />
               Top Rated
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-0">
-            <AssetTable 
+            <AssetTable
               assets={filteredAssets} 
               loading={loading}
               formatCurrency={formatCurrency}
@@ -436,23 +436,23 @@ interface StatsCardProps {
 
 function StatsCard({ label, value, icon: Icon, color, isText }: StatsCardProps) {
   const colorClasses = {
-    primary: 'bg-primary/10 text-primary',
-    warning: 'bg-warning/10 text-warning',
-    amber: 'bg-amber-500/10 text-amber-500',
-    purple: 'bg-purple-500/10 text-purple-500',
-    success: 'bg-success/10 text-success',
+    primary: 'bg-gradient-to-br from-primary to-blue-600 text-white shadow-lg shadow-primary/20',
+    warning: 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20',
+    amber: 'bg-gradient-to-br from-yellow-500 to-amber-500 text-white shadow-lg shadow-yellow-500/20',
+    purple: 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/20',
+    success: 'bg-gradient-to-br from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20',
   };
 
   return (
-    <Card className="border-border/50 hover:border-border transition-colors">
-      <CardContent className="p-4">
+    <Card className="border-slate-200/80 bg-white hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-0.5">
+      <CardContent className="p-5">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-            <p className={`${isText ? 'text-xl' : 'text-2xl'} font-semibold text-foreground mt-1`}>{value}</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+            <p className={`${isText ? 'text-xl' : 'text-3xl'} font-bold text-slate-900 mt-1`}>{value}</p>
           </div>
-          <div className={`h-10 w-10 rounded-xl ${colorClasses[color]} flex items-center justify-center`}>
-            <Icon className="h-5 w-5" />
+          <div className={`h-12 w-12 rounded-xl ${colorClasses[color]} flex items-center justify-center`}>
+            <Icon className="h-6 w-6" />
           </div>
         </div>
       </CardContent>
@@ -484,10 +484,10 @@ function AssetTable({
 }: AssetTableProps) {
   if (loading) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-slate-200/80 bg-white shadow-sm">
         <CardContent className="p-16 text-center">
-          <div className="h-10 w-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading securities data...</p>
+          <div className="h-12 w-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 font-medium">Loading securities data...</p>
         </CardContent>
       </Card>
     );
@@ -495,30 +495,30 @@ function AssetTable({
 
   if (assets.length === 0) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-slate-200/80 bg-white shadow-sm">
         <CardContent className="p-16 text-center">
-          <div className="h-16 w-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
-            <Search className="h-8 w-8 text-muted-foreground" />
+          <div className="h-16 w-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+            <Search className="h-8 w-8 text-slate-400" />
           </div>
-          <h3 className="text-lg font-medium text-foreground mb-2">No Securities Found</h3>
-          <p className="text-muted-foreground text-sm">Adjust your filters or search criteria</p>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">No Securities Found</h3>
+          <p className="text-slate-500 text-sm">Adjust your filters or search criteria</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="border-border/50 overflow-hidden">
+    <Card className="border-slate-200/80 bg-white shadow-sm overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted/30 hover:bg-muted/30">
-            <TableHead className="font-semibold text-foreground">Security</TableHead>
-            <TableHead className="font-semibold text-foreground">Class</TableHead>
-            <TableHead className="font-semibold text-foreground text-right">Price</TableHead>
-            <TableHead className="font-semibold text-foreground text-right">24h</TableHead>
-            <TableHead className="font-semibold text-foreground text-right">Market Cap</TableHead>
-            <TableHead className="font-semibold text-foreground text-center">Rating</TableHead>
-            <TableHead className="font-semibold text-foreground text-center">Score</TableHead>
+          <TableRow className="bg-slate-50/80 hover:bg-slate-50/80 border-slate-200">
+            <TableHead className="font-semibold text-slate-700">Security</TableHead>
+            <TableHead className="font-semibold text-slate-700">Class</TableHead>
+            <TableHead className="font-semibold text-slate-700 text-right">Price</TableHead>
+            <TableHead className="font-semibold text-slate-700 text-right">24h</TableHead>
+            <TableHead className="font-semibold text-slate-700 text-right">Market Cap</TableHead>
+            <TableHead className="font-semibold text-slate-700 text-center">Rating</TableHead>
+            <TableHead className="font-semibold text-slate-700 text-center">Score</TableHead>
             <TableHead className="w-10"></TableHead>
           </TableRow>
         </TableHeader>
@@ -528,17 +528,17 @@ function AssetTable({
             return (
               <TableRow 
                 key={asset.id} 
-                className="cursor-pointer hover:bg-muted/50 transition-colors group"
+                className="cursor-pointer hover:bg-primary/5 transition-all duration-200 group border-slate-100"
                 onClick={() => onSelectAsset(asset)}
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
                     {asset.logo_url ? (
-                      <img src={asset.logo_url} alt={asset.name} className="h-10 w-10 rounded-xl object-cover" />
+                      <img src={asset.logo_url} alt={asset.name} className="h-11 w-11 rounded-xl object-cover shadow-sm" />
                     ) : (
-                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center">
+                      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center border border-slate-200/50">
                         {asset.asset_type === 'crypto' ? (
-                          <Bitcoin className="h-5 w-5 text-warning" />
+                          <Bitcoin className="h-5 w-5 text-amber-500" />
                         ) : (
                           <BarChart3 className="h-5 w-5 text-primary" />
                         )}
@@ -546,26 +546,28 @@ function AssetTable({
                     )}
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground">{asset.name}</span>
+                        <span className="font-semibold text-slate-900">{asset.name}</span>
                         {asset.is_featured && (
                           <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground">{asset.symbol}</span>
+                      <span className="text-xs text-slate-500">{asset.symbol}</span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="font-normal">
+                  <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 border-0">
                     {asset.asset_type === 'crypto' ? 'Digital' : 'Equity'}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right font-medium tabular-nums">
+                <TableCell className="text-right font-semibold tabular-nums text-slate-900">
                   {formatCurrency(asset.current_price)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className={`inline-flex items-center gap-1 font-medium tabular-nums ${
-                    (asset.price_change_24h || 0) >= 0 ? 'text-success' : 'text-destructive'
+                  <span className={`inline-flex items-center gap-1 font-semibold tabular-nums px-2 py-1 rounded-md ${
+                    (asset.price_change_24h || 0) >= 0 
+                      ? 'text-emerald-700 bg-emerald-50' 
+                      : 'text-red-700 bg-red-50'
                   }`}>
                     {(asset.price_change_24h || 0) >= 0 ? (
                       <TrendingUp className="h-3.5 w-3.5" />
@@ -575,25 +577,25 @@ function AssetTable({
                     {formatPercentage(asset.price_change_24h)}
                   </span>
                 </TableCell>
-                <TableCell className="text-right tabular-nums text-muted-foreground">
+                <TableCell className="text-right tabular-nums text-slate-600 font-medium">
                   {formatMarketCap(asset.market_cap)}
                 </TableCell>
                 <TableCell className="text-center">
                   {asset.analyst_rating ? (
-                    <Badge className={`${ratingConfig.bg} ${ratingConfig.text} border ${ratingConfig.border}`}>
+                    <Badge className={`${ratingConfig.bg} ${ratingConfig.text} border ${ratingConfig.border} font-semibold`}>
                       {ratingConfig.icon} {asset.analyst_rating}
                     </Badge>
                   ) : (
-                    <span className="text-muted-foreground">—</span>
+                    <span className="text-slate-400">—</span>
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  <span className={`font-semibold tabular-nums ${getScoreColor(Number(asset.overall_score))}`}>
+                  <span className={`font-bold tabular-nums text-lg ${getScoreColor(Number(asset.overall_score))}`}>
                     {asset.overall_score ? Number(asset.overall_score).toFixed(1) : '—'}
                   </span>
                 </TableCell>
                 <TableCell>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                 </TableCell>
               </TableRow>
             );
