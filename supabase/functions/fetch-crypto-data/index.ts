@@ -11,12 +11,11 @@ serve(async (req) => {
   }
 
   try {
-    const { ids = ['bitcoin', 'ethereum', 'solana', 'cardano', 'ripple', 'polkadot', 'avalanche-2', 'chainlink', 'polygon', 'dogecoin'] } = await req.json();
+    const { page = 1, perPage = 100 } = await req.json().catch(() => ({}));
 
-    // CoinGecko API (free, no API key required for basic use)
-    const idsParam = ids.join(',');
+    // CoinGecko API - fetch top cryptocurrencies by market cap (up to 250 per page)
     const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${idsParam}&order=market_cap_desc&sparkline=true&price_change_percentage=1h,24h,7d,30d,1y`
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${Math.min(perPage, 250)}&page=${page}&sparkline=true&price_change_percentage=1h,24h,7d,30d,1y`
     );
 
     if (!response.ok) {
@@ -54,8 +53,11 @@ serve(async (req) => {
       lastUpdated: coin.last_updated,
     }));
 
+    // CoinGecko has ~15000+ coins, but we'll limit to first 1000 for practical purposes
+    const estimatedTotal = Math.min(1000, page * perPage + (data.length === perPage ? 100 : 0));
+
     return new Response(
-      JSON.stringify({ crypto: cryptoData }),
+      JSON.stringify({ crypto: cryptoData, total: estimatedTotal, page, perPage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

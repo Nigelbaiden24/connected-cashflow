@@ -93,8 +93,9 @@ export interface ETFData {
   lastUpdated: string;
 }
 
-export function useCryptoData(cryptoIds?: string[]) {
+export function useCryptoData(page = 1, perPage = 100) {
   const [data, setData] = useState<CryptoData[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
@@ -105,12 +106,13 @@ export function useCryptoData(cryptoIds?: string[]) {
       setError(null);
 
       const { data: response, error: fnError } = await supabase.functions.invoke('fetch-crypto-data', {
-        body: { ids: cryptoIds }
+        body: { page, perPage }
       });
 
       if (fnError) throw fnError;
       
       setData(response.crypto || []);
+      setTotal(response.total || response.crypto?.length || 0);
       setLastFetch(new Date());
     } catch (err: any) {
       console.error('Error fetching crypto data:', err);
@@ -119,17 +121,18 @@ export function useCryptoData(cryptoIds?: string[]) {
     } finally {
       setLoading(false);
     }
-  }, [cryptoIds]);
+  }, [page, perPage]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, lastFetch, refetch: fetchData };
+  return { data, total, loading, error, lastFetch, refetch: fetchData };
 }
 
-export function useStockData(symbols?: string[]) {
+export function useStockData(page = 1, perPage = 50) {
   const [data, setData] = useState<StockData[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
@@ -140,12 +143,13 @@ export function useStockData(symbols?: string[]) {
       setError(null);
 
       const { data: response, error: fnError } = await supabase.functions.invoke('fetch-stock-quotes', {
-        body: { symbols }
+        body: { page, perPage }
       });
 
       if (fnError) throw fnError;
       
       setData(response.stocks || []);
+      setTotal(response.total || 0);
       setLastFetch(new Date());
     } catch (err: any) {
       console.error('Error fetching stock data:', err);
@@ -154,13 +158,13 @@ export function useStockData(symbols?: string[]) {
     } finally {
       setLoading(false);
     }
-  }, [symbols]);
+  }, [page, perPage]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, lastFetch, refetch: fetchData };
+  return { data, total, loading, error, lastFetch, refetch: fetchData };
 }
 
 export function useETFData(symbols?: string[]) {
