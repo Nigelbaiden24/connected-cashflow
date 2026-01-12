@@ -219,6 +219,110 @@ export type Database = {
           },
         ]
       }
+      asset_research_reports: {
+        Row: {
+          asset_id: string
+          asset_name: string
+          asset_symbol: string | null
+          asset_type: string
+          confidence_level: string | null
+          created_at: string
+          data_as_of: string | null
+          data_sources: string[] | null
+          esg_analysis: Json | null
+          esg_score: number | null
+          fundamental_analysis: Json | null
+          generated_at: string | null
+          governance_analysis: Json | null
+          id: string
+          last_significant_change: string | null
+          material_changes: string[] | null
+          model_governance: Json | null
+          overall_quality_score: number | null
+          performance_analysis: Json | null
+          portfolio_role: Json | null
+          previous_version_id: string | null
+          quality_analysis: Json | null
+          risk_analysis: Json | null
+          risk_score: number | null
+          scenario_analysis: Json | null
+          updated_at: string
+          valuation_analysis: Json | null
+          valuation_score: number | null
+          version: number | null
+        }
+        Insert: {
+          asset_id: string
+          asset_name: string
+          asset_symbol?: string | null
+          asset_type: string
+          confidence_level?: string | null
+          created_at?: string
+          data_as_of?: string | null
+          data_sources?: string[] | null
+          esg_analysis?: Json | null
+          esg_score?: number | null
+          fundamental_analysis?: Json | null
+          generated_at?: string | null
+          governance_analysis?: Json | null
+          id?: string
+          last_significant_change?: string | null
+          material_changes?: string[] | null
+          model_governance?: Json | null
+          overall_quality_score?: number | null
+          performance_analysis?: Json | null
+          portfolio_role?: Json | null
+          previous_version_id?: string | null
+          quality_analysis?: Json | null
+          risk_analysis?: Json | null
+          risk_score?: number | null
+          scenario_analysis?: Json | null
+          updated_at?: string
+          valuation_analysis?: Json | null
+          valuation_score?: number | null
+          version?: number | null
+        }
+        Update: {
+          asset_id?: string
+          asset_name?: string
+          asset_symbol?: string | null
+          asset_type?: string
+          confidence_level?: string | null
+          created_at?: string
+          data_as_of?: string | null
+          data_sources?: string[] | null
+          esg_analysis?: Json | null
+          esg_score?: number | null
+          fundamental_analysis?: Json | null
+          generated_at?: string | null
+          governance_analysis?: Json | null
+          id?: string
+          last_significant_change?: string | null
+          material_changes?: string[] | null
+          model_governance?: Json | null
+          overall_quality_score?: number | null
+          performance_analysis?: Json | null
+          portfolio_role?: Json | null
+          previous_version_id?: string | null
+          quality_analysis?: Json | null
+          risk_analysis?: Json | null
+          risk_score?: number | null
+          scenario_analysis?: Json | null
+          updated_at?: string
+          valuation_analysis?: Json | null
+          valuation_score?: number | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_research_reports_previous_version_id_fkey"
+            columns: ["previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "asset_research_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -4512,6 +4616,104 @@ export type Database = {
           title?: string
           updated_at?: string | null
           uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      research_change_log: {
+        Row: {
+          asset_id: string
+          asset_type: string
+          change_summary: string
+          change_type: string
+          created_at: string
+          id: string
+          new_values: Json | null
+          previous_values: Json | null
+          report_id: string | null
+          significance: string | null
+        }
+        Insert: {
+          asset_id: string
+          asset_type: string
+          change_summary: string
+          change_type: string
+          created_at?: string
+          id?: string
+          new_values?: Json | null
+          previous_values?: Json | null
+          report_id?: string | null
+          significance?: string | null
+        }
+        Update: {
+          asset_id?: string
+          asset_type?: string
+          change_summary?: string
+          change_type?: string
+          created_at?: string
+          id?: string
+          new_values?: Json | null
+          previous_values?: Json | null
+          report_id?: string | null
+          significance?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_change_log_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "asset_research_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      research_generation_queue: {
+        Row: {
+          asset_data: Json | null
+          asset_id: string
+          asset_name: string
+          asset_symbol: string | null
+          asset_type: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          priority: number | null
+          retry_count: number | null
+          scheduled_for: string | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          asset_data?: Json | null
+          asset_id: string
+          asset_name: string
+          asset_symbol?: string | null
+          asset_type: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          priority?: number | null
+          retry_count?: number | null
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          asset_data?: Json | null
+          asset_id?: string
+          asset_name?: string
+          asset_symbol?: string | null
+          asset_type?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          priority?: number | null
+          retry_count?: number | null
+          scheduled_for?: string | null
+          started_at?: string | null
+          status?: string | null
         }
         Relationships: []
       }
