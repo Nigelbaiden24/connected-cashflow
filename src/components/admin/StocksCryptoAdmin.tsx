@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,841 +14,764 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
-  Plus, 
   Save, 
-  Trash2, 
   Bitcoin, 
   BarChart3, 
   Star, 
-  Edit2,
   TrendingUp,
+  TrendingDown,
   DollarSign,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Search,
+  Shield,
+  ChartBar,
+  FileText,
+  Users,
+  Settings,
+  Building2,
+  Award,
+  Target,
+  AlertTriangle,
+  Eye,
+  Clock,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
+import { useCryptoData, useStockData, type CryptoData, type StockData } from "@/hooks/useRealTimeMarketData";
 
 type AnalystRating = 'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative';
 
-interface StockCryptoForm {
-  symbol: string;
-  name: string;
-  asset_type: 'stock' | 'crypto';
-  description: string;
-  current_price: string;
-  price_currency: string;
-  market_cap: string;
-  volume_24h: string;
-  price_change_24h: string;
-  price_change_7d: string;
-  price_change_30d: string;
-  price_change_1y: string;
-  exchange: string;
-  sector: string;
-  industry: string;
-  pe_ratio: string;
-  dividend_yield: string;
-  blockchain: string;
-  consensus_mechanism: string;
-  logo_url: string;
-  analyst_rating: AnalystRating | '';
-  rating_rationale: string;
-  score_fundamentals: number;
-  score_technicals: number;
-  score_momentum: number;
-  score_risk: number;
-  investment_thesis: string;
+interface RatingForm {
+  analystRating: AnalystRating;
+  scoreFundamentals: number;
+  scoreTechnicals: number;
+  scoreMomentum: number;
+  scoreRisk: number;
+  investmentThesis: string;
   strengths: string;
   risks: string;
-  suitable_investor_type: string;
-  key_watchpoints: string;
-  status: 'draft' | 'published' | 'archived';
-  is_featured: boolean;
+  suitableInvestorType: string;
+  keyWatchpoints: string;
+  ratingRationale: string;
+  isFeatured: boolean;
 }
 
-const initialForm: StockCryptoForm = {
-  symbol: '',
-  name: '',
-  asset_type: 'stock',
-  description: '',
-  current_price: '',
-  price_currency: 'USD',
-  market_cap: '',
-  volume_24h: '',
-  price_change_24h: '',
-  price_change_7d: '',
-  price_change_30d: '',
-  price_change_1y: '',
-  exchange: '',
-  sector: '',
-  industry: '',
-  pe_ratio: '',
-  dividend_yield: '',
-  blockchain: '',
-  consensus_mechanism: '',
-  logo_url: '',
-  analyst_rating: '',
-  rating_rationale: '',
-  score_fundamentals: 0,
-  score_technicals: 0,
-  score_momentum: 0,
-  score_risk: 0,
-  investment_thesis: '',
+const initialRatingForm: RatingForm = {
+  analystRating: 'Neutral',
+  scoreFundamentals: 2.5,
+  scoreTechnicals: 2.5,
+  scoreMomentum: 2.5,
+  scoreRisk: 2.5,
+  investmentThesis: '',
   strengths: '',
   risks: '',
-  suitable_investor_type: '',
-  key_watchpoints: '',
-  status: 'draft',
-  is_featured: false,
+  suitableInvestorType: '',
+  keyWatchpoints: '',
+  ratingRationale: '',
+  isFeatured: false,
 };
 
-const stockSectors = [
-  'Technology', 'Healthcare', 'Finance', 'Consumer Discretionary', 
-  'Consumer Staples', 'Energy', 'Materials', 'Industrials', 
-  'Utilities', 'Real Estate', 'Communication Services'
-];
-
-const stockExchanges = [
-  'NYSE', 'NASDAQ', 'LSE', 'TSE', 'HKSE', 'SSE', 'Euronext', 'BSE', 'NSE'
-];
-
-const cryptoBlockchains = [
-  'Bitcoin', 'Ethereum', 'Solana', 'Cardano', 'Polkadot', 
-  'Avalanche', 'Polygon', 'BNB Chain', 'Cosmos', 'Tron'
-];
-
 export function StocksCryptoAdmin() {
-  const [form, setForm] = useState<StockCryptoForm>(initialForm);
-  const [assets, setAssets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'stocks' | 'crypto'>('stocks');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [stockPage, setStockPage] = useState(1);
+  const [cryptoPage, setCryptoPage] = useState(1);
+  
+  // Real-time data hooks
+  const { data: stocksData, total: stocksTotal, loading: stocksLoading, refetch: refetchStocks } = useStockData(stockPage, 50);
+  const { data: cryptoData, total: cryptoTotal, loading: cryptoLoading, refetch: refetchCrypto } = useCryptoData(cryptoPage, 100);
+  
+  // Selected asset for rating
+  const [selectedStock, setSelectedStock] = useState<StockData | null>(null);
+  const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | null>(null);
+  
+  // Rating form
+  const [ratingForm, setRatingForm] = useState<RatingForm>(initialRatingForm);
   const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Saved ratings from DB
+  const [savedRatings, setSavedRatings] = useState<Record<string, any>>({});
+  const [loadingRatings, setLoadingRatings] = useState(true);
 
   useEffect(() => {
-    fetchAssets();
+    fetchSavedRatings();
   }, []);
 
-  const fetchAssets = async () => {
+  const fetchSavedRatings = async () => {
     try {
       const { data, error } = await supabase
         .from('stocks_crypto')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (error) throw error;
-      setAssets(data || []);
+      
+      const ratingsMap: Record<string, any> = {};
+      (data || []).forEach(item => {
+        ratingsMap[item.symbol] = item;
+      });
+      setSavedRatings(ratingsMap);
     } catch (error) {
-      console.error('Error fetching assets:', error);
-      toast.error('Failed to load assets');
+      console.error('Error fetching saved ratings:', error);
     } finally {
-      setLoading(false);
+      setLoadingRatings(false);
     }
   };
 
-  const calculateOverallScore = () => {
-    const scores = [form.score_fundamentals, form.score_technicals, form.score_momentum, form.score_risk];
-    const validScores = scores.filter(s => s > 0);
-    if (validScores.length === 0) return 0;
-    return validScores.reduce((a, b) => a + b, 0) / validScores.length;
+  // Filter assets based on search
+  const filteredStocks = useMemo(() => {
+    if (!searchQuery) return stocksData;
+    const query = searchQuery.toLowerCase();
+    return stocksData.filter(s => 
+      s.symbol.toLowerCase().includes(query) ||
+      s.name.toLowerCase().includes(query) ||
+      (s.sector?.toLowerCase().includes(query))
+    );
+  }, [stocksData, searchQuery]);
+
+  const filteredCryptos = useMemo(() => {
+    if (!searchQuery) return cryptoData;
+    const query = searchQuery.toLowerCase();
+    return cryptoData.filter(c => 
+      c.symbol.toLowerCase().includes(query) ||
+      c.name.toLowerCase().includes(query)
+    );
+  }, [cryptoData, searchQuery]);
+
+  // Auto-calculate overall score
+  const overallScore = useMemo(() => {
+    const scores = [ratingForm.scoreFundamentals, ratingForm.scoreTechnicals, ratingForm.scoreMomentum, ratingForm.scoreRisk];
+    return Number((scores.reduce((a, b) => a + b, 0) / 4).toFixed(2));
+  }, [ratingForm.scoreFundamentals, ratingForm.scoreTechnicals, ratingForm.scoreMomentum, ratingForm.scoreRisk]);
+
+  const handleSelectStock = (stock: StockData) => {
+    setSelectedStock(stock);
+    setSelectedCrypto(null);
+    
+    // Load existing rating if available
+    const existing = savedRatings[stock.symbol];
+    if (existing) {
+      setRatingForm({
+        analystRating: existing.analyst_rating || 'Neutral',
+        scoreFundamentals: existing.score_fundamentals || 2.5,
+        scoreTechnicals: existing.score_technicals || 2.5,
+        scoreMomentum: existing.score_momentum || 2.5,
+        scoreRisk: existing.score_risk || 2.5,
+        investmentThesis: existing.investment_thesis || '',
+        strengths: existing.strengths || '',
+        risks: existing.risks || '',
+        suitableInvestorType: existing.suitable_investor_type || '',
+        keyWatchpoints: existing.key_watchpoints || '',
+        ratingRationale: existing.rating_rationale || '',
+        isFeatured: existing.is_featured || false,
+      });
+    } else {
+      setRatingForm(initialRatingForm);
+    }
   };
 
-  const handleSubmit = async () => {
-    if (!form.symbol || !form.name) {
-      toast.error('Please fill in required fields (Symbol and Name)');
-      return;
+  const handleSelectCrypto = (crypto: CryptoData) => {
+    setSelectedCrypto(crypto);
+    setSelectedStock(null);
+    
+    // Load existing rating if available
+    const existing = savedRatings[crypto.symbol.toUpperCase()];
+    if (existing) {
+      setRatingForm({
+        analystRating: existing.analyst_rating || 'Neutral',
+        scoreFundamentals: existing.score_fundamentals || 2.5,
+        scoreTechnicals: existing.score_technicals || 2.5,
+        scoreMomentum: existing.score_momentum || 2.5,
+        scoreRisk: existing.score_risk || 2.5,
+        investmentThesis: existing.investment_thesis || '',
+        strengths: existing.strengths || '',
+        risks: existing.risks || '',
+        suitableInvestorType: existing.suitable_investor_type || '',
+        keyWatchpoints: existing.key_watchpoints || '',
+        ratingRationale: existing.rating_rationale || '',
+        isFeatured: existing.is_featured || false,
+      });
+    } else {
+      setRatingForm(initialRatingForm);
     }
+  };
+
+  const handleSave = async () => {
+    const asset = selectedStock || selectedCrypto;
+    if (!asset) return;
 
     setSaving(true);
     try {
+      const symbol = selectedStock ? selectedStock.symbol : selectedCrypto!.symbol.toUpperCase();
+      const name = selectedStock ? selectedStock.name : selectedCrypto!.name;
+      const assetType = selectedStock ? 'stock' : 'crypto';
+      
       const payload = {
-        symbol: form.symbol.toUpperCase(),
-        name: form.name,
-        asset_type: form.asset_type,
-        description: form.description || null,
-        current_price: form.current_price ? parseFloat(form.current_price) : null,
-        price_currency: form.price_currency,
-        market_cap: form.market_cap ? parseFloat(form.market_cap) : null,
-        volume_24h: form.volume_24h ? parseFloat(form.volume_24h) : null,
-        price_change_24h: form.price_change_24h ? parseFloat(form.price_change_24h) : null,
-        price_change_7d: form.price_change_7d ? parseFloat(form.price_change_7d) : null,
-        price_change_30d: form.price_change_30d ? parseFloat(form.price_change_30d) : null,
-        price_change_1y: form.price_change_1y ? parseFloat(form.price_change_1y) : null,
-        exchange: form.exchange || null,
-        sector: form.sector || null,
-        industry: form.industry || null,
-        pe_ratio: form.pe_ratio ? parseFloat(form.pe_ratio) : null,
-        dividend_yield: form.dividend_yield ? parseFloat(form.dividend_yield) : null,
-        blockchain: form.blockchain || null,
-        consensus_mechanism: form.consensus_mechanism || null,
-        logo_url: form.logo_url || null,
-        analyst_rating: form.analyst_rating || null,
-        rating_rationale: form.rating_rationale || null,
-        score_fundamentals: form.score_fundamentals || null,
-        score_technicals: form.score_technicals || null,
-        score_momentum: form.score_momentum || null,
-        score_risk: form.score_risk || null,
-        overall_score: calculateOverallScore() || null,
-        investment_thesis: form.investment_thesis || null,
-        strengths: form.strengths || null,
-        risks: form.risks || null,
-        suitable_investor_type: form.suitable_investor_type || null,
-        key_watchpoints: form.key_watchpoints || null,
-        status: form.status,
-        is_featured: form.is_featured,
+        symbol,
+        name,
+        asset_type: assetType,
+        current_price: selectedStock ? selectedStock.currentPrice : selectedCrypto!.currentPrice,
+        market_cap: selectedStock ? selectedStock.marketCap : selectedCrypto!.marketCap,
+        price_change_24h: selectedStock ? selectedStock.changePercent : selectedCrypto!.priceChange24h,
+        exchange: selectedStock?.exchange || null,
+        sector: selectedStock?.sector || null,
+        analyst_rating: ratingForm.analystRating,
+        rating_rationale: ratingForm.ratingRationale,
+        score_fundamentals: ratingForm.scoreFundamentals,
+        score_technicals: ratingForm.scoreTechnicals,
+        score_momentum: ratingForm.scoreMomentum,
+        score_risk: ratingForm.scoreRisk,
+        overall_score: overallScore,
+        investment_thesis: ratingForm.investmentThesis,
+        strengths: ratingForm.strengths,
+        risks: ratingForm.risks,
+        suitable_investor_type: ratingForm.suitableInvestorType,
+        key_watchpoints: ratingForm.keyWatchpoints,
+        is_featured: ratingForm.isFeatured,
+        status: 'published',
+        logo_url: selectedCrypto?.image || null,
       };
 
-      if (editingId) {
+      // Check if exists
+      const existing = savedRatings[symbol];
+      
+      if (existing) {
         const { error } = await supabase
           .from('stocks_crypto')
           .update(payload)
-          .eq('id', editingId);
-
+          .eq('id', existing.id);
         if (error) throw error;
-        toast.success('Asset updated successfully');
       } else {
         const { error } = await supabase
           .from('stocks_crypto')
           .insert([payload]);
-
         if (error) throw error;
-        toast.success('Asset created successfully');
       }
 
-      setForm(initialForm);
-      setEditingId(null);
-      fetchAssets();
-    } catch (error) {
-      console.error('Error saving asset:', error);
-      toast.error('Failed to save asset');
+      toast.success(`${name} ratings saved successfully`);
+      fetchSavedRatings();
+    } catch (error: any) {
+      console.error('Error saving rating:', error);
+      toast.error(error.message || 'Failed to save rating');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleEdit = (asset: any) => {
-    setEditingId(asset.id);
-    setForm({
-      symbol: asset.symbol || '',
-      name: asset.name || '',
-      asset_type: asset.asset_type || 'stock',
-      description: asset.description || '',
-      current_price: asset.current_price?.toString() || '',
-      price_currency: asset.price_currency || 'USD',
-      market_cap: asset.market_cap?.toString() || '',
-      volume_24h: asset.volume_24h?.toString() || '',
-      price_change_24h: asset.price_change_24h?.toString() || '',
-      price_change_7d: asset.price_change_7d?.toString() || '',
-      price_change_30d: asset.price_change_30d?.toString() || '',
-      price_change_1y: asset.price_change_1y?.toString() || '',
-      exchange: asset.exchange || '',
-      sector: asset.sector || '',
-      industry: asset.industry || '',
-      pe_ratio: asset.pe_ratio?.toString() || '',
-      dividend_yield: asset.dividend_yield?.toString() || '',
-      blockchain: asset.blockchain || '',
-      consensus_mechanism: asset.consensus_mechanism || '',
-      logo_url: asset.logo_url || '',
-      analyst_rating: asset.analyst_rating || '',
-      rating_rationale: asset.rating_rationale || '',
-      score_fundamentals: asset.score_fundamentals || 0,
-      score_technicals: asset.score_technicals || 0,
-      score_momentum: asset.score_momentum || 0,
-      score_risk: asset.score_risk || 0,
-      investment_thesis: asset.investment_thesis || '',
-      strengths: asset.strengths || '',
-      risks: asset.risks || '',
-      suitable_investor_type: asset.suitable_investor_type || '',
-      key_watchpoints: asset.key_watchpoints || '',
-      status: asset.status || 'draft',
-      is_featured: asset.is_featured || false,
-    });
+  const getAnalystBadgeStyle = (rating: AnalystRating) => {
+    const styles: Record<AnalystRating, string> = {
+      'Gold': 'bg-amber-500/20 text-amber-600 border-amber-500/40',
+      'Silver': 'bg-slate-400/20 text-slate-600 border-slate-400/40',
+      'Bronze': 'bg-orange-600/20 text-orange-600 border-orange-600/40',
+      'Neutral': 'bg-slate-200 text-slate-600 border-slate-300',
+      'Negative': 'bg-red-500/20 text-red-600 border-red-500/40'
+    };
+    return styles[rating];
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this asset?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('stocks_crypto')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      toast.success('Asset deleted successfully');
-      fetchAssets();
-    } catch (error) {
-      console.error('Error deleting asset:', error);
-      toast.error('Failed to delete asset');
-    }
+  const getScoreColor = (score: number) => {
+    if (score >= 4) return 'text-emerald-600';
+    if (score >= 3) return 'text-blue-600';
+    if (score >= 2) return 'text-amber-600';
+    return 'text-red-600';
   };
 
-  const getRatingBadgeColor = (rating: string | null) => {
-    switch (rating) {
-      case 'Gold': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      case 'Silver': return 'bg-slate-400/20 text-slate-300 border-slate-400/30';
-      case 'Bronze': return 'bg-orange-600/20 text-orange-400 border-orange-600/30';
-      case 'Neutral': return 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30';
-      case 'Negative': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      default: return 'bg-zinc-700/20 text-zinc-500 border-zinc-700/30';
-    }
+  const analystOptions: AnalystRating[] = ['Gold', 'Silver', 'Bronze', 'Neutral', 'Negative'];
+
+  const formatPrice = (price: number) => {
+    if (price >= 1) return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$${price.toFixed(6)}`;
   };
+
+  const formatMarketCap = (cap: number | null) => {
+    if (!cap) return 'N/A';
+    if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
+    if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
+    if (cap >= 1e6) return `$${(cap / 1e6).toFixed(2)}M`;
+    return `$${cap.toLocaleString()}`;
+  };
+
+  const stockTotalPages = Math.ceil(stocksTotal / 50);
+  const cryptoTotalPages = Math.ceil(cryptoTotal / 100);
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-zinc-900 to-black border-white/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            {form.asset_type === 'crypto' ? (
-              <Bitcoin className="h-5 w-5 text-amber-400" />
-            ) : (
-              <BarChart3 className="h-5 w-5 text-blue-400" />
-            )}
-            {editingId ? 'Edit Asset' : 'Add New Stock / Crypto'}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Asset Selection Panel */}
+      <Card className="border-slate-200 shadow-xl bg-white">
+        <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardTitle className="flex items-center gap-2 text-xl text-slate-900">
+            <Search className="h-5 w-5 text-blue-600" />
+            Select Asset
           </CardTitle>
-          <CardDescription className="text-zinc-400">
-            Add stocks or cryptocurrencies with analyst ratings and commentary
+          <CardDescription className="text-slate-500">
+            {activeTab === 'stocks' ? `${stocksTotal.toLocaleString()} stocks available` : `${cryptoTotal.toLocaleString()} cryptocurrencies available`}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="basic" className="space-y-6">
-            <TabsList className="bg-zinc-800/50 border border-white/10">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="market">Market Data</TabsTrigger>
-              <TabsTrigger value="ratings">Analyst Ratings</TabsTrigger>
-              <TabsTrigger value="commentary">Commentary</TabsTrigger>
-            </TabsList>
+        <CardContent className="pt-4 space-y-4">
+          {/* Asset Type Toggle */}
+          <div className="flex gap-1 p-1 bg-slate-100 rounded-lg">
+            <Button
+              size="sm"
+              variant={activeTab === 'stocks' ? 'default' : 'ghost'}
+              onClick={() => { setActiveTab('stocks'); setSearchQuery(''); }}
+              className={`flex-1 ${activeTab === 'stocks' ? 'bg-blue-600 hover:bg-blue-700' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              <BarChart3 className="h-4 w-4 mr-1" />
+              Stocks ({stocksTotal})
+            </Button>
+            <Button
+              size="sm"
+              variant={activeTab === 'crypto' ? 'default' : 'ghost'}
+              onClick={() => { setActiveTab('crypto'); setSearchQuery(''); }}
+              className={`flex-1 ${activeTab === 'crypto' ? 'bg-amber-600 hover:bg-amber-700' : 'text-slate-600 hover:text-slate-900'}`}
+            >
+              <Bitcoin className="h-4 w-4 mr-1" />
+              Crypto ({cryptoTotal})
+            </Button>
+          </div>
 
-            <TabsContent value="basic" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder={`Search ${activeTab}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-white border-slate-200"
+            />
+          </div>
+
+          {/* Refresh Button */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full"
+            onClick={() => activeTab === 'stocks' ? refetchStocks() : refetchCrypto()}
+            disabled={stocksLoading || cryptoLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${(stocksLoading || cryptoLoading) ? 'animate-spin' : ''}`} />
+            Refresh Data
+          </Button>
+
+          {/* Asset List */}
+          <ScrollArea className="h-[400px]">
+            {activeTab === 'stocks' ? (
+              stocksLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                </div>
+              ) : (
                 <div className="space-y-2">
-                  <Label className="text-zinc-300">Asset Type *</Label>
-                  <Select value={form.asset_type} onValueChange={(v: 'stock' | 'crypto') => setForm({ ...form, asset_type: v })}>
-                    <SelectTrigger className="bg-zinc-800/50 border-white/10 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-white/10">
-                      <SelectItem value="stock">Stock</SelectItem>
-                      <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">Symbol / Ticker *</Label>
-                  <Input
-                    value={form.symbol}
-                    onChange={(e) => setForm({ ...form, symbol: e.target.value.toUpperCase() })}
-                    placeholder="e.g., AAPL, BTC"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-zinc-300">Name *</Label>
-                <Input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="e.g., Apple Inc., Bitcoin"
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-zinc-300">Description</Label>
-                <Textarea
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Brief description of the asset..."
-                  className="bg-zinc-800/50 border-white/10 text-white min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-zinc-300">Logo URL</Label>
-                <Input
-                  value={form.logo_url}
-                  onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
-                  placeholder="https://..."
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
-              </div>
-
-              {form.asset_type === 'stock' && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">Exchange</Label>
-                    <Select value={form.exchange} onValueChange={(v) => setForm({ ...form, exchange: v })}>
-                      <SelectTrigger className="bg-zinc-800/50 border-white/10 text-white">
-                        <SelectValue placeholder="Select exchange" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-white/10">
-                        {stockExchanges.map(ex => (
-                          <SelectItem key={ex} value={ex}>{ex}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">Sector</Label>
-                    <Select value={form.sector} onValueChange={(v) => setForm({ ...form, sector: v })}>
-                      <SelectTrigger className="bg-zinc-800/50 border-white/10 text-white">
-                        <SelectValue placeholder="Select sector" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-white/10">
-                        {stockSectors.map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">Industry</Label>
-                    <Input
-                      value={form.industry}
-                      onChange={(e) => setForm({ ...form, industry: e.target.value })}
-                      placeholder="e.g., Consumer Electronics"
-                      className="bg-zinc-800/50 border-white/10 text-white"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {form.asset_type === 'crypto' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">Blockchain</Label>
-                    <Select value={form.blockchain} onValueChange={(v) => setForm({ ...form, blockchain: v })}>
-                      <SelectTrigger className="bg-zinc-800/50 border-white/10 text-white">
-                        <SelectValue placeholder="Select blockchain" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-white/10">
-                        {cryptoBlockchains.map(b => (
-                          <SelectItem key={b} value={b}>{b}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">Consensus Mechanism</Label>
-                    <Select value={form.consensus_mechanism} onValueChange={(v) => setForm({ ...form, consensus_mechanism: v })}>
-                      <SelectTrigger className="bg-zinc-800/50 border-white/10 text-white">
-                        <SelectValue placeholder="Select mechanism" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-white/10">
-                        <SelectItem value="Proof of Work">Proof of Work</SelectItem>
-                        <SelectItem value="Proof of Stake">Proof of Stake</SelectItem>
-                        <SelectItem value="Delegated PoS">Delegated PoS</SelectItem>
-                        <SelectItem value="Proof of History">Proof of History</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="market" className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">Current Price</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      step="0.00000001"
-                      value={form.current_price}
-                      onChange={(e) => setForm({ ...form, current_price: e.target.value })}
-                      placeholder="0.00"
-                      className="bg-zinc-800/50 border-white/10 text-white"
-                    />
-                    <Select value={form.price_currency} onValueChange={(v) => setForm({ ...form, price_currency: v })}>
-                      <SelectTrigger className="w-24 bg-zinc-800/50 border-white/10 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-white/10">
-                        <SelectItem value="USD">USD</SelectItem>
-                        <SelectItem value="GBP">GBP</SelectItem>
-                        <SelectItem value="EUR">EUR</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">Market Cap</Label>
-                  <Input
-                    type="number"
-                    value={form.market_cap}
-                    onChange={(e) => setForm({ ...form, market_cap: e.target.value })}
-                    placeholder="e.g., 1000000000"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">24h Volume</Label>
-                  <Input
-                    type="number"
-                    value={form.volume_24h}
-                    onChange={(e) => setForm({ ...form, volume_24h: e.target.value })}
-                    placeholder="e.g., 50000000"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">24h Change (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={form.price_change_24h}
-                    onChange={(e) => setForm({ ...form, price_change_24h: e.target.value })}
-                    placeholder="e.g., 2.5"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">7d Change (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={form.price_change_7d}
-                    onChange={(e) => setForm({ ...form, price_change_7d: e.target.value })}
-                    placeholder="e.g., -1.2"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">30d Change (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={form.price_change_30d}
-                    onChange={(e) => setForm({ ...form, price_change_30d: e.target.value })}
-                    placeholder="e.g., 15.8"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-zinc-300">1Y Change (%)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={form.price_change_1y}
-                    onChange={(e) => setForm({ ...form, price_change_1y: e.target.value })}
-                    placeholder="e.g., 45.2"
-                    className="bg-zinc-800/50 border-white/10 text-white"
-                  />
-                </div>
-              </div>
-
-              {form.asset_type === 'stock' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">P/E Ratio</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={form.pe_ratio}
-                      onChange={(e) => setForm({ ...form, pe_ratio: e.target.value })}
-                      placeholder="e.g., 25.5"
-                      className="bg-zinc-800/50 border-white/10 text-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-zinc-300">Dividend Yield (%)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={form.dividend_yield}
-                      onChange={(e) => setForm({ ...form, dividend_yield: e.target.value })}
-                      placeholder="e.g., 1.5"
-                      className="bg-zinc-800/50 border-white/10 text-white"
-                    />
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="ratings" className="space-y-6">
-              <div className="space-y-4">
-                <Label className="text-zinc-300 text-lg">Analyst Rating</Label>
-                <div className="flex flex-wrap gap-2">
-                  {(['Gold', 'Silver', 'Bronze', 'Neutral', 'Negative'] as AnalystRating[]).map((rating) => (
-                    <Button
-                      key={rating}
-                      type="button"
-                      variant="outline"
-                      onClick={() => setForm({ ...form, analyst_rating: form.analyst_rating === rating ? '' : rating })}
-                      className={`${form.analyst_rating === rating ? getRatingBadgeColor(rating) : 'border-white/10 text-zinc-400'}`}
+                  {filteredStocks.map((stock) => (
+                    <div
+                      key={stock.symbol}
+                      onClick={() => handleSelectStock(stock)}
+                      className={`p-3 rounded-lg cursor-pointer transition-all border ${
+                        selectedStock?.symbol === stock.symbol
+                          ? 'bg-blue-50 border-blue-300'
+                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      }`}
                     >
-                      <Star className={`h-4 w-4 mr-2 ${form.analyst_rating === rating ? 'fill-current' : ''}`} />
-                      {rating}
-                    </Button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-slate-900">{stock.symbol}</span>
+                          {savedRatings[stock.symbol] && (
+                            <Badge className={`text-[10px] ${getAnalystBadgeStyle(savedRatings[stock.symbol].analyst_rating)}`}>
+                              {savedRatings[stock.symbol].analyst_rating}
+                            </Badge>
+                          )}
+                        </div>
+                        <span className={`text-xs font-medium ${stock.changePercent >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 truncate">{stock.name}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-sm font-semibold text-slate-900">{formatPrice(stock.currentPrice)}</span>
+                        {stock.sector && (
+                          <span className="text-[10px] text-slate-400">{stock.sector}</span>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-zinc-300">Rating Rationale</Label>
-                <Textarea
-                  value={form.rating_rationale}
-                  onChange={(e) => setForm({ ...form, rating_rationale: e.target.value })}
-                  placeholder="Explain the reasoning behind this rating..."
-                  className="bg-zinc-800/50 border-white/10 text-white min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="text-zinc-300 text-lg">Conviction Scores (0-5)</Label>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label className="text-zinc-400">Fundamentals</Label>
-                      <span className="text-white font-bold">{form.score_fundamentals}/5</span>
-                    </div>
-                    <Slider
-                      value={[form.score_fundamentals]}
-                      onValueChange={(v) => setForm({ ...form, score_fundamentals: v[0] })}
-                      max={5}
-                      step={1}
-                      className="cursor-pointer"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label className="text-zinc-400">Technicals</Label>
-                      <span className="text-white font-bold">{form.score_technicals}/5</span>
-                    </div>
-                    <Slider
-                      value={[form.score_technicals]}
-                      onValueChange={(v) => setForm({ ...form, score_technicals: v[0] })}
-                      max={5}
-                      step={1}
-                      className="cursor-pointer"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label className="text-zinc-400">Momentum</Label>
-                      <span className="text-white font-bold">{form.score_momentum}/5</span>
-                    </div>
-                    <Slider
-                      value={[form.score_momentum]}
-                      onValueChange={(v) => setForm({ ...form, score_momentum: v[0] })}
-                      max={5}
-                      step={1}
-                      className="cursor-pointer"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <Label className="text-zinc-400">Risk</Label>
-                      <span className="text-white font-bold">{form.score_risk}/5</span>
-                    </div>
-                    <Slider
-                      value={[form.score_risk]}
-                      onValueChange={(v) => setForm({ ...form, score_risk: v[0] })}
-                      max={5}
-                      step={1}
-                      className="cursor-pointer"
-                    />
-                  </div>
+              )
+            ) : (
+              cryptoLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <Loader2 className="h-6 w-6 animate-spin text-amber-600" />
                 </div>
-                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-zinc-400 text-sm">Overall Score</p>
-                  <p className="text-3xl font-bold text-primary">{calculateOverallScore().toFixed(2)}/5</p>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="commentary" className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-zinc-300">Investment Thesis</Label>
-                <Textarea
-                  value={form.investment_thesis}
-                  onChange={(e) => setForm({ ...form, investment_thesis: e.target.value })}
-                  placeholder="Detailed investment thesis..."
-                  className="bg-zinc-800/50 border-white/10 text-white min-h-[120px]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              ) : (
                 <div className="space-y-2">
-                  <Label className="text-emerald-400">Strengths</Label>
-                  <Textarea
-                    value={form.strengths}
-                    onChange={(e) => setForm({ ...form, strengths: e.target.value })}
-                    placeholder="Key strengths and advantages..."
-                    className="bg-emerald-500/5 border-emerald-500/20 text-white min-h-[100px]"
-                  />
+                  {filteredCryptos.map((crypto) => (
+                    <div
+                      key={crypto.id}
+                      onClick={() => handleSelectCrypto(crypto)}
+                      className={`p-3 rounded-lg cursor-pointer transition-all border ${
+                        selectedCrypto?.id === crypto.id
+                          ? 'bg-amber-50 border-amber-300'
+                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {crypto.image && (
+                            <img src={crypto.image} alt={crypto.name} className="h-5 w-5 rounded-full" />
+                          )}
+                          <span className="font-bold text-sm text-slate-900">{crypto.symbol.toUpperCase()}</span>
+                          {savedRatings[crypto.symbol.toUpperCase()] && (
+                            <Badge className={`text-[10px] ${getAnalystBadgeStyle(savedRatings[crypto.symbol.toUpperCase()].analyst_rating)}`}>
+                              {savedRatings[crypto.symbol.toUpperCase()].analyst_rating}
+                            </Badge>
+                          )}
+                        </div>
+                        <span className={`text-xs font-medium ${crypto.priceChange24h >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {crypto.priceChange24h >= 0 ? '+' : ''}{crypto.priceChange24h.toFixed(2)}%
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 truncate">{crypto.name}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-sm font-semibold text-slate-900">{formatPrice(crypto.currentPrice)}</span>
+                        <span className="text-[10px] text-slate-400">#{crypto.marketCapRank}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-red-400">Risks</Label>
-                  <Textarea
-                    value={form.risks}
-                    onChange={(e) => setForm({ ...form, risks: e.target.value })}
-                    placeholder="Key risks and concerns..."
-                    className="bg-red-500/5 border-red-500/20 text-white min-h-[100px]"
-                  />
-                </div>
-              </div>
+              )
+            )}
+          </ScrollArea>
 
-              <div className="space-y-2">
-                <Label className="text-zinc-300">Suitable Investor Type</Label>
-                <Input
-                  value={form.suitable_investor_type}
-                  onChange={(e) => setForm({ ...form, suitable_investor_type: e.target.value })}
-                  placeholder="e.g., Growth investors with high risk tolerance"
-                  className="bg-zinc-800/50 border-white/10 text-white"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-amber-400">Key Watchpoints</Label>
-                <Textarea
-                  value={form.key_watchpoints}
-                  onChange={(e) => setForm({ ...form, key_watchpoints: e.target.value })}
-                  placeholder="Important factors to monitor..."
-                  className="bg-amber-500/5 border-amber-500/20 text-white min-h-[100px]"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex items-center justify-between mt-6 pt-6 border-t border-white/10">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={form.is_featured}
-                  onCheckedChange={(checked) => setForm({ ...form, is_featured: checked })}
-                />
-                <Label className="text-zinc-300">Featured</Label>
-              </div>
-              <Select value={form.status} onValueChange={(v: 'draft' | 'published' | 'archived') => setForm({ ...form, status: v })}>
-                <SelectTrigger className="w-32 bg-zinc-800/50 border-white/10 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-white/10">
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex gap-2">
-              {editingId && (
-                <Button
-                  variant="outline"
-                  onClick={() => { setEditingId(null); setForm(initialForm); }}
-                  className="border-white/10 text-zinc-300"
-                >
-                  Cancel
-                </Button>
-              )}
-              <Button onClick={handleSubmit} disabled={saving} className="bg-primary hover:bg-primary/90">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                {editingId ? 'Update Asset' : 'Create Asset'}
+          {/* Pagination */}
+          {activeTab === 'stocks' && stockTotalPages > 1 && (
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStockPage(p => Math.max(1, p - 1))}
+                disabled={stockPage === 1 || stocksLoading}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-slate-500">
+                Page {stockPage} of {stockTotalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStockPage(p => Math.min(stockTotalPages, p + 1))}
+                disabled={stockPage === stockTotalPages || stocksLoading}
+              >
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
-          </div>
+          )}
+
+          {activeTab === 'crypto' && cryptoTotalPages > 1 && (
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCryptoPage(p => Math.max(1, p - 1))}
+                disabled={cryptoPage === 1 || cryptoLoading}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-slate-500">
+                Page {cryptoPage} of {cryptoTotalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCryptoPage(p => Math.min(cryptoTotalPages, p + 1))}
+                disabled={cryptoPage === cryptoTotalPages || cryptoLoading}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Assets List */}
-      <Card className="bg-zinc-900/50 border-white/10">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-white">Existing Assets</CardTitle>
-            <CardDescription className="text-zinc-400">
-              {assets.length} stocks and cryptocurrencies
-            </CardDescription>
-          </div>
-          <Button variant="outline" size="sm" onClick={fetchAssets} className="border-white/10 text-zinc-300">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-              <p className="text-zinc-400 mt-2">Loading assets...</p>
+      {/* Rating Panel */}
+      <Card className="lg:col-span-2 border-slate-200 shadow-xl bg-white">
+        <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-lg flex items-center justify-center shadow-lg ${
+                activeTab === 'stocks' 
+                  ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
+                  : 'bg-gradient-to-br from-amber-500 to-amber-600'
+              }`}>
+                <Award className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-slate-900">Analyst Assessment Panel</CardTitle>
+                <CardDescription className="text-slate-500">Rate and provide commentary on assets</CardDescription>
+              </div>
             </div>
-          ) : (
-            <ScrollArea className="h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/10">
-                    <TableHead className="text-zinc-400">Asset</TableHead>
-                    <TableHead className="text-zinc-400">Type</TableHead>
-                    <TableHead className="text-zinc-400">Rating</TableHead>
-                    <TableHead className="text-zinc-400">Score</TableHead>
-                    <TableHead className="text-zinc-400">Status</TableHead>
-                    <TableHead className="text-zinc-400">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assets.map((asset) => (
-                    <TableRow key={asset.id} className="border-white/5">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {asset.logo_url ? (
-                            <img src={asset.logo_url} alt={asset.name} className="h-8 w-8 rounded-full" />
-                          ) : (
-                            <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                              {asset.asset_type === 'crypto' ? (
-                                <Bitcoin className="h-4 w-4 text-amber-400" />
-                              ) : (
-                                <BarChart3 className="h-4 w-4 text-blue-400" />
-                              )}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium text-white">{asset.name}</p>
-                            <p className="text-xs text-zinc-500">{asset.symbol}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={asset.asset_type === 'crypto' ? 'border-amber-500/30 text-amber-400' : 'border-blue-500/30 text-blue-400'}>
-                          {asset.asset_type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {asset.analyst_rating ? (
-                          <Badge className={getRatingBadgeColor(asset.analyst_rating)}>
-                            {asset.analyst_rating}
-                          </Badge>
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell className="text-white">
-                        {asset.overall_score ? Number(asset.overall_score).toFixed(1) : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={
-                          asset.status === 'published' ? 'border-emerald-500/30 text-emerald-400' :
-                          asset.status === 'draft' ? 'border-amber-500/30 text-amber-400' :
-                          'border-zinc-500/30 text-zinc-400'
-                        }>
-                          {asset.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" onClick={() => handleEdit(asset)} className="text-zinc-400 hover:text-white">
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleDelete(asset.id)} className="text-red-400 hover:text-red-300">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+            <Button 
+              onClick={handleSave} 
+              disabled={(!selectedStock && !selectedCrypto) || saving}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+            >
+              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              Save Ratings
+            </Button>
+          </div>
+
+          {/* Selected Asset Info */}
+          {(selectedStock || selectedCrypto) && (
+            <div className="mt-4 p-3 rounded-lg bg-white border border-slate-200">
+              <div className="flex items-center gap-3">
+                {selectedCrypto?.image && (
+                  <img src={selectedCrypto.image} alt={selectedCrypto.name} className="h-8 w-8 rounded-full" />
+                )}
+                <div className="flex-1">
+                  <p className="font-medium text-sm text-slate-900">
+                    {selectedStock?.name || selectedCrypto?.name}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {selectedStock?.symbol || selectedCrypto?.symbol.toUpperCase()} • 
+                    {formatPrice(selectedStock?.currentPrice || selectedCrypto?.currentPrice || 0)} • 
+                    MCap: {formatMarketCap(selectedStock?.marketCap || selectedCrypto?.marketCap || null)}
+                  </p>
+                </div>
+                <div className={`flex items-center gap-1 ${
+                  (selectedStock?.changePercent || selectedCrypto?.priceChange24h || 0) >= 0 
+                    ? 'text-emerald-600' 
+                    : 'text-red-600'
+                }`}>
+                  {(selectedStock?.changePercent || selectedCrypto?.priceChange24h || 0) >= 0 
+                    ? <TrendingUp className="h-4 w-4" /> 
+                    : <TrendingDown className="h-4 w-4" />
+                  }
+                  <span className="font-medium text-sm">
+                    {(selectedStock?.changePercent || selectedCrypto?.priceChange24h || 0) >= 0 ? '+' : ''}
+                    {(selectedStock?.changePercent || selectedCrypto?.priceChange24h || 0).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
-        </CardContent>
+        </CardHeader>
+
+        {(selectedStock || selectedCrypto) ? (
+          <ScrollArea className="h-[550px]">
+            <Tabs defaultValue="rating" className="w-full">
+              <TabsList className="w-full grid grid-cols-3 mx-4 mt-4 bg-slate-100" style={{ width: 'calc(100% - 2rem)' }}>
+                <TabsTrigger value="rating" className="text-xs data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  <Shield className="h-3 w-3 mr-1" />
+                  Rating
+                </TabsTrigger>
+                <TabsTrigger value="conviction" className="text-xs data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  <ChartBar className="h-3 w-3 mr-1" />
+                  Conviction
+                </TabsTrigger>
+                <TabsTrigger value="commentary" className="text-xs data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  <FileText className="h-3 w-3 mr-1" />
+                  Commentary
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Tab 1: Analyst Rating */}
+              <TabsContent value="rating" className="p-4 space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    <Label className="text-sm font-semibold text-slate-900">Forward-Looking Analyst Rating</Label>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Qualitative assessment of the asset's potential for outperformance.
+                  </p>
+                  
+                  <div className="grid grid-cols-5 gap-2">
+                    {analystOptions.map((rating) => (
+                      <Button
+                        key={rating}
+                        variant="outline"
+                        size="sm"
+                        className={`flex flex-col items-center gap-1 h-auto py-3 ${
+                          ratingForm.analystRating === rating 
+                            ? getAnalystBadgeStyle(rating) + ' border-2 ring-2 ring-blue-200' 
+                            : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'
+                        }`}
+                        onClick={() => setRatingForm({ ...ratingForm, analystRating: rating })}
+                      >
+                        <span className="text-lg">
+                          {rating === 'Gold' && '🥇'}
+                          {rating === 'Silver' && '🥈'}
+                          {rating === 'Bronze' && '🥉'}
+                          {rating === 'Neutral' && '⚪'}
+                          {rating === 'Negative' && '🔴'}
+                        </span>
+                        <span className="text-xs font-medium">{rating}</span>
+                      </Button>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700">Rating Rationale</Label>
+                    <Textarea
+                      value={ratingForm.ratingRationale}
+                      onChange={(e) => setRatingForm({ ...ratingForm, ratingRationale: e.target.value })}
+                      placeholder="Explain your rating decision..."
+                      className="min-h-[100px] bg-white border-slate-200"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <Switch 
+                      checked={ratingForm.isFeatured}
+                      onCheckedChange={(checked) => setRatingForm({ ...ratingForm, isFeatured: checked })}
+                    />
+                    <div>
+                      <Label className="text-slate-900">Featured Asset</Label>
+                      <p className="text-xs text-slate-500">Show this asset prominently on the platform</p>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Tab 2: Conviction Scores */}
+              <TabsContent value="conviction" className="p-4 space-y-5">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ChartBar className="h-5 w-5 text-blue-600" />
+                      <Label className="text-sm font-semibold text-slate-900">Analyst Conviction Scores</Label>
+                    </div>
+                    <Badge variant="outline" className={`${getScoreColor(overallScore)} border-current`}>
+                      Overall: {overallScore.toFixed(1)} / 5
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Score each factor from 0 (lowest) to 5 (highest).
+                  </p>
+
+                  {/* Score Sliders */}
+                  {[
+                    { label: 'Fundamentals', icon: Building2, value: ratingForm.scoreFundamentals, key: 'scoreFundamentals', color: 'text-purple-600', desc: 'Financial health, earnings, balance sheet' },
+                    { label: 'Technicals', icon: Settings, value: ratingForm.scoreTechnicals, key: 'scoreTechnicals', color: 'text-blue-600', desc: 'Chart patterns, support/resistance, trends' },
+                    { label: 'Momentum', icon: TrendingUp, value: ratingForm.scoreMomentum, key: 'scoreMomentum', color: 'text-green-600', desc: 'Price momentum, volume trends, sentiment' },
+                    { label: 'Risk', icon: AlertTriangle, value: ratingForm.scoreRisk, key: 'scoreRisk', color: 'text-amber-600', desc: 'Volatility, downside protection (higher = lower risk)' },
+                  ].map(({ label, icon: Icon, value, key, color, desc }) => (
+                    <div key={label} className="space-y-3 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className={`h-4 w-4 ${color}`} />
+                          <span className="font-medium text-sm text-slate-900">{label}</span>
+                        </div>
+                        <span className={`text-lg font-bold ${getScoreColor(value)}`}>
+                          {value.toFixed(1)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500">{desc}</p>
+                      <Slider
+                        value={[value]}
+                        onValueChange={(v) => setRatingForm({ ...ratingForm, [key]: v[0] })}
+                        max={5}
+                        step={0.1}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-[10px] text-slate-400">
+                        <span>Poor</span>
+                        <span>Excellent</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* Tab 3: Commentary */}
+              <TabsContent value="commentary" className="p-4 space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <Label className="text-sm font-semibold text-slate-900">Analyst Commentary</Label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 flex items-center gap-2">
+                      <Target className="h-4 w-4 text-blue-500" />
+                      Investment Thesis
+                    </Label>
+                    <Textarea
+                      value={ratingForm.investmentThesis}
+                      onChange={(e) => setRatingForm({ ...ratingForm, investmentThesis: e.target.value })}
+                      placeholder="Core investment rationale..."
+                      className="min-h-[80px] bg-white border-slate-200"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-emerald-500" />
+                        Key Strengths
+                      </Label>
+                      <Textarea
+                        value={ratingForm.strengths}
+                        onChange={(e) => setRatingForm({ ...ratingForm, strengths: e.target.value })}
+                        placeholder="Competitive advantages..."
+                        className="min-h-[100px] bg-white border-slate-200"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        Key Risks
+                      </Label>
+                      <Textarea
+                        value={ratingForm.risks}
+                        onChange={(e) => setRatingForm({ ...ratingForm, risks: e.target.value })}
+                        placeholder="Potential downside risks..."
+                        className="min-h-[100px] bg-white border-slate-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 flex items-center gap-2">
+                      <Users className="h-4 w-4 text-purple-500" />
+                      Suitable Investor Type
+                    </Label>
+                    <Input
+                      value={ratingForm.suitableInvestorType}
+                      onChange={(e) => setRatingForm({ ...ratingForm, suitableInvestorType: e.target.value })}
+                      placeholder="e.g., Growth investors, Risk-tolerant, Long-term holders..."
+                      className="bg-white border-slate-200"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700 flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-amber-500" />
+                      Key Watchpoints
+                    </Label>
+                    <Textarea
+                      value={ratingForm.keyWatchpoints}
+                      onChange={(e) => setRatingForm({ ...ratingForm, keyWatchpoints: e.target.value })}
+                      placeholder="Important metrics or events to monitor..."
+                      className="min-h-[80px] bg-white border-slate-200"
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </ScrollArea>
+        ) : (
+          <CardContent className="h-[550px] flex items-center justify-center">
+            <div className="text-center space-y-3">
+              <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto">
+                <Search className="h-8 w-8 text-slate-400" />
+              </div>
+              <div>
+                <p className="font-medium text-slate-900">Select an Asset</p>
+                <p className="text-sm text-slate-500">Choose a stock or cryptocurrency from the list to rate</p>
+              </div>
+            </div>
+          </CardContent>
+        )}
       </Card>
     </div>
   );
