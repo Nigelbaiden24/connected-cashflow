@@ -133,6 +133,11 @@ const researchToolsItems = [
     icon: TrendingUp,
   },
   {
+    title: "News",
+    url: "/finance/news",
+    icon: Mail,
+  },
+  {
     title: "Opportunity Intelligence",
     url: "/finance/opportunities",
     icon: Lightbulb,

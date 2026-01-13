@@ -43,6 +43,9 @@ import FinanceWatchlists from "./pages/finance/Watchlists";
 import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
 import StocksCryptoDatabase from "./pages/StocksCryptoDatabase";
 import RealTimeMarketDatabase from "./pages/RealTimeMarketDatabase";
+import FinanceNews from "./pages/finance/News";
+import InvestorNews from "./pages/investor/News";
+import AdminNews from "./pages/admin/News";
 
 // Lazy load heavy components with large data files
 const FundETFDatabase = lazy(() => import("./pages/finance/FundETFDatabase"));
@@ -440,6 +443,8 @@ const App = () => {
               )
             } />
             
+            <Route path="/finance/news" element={<FinanceNews />} />
+            
             <Route path="/investor/tasks" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
                 <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
@@ -598,6 +603,7 @@ const App = () => {
             <Route path="/investor/stocks-crypto" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><StocksCryptoDatabase /></InvestorLayout>
             } />
+            <Route path="/investor/news" element={<InvestorNews />} />
             
             {/* Research Reports Page */}
             <Route path="/research-reports" element={<ResearchReportsPage />} />
@@ -605,6 +611,7 @@ const App = () => {
             
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/news" element={<AdminNews />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
