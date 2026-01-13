@@ -28,6 +28,7 @@ import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 interface Profile {
   user_id: string;
@@ -44,6 +45,7 @@ export default function AdminDashboard() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0);
   const [crmActiveTab, setCrmActiveTab] = useState('board');
+  const [activeTab, setActiveTab] = useState('users');
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
@@ -556,215 +558,25 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="container mx-auto p-6 space-y-6">
-        {/* Header with enterprise light theme */}
-        <div className="relative overflow-hidden rounded-2xl p-8 bg-white border border-slate-200 shadow-xl">
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none"></div>
+    <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      {/* Sidebar */}
+      <AdminSidebar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        onLogout={handleLogout}
+      />
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto">
+        <div className="p-6 space-y-6">
+          {/* Content based on active tab */}
+          {activeTab === 'users' && <UserManagement />}
           
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg shadow-primary/20">
-                  <LayoutDashboard className="h-8 w-8 text-white" />
-                </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-900 via-slate-700 to-slate-600 bg-clip-text text-transparent">
-                  Admin Dashboard
-                </h1>
-              </div>
-              <p className="text-slate-500 text-lg">Upload and manage investor platform content</p>
-            </div>
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleLogout}
-                variant="outline"
-                className="bg-white hover:bg-red-50 text-red-600 border-red-200 hover:border-red-300 shadow-sm transition-all"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <Tabs defaultValue="users" className="w-full">
-          <div className="overflow-x-auto pb-4 -mx-2 px-2">
-            <TabsList className="inline-flex min-w-max gap-2 bg-gradient-to-r from-slate-50 via-white to-slate-50 p-3 border-2 border-slate-200/80 rounded-2xl shadow-lg backdrop-blur-sm">
-              <TabsTrigger 
-                value="users"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <Users className="h-5 w-5 mr-2" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger 
-                value="enquiries"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/25 data-[state=active]:border-orange-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-orange-50 hover:border-orange-200 hover:scale-[1.01]"
-              >
-                <MessageSquare className="h-5 w-5 mr-2" />
-                Enquiries
-              </TabsTrigger>
-              <TabsTrigger 
-                value="demo-requests"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <Calendar className="h-5 w-5 mr-2" />
-                Demo Requests
-              </TabsTrigger>
-              <TabsTrigger 
-                value="reports"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <FileText className="h-5 w-5 mr-2" />
-                Reports
-              </TabsTrigger>
-              <TabsTrigger 
-                value="newsletters"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <Newspaper className="h-5 w-5 mr-2" />
-                Newsletters
-              </TabsTrigger>
-              <TabsTrigger 
-                value="portfolios"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <TrendingUp className="h-5 w-5 mr-2" />
-                Portfolios
-              </TabsTrigger>
-              <TabsTrigger 
-                value="commentary"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <FileText className="h-5 w-5 mr-2" />
-                Commentary
-              </TabsTrigger>
-              <TabsTrigger 
-                value="learning"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <BookOpen className="h-5 w-5 mr-2" />
-                Learning
-              </TabsTrigger>
-              <TabsTrigger 
-                value="videos"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <Video className="h-5 w-5 mr-2" />
-                Videos
-              </TabsTrigger>
-              <TabsTrigger 
-                value="watchlists"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <List className="h-5 w-5 mr-2" />
-                Watchlists
-              </TabsTrigger>
-              <TabsTrigger 
-                value="risk-compliance"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <Shield className="h-5 w-5 mr-2" />
-                Risk & Compliance
-              </TabsTrigger>
-              <TabsTrigger 
-                value="alerts"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <Bell className="h-5 w-5 mr-2" />
-                Signals & Alerts
-              </TabsTrigger>
-              <TabsTrigger 
-                value="market-trends"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
-              >
-                <TrendingUp className="h-5 w-5 mr-2" />
-                Market Trends
-              </TabsTrigger>
-              <TabsTrigger 
-                value="purchasable-reports"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:border-emerald-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-emerald-50 hover:border-emerald-200 hover:scale-[1.01]"
-              >
-                <ShoppingBag className="h-5 w-5 mr-2" />
-                Shop Reports
-              </TabsTrigger>
-              <TabsTrigger 
-                value="fund-scoring"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:border-amber-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-amber-50 hover:border-amber-200 hover:scale-[1.01]"
-              >
-                <Star className="h-5 w-5 mr-2" />
-                Fund Scoring
-              </TabsTrigger>
-              <TabsTrigger 
-                value="fund-analyst"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-teal-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/25 data-[state=active]:border-teal-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-teal-50 hover:border-teal-200 hover:scale-[1.01]"
-              >
-                <TrendingUp className="h-5 w-5 mr-2" />
-                Fund Analyst
-              </TabsTrigger>
-              <TabsTrigger 
-                value="opportunities"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 data-[state=active]:border-purple-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-purple-50 hover:border-purple-200 hover:scale-[1.01]"
-              >
-                <Lightbulb className="h-5 w-5 mr-2" />
-                Opportunities
-              </TabsTrigger>
-              <TabsTrigger 
-                value="stocks-crypto"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-cyan-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/25 data-[state=active]:border-cyan-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-cyan-50 hover:border-cyan-200 hover:scale-[1.01]"
-              >
-                <Bitcoin className="h-5 w-5 mr-2" />
-                Stocks & Crypto
-              </TabsTrigger>
-              <TabsTrigger 
-                value="research-engine"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/25 data-[state=active]:border-indigo-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-indigo-50 hover:border-indigo-200 hover:scale-[1.01]"
-              >
-                <FlaskConical className="h-5 w-5 mr-2" />
-                Research Engine
-              </TabsTrigger>
-              <TabsTrigger 
-                value="document-generator"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 data-[state=active]:border-violet-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-violet-50 hover:border-violet-200 hover:scale-[1.01]"
-              >
-                <Sparkles className="h-5 w-5 mr-2" />
-                Document Generator
-              </TabsTrigger>
-              <TabsTrigger 
-                value="research-ai"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-rose-500/25 data-[state=active]:border-rose-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-rose-50 hover:border-rose-200 hover:scale-[1.01]"
-              >
-                <Bot className="h-5 w-5 mr-2" />
-                Research AI
-              </TabsTrigger>
-              <TabsTrigger 
-                value="crm"
-                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 data-[state=active]:border-blue-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-blue-50 hover:border-blue-200 hover:scale-[1.01]"
-              >
-                <Contact className="h-5 w-5 mr-2" />
-                CRM
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          {/* User Management Tab */}
-          <TabsContent value="users">
-            <UserManagement />
-          </TabsContent>
-
-          {/* Enquiries Tab */}
-          <TabsContent value="enquiries">
-            <PlatformEnquiries />
-          </TabsContent>
-
-          {/* Demo Requests Tab */}
-          <TabsContent value="demo-requests">
-            <DemoRequests />
-          </TabsContent>
-
-          {/* Reports Tab */}
-          <TabsContent value="reports">
+          {activeTab === 'enquiries' && <PlatformEnquiries />}
+          
+          {activeTab === 'demo-requests' && <DemoRequests />}
+          
+          {activeTab === 'reports' && (
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="general">General Reports</TabsTrigger>
@@ -772,7 +584,6 @@ export default function AdminDashboard() {
                 <TabsTrigger value="analysis">Analysis Reports</TabsTrigger>
               </TabsList>
 
-              {/* General Reports Upload */}
               <TabsContent value="general">
                 <Card className="border-slate-200 shadow-lg bg-white">
                   <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
@@ -787,23 +598,16 @@ export default function AdminDashboard() {
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-slate-600">
-                          • Upload PDF reports for any FlowPulse platform
-                        </p>
-                        <p className="text-sm text-slate-600">
-                          • Select Finance, Business, or Investor platform
-                        </p>
-                        <p className="text-sm text-slate-600">
-                          • Choose report type and assign to specific users
-                        </p>
+                        <p className="text-sm text-slate-600">• Upload PDF reports for any FlowPulse platform</p>
+                        <p className="text-sm text-slate-600">• Select Finance, Business, or Investor platform</p>
+                        <p className="text-sm text-slate-600">• Choose report type and assign to specific users</p>
                       </div>
-                       <AdminReportUpload onUploadSuccess={fetchProfiles} />
+                      <AdminReportUpload onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* Research Reports for Investor Platform */}
               <TabsContent value="research">
                 <Card className="border-slate-200 shadow-lg bg-white">
                   <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
@@ -818,23 +622,16 @@ export default function AdminDashboard() {
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-slate-600">
-                          • Upload PDF research reports for investors
-                        </p>
-                        <p className="text-sm text-slate-600">
-                          • Reports will appear in the Investor Research Reports section
-                        </p>
-                        <p className="text-sm text-slate-600">
-                          • Assign to specific users or make available to all investors
-                        </p>
+                        <p className="text-sm text-slate-600">• Upload PDF research reports for investors</p>
+                        <p className="text-sm text-slate-600">• Reports will appear in the Investor Research Reports section</p>
+                        <p className="text-sm text-slate-600">• Assign to specific users or make available to all investors</p>
                       </div>
-                       <AdminReportUpload platform="investor" section="investor_research" onUploadSuccess={fetchProfiles} />
+                      <AdminReportUpload platform="investor" section="investor_research" onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              {/* Analysis Reports for Investor Platform */}
               <TabsContent value="analysis">
                 <Card className="border-slate-200 shadow-lg bg-white">
                   <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
@@ -849,15 +646,9 @@ export default function AdminDashboard() {
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-slate-600">
-                          • Upload PDF analysis reports for investors
-                        </p>
-                        <p className="text-sm text-slate-600">
-                          • Reports will appear in the Investor Analysis Reports section
-                        </p>
-                        <p className="text-sm text-slate-600">
-                          • Assign to specific users or make available to all investors
-                        </p>
+                        <p className="text-sm text-slate-600">• Upload PDF analysis reports for investors</p>
+                        <p className="text-sm text-slate-600">• Reports will appear in the Investor Analysis Reports section</p>
+                        <p className="text-sm text-slate-600">• Assign to specific users or make available to all investors</p>
                       </div>
                       <AdminReportUpload platform="investor" section="investor_analysis" onUploadSuccess={fetchProfiles} />
                     </div>
@@ -865,10 +656,9 @@ export default function AdminDashboard() {
                 </Card>
               </TabsContent>
             </Tabs>
-          </TabsContent>
+          )}
 
-          {/* Newsletters Tab */}
-          <TabsContent value="newsletters">
+          {activeTab === 'newsletters' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -879,59 +669,54 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleNewsletterUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-title">Title *</Label>
-                  <Input
-                    id="newsletter-title"
-                    value={newsletterForm.title}
-                    onChange={(e) => setNewsletterForm({ ...newsletterForm, title: e.target.value })}
-                    placeholder="Newsletter title"
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newsletter-title">Title *</Label>
+                    <Input
+                      id="newsletter-title"
+                      value={newsletterForm.title}
+                      onChange={(e) => setNewsletterForm({ ...newsletterForm, title: e.target.value })}
+                      placeholder="Newsletter title"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newsletter-desc">Description</Label>
+                    <Textarea
+                      id="newsletter-desc"
+                      value={newsletterForm.description}
+                      onChange={(e) => setNewsletterForm({ ...newsletterForm, description: e.target.value })}
+                      placeholder="Newsletter description"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newsletter-date">Publish Date (Optional)</Label>
+                    <Input
+                      id="newsletter-date"
+                      type="date"
+                      value={newsletterForm.publishDate}
+                      onChange={(e) => setNewsletterForm({ ...newsletterForm, publishDate: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="newsletter-file">File (PDF) *</Label>
+                    <Input
+                      id="newsletter-file"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setNewsletterForm({ ...newsletterForm, file: e.target.files?.[0] || null })}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Upload Newsletter
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-desc">Description</Label>
-                  <Textarea
-                    id="newsletter-desc"
-                    value={newsletterForm.description}
-                    onChange={(e) => setNewsletterForm({ ...newsletterForm, description: e.target.value })}
-                    placeholder="Newsletter description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-date">Publish Date (Optional)</Label>
-                  <Input
-                    id="newsletter-date"
-                    type="date"
-                    value={newsletterForm.publishDate}
-                    onChange={(e) => setNewsletterForm({ ...newsletterForm, publishDate: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newsletter-file">File (PDF) *</Label>
-                  <Input
-                    id="newsletter-file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setNewsletterForm({ ...newsletterForm, file: e.target.files?.[0] || null })}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Newsletter
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-          {/* Portfolios Tab */}
-          <TabsContent value="portfolios">
+          {activeTab === 'portfolios' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -942,49 +727,45 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handlePortfolioUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="portfolio-title">Title *</Label>
-                  <Input
-                    id="portfolio-title"
-                    value={portfolioForm.title}
-                    onChange={(e) => setPortfolioForm({ ...portfolioForm, title: e.target.value })}
-                    placeholder="Portfolio title"
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolio-title">Title *</Label>
+                    <Input
+                      id="portfolio-title"
+                      value={portfolioForm.title}
+                      onChange={(e) => setPortfolioForm({ ...portfolioForm, title: e.target.value })}
+                      placeholder="Portfolio title"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolio-desc">Description</Label>
+                    <Textarea
+                      id="portfolio-desc"
+                      value={portfolioForm.description}
+                      onChange={(e) => setPortfolioForm({ ...portfolioForm, description: e.target.value })}
+                      placeholder="Portfolio description"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolio-file">File (PDF) *</Label>
+                    <Input
+                      id="portfolio-file"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setPortfolioForm({ ...portfolioForm, file: e.target.files?.[0] || null })}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Upload Portfolio
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="portfolio-desc">Description</Label>
-                  <Textarea
-                    id="portfolio-desc"
-                    value={portfolioForm.description}
-                    onChange={(e) => setPortfolioForm({ ...portfolioForm, description: e.target.value })}
-                    placeholder="Portfolio description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="portfolio-file">File (PDF) *</Label>
-                  <Input
-                    id="portfolio-file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setPortfolioForm({ ...portfolioForm, file: e.target.files?.[0] || null })}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Portfolio
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-          {/* Commentary Tab */}
-          <TabsContent value="commentary">
+          {activeTab === 'commentary' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -995,49 +776,45 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleCommentaryUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="commentary-title">Title *</Label>
-                  <Input
-                    id="commentary-title"
-                    value={commentaryForm.title}
-                    onChange={(e) => setCommentaryForm({ ...commentaryForm, title: e.target.value })}
-                    placeholder="Commentary title"
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="commentary-title">Title *</Label>
+                    <Input
+                      id="commentary-title"
+                      value={commentaryForm.title}
+                      onChange={(e) => setCommentaryForm({ ...commentaryForm, title: e.target.value })}
+                      placeholder="Commentary title"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="commentary-desc">Description</Label>
+                    <Textarea
+                      id="commentary-desc"
+                      value={commentaryForm.description}
+                      onChange={(e) => setCommentaryForm({ ...commentaryForm, description: e.target.value })}
+                      placeholder="Commentary description"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="commentary-file">File (PDF) *</Label>
+                    <Input
+                      id="commentary-file"
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setCommentaryForm({ ...commentaryForm, file: e.target.files?.[0] || null })}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Upload Commentary
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="commentary-desc">Description</Label>
-                  <Textarea
-                    id="commentary-desc"
-                    value={commentaryForm.description}
-                    onChange={(e) => setCommentaryForm({ ...commentaryForm, description: e.target.value })}
-                    placeholder="Commentary description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="commentary-file">File (PDF) *</Label>
-                  <Input
-                    id="commentary-file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setCommentaryForm({ ...commentaryForm, file: e.target.files?.[0] || null })}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Commentary
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-          {/* Learning Tab */}
-          <TabsContent value="learning">
+          {activeTab === 'learning' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -1059,7 +836,6 @@ export default function AdminDashboard() {
                         required
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="learning-category">Category *</Label>
                       <Select value={learningForm.category} onValueChange={(value) => setLearningForm({ ...learningForm, category: value })}>
@@ -1077,7 +853,6 @@ export default function AdminDashboard() {
                       </Select>
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="learning-desc">Short Description</Label>
                     <Input
@@ -1087,7 +862,6 @@ export default function AdminDashboard() {
                       placeholder="Brief description (appears in cards)"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="learning-content">Full Content *</Label>
                     <Textarea
@@ -1099,7 +873,6 @@ export default function AdminDashboard() {
                       required
                     />
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="learning-duration">Duration (e.g., "10 min read", "8:24")</Label>
@@ -1110,7 +883,6 @@ export default function AdminDashboard() {
                         placeholder="Duration or reading time"
                       />
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="learning-difficulty">Difficulty Level</Label>
                       <Select value={learningForm.difficultyLevel} onValueChange={(value) => setLearningForm({ ...learningForm, difficultyLevel: value })}>
@@ -1125,8 +897,6 @@ export default function AdminDashboard() {
                       </Select>
                     </div>
                   </div>
-
-                  {/* Category-specific fields */}
                   {learningForm.category === "guides" && (
                     <div className="space-y-2">
                       <Label htmlFor="learning-topics">Topics (comma-separated)</Label>
@@ -1138,7 +908,6 @@ export default function AdminDashboard() {
                       />
                     </div>
                   )}
-
                   {learningForm.category === "sectors" && (
                     <>
                       <div className="space-y-2">
@@ -1161,7 +930,6 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   )}
-
                   {learningForm.category === "risks" && (
                     <>
                       <div className="space-y-2">
@@ -1191,7 +959,6 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   )}
-
                   {learningForm.category === "videos" && (
                     <div className="space-y-2">
                       <Label htmlFor="learning-video-url">Video URL (YouTube, Vimeo, etc.)</Label>
@@ -1203,7 +970,6 @@ export default function AdminDashboard() {
                       />
                     </div>
                   )}
-
                   <div className="space-y-2">
                     <Label htmlFor="learning-file">Attachment (PDF, optional)</Label>
                     <Input
@@ -1214,7 +980,6 @@ export default function AdminDashboard() {
                     />
                     <p className="text-sm text-muted-foreground">Optional: Attach a PDF document for additional resources</p>
                   </div>
-
                   <Button type="submit" disabled={uploading} className="w-full">
                     {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
                     Upload Learning Content
@@ -1222,10 +987,9 @@ export default function AdminDashboard() {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Videos Tab */}
-          <TabsContent value="videos">
+          {activeTab === 'videos' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -1236,59 +1000,54 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleVideoUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="video-title">Title *</Label>
-                  <Input
-                    id="video-title"
-                    value={videoForm.title}
-                    onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
-                    placeholder="Video title"
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="video-title">Title *</Label>
+                    <Input
+                      id="video-title"
+                      value={videoForm.title}
+                      onChange={(e) => setVideoForm({ ...videoForm, title: e.target.value })}
+                      placeholder="Video title"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="video-desc">Description</Label>
+                    <Textarea
+                      id="video-desc"
+                      value={videoForm.description}
+                      onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })}
+                      placeholder="Video description"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="video-category">Category (Optional)</Label>
+                    <Input
+                      id="video-category"
+                      value={videoForm.category}
+                      onChange={(e) => setVideoForm({ ...videoForm, category: e.target.value })}
+                      placeholder="e.g., Market Analysis, Tutorial"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="video-file">File (MP4) *</Label>
+                    <Input
+                      id="video-file"
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => setVideoForm({ ...videoForm, file: e.target.files?.[0] || null })}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Upload Video
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="video-desc">Description</Label>
-                  <Textarea
-                    id="video-desc"
-                    value={videoForm.description}
-                    onChange={(e) => setVideoForm({ ...videoForm, description: e.target.value })}
-                    placeholder="Video description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="video-category">Category (Optional)</Label>
-                  <Input
-                    id="video-category"
-                    value={videoForm.category}
-                    onChange={(e) => setVideoForm({ ...videoForm, category: e.target.value })}
-                    placeholder="e.g., Market Analysis, Tutorial"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="video-file">File (MP4) *</Label>
-                  <Input
-                    id="video-file"
-                    type="file"
-                    accept="video/*"
-                    onChange={(e) => setVideoForm({ ...videoForm, file: e.target.files?.[0] || null })}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Video
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-          {/* Watchlists Tab */}
-          <TabsContent value="watchlists">
+          {activeTab === 'watchlists' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -1299,48 +1058,44 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleWatchlistUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="watchlist-name">Name *</Label>
-                  <Input
-                    id="watchlist-name"
-                    value={watchlistForm.name}
-                    onChange={(e) => setWatchlistForm({ ...watchlistForm, name: e.target.value })}
-                    placeholder="Watchlist name"
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="watchlist-name">Name *</Label>
+                    <Input
+                      id="watchlist-name"
+                      value={watchlistForm.name}
+                      onChange={(e) => setWatchlistForm({ ...watchlistForm, name: e.target.value })}
+                      placeholder="Watchlist name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="watchlist-desc">Description</Label>
+                    <Textarea
+                      id="watchlist-desc"
+                      value={watchlistForm.description}
+                      onChange={(e) => setWatchlistForm({ ...watchlistForm, description: e.target.value })}
+                      placeholder="Watchlist description"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="watchlist-category">Category (Optional)</Label>
+                    <Input
+                      id="watchlist-category"
+                      value={watchlistForm.category}
+                      onChange={(e) => setWatchlistForm({ ...watchlistForm, category: e.target.value })}
+                      placeholder="e.g., Technology, Energy"
+                    />
+                  </div>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Create Watchlist
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="watchlist-desc">Description</Label>
-                  <Textarea
-                    id="watchlist-desc"
-                    value={watchlistForm.description}
-                    onChange={(e) => setWatchlistForm({ ...watchlistForm, description: e.target.value })}
-                    placeholder="Watchlist description"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="watchlist-category">Category (Optional)</Label>
-                  <Input
-                    id="watchlist-category"
-                    value={watchlistForm.category}
-                    onChange={(e) => setWatchlistForm({ ...watchlistForm, category: e.target.value })}
-                    placeholder="e.g., Technology, Energy"
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Create Watchlist
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-          {/* Risk & Compliance Tab */}
-          <TabsContent value="risk-compliance">
+          {activeTab === 'risk-compliance' && (
             <Card className="border-slate-200 shadow-lg bg-white">
               <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
                 <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
@@ -1351,214 +1106,175 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleRiskComplianceUpload} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="risk-title">Title *</Label>
-                  <Input
-                    id="risk-title"
-                    value={riskComplianceForm.title}
-                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, title: e.target.value })}
-                    placeholder="Report or analysis title"
-                    required
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="risk-title">Title *</Label>
+                    <Input
+                      id="risk-title"
+                      value={riskComplianceForm.title}
+                      onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, title: e.target.value })}
+                      placeholder="Report or analysis title"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="risk-type">Type *</Label>
+                    <Select value={riskComplianceForm.type} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, type: value })}>
+                      <SelectTrigger id="risk-type">
+                        <SelectValue placeholder="Select content type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="stress_test">Stress Test</SelectItem>
+                        <SelectItem value="exposure_analysis">Exposure Analysis</SelectItem>
+                        <SelectItem value="compliance_check">Compliance Check</SelectItem>
+                        <SelectItem value="risk_assessment">Risk Assessment</SelectItem>
+                        <SelectItem value="regulatory_update">Regulatory Update</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="risk-severity">Severity</Label>
+                    <Select value={riskComplianceForm.severity} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, severity: value })}>
+                      <SelectTrigger id="risk-severity">
+                        <SelectValue placeholder="Select severity level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="critical">Critical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="risk-desc">Summary</Label>
+                    <Textarea
+                      id="risk-desc"
+                      value={riskComplianceForm.description}
+                      onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, description: e.target.value })}
+                      placeholder="Brief summary of the analysis"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="risk-content">Full Content *</Label>
+                    <Textarea
+                      id="risk-content"
+                      value={riskComplianceForm.content}
+                      onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, content: e.target.value })}
+                      placeholder="Detailed analysis and findings"
+                      rows={6}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="risk-file">Supporting Document (Optional)</Label>
+                    <Input
+                      id="risk-file"
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, file: e.target.files?.[0] || null })}
+                    />
+                  </div>
+                  <Button type="submit" disabled={uploading}>
+                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                    Upload Content
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="risk-type">Type *</Label>
-                  <Select value={riskComplianceForm.type} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, type: value })}>
-                    <SelectTrigger id="risk-type">
-                      <SelectValue placeholder="Select content type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stress_test">Stress Test</SelectItem>
-                      <SelectItem value="exposure_analysis">Exposure Analysis</SelectItem>
-                      <SelectItem value="compliance_check">Compliance Check</SelectItem>
-                      <SelectItem value="risk_assessment">Risk Assessment</SelectItem>
-                      <SelectItem value="regulatory_update">Regulatory Update</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="risk-severity">Severity</Label>
-                  <Select value={riskComplianceForm.severity} onValueChange={(value) => setRiskComplianceForm({ ...riskComplianceForm, severity: value })}>
-                    <SelectTrigger id="risk-severity">
-                      <SelectValue placeholder="Select severity level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="critical">Critical</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="risk-desc">Summary</Label>
-                  <Textarea
-                    id="risk-desc"
-                    value={riskComplianceForm.description}
-                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, description: e.target.value })}
-                    placeholder="Brief summary of the analysis"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="risk-content">Full Content *</Label>
-                  <Textarea
-                    id="risk-content"
-                    value={riskComplianceForm.content}
-                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, content: e.target.value })}
-                    placeholder="Detailed analysis and findings"
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="risk-file">Supporting Document (Optional)</Label>
-                  <Input
-                    id="risk-file"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setRiskComplianceForm({ ...riskComplianceForm, file: e.target.files?.[0] || null })}
-                  />
-                </div>
-
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                  Upload Content
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Alerts Tab */}
-        <TabsContent value="alerts">
-          <AlertsForm
-            form={alertForm}
-            setForm={setAlertForm}
-            onSubmit={handleAlertUpload}
-            uploading={uploading}
-          />
-        </TabsContent>
-
-        {/* Market Trends Tab */}
-        <TabsContent value="market-trends">
-          <MarketTrendsUpload />
-        </TabsContent>
-
-        {/* Purchasable Reports Tab */}
-        <TabsContent value="purchasable-reports">
-          <PurchasableReportUpload />
-        </TabsContent>
-
-        {/* Fund Scoring Tab */}
-        <TabsContent value="fund-scoring">
-          <FundScoringAdmin />
-        </TabsContent>
-
-        {/* Fund Analyst Activity Tab */}
-        <TabsContent value="fund-analyst">
-          <FundAnalystAdmin />
-        </TabsContent>
-
-        {/* Opportunity Intelligence Upload Tab */}
-        <TabsContent value="opportunities">
-          <Card className="bg-white border-slate-200 shadow-lg">
-            <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <Lightbulb className="h-5 w-5 text-purple-600" />
-                Upload Opportunity
-              </CardTitle>
-              <CardDescription className="text-slate-500">
-                Add investment opportunities for Real Estate, Private Businesses, and Collectibles
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <OpportunityUpload />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Stocks & Crypto Admin Tab */}
-        <TabsContent value="stocks-crypto">
-          <StocksCryptoAdmin />
-        </TabsContent>
-
-        {/* Research Engine Tab */}
-        <TabsContent value="research-engine">
-          <ResearchAdmin />
-        </TabsContent>
-
-        {/* Document Generator Tab */}
-        <TabsContent value="document-generator">
-          <AdminDocumentGenerator />
-        </TabsContent>
-
-        {/* Research AI Tab */}
-        <TabsContent value="research-ai">
-          <AdminResearchChatbot />
-        </TabsContent>
-
-        {/* CRM Tab */}
-        <TabsContent value="crm">
-          <div className="space-y-6">
-            {/* CRM Header */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
-                  CRM
-                </h2>
-                <p className="text-slate-500 text-sm">
-                  Customer Relationship Management
-                </p>
-              </div>
-              {crmActiveTab === 'board' && (
-                <Button 
-                  onClick={() => setImportDialogOpen(true)}
-                  className="shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Bulk Import
-                </Button>
-              )}
-            </div>
-
-            {/* CRM Tabs */}
-            <Tabs value={crmActiveTab} onValueChange={setCrmActiveTab} className="space-y-6">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="board" className="gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  Contact Board
-                </TabsTrigger>
-                <TabsTrigger value="scraper" className="gap-2">
-                  <Users className="h-4 w-4" />
-                  Companies House
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="board" className="space-y-6">
-                <CRMBoard key={crmRefreshTrigger} />
-              </TabsContent>
-
-              <TabsContent value="scraper">
-                <CompaniesHouseScraper />
-              </TabsContent>
-            </Tabs>
-
-            <BulkImportDialog
-              open={importDialogOpen}
-              onOpenChange={setImportDialogOpen}
-              onImportComplete={() => {
-                setCrmRefreshTrigger(prev => prev + 1);
-              }}
+          {activeTab === 'alerts' && (
+            <AlertsForm
+              form={alertForm}
+              setForm={setAlertForm}
+              onSubmit={handleAlertUpload}
+              uploading={uploading}
             />
-          </div>
-        </TabsContent>
-      </Tabs>
-      </div>
+          )}
+
+          {activeTab === 'market-trends' && <MarketTrendsUpload />}
+
+          {activeTab === 'purchasable-reports' && <PurchasableReportUpload />}
+
+          {activeTab === 'fund-scoring' && <FundScoringAdmin />}
+
+          {activeTab === 'fund-analyst' && <FundAnalystAdmin />}
+
+          {activeTab === 'opportunities' && (
+            <Card className="bg-white border-slate-200 shadow-lg">
+              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
+                <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <Lightbulb className="h-5 w-5 text-purple-600" />
+                  Upload Opportunity
+                </CardTitle>
+                <CardDescription className="text-slate-500">
+                  Add investment opportunities for Real Estate, Private Businesses, and Collectibles
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OpportunityUpload />
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === 'stocks-crypto' && <StocksCryptoAdmin />}
+
+          {activeTab === 'research-engine' && <ResearchAdmin />}
+
+          {activeTab === 'document-generator' && <AdminDocumentGenerator />}
+
+          {activeTab === 'research-ai' && <AdminResearchChatbot />}
+
+          {activeTab === 'crm' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                    CRM
+                  </h2>
+                  <p className="text-slate-500 text-sm">
+                    Customer Relationship Management
+                  </p>
+                </div>
+                {crmActiveTab === 'board' && (
+                  <Button 
+                    onClick={() => setImportDialogOpen(true)}
+                    className="shadow-sm hover:shadow-md transition-all duration-200"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Import
+                  </Button>
+                )}
+              </div>
+              <Tabs value={crmActiveTab} onValueChange={setCrmActiveTab} className="space-y-6">
+                <TabsList className="grid w-full max-w-md grid-cols-2">
+                  <TabsTrigger value="board" className="gap-2">
+                    <LayoutDashboard className="h-4 w-4" />
+                    Contact Board
+                  </TabsTrigger>
+                  <TabsTrigger value="scraper" className="gap-2">
+                    <Users className="h-4 w-4" />
+                    Companies House
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="board" className="space-y-6">
+                  <CRMBoard key={crmRefreshTrigger} />
+                </TabsContent>
+                <TabsContent value="scraper">
+                  <CompaniesHouseScraper />
+                </TabsContent>
+              </Tabs>
+              <BulkImportDialog
+                open={importDialogOpen}
+                onOpenChange={setImportDialogOpen}
+                onImportComplete={() => {
+                  setCrmRefreshTrigger(prev => prev + 1);
+                }}
+              />
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
