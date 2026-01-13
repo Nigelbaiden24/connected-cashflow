@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
+import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import { 
   Search, 
   TrendingUp, 
@@ -480,22 +480,42 @@ export default function StocksCryptoDatabase() {
         </Tabs>
       </div>
 
-      {/* Asset Detail Sheet */}
-      <Sheet open={!!selectedAsset} onOpenChange={() => setSelectedAsset(null)}>
-        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
-          {selectedAsset && (
-            <AssetDetailPanel
-              asset={selectedAsset}
-              formatCurrency={formatCurrency}
-              formatMarketCap={formatMarketCap}
-              formatPercentage={formatPercentage}
-              getRatingConfig={getRatingConfig}
-              getScoreColor={getScoreColor}
-              getScoreProgress={getScoreProgress}
+      {/* Morningstar-Style Asset Detail Panel */}
+      {selectedAsset && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedAsset(null)}
+          />
+          {/* Panel */}
+          <div className="relative ml-auto w-full max-w-4xl h-full">
+            <MorningstarDetailPanel
+              asset={{
+                id: selectedAsset.id,
+                symbol: selectedAsset.symbol,
+                name: selectedAsset.name,
+                assetType: selectedAsset.asset_type as 'stock' | 'crypto',
+                currentPrice: selectedAsset.current_price || 0,
+                priceChange24h: selectedAsset.price_change_24h || 0,
+                priceChange7d: selectedAsset.price_change_7d || 0,
+                priceChange30d: selectedAsset.price_change_30d || 0,
+                priceChange1y: selectedAsset.price_change_1y || 0,
+                marketCap: selectedAsset.market_cap || 0,
+                volume24h: selectedAsset.volume_24h || 0,
+                analystRating: selectedAsset.analyst_rating || undefined,
+                overallScore: selectedAsset.overall_score || undefined,
+                currency: selectedAsset.price_currency || 'GBP',
+                peRatio: selectedAsset.pe_ratio || undefined,
+                dividendYield: selectedAsset.dividend_yield || undefined,
+                sector: selectedAsset.sector || undefined,
+                blockchain: selectedAsset.blockchain || undefined,
+              }}
+              onClose={() => setSelectedAsset(null)}
             />
-          )}
-        </SheetContent>
-      </Sheet>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -681,240 +701,4 @@ function AssetTable({
   );
 }
 
-// Asset Detail Panel Component
-interface AssetDetailPanelProps {
-  asset: StockCrypto;
-  formatCurrency: (value: number | null, currency?: string) => string;
-  formatMarketCap: (value: number | null) => string;
-  formatPercentage: (value: number | null) => string;
-  getRatingConfig: (rating: string | null) => { bg: string; text: string; border: string; icon: string };
-  getScoreColor: (score: number | null) => string;
-  getScoreProgress: (score: number | null) => number;
-}
-
-function AssetDetailPanel({
-  asset,
-  formatCurrency,
-  formatMarketCap,
-  formatPercentage,
-  getRatingConfig,
-  getScoreColor,
-  getScoreProgress
-}: AssetDetailPanelProps) {
-  const ratingConfig = getRatingConfig(asset.analyst_rating);
-
-  return (
-    <>
-      <SheetHeader className="space-y-4 pb-6">
-        <div className="flex items-start gap-4">
-          {asset.logo_url ? (
-            <img src={asset.logo_url} alt={asset.name} className="h-16 w-16 rounded-2xl object-cover" />
-          ) : (
-            <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center">
-              {asset.asset_type === 'crypto' ? (
-                <Bitcoin className="h-8 w-8 text-warning" />
-              ) : (
-                <BarChart3 className="h-8 w-8 text-primary" />
-              )}
-            </div>
-          )}
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <SheetTitle className="text-xl">{asset.name}</SheetTitle>
-              {asset.is_featured && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">{asset.symbol}</Badge>
-              {asset.analyst_rating && (
-                <Badge className={`${ratingConfig.bg} ${ratingConfig.text} border ${ratingConfig.border}`}>
-                  {ratingConfig.icon} {asset.analyst_rating}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
-        {asset.description && (
-          <SheetDescription className="text-sm leading-relaxed">
-            {asset.description}
-          </SheetDescription>
-        )}
-      </SheetHeader>
-
-      <div className="space-y-6">
-        {/* Price Metrics */}
-        <section>
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" />
-            Price Metrics
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <MetricCard label="Current Price" value={formatCurrency(asset.current_price, asset.price_currency)} />
-            <MetricCard 
-              label="24h Change" 
-              value={formatPercentage(asset.price_change_24h)}
-              valueClass={(asset.price_change_24h || 0) >= 0 ? 'text-success' : 'text-destructive'}
-            />
-            <MetricCard label="Market Cap" value={formatMarketCap(asset.market_cap)} />
-            <MetricCard label="Volume (24h)" value={formatMarketCap(asset.volume_24h)} />
-          </div>
-        </section>
-
-        <Separator />
-
-        {/* Performance */}
-        <section>
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            Performance
-          </h3>
-          <div className="grid grid-cols-3 gap-3">
-            <MetricCard 
-              label="7 Days" 
-              value={formatPercentage(asset.price_change_7d)}
-              valueClass={(asset.price_change_7d || 0) >= 0 ? 'text-success' : 'text-destructive'}
-            />
-            <MetricCard 
-              label="30 Days" 
-              value={formatPercentage(asset.price_change_30d)}
-              valueClass={(asset.price_change_30d || 0) >= 0 ? 'text-success' : 'text-destructive'}
-            />
-            <MetricCard 
-              label="1 Year" 
-              value={formatPercentage(asset.price_change_1y)}
-              valueClass={(asset.price_change_1y || 0) >= 0 ? 'text-success' : 'text-destructive'}
-            />
-          </div>
-        </section>
-
-        {/* Analyst Scores */}
-        {(asset.score_fundamentals || asset.score_technicals || asset.score_momentum || asset.score_risk) && (
-          <>
-            <Separator />
-            <section>
-              <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Target className="h-4 w-4 text-primary" />
-                Analyst Conviction Scores
-              </h3>
-              <div className="space-y-4">
-                {asset.score_fundamentals && (
-                  <ScoreBar label="Fundamentals" score={asset.score_fundamentals} getScoreColor={getScoreColor} getScoreProgress={getScoreProgress} />
-                )}
-                {asset.score_technicals && (
-                  <ScoreBar label="Technicals" score={asset.score_technicals} getScoreColor={getScoreColor} getScoreProgress={getScoreProgress} />
-                )}
-                {asset.score_momentum && (
-                  <ScoreBar label="Momentum" score={asset.score_momentum} getScoreColor={getScoreColor} getScoreProgress={getScoreProgress} />
-                )}
-                {asset.score_risk && (
-                  <ScoreBar label="Risk Profile" score={asset.score_risk} getScoreColor={getScoreColor} getScoreProgress={getScoreProgress} />
-                )}
-              </div>
-            </section>
-          </>
-        )}
-
-        {/* Investment Thesis */}
-        {asset.investment_thesis && (
-          <>
-            <Separator />
-            <section>
-              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <Eye className="h-4 w-4 text-primary" />
-                Investment Thesis
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {asset.investment_thesis}
-              </p>
-            </section>
-          </>
-        )}
-
-        {/* Strengths & Risks */}
-        {(asset.strengths || asset.risks) && (
-          <>
-            <Separator />
-            <div className="grid grid-cols-2 gap-4">
-              {asset.strengths && (
-                <section>
-                  <h3 className="text-sm font-semibold text-success mb-2 flex items-center gap-2">
-                    <Zap className="h-4 w-4" />
-                    Strengths
-                  </h3>
-                  <div className="p-3 rounded-lg bg-success/5 border border-success/10">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {asset.strengths}
-                    </p>
-                  </div>
-                </section>
-              )}
-              {asset.risks && (
-                <section>
-                  <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Risks
-                  </h3>
-                  <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {asset.risks}
-                    </p>
-                  </div>
-                </section>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Key Watchpoints */}
-        {asset.key_watchpoints && (
-          <>
-            <Separator />
-            <section>
-              <h3 className="text-sm font-semibold text-warning mb-3 flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Key Watchpoints
-              </h3>
-              <div className="p-3 rounded-lg bg-warning/5 border border-warning/10">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {asset.key_watchpoints}
-                </p>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
-    </>
-  );
-}
-
-// Metric Card Component
-function MetricCard({ label, value, valueClass = 'text-foreground' }: { label: string; value: string; valueClass?: string }) {
-  return (
-    <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
-      <p className="text-xs text-muted-foreground mb-1">{label}</p>
-      <p className={`font-semibold tabular-nums ${valueClass}`}>{value}</p>
-    </div>
-  );
-}
-
-// Score Bar Component
-function ScoreBar({ 
-  label, 
-  score, 
-  getScoreColor, 
-  getScoreProgress 
-}: { 
-  label: string; 
-  score: number;
-  getScoreColor: (score: number | null) => string;
-  getScoreProgress: (score: number | null) => number;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className={`font-semibold tabular-nums ${getScoreColor(score)}`}>{score.toFixed(1)}/5</span>
-      </div>
-      <Progress value={getScoreProgress(score)} className="h-2" />
-    </div>
-  );
-}
+// MetricCard and ScoreBar components moved to MorningstarDetailPanel
