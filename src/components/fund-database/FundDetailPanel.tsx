@@ -99,7 +99,7 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
       <ScrollArea className="flex-1">
         <CardContent className="space-y-4">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 text-xs">
+            <TabsList className="w-full text-xs">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="performance">Performance</TabsTrigger>
               <TabsTrigger value="risk">Risk</TabsTrigger>
