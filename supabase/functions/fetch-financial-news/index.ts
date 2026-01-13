@@ -30,7 +30,6 @@ const NEWS_SOURCES = [
 async function scrapeNewsWithFirecrawl(apiKey: string): Promise<NewsArticle[]> {
   const articles: NewsArticle[] = [];
   
-  // Scrape multiple sources in parallel
   const scrapePromises = NEWS_SOURCES.slice(0, 3).map(async (source) => {
     try {
       console.log(`Scraping ${source.name}...`);
@@ -57,7 +56,6 @@ async function scrapeNewsWithFirecrawl(apiKey: string): Promise<NewsArticle[]> {
       const markdown = data.data?.markdown || data.markdown || '';
       const links = data.data?.links || data.links || [];
       
-      // Extract headlines from markdown
       const headlines = extractHeadlines(markdown, links, source);
       return headlines;
     } catch (error) {
@@ -76,34 +74,31 @@ function extractHeadlines(markdown: string, links: string[], source: { name: str
   const articles: NewsArticle[] = [];
   const now = new Date();
   
-  // Extract headlines from markdown (lines starting with # or ##, or bold text)
   const lines = markdown.split('\n');
   const headlinePatterns = [
-    /^#+\s*(.{20,150})$/,  // Markdown headers
-    /^\*\*(.{20,150})\*\*$/, // Bold text
-    /^\[(.{20,150})\]\(([^)]+)\)/, // Links with text
+    /^#+\s*(.{20,150})$/,
+    /^\*\*(.{20,150})\*\*$/,
+    /^\[(.{20,150})\]\(([^)]+)\)/,
   ];
 
   let articleIndex = 0;
   for (const line of lines) {
-    if (articleIndex >= 8) break; // Limit per source
+    if (articleIndex >= 15) break;
     
     for (const pattern of headlinePatterns) {
       const match = line.match(pattern);
       if (match && match[1]) {
         const title = match[1].trim()
-          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
-          .replace(/\*\*/g, '') // Remove bold
-          .replace(/\*/g, ''); // Remove italic
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+          .replace(/\*\*/g, '')
+          .replace(/\*/g, '');
         
-        // Filter out navigation items and short text
         if (title.length > 25 && 
             !title.toLowerCase().includes('menu') && 
             !title.toLowerCase().includes('subscribe') &&
             !title.toLowerCase().includes('sign in') &&
             !title.toLowerCase().includes('newsletter')) {
           
-          // Find a related link if available
           const relatedLink = links.find(l => 
             l.includes(source.url.split('/')[2]) && 
             !l.includes('login') && 
@@ -115,7 +110,7 @@ function extractHeadlines(markdown: string, links: string[], source: { name: str
             description: title.substring(0, 120) + '...',
             url: relatedLink,
             image: getStockImage(source.category, articleIndex),
-            publishedAt: new Date(now.getTime() - articleIndex * 60 * 60 * 1000).toISOString(),
+            publishedAt: new Date(now.getTime() - articleIndex * 45 * 60 * 1000).toISOString(),
             source: { name: source.name, url: source.url },
             category: source.category,
           });
@@ -135,18 +130,21 @@ function getStockImage(category: string, index: number): string {
     'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=450&fit=crop',
     'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=450&fit=crop',
     'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1560221328-12fe60f83ab8?w=800&h=450&fit=crop',
   ];
   
   const cryptoImages = [
     'https://images.unsplash.com/photo-1518544801976-3e159e50e5bb?w=800&h=450&fit=crop',
     'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=800&h=450&fit=crop',
     'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=450&fit=crop',
   ];
   
   const businessImages = [
     'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=450&fit=crop',
     'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=450&fit=crop',
     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?w=800&h=450&fit=crop',
   ];
 
   if (category === 'crypto') {
@@ -157,7 +155,7 @@ function getStockImage(category: string, index: number): string {
   return businessImages[index % businessImages.length];
 }
 
-async function generateAINewsWithSearch(): Promise<NewsArticle[]> {
+async function generateAINews(count: number): Promise<NewsArticle[]> {
   const apiKey = Deno.env.get('LOVABLE_API_KEY');
   if (!apiKey) return [];
 
@@ -173,17 +171,17 @@ async function generateAINewsWithSearch(): Promise<NewsArticle[]> {
         messages: [
           {
             role: 'system',
-            content: `You are a financial news aggregator. Generate 8 realistic, current financial news headlines based on recent market trends. 
+            content: `You are a financial news aggregator. Generate ${count} realistic, current financial news headlines based on recent market trends. 
             Return ONLY a JSON array with this exact format:
-            [{"title": "headline", "description": "2-sentence summary", "category": "markets|crypto|business", "source": "Reuters|Bloomberg|CNBC|FT"}]
-            Make headlines specific, timely, and professional. Include a mix of stocks, crypto, and business news.`
+            [{"title": "headline", "description": "2-sentence summary", "category": "markets|crypto|business", "source": "Reuters|Bloomberg|CNBC|FT|WSJ|MarketWatch|CoinDesk|The Block"}]
+            Make headlines specific, timely, and professional. Include variety: stocks, crypto, commodities, forex, earnings, M&A, IPOs, regulations.`
           },
           {
             role: 'user',
-            content: 'Generate today\'s top financial news headlines covering markets, crypto, and business.'
+            content: `Generate ${count} unique financial news headlines covering markets, crypto, business, commodities, and global finance.`
           }
         ],
-        max_tokens: 1500,
+        max_tokens: 4000,
       }),
     });
 
@@ -192,7 +190,6 @@ async function generateAINewsWithSearch(): Promise<NewsArticle[]> {
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
     
-    // Parse JSON from response
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     if (!jsonMatch) return [];
     
@@ -202,9 +199,9 @@ async function generateAINewsWithSearch(): Promise<NewsArticle[]> {
     return newsItems.map((item: any, index: number) => ({
       title: item.title,
       description: item.description,
-      url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '')}.com`,
+      url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '').replace(/[^a-z]/g, '')}.com`,
       image: getStockImage(item.category || 'business', index),
-      publishedAt: new Date(now.getTime() - index * 90 * 60 * 1000).toISOString(),
+      publishedAt: new Date(now.getTime() - index * 35 * 60 * 1000).toISOString(),
       source: { 
         name: item.source || 'Financial News',
         url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '')}.com`
@@ -222,7 +219,7 @@ async function generateAINewsRoundup(articles: NewsArticle[]): Promise<string | 
   if (!apiKey || articles.length === 0) return null;
 
   try {
-    const headlines = articles.slice(0, 5).map(a => `- ${a.title}`).join('\n');
+    const headlines = articles.slice(0, 8).map(a => `- ${a.title}`).join('\n');
     
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -235,14 +232,14 @@ async function generateAINewsRoundup(articles: NewsArticle[]): Promise<string | 
         messages: [
           {
             role: 'system',
-            content: 'You are a financial news analyst. Provide a brief 2-3 sentence summary of the key market themes from today\'s headlines. Be concise and professional.'
+            content: 'You are a financial news analyst. Provide a brief 3-4 sentence summary of the key market themes. Be concise and professional.'
           },
           {
             role: 'user',
             content: `Summarize the key themes from these financial headlines:\n${headlines}`
           }
         ],
-        max_tokens: 200,
+        max_tokens: 250,
       }),
     });
 
@@ -263,7 +260,7 @@ serve(async (req) => {
 
   try {
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
-    const { category = 'all' } = await req.json().catch(() => ({}));
+    const { category = 'all', limit = 90 } = await req.json().catch(() => ({}));
 
     let articles: NewsArticle[] = [];
     let sources: string[] = [];
@@ -277,11 +274,30 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to AI-generated news based on current trends
-    if (articles.length < 5) {
-      console.log('Using AI-generated financial news...');
-      const aiNews = await generateAINewsWithSearch();
-      articles = [...articles, ...aiNews];
+    // Generate enough AI news to fill 10 pages (90 articles total)
+    const targetCount = limit;
+    const neededAINews = Math.max(0, targetCount - articles.length);
+    
+    if (neededAINews > 0) {
+      console.log(`Generating ${neededAINews} AI news articles...`);
+      
+      // Generate in batches to avoid token limits
+      const batchSize = 30;
+      const batches = Math.ceil(neededAINews / batchSize);
+      
+      for (let i = 0; i < batches; i++) {
+        const batchCount = Math.min(batchSize, neededAINews - (i * batchSize));
+        const aiNews = await generateAINews(batchCount);
+        
+        // Offset timestamps for each batch
+        aiNews.forEach((article, idx) => {
+          const now = new Date();
+          article.publishedAt = new Date(now.getTime() - (articles.length + idx) * 35 * 60 * 1000).toISOString();
+        });
+        
+        articles.push(...aiNews);
+      }
+      
       if (!sources.includes('FlowPulse AI')) {
         sources.push('FlowPulse AI');
       }
@@ -295,7 +311,7 @@ serve(async (req) => {
         (category === 'markets' && ['markets', 'business'].includes(a.category)) ||
         (category === 'crypto' && a.category === 'crypto')
       );
-      if (filteredArticles.length === 0) {
+      if (filteredArticles.length < 10) {
         filteredArticles = articles;
       }
     }
@@ -303,7 +319,7 @@ serve(async (req) => {
     // Remove duplicates by title
     const seenTitles = new Set();
     filteredArticles = filteredArticles.filter(a => {
-      const key = a.title.toLowerCase().substring(0, 50);
+      const key = a.title.toLowerCase().substring(0, 40);
       if (seenTitles.has(key)) return false;
       seenTitles.add(key);
       return true;
@@ -319,10 +335,11 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        articles: filteredArticles.slice(0, 12),
+        articles: filteredArticles,
         aiSummary,
         lastUpdated: new Date().toISOString(),
         sources,
+        totalCount: filteredArticles.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
