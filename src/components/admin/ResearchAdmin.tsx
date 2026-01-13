@@ -91,15 +91,24 @@ export function ResearchAdmin() {
     setSelectedAssets(new Set());
   };
 
+  const [generatingAssetId, setGeneratingAssetId] = useState<string | null>(null);
+
   const handleGenerateSingle = async (asset: any) => {
-    await generateReport(
-      selectedAssetType,
-      asset.id,
-      asset.name,
-      asset.symbol,
-      asset.data
-    );
-    fetchReports();
+    setGeneratingAssetId(asset.id);
+    try {
+      const result = await generateReport(
+        selectedAssetType,
+        asset.id,
+        asset.name,
+        asset.symbol,
+        asset.data
+      );
+      if (result) {
+        await fetchReports();
+      }
+    } finally {
+      setGeneratingAssetId(null);
+    }
   };
 
   const handleGenerateSelected = async () => {
@@ -328,9 +337,13 @@ export function ResearchAdmin() {
                                 e.stopPropagation();
                                 handleGenerateSingle(asset);
                               }}
-                              disabled={isGenerating}
+                              disabled={isGenerating || generatingAssetId === asset.id}
                             >
-                              <RefreshCw className="h-4 w-4" />
+                              {generatingAssetId === asset.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         ) : (
@@ -344,9 +357,13 @@ export function ResearchAdmin() {
                                 e.stopPropagation();
                                 handleGenerateSingle(asset);
                               }}
-                              disabled={isGenerating}
+                              disabled={isGenerating || generatingAssetId === asset.id}
                             >
-                              <Play className="h-4 w-4" />
+                              {generatingAssetId === asset.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         )}
