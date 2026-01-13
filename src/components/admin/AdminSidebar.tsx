@@ -46,6 +46,7 @@ const navItems: NavItem[] = [
   { id: "users", label: "Users", icon: Users, gradient: "from-blue-500 to-blue-600" },
   { id: "enquiries", label: "Enquiries", icon: MessageSquare, gradient: "from-orange-500 to-orange-600" },
   { id: "demo-requests", label: "Demo Requests", icon: Calendar, gradient: "from-slate-500 to-slate-600" },
+  { id: "news", label: "News", icon: Newspaper, gradient: "from-emerald-500 to-emerald-600" },
   { id: "reports", label: "Reports", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
   { id: "newsletters", label: "Newsletters", icon: Newspaper, gradient: "from-emerald-500 to-emerald-600" },
   { id: "portfolios", label: "Portfolios", icon: TrendingUp, gradient: "from-cyan-500 to-cyan-600" },

@@ -18,7 +18,8 @@ import {
   Eye,
   Languages,
   ClipboardList,
-  Lightbulb
+  Lightbulb,
+  Newspaper
 } from "lucide-react";
 import {
   Sidebar,
@@ -128,6 +129,11 @@ const investorItems = [
     title: "Opportunity Intelligence", 
     url: "/investor/opportunities", 
     icon: Lightbulb,
+  },
+  { 
+    title: "News", 
+    url: "/investor/news", 
+    icon: Newspaper,
   },
   { 
     title: "Watchlists", 
