@@ -74,7 +74,7 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
   ];
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="flex flex-col min-h-0 max-h-[calc(100vh-10rem)] overflow-hidden">
       <CardHeader className="flex-shrink-0 pb-2">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -96,7 +96,7 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
         </div>
       </CardHeader>
       
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <CardContent className="space-y-4">
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="w-full text-xs">
@@ -210,67 +210,69 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
               </div>
 
               {/* Performance Table */}
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Period</TableHead>
-                    <TableHead className="text-right">Fund</TableHead>
-                    <TableHead className="text-right">Benchmark</TableHead>
-                    <TableHead className="text-right">Excess</TableHead>
-                    <TableHead className="text-center">Quartile</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>YTD</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.ytdReturn)}`}>
-                      {fund.performance.ytdReturn.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-right">-</TableCell>
-                    <TableCell className="text-right">-</TableCell>
-                    <TableCell className="text-center">-</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>1 Year</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.oneYearReturn)}`}>
-                      {fund.performance.oneYearReturn.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-right">{fund.performance.benchmarkReturn1Y.toFixed(1)}%</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.excessReturn1Y)}`}>
-                      {fund.performance.excessReturn1Y.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline">Q{fund.performance.quartileRank1Y}</Badge>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>3 Year</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.threeYearReturn)}`}>
-                      {fund.performance.threeYearReturn.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-right">{fund.performance.benchmarkReturn3Y.toFixed(1)}%</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.excessReturn3Y)}`}>
-                      {fund.performance.excessReturn3Y.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline">Q{fund.performance.quartileRank3Y}</Badge>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>5 Year</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.fiveYearReturn)}`}>
-                      {fund.performance.fiveYearReturn.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-right">{fund.performance.benchmarkReturn5Y.toFixed(1)}%</TableCell>
-                    <TableCell className={`text-right ${getReturnColor(fund.performance.excessReturn5Y)}`}>
-                      {fund.performance.excessReturn5Y.toFixed(1)}%
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="outline">Q{fund.performance.quartileRank5Y}</Badge>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-[560px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Period</TableHead>
+                      <TableHead className="text-right">Fund</TableHead>
+                      <TableHead className="text-right">Benchmark</TableHead>
+                      <TableHead className="text-right">Excess</TableHead>
+                      <TableHead className="text-center">Quartile</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>YTD</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.ytdReturn)}`}>
+                        {fund.performance.ytdReturn.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-right">-</TableCell>
+                      <TableCell className="text-right">-</TableCell>
+                      <TableCell className="text-center">-</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>1 Year</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.oneYearReturn)}`}>
+                        {fund.performance.oneYearReturn.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-right">{fund.performance.benchmarkReturn1Y.toFixed(1)}%</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.excessReturn1Y)}`}>
+                        {fund.performance.excessReturn1Y.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">Q{fund.performance.quartileRank1Y}</Badge>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>3 Year</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.threeYearReturn)}`}>
+                        {fund.performance.threeYearReturn.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-right">{fund.performance.benchmarkReturn3Y.toFixed(1)}%</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.excessReturn3Y)}`}>
+                        {fund.performance.excessReturn3Y.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">Q{fund.performance.quartileRank3Y}</Badge>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>5 Year</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.fiveYearReturn)}`}>
+                        {fund.performance.fiveYearReturn.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-right">{fund.performance.benchmarkReturn5Y.toFixed(1)}%</TableCell>
+                      <TableCell className={`text-right ${getReturnColor(fund.performance.excessReturn5Y)}`}>
+                        {fund.performance.excessReturn5Y.toFixed(1)}%
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">Q{fund.performance.quartileRank5Y}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
 
               <div className="text-sm">
                 <div className="flex justify-between">
@@ -307,36 +309,38 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
                 </div>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Metric</TableHead>
-                    <TableHead className="text-right">1Y</TableHead>
-                    <TableHead className="text-right">3Y</TableHead>
-                    <TableHead className="text-right">5Y</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Volatility</TableCell>
-                    <TableCell className="text-right">{fund.risk.volatility1Y.toFixed(1)}%</TableCell>
-                    <TableCell className="text-right">{fund.risk.volatility3Y.toFixed(1)}%</TableCell>
-                    <TableCell className="text-right">{fund.risk.volatility5Y.toFixed(1)}%</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Sharpe Ratio</TableCell>
-                    <TableCell className="text-right">{fund.risk.sharpeRatio1Y.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">{fund.risk.sharpeRatio3Y.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">{fund.risk.sharpeRatio5Y.toFixed(2)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Sortino Ratio</TableCell>
-                    <TableCell className="text-right">{fund.risk.sortinoRatio1Y.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">{fund.risk.sortinoRatio3Y.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">-</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-[480px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Metric</TableHead>
+                      <TableHead className="text-right">1Y</TableHead>
+                      <TableHead className="text-right">3Y</TableHead>
+                      <TableHead className="text-right">5Y</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Volatility</TableCell>
+                      <TableCell className="text-right">{fund.risk.volatility1Y.toFixed(1)}%</TableCell>
+                      <TableCell className="text-right">{fund.risk.volatility3Y.toFixed(1)}%</TableCell>
+                      <TableCell className="text-right">{fund.risk.volatility5Y.toFixed(1)}%</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Sharpe Ratio</TableCell>
+                      <TableCell className="text-right">{fund.risk.sharpeRatio1Y.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{fund.risk.sharpeRatio3Y.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{fund.risk.sharpeRatio5Y.toFixed(2)}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Sortino Ratio</TableCell>
+                      <TableCell className="text-right">{fund.risk.sortinoRatio1Y.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">{fund.risk.sortinoRatio3Y.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">-</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
