@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles } from "lucide-react";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
 import { FundAnalystAdmin } from "@/components/admin/FundAnalystAdmin";
 import { StocksCryptoAdmin } from "@/components/admin/StocksCryptoAdmin";
@@ -23,6 +23,7 @@ import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { PurchasableReportUpload } from "@/components/admin/PurchasableReportUpload";
 import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
+import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 
 interface Profile {
   user_id: string;
@@ -715,6 +716,13 @@ export default function AdminDashboard() {
               >
                 <FlaskConical className="h-5 w-5 mr-2" />
                 Research Engine
+              </TabsTrigger>
+              <TabsTrigger 
+                value="document-generator"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-violet-500 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 data-[state=active]:border-violet-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-violet-50 hover:border-violet-200 hover:scale-[1.01]"
+              >
+                <Sparkles className="h-5 w-5 mr-2" />
+                Document Generator
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1461,6 +1469,11 @@ export default function AdminDashboard() {
         {/* Research Engine Tab */}
         <TabsContent value="research-engine">
           <ResearchAdmin />
+        </TabsContent>
+
+        {/* Document Generator Tab */}
+        <TabsContent value="document-generator">
+          <AdminDocumentGenerator />
         </TabsContent>
       </Tabs>
       </div>
