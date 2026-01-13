@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical } from "lucide-react";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
+import { FundAnalystAdmin } from "@/components/admin/FundAnalystAdmin";
 import { StocksCryptoAdmin } from "@/components/admin/StocksCryptoAdmin";
 import { ResearchAdmin } from "@/components/admin/ResearchAdmin";
 import { AlertsForm } from "@/components/admin/AlertsForm";
@@ -686,6 +687,13 @@ export default function AdminDashboard() {
               >
                 <Star className="h-4 w-4 mr-2" />
                 Fund Scoring
+              </TabsTrigger>
+              <TabsTrigger 
+                value="fund-analyst"
+                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Fund Analyst
               </TabsTrigger>
               <TabsTrigger 
                 value="opportunities"
@@ -1420,6 +1428,11 @@ export default function AdminDashboard() {
         {/* Fund Scoring Tab */}
         <TabsContent value="fund-scoring">
           <FundScoringAdmin />
+        </TabsContent>
+
+        {/* Fund Analyst Activity Tab */}
+        <TabsContent value="fund-analyst">
+          <FundAnalystAdmin />
         </TabsContent>
 
         {/* Opportunity Intelligence Upload Tab */}
