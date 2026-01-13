@@ -156,106 +156,115 @@ function getStockImage(category: string, index: number): string {
 }
 
 async function generateAINews(count: number): Promise<NewsArticle[]> {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY');
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) return [];
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: "google/gemini-3-flash-preview",
+        temperature: 0.7,
         messages: [
           {
-            role: 'system',
-            content: `You are a financial news aggregator. Generate exactly ${count} realistic financial news headlines.
-Return ONLY a JSON array: [{"title": "...", "description": "...", "category": "markets|crypto|business", "source": "Reuters|Bloomberg|CNBC|FT|WSJ"}]
-Keep titles under 100 chars, descriptions under 150 chars. Mix: stocks, crypto, commodities, forex, earnings, M&A.`
+            role: "system",
+            content: `You are a financial news aggregator. Generate exactly ${count} realistic, timely financial news items.\nReturn ONLY a JSON array with this exact schema:\n[{"title":"...","description":"...","category":"markets|crypto|business","source":"Reuters|Bloomberg|CNBC|FT|WSJ|MarketWatch|CoinDesk"}]\nConstraints: title <= 110 chars, description <= 160 chars. Keep them unique and relevant.`,
           },
           {
-            role: 'user',
-            content: `Generate exactly ${count} unique financial news items NOW.`
-          }
+            role: "user",
+            content: `Generate exactly ${count} unique items. Return JSON only.`,
+          },
         ],
-        max_tokens: 8000,
       }),
     });
 
     if (!response.ok) {
-      console.error('AI news generation failed:', response.status);
+      const errorText = await response.text().catch(() => "");
+      console.error("AI news generation failed:", response.status, errorText);
       return [];
     }
-    
+
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    
+    const content = data.choices?.[0]?.message?.content || "";
+
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
-      console.error('No JSON array found in AI response');
+      console.error("No JSON array found in AI response:", content.slice(0, 400));
       return [];
     }
-    
+
     const newsItems = JSON.parse(jsonMatch[0]);
     const now = new Date();
-    
-    console.log(`Generated ${newsItems.length} AI news articles`);
-    
+
+    console.log(`Generated ${Array.isArray(newsItems) ? newsItems.length : 0} AI news articles`);
+
+    if (!Array.isArray(newsItems)) return [];
+
     return newsItems.map((item: any, index: number) => ({
-      title: item.title,
-      description: item.description,
-      url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '').replace(/[^a-z]/g, '')}.com`,
-      image: getStockImage(item.category || 'business', index),
-      publishedAt: new Date(now.getTime() - index * 35 * 60 * 1000).toISOString(),
-      source: { 
-        name: item.source || 'Financial News',
-        url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '')}.com`
+      title: String(item.title ?? "").trim(),
+      description: String(item.description ?? "").trim(),
+      url: `https://www.${String(item.source ?? "news")
+        .toLowerCase()
+        .replace(/\s/g, "")
+        .replace(/[^a-z]/g, "")}.com`,
+      image: getStockImage(item.category || "business", index),
+      publishedAt: new Date(now.getTime() - index * 20 * 60 * 1000).toISOString(),
+      source: {
+        name: item.source || "Financial News",
+        url: `https://www.${String(item.source ?? "news").toLowerCase().replace(/\s/g, "")}.com`,
       },
-      category: item.category || 'business',
+      category: item.category || "business",
     }));
   } catch (error) {
-    console.error('Error generating AI news:', error);
+    console.error("Error generating AI news:", error);
     return [];
   }
 }
 
 async function generateAINewsRoundup(articles: NewsArticle[]): Promise<string | null> {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY');
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey || articles.length === 0) return null;
 
   try {
-    const headlines = articles.slice(0, 8).map(a => `- ${a.title}`).join('\n');
-    
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
+    const headlines = articles.slice(0, 8).map((a) => `- ${a.title}`).join("\n");
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: "google/gemini-3-flash-preview",
+        temperature: 0.4,
         messages: [
           {
-            role: 'system',
-            content: 'You are a financial news analyst. Provide a brief 3-4 sentence summary of the key market themes. Be concise and professional.'
+            role: "system",
+            content:
+              "You are a financial news analyst. Provide a brief 3-4 sentence summary of the key market themes. Be concise and professional.",
           },
           {
-            role: 'user',
-            content: `Summarize the key themes from these financial headlines:\n${headlines}`
-          }
+            role: "user",
+            content: `Summarize the key themes from these financial headlines:\n${headlines}`,
+          },
         ],
-        max_tokens: 250,
       }),
     });
 
-    if (!response.ok) return null;
-    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => "");
+      console.error("AI roundup failed:", response.status, errorText);
+      return null;
+    }
+
     const data = await response.json();
     return data.choices?.[0]?.message?.content || null;
   } catch (error) {
-    console.error('Error generating AI roundup:', error);
+    console.error("Error generating AI roundup:", error);
     return null;
   }
 }
@@ -293,16 +302,25 @@ serve(async (req) => {
       const batches = Math.ceil(neededAINews / batchSize);
       
       for (let i = 0; i < batches; i++) {
-        const batchCount = Math.min(batchSize, neededAINews - (i * batchSize));
+        const batchCount = Math.min(batchSize, neededAINews - i * batchSize);
         console.log(`Batch ${i + 1}/${batches}: generating ${batchCount} articles...`);
-        const aiNews = await generateAINews(batchCount);
-        
+
+        // Retry until we actually get the requested count (LLMs sometimes return fewer)
+        const aiNews: NewsArticle[] = [];
+        let attempts = 0;
+        while (aiNews.length < batchCount && attempts < 3) {
+          const remaining = batchCount - aiNews.length;
+          const chunk = await generateAINews(remaining);
+          aiNews.push(...chunk);
+          attempts++;
+        }
+
         // Offset timestamps for each batch
         aiNews.forEach((article, idx) => {
           const now = new Date();
           article.publishedAt = new Date(now.getTime() - (articles.length + idx) * 20 * 60 * 1000).toISOString();
         });
-        
+
         articles.push(...aiNews);
         console.log(`Total articles so far: ${articles.length}`);
       }
