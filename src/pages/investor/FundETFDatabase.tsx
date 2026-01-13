@@ -7,13 +7,13 @@ import { Database, Search, Scale, Sparkles, TrendingUp, DollarSign, BarChart3, G
 import { fundDatabase } from "@/data/fundDatabase";
 import { FundSearchFilters } from "@/components/fund-database/FundSearchFilters";
 import { FundTable } from "@/components/fund-database/FundTable";
-import { FundDetailPanel } from "@/components/fund-database/FundDetailPanel";
 import { FundComparison } from "@/components/fund-database/FundComparison";
 import { AIFundInsights } from "@/components/fund-database/AIFundInsights";
 import { FundScreener } from "@/components/fund-database/FundScreener";
 import { FundWatchlist } from "@/components/fund-database/FundWatchlist";
 import { FundAnalystActivityHub } from "@/components/market/FundAnalystActivityHub";
 import { DataIntegrityBanner } from "@/components/fund-database/DataIntegrityBanner";
+import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
 
@@ -252,27 +252,14 @@ export default function FundETFDatabase() {
 
           <TabsContent value="search" className="space-y-4 mt-0">
             <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className={viewingFund ? "lg:col-span-2" : "lg:col-span-3"}>
-                <FundTable 
-                  funds={filteredFunds} 
-                  selectedFunds={selectedFunds} 
-                  onSelectFund={handleSelectFund}
-                  onViewFund={setViewingFund}
-                  onAddToComparison={handleAddToComparison}
-                  isAdmin={false}
-                />
-              </div>
-              {viewingFund && (
-                <div className="lg:sticky lg:top-6 self-start">
-                  <FundDetailPanel 
-                    fund={viewingFund} 
-                    onClose={() => setViewingFund(null)}
-                    onAddToComparison={handleAddToComparison}
-                  />
-                </div>
-              )}
-            </div>
+            <FundTable 
+              funds={filteredFunds} 
+              selectedFunds={selectedFunds} 
+              onSelectFund={handleSelectFund}
+              onViewFund={setViewingFund}
+              onAddToComparison={handleAddToComparison}
+              isAdmin={false}
+            />
           </TabsContent>
 
           <TabsContent value="ai" className="mt-0">
@@ -301,6 +288,39 @@ export default function FundETFDatabase() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Morningstar-Style Fund Detail Panel */}
+      {viewingFund && (
+        <div className="fixed inset-0 z-50 flex">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setViewingFund(null)}
+          />
+          <div className="relative ml-auto w-full max-w-4xl h-full">
+            <MorningstarDetailPanel
+              asset={{
+                id: viewingFund.isin,
+                symbol: viewingFund.ticker || viewingFund.isin.slice(-4),
+                name: viewingFund.name,
+                assetType: 'fund',
+                currentPrice: viewingFund.performance.dailyNav,
+                priceChange24h: viewingFund.performance.ytdReturn / 12,
+                priceChange7d: viewingFund.performance.ytdReturn / 52,
+                priceChange30d: viewingFund.performance.ytdReturn / 12,
+                priceChange1y: viewingFund.performance.oneYearReturn,
+                aum: viewingFund.aum,
+                analystRating: viewingFund.ratings?.analystRating,
+                overallScore: viewingFund.ratings?.starRating,
+                currency: viewingFund.currency,
+                ocf: viewingFund.costs.ocf,
+                srriRating: viewingFund.risk.srriRating,
+                sector: viewingFund.category,
+              }}
+              onClose={() => setViewingFund(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
