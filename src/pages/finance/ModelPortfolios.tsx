@@ -43,12 +43,11 @@ export default function FinanceModelPortfolios() {
   const fetchPortfolios = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       
+      // Fetch all model portfolios - admin uploads should be visible to all users
       const { data, error } = await supabase
         .from('model_portfolios')
         .select('id, title, description, file_path, thumbnail_url, created_at, updated_at, user_id')
-        .or(`user_id.eq.${user?.id},user_id.is.null`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
