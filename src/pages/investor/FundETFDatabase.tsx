@@ -264,11 +264,13 @@ export default function FundETFDatabase() {
                 />
               </div>
               {viewingFund && (
-                <FundDetailPanel 
-                  fund={viewingFund} 
-                  onClose={() => setViewingFund(null)}
-                  onAddToComparison={handleAddToComparison}
-                />
+                <div className="lg:sticky lg:top-6 self-start">
+                  <FundDetailPanel 
+                    fund={viewingFund} 
+                    onClose={() => setViewingFund(null)}
+                    onAddToComparison={handleAddToComparison}
+                  />
+                </div>
               )}
             </div>
           </TabsContent>
