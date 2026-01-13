@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCryptoData, useStockData, CryptoData, StockData } from "@/hooks/useRealTimeMarketData";
+import { AnalystPicksSection } from "@/components/market/AnalystPicksSection";
 import { 
   Search, 
   TrendingUp, 
@@ -149,6 +150,9 @@ export default function RealTimeMarketDatabase() {
       </div>
 
       <div className="container mx-auto px-6 py-8 space-y-8">
+        {/* Analyst Picks Section */}
+        <AnalystPicksSection />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-4">
           <StatsCard
