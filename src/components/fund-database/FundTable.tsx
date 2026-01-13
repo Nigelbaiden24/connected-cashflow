@@ -159,15 +159,15 @@ const FundRow = memo(({
           <div className="text-xs text-muted-foreground">{fund.structure}</div>
         </div>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right whitespace-nowrap">
         <span className={`font-medium ${fund.costs.ocf <= 0.25 ? "text-emerald-500" : fund.costs.ocf >= 1 ? "text-amber-500" : ""}`}>
           {fund.costs.ocf.toFixed(2)}%
         </span>
       </TableCell>
-      <TableCell className="text-right text-sm text-muted-foreground">
+      <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
         {formatAUM(fund.aum)}
       </TableCell>
-      <TableCell className={`text-right ${getReturnBg(fund.performance.oneYearReturn)} rounded-sm`}>
+      <TableCell className={`text-right whitespace-nowrap ${getReturnBg(fund.performance.oneYearReturn)} rounded-sm`}>
         <div className={`flex items-center justify-end gap-1 font-semibold ${getReturnColor(fund.performance.oneYearReturn)}`}>
           {fund.performance.oneYearReturn > 0 ? 
             <TrendingUp className="h-3.5 w-3.5" /> : 
@@ -177,15 +177,15 @@ const FundRow = memo(({
           {fund.performance.oneYearReturn > 0 ? '+' : ''}{fund.performance.oneYearReturn.toFixed(1)}%
         </div>
       </TableCell>
-      <TableCell className={`text-right font-medium ${getReturnColor(fund.performance.threeYearReturn)}`}>
+      <TableCell className={`text-right font-medium whitespace-nowrap ${getReturnColor(fund.performance.threeYearReturn)}`}>
         {fund.performance.threeYearReturn > 0 ? '+' : ''}{fund.performance.threeYearReturn.toFixed(1)}%
       </TableCell>
-      <TableCell className="text-center">
+      <TableCell className="text-center whitespace-nowrap">
         <Badge className={`${q.bg} ${q.text} ${q.border} border font-semibold text-[10px] px-1.5`}>
           Q{fund.performance.quartileRank1Y}
         </Badge>
       </TableCell>
-      <TableCell className="text-center">
+      <TableCell className="text-center whitespace-nowrap">
         <Badge className={`${getRiskColor(fund.risk.srriRating)} border font-semibold text-[10px] px-1.5`}>
           {fund.risk.srriRating}/7
         </Badge>
@@ -251,43 +251,45 @@ export function FundTable({
   return (
     <Card className="border-border/50 overflow-hidden bg-gradient-to-br from-background to-muted/10">
       <ScrollArea className="h-[650px]">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-10 pl-4">
-                <Checkbox 
-                  checked={selectedFunds.length === funds.length && funds.length > 0}
-                  onCheckedChange={handleSelectAll}
-                  className="border-border/50"
+        <div className="overflow-x-auto">
+          <Table className="min-w-[1200px]">
+            <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-10 pl-4 whitespace-nowrap">
+                  <Checkbox 
+                    checked={selectedFunds.length === funds.length && funds.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    className="border-border/50"
+                  />
+                </TableHead>
+                <TableHead className="min-w-[280px] font-semibold text-foreground whitespace-nowrap">Fund</TableHead>
+                <TableHead className="min-w-[120px] font-semibold text-foreground whitespace-nowrap">Rating</TableHead>
+                <TableHead className="min-w-[100px] font-semibold text-foreground whitespace-nowrap">Type</TableHead>
+                <TableHead className="min-w-[80px] text-right font-semibold text-foreground whitespace-nowrap">OCF</TableHead>
+                <TableHead className="min-w-[100px] text-right font-semibold text-foreground whitespace-nowrap">AUM</TableHead>
+                <TableHead className="min-w-[90px] text-right font-semibold text-foreground whitespace-nowrap">1Y Return</TableHead>
+                <TableHead className="min-w-[90px] text-right font-semibold text-foreground whitespace-nowrap">3Y Return</TableHead>
+                <TableHead className="min-w-[70px] text-center font-semibold text-foreground whitespace-nowrap">Quartile</TableHead>
+                <TableHead className="min-w-[70px] text-center font-semibold text-foreground whitespace-nowrap">Risk</TableHead>
+                <TableHead className="w-28 whitespace-nowrap"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {funds.map((fund) => (
+                <FundRow
+                  key={fund.isin}
+                  fund={fund}
+                  isSelected={selectedFunds.includes(fund.isin)}
+                  onSelect={() => onSelectFund(fund.isin)}
+                  onView={() => onViewFund(fund)}
+                  onCompare={() => onAddToComparison(fund)}
+                  onEditRatings={onEditRatings ? () => onEditRatings(fund) : undefined}
+                  isAdmin={isAdmin}
                 />
-              </TableHead>
-              <TableHead className="min-w-[280px] font-semibold text-foreground">Fund</TableHead>
-              <TableHead className="font-semibold text-foreground">Rating</TableHead>
-              <TableHead className="font-semibold text-foreground">Type</TableHead>
-              <TableHead className="text-right font-semibold text-foreground">OCF</TableHead>
-              <TableHead className="text-right font-semibold text-foreground">AUM</TableHead>
-              <TableHead className="text-right font-semibold text-foreground">1Y</TableHead>
-              <TableHead className="text-right font-semibold text-foreground">3Y</TableHead>
-              <TableHead className="text-center font-semibold text-foreground">Q</TableHead>
-              <TableHead className="text-center font-semibold text-foreground">Risk</TableHead>
-              <TableHead className="w-28"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {funds.map((fund) => (
-              <FundRow
-                key={fund.isin}
-                fund={fund}
-                isSelected={selectedFunds.includes(fund.isin)}
-                onSelect={() => onSelectFund(fund.isin)}
-                onView={() => onViewFund(fund)}
-                onCompare={() => onAddToComparison(fund)}
-                onEditRatings={onEditRatings ? () => onEditRatings(fund) : undefined}
-                isAdmin={isAdmin}
-              />
-            ))}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </ScrollArea>
     </Card>
   );
