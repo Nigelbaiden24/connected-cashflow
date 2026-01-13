@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,15 +12,17 @@ import {
   TrendingUp,
   Sparkles,
   Globe,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 interface NewsArticle {
   title: string;
   description: string;
-  content: string;
+  content?: string;
   url: string;
   image: string | null;
   publishedAt: string;
@@ -36,25 +38,33 @@ interface NewsResponse {
   aiSummary: string | null;
   lastUpdated: string;
   sources: string[];
+  totalPages?: number;
+  currentPage?: number;
 }
+
+const ARTICLES_PER_PAGE = 9;
 
 export function FinancialNewsFeed() {
   const [newsData, setNewsData] = useState<NewsResponse | null>(null);
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchNews = async () => {
+  const fetchNews = async (page: number = 1) => {
     setIsLoading(true);
     setError(null);
     
     try {
       const { data, error: fnError } = await supabase.functions.invoke('fetch-financial-news', {
-        body: { category: activeCategory }
+        body: { category: activeCategory, page, limit: 100 }
       });
 
       if (fnError) throw fnError;
       setNewsData(data);
+      setAllArticles(data.articles || []);
+      setCurrentPage(1);
     } catch (err: any) {
       console.error('Error fetching news:', err);
       setError(err.message || 'Failed to fetch news');
@@ -65,10 +75,20 @@ export function FinancialNewsFeed() {
 
   useEffect(() => {
     fetchNews();
-    // Auto-refresh every 5 minutes
-    const interval = setInterval(fetchNews, 5 * 60 * 1000);
+    const interval = setInterval(() => fetchNews(), 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [activeCategory]);
+
+  const totalPages = Math.ceil(allArticles.length / ARTICLES_PER_PAGE);
+  const paginatedArticles = allArticles.slice(
+    (currentPage - 1) * ARTICLES_PER_PAGE,
+    currentPage * ARTICLES_PER_PAGE
+  );
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const categories = [
     { id: "all", label: "All News", icon: Newspaper },
@@ -79,7 +99,7 @@ export function FinancialNewsFeed() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
             <Newspaper className="h-6 w-6 text-primary" />
@@ -101,7 +121,7 @@ export function FinancialNewsFeed() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={fetchNews}
+            onClick={() => fetchNews()}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
@@ -133,7 +153,7 @@ export function FinancialNewsFeed() {
       )}
 
       {/* Category Tabs */}
-      <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+      <Tabs value={activeCategory} onValueChange={(val) => { setActiveCategory(val); setCurrentPage(1); }}>
         <TabsList>
           {categories.map(cat => (
             <TabsTrigger key={cat.id} value={cat.id} className="flex items-center gap-2">
@@ -155,7 +175,7 @@ export function FinancialNewsFeed() {
             </Card>
           ) : isLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
+              {[...Array(9)].map((_, i) => (
                 <Card key={i}>
                   <CardContent className="pt-4">
                     <Skeleton className="h-40 w-full mb-3 rounded-lg" />
@@ -167,11 +187,58 @@ export function FinancialNewsFeed() {
               ))}
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {newsData?.articles.map((article, index) => (
-                <NewsCard key={`${article.url}-${index}`} article={article} />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {paginatedArticles.map((article, index) => (
+                  <NewsCard key={`${article.url}-${index}`} article={article} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-8">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          className="w-9 h-9"
+                          onClick={() => goToPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Page Info */}
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                Page {currentPage} of {totalPages} • {allArticles.length} articles
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
@@ -180,7 +247,7 @@ export function FinancialNewsFeed() {
       {newsData?.sources && newsData.sources.length > 0 && (
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-4 border-t">
           <span>Powered by:</span>
-          {newsData.sources.map((source, i) => (
+          {newsData.sources.map((source) => (
             <Badge key={source} variant="outline" className="text-xs">
               {source}
             </Badge>
