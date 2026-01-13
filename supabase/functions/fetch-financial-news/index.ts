@@ -327,10 +327,14 @@ serve(async (req) => {
       }
     }
 
-    // Remove duplicates by title
-    const seenTitles = new Set();
-    filteredArticles = filteredArticles.filter(a => {
-      const key = a.title.toLowerCase().substring(0, 40);
+    // Remove duplicates by title (use full normalized title to avoid false-collisions)
+    const seenTitles = new Set<string>();
+    filteredArticles = filteredArticles.filter((a) => {
+      const key = a.title
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .replace(/[\u2018\u2019]/g, "'")
+        .trim();
       if (seenTitles.has(key)) return false;
       seenTitles.add(key);
       return true;
