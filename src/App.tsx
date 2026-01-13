@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,10 +41,12 @@ import FinanceBenchmarkingTrends from "./pages/finance/BenchmarkingTrends";
 import FinanceAIAnalyst from "./pages/finance/AIAnalyst";
 import FinanceWatchlists from "./pages/finance/Watchlists";
 import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
-import FundETFDatabase from "./pages/finance/FundETFDatabase";
 import StocksCryptoDatabase from "./pages/StocksCryptoDatabase";
 import RealTimeMarketDatabase from "./pages/RealTimeMarketDatabase";
-import InvestorFundETFDatabase from "./pages/investor/FundETFDatabase";
+
+// Lazy load heavy components with large data files
+const FundETFDatabase = lazy(() => import("./pages/finance/FundETFDatabase"));
+const InvestorFundETFDatabase = lazy(() => import("./pages/investor/FundETFDatabase"));
 import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
@@ -395,7 +397,16 @@ const App = () => {
             <Route path="/finance/fund-database" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                  <FundETFDatabase />
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                        <p className="text-sm text-muted-foreground">Loading Fund Database...</p>
+                      </div>
+                    </div>
+                  }>
+                    <FundETFDatabase />
+                  </Suspense>
                 </FinanceLayout>
               )
             } />
@@ -566,7 +577,20 @@ const App = () => {
             !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Languages /></InvestorLayout>
           } />
             <Route path="/investor/fund-database" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorFundETFDatabase /></InvestorLayout>
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
+                <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                        <p className="text-sm text-muted-foreground">Loading Fund Database...</p>
+                      </div>
+                    </div>
+                  }>
+                    <InvestorFundETFDatabase />
+                  </Suspense>
+                </InvestorLayout>
+              )
             } />
             <Route path="/investor/opportunities" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityIntelligence /></InvestorLayout>
