@@ -99,13 +99,15 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
       <ScrollArea className="flex-1 min-h-0">
         <CardContent className="space-y-4">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="w-full text-xs overflow-x-auto scrollbar-thin flex-nowrap justify-start">
-              <TabsTrigger value="overview" className="shrink-0">Overview</TabsTrigger>
-              <TabsTrigger value="performance" className="shrink-0">Performance</TabsTrigger>
-              <TabsTrigger value="risk" className="shrink-0">Risk</TabsTrigger>
-              <TabsTrigger value="holdings" className="shrink-0">Holdings</TabsTrigger>
-              <TabsTrigger value="insights" className="shrink-0">AI Insights</TabsTrigger>
-            </TabsList>
+            <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/50">
+              <TabsList className="w-max max-w-none overflow-visible text-xs justify-start">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="performance">Performance</TabsTrigger>
+                <TabsTrigger value="risk">Risk</TabsTrigger>
+                <TabsTrigger value="holdings">Holdings</TabsTrigger>
+                <TabsTrigger value="insights">AI Insights</TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-4 mt-4">
