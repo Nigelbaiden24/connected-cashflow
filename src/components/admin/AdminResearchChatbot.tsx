@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { 
   Send, 
@@ -21,7 +23,11 @@ import {
   PieChart,
   AlertTriangle,
   BookOpen,
-  RefreshCw
+  RefreshCw,
+  Database,
+  ChevronDown,
+  Zap,
+  Newspaper
 } from "lucide-react";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
@@ -35,42 +41,84 @@ interface Message {
   isReport?: boolean;
 }
 
+// 18 Research platforms
+const RESEARCH_PLATFORMS = [
+  { id: "marketbeat", name: "MarketBeat", category: "Ratings & Analysis" },
+  { id: "factset", name: "FactSet", category: "Institutional Data" },
+  { id: "quartr", name: "Quartr", category: "Earnings Calls" },
+  { id: "koyfin", name: "Koyfin", category: "Market Data" },
+  { id: "spiking", name: "Spiking", category: "Insider Activity" },
+  { id: "seekingalpha", name: "Seeking Alpha", category: "Research & Ideas" },
+  { id: "tipranks", name: "TipRanks", category: "Analyst Ratings" },
+  { id: "investingcom", name: "Investing.com", category: "Global Markets" },
+  { id: "tradingview", name: "TradingView", category: "Technical Analysis" },
+  { id: "marketwatch", name: "MarketWatch", category: "Market News" },
+  { id: "yahoofinance", name: "Yahoo Finance", category: "General Finance" },
+  { id: "cnbc", name: "CNBC", category: "Business News" },
+  { id: "bloomberg", name: "Bloomberg", category: "Premium News" },
+  { id: "ft", name: "Financial Times", category: "Global Analysis" },
+  { id: "morningstar", name: "Morningstar", category: "Fund Research" },
+  { id: "zacks", name: "Zacks", category: "Stock Research" },
+  { id: "benzinga", name: "Benzinga", category: "Trading News" },
+  { id: "thestreet", name: "TheStreet", category: "Investment News" },
+];
+
 const QUICK_PROMPTS = [
   { 
     label: "Market Outlook", 
     icon: TrendingUp, 
     prompt: "Generate a comprehensive Q1 2026 Global Market Outlook report covering equities, fixed income, and alternative investments with key risks and opportunities.",
-    isReport: true
+    isReport: true,
+    suggestedPlatforms: ["bloomberg", "ft", "cnbc", "marketwatch"]
   },
   { 
     label: "Sector Analysis", 
     icon: BarChart3, 
     prompt: "Create a detailed Technology Sector Analysis report including valuations, growth drivers, key players, and investment recommendations.",
-    isReport: true
+    isReport: true,
+    suggestedPlatforms: ["seekingalpha", "tipranks", "zacks", "morningstar"]
   },
   { 
     label: "Risk Assessment", 
     icon: Shield, 
     prompt: "Generate a Portfolio Risk Assessment report analyzing market risk, credit risk, liquidity risk, and operational risk with mitigation strategies.",
-    isReport: true
+    isReport: true,
+    suggestedPlatforms: ["factset", "koyfin", "bloomberg"]
   },
   { 
     label: "ESG Report", 
     icon: Globe, 
     prompt: "Create an ESG Investment Analysis report covering environmental, social, and governance factors for a diversified equity portfolio.",
-    isReport: true
+    isReport: true,
+    suggestedPlatforms: ["morningstar", "ft", "bloomberg"]
   },
   { 
     label: "Fund Due Diligence", 
     icon: Briefcase, 
     prompt: "Generate a comprehensive Fund Due Diligence report template for evaluating a multi-strategy hedge fund.",
-    isReport: true
+    isReport: true,
+    suggestedPlatforms: ["morningstar", "factset", "seekingalpha"]
   },
   { 
     label: "Asset Allocation", 
     icon: PieChart, 
     prompt: "Create a Strategic Asset Allocation report for a moderate-risk investor with £500,000 portfolio over a 10-year horizon.",
-    isReport: true
+    isReport: true,
+    suggestedPlatforms: ["koyfin", "morningstar", "yahoofinance"]
+  },
+  { 
+    label: "Live Market News", 
+    icon: Newspaper, 
+    prompt: "Give me a comprehensive summary of today's most important market news, stock movements, and key events affecting global markets.",
+    isReport: false,
+    suggestedPlatforms: ["cnbc", "bloomberg", "marketwatch", "yahoofinance", "benzinga"]
+  },
+  { 
+    label: "Analyst Picks", 
+    icon: Zap, 
+    prompt: "What are the top analyst stock picks and upgrades/downgrades from today? Include price targets and ratings changes.",
+    isReport: false,
+    suggestedPlatforms: ["tipranks", "marketbeat", "seekingalpha", "zacks"]
   },
 ];
 
@@ -79,6 +127,9 @@ export const AdminResearchChatbot = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [isFetchingResearch, setIsFetchingResearch] = useState(false);
+  const [platformSelectorOpen, setPlatformSelectorOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -88,8 +139,34 @@ export const AdminResearchChatbot = () => {
     }
   }, [messages]);
 
-  const streamChat = async (userMessages: Message[], generateReport: boolean = false) => {
+  const togglePlatform = (platformId: string) => {
+    setSelectedPlatforms(prev => 
+      prev.includes(platformId) 
+        ? prev.filter(p => p !== platformId)
+        : [...prev, platformId]
+    );
+  };
+
+  const selectAllPlatforms = () => {
+    setSelectedPlatforms(RESEARCH_PLATFORMS.map(p => p.id));
+  };
+
+  const clearAllPlatforms = () => {
+    setSelectedPlatforms([]);
+  };
+
+  const streamChat = async (
+    userMessages: Message[], 
+    generateReport: boolean = false,
+    fetchResearch: boolean = false,
+    platforms: string[] = []
+  ) => {
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-research-chat`;
+
+    if (fetchResearch && platforms.length > 0) {
+      setIsFetchingResearch(true);
+      toast.info(`Fetching live research from ${platforms.length} platform(s)...`);
+    }
 
     const response = await fetch(CHAT_URL, {
       method: "POST",
@@ -100,8 +177,12 @@ export const AdminResearchChatbot = () => {
       body: JSON.stringify({
         messages: userMessages.map(m => ({ role: m.role, content: m.content })),
         generateReport,
+        fetchResearch,
+        platforms,
       }),
     });
+
+    setIsFetchingResearch(false);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -175,7 +256,11 @@ export const AdminResearchChatbot = () => {
     return assistantContent;
   };
 
-  const handleSend = async (customPrompt?: string, isReport: boolean = false) => {
+  const handleSend = async (
+    customPrompt?: string, 
+    isReport: boolean = false,
+    suggestedPlatforms?: string[]
+  ) => {
     const messageContent = customPrompt || input.trim();
     if (!messageContent || isLoading) return;
 
@@ -186,12 +271,19 @@ export const AdminResearchChatbot = () => {
       timestamp: new Date(),
     };
 
+    // Use suggested platforms if provided, otherwise use selected ones
+    const platformsToUse = suggestedPlatforms || selectedPlatforms;
+    const shouldFetchResearch = platformsToUse.length > 0;
+
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      await streamChat([...messages, userMessage], isReport);
+      await streamChat([...messages, userMessage], isReport, shouldFetchResearch, platformsToUse);
+      if (shouldFetchResearch) {
+        toast.success(`Analysis complete with live data from ${platformsToUse.length} platform(s)`);
+      }
     } catch (error) {
       console.error("Chat error:", error);
     } finally {
@@ -373,7 +465,7 @@ export const AdminResearchChatbot = () => {
               <div>
                 <CardTitle className="text-2xl text-slate-900">Research AI Assistant</CardTitle>
                 <CardDescription className="text-slate-600">
-                  Specialist financial research chatbot with PDF report generation
+                  Powered by 18 live research platforms with AI synthesis
                 </CardDescription>
               </div>
             </div>
@@ -387,29 +479,89 @@ export const AdminResearchChatbot = () => {
         </CardHeader>
       </Card>
 
+      {/* Research Platform Selector */}
+      <Card className="border-slate-200 shadow-md bg-white">
+        <Collapsible open={platformSelectorOpen} onOpenChange={setPlatformSelectorOpen}>
+          <CardHeader className="pb-3">
+            <CollapsibleTrigger className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <Database className="h-5 w-5 text-emerald-600" />
+                <CardTitle className="text-lg">Live Research Sources</CardTitle>
+                {selectedPlatforms.length > 0 && (
+                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                    {selectedPlatforms.length} selected
+                  </Badge>
+                )}
+              </div>
+              <ChevronDown className={`h-5 w-5 text-slate-500 transition-transform ${platformSelectorOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CardDescription>
+              Select platforms to fetch live research data for AI-powered analysis
+            </CardDescription>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              <div className="flex gap-2 mb-4">
+                <Button variant="outline" size="sm" onClick={selectAllPlatforms}>
+                  Select All
+                </Button>
+                <Button variant="outline" size="sm" onClick={clearAllPlatforms}>
+                  Clear All
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                {RESEARCH_PLATFORMS.map((platform) => (
+                  <div
+                    key={platform.id}
+                    className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${
+                      selectedPlatforms.includes(platform.id)
+                        ? "border-emerald-400 bg-emerald-50 shadow-sm"
+                        : "border-slate-200 hover:border-emerald-200 hover:bg-slate-50"
+                    }`}
+                    onClick={() => togglePlatform(platform.id)}
+                  >
+                    <Checkbox 
+                      checked={selectedPlatforms.includes(platform.id)}
+                      className="pointer-events-none"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">{platform.name}</p>
+                      <p className="text-xs text-slate-500 truncate">{platform.category}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
       {/* Quick Report Prompts */}
       <Card className="border-slate-200 shadow-md">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5 text-violet-600" />
-            Quick Report Generation
+            Quick Actions
           </CardTitle>
           <CardDescription>
-            Click any template to generate a professional PDF-ready report
+            Click any template - reports auto-fetch from optimal research platforms
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
             {QUICK_PROMPTS.map((item, idx) => (
               <Button
                 key={idx}
                 variant="outline"
-                className="h-auto py-3 px-4 flex flex-col items-center gap-2 hover:bg-violet-50 hover:border-violet-300 transition-all"
-                onClick={() => handleSend(item.prompt, item.isReport)}
+                className="h-auto py-3 px-3 flex flex-col items-center gap-2 hover:bg-violet-50 hover:border-violet-300 transition-all"
+                onClick={() => handleSend(item.prompt, item.isReport, item.suggestedPlatforms)}
                 disabled={isLoading}
               >
                 <item.icon className="h-5 w-5 text-violet-600" />
-                <span className="text-xs font-medium text-slate-700">{item.label}</span>
+                <span className="text-xs font-medium text-slate-700 text-center">{item.label}</span>
+                {item.suggestedPlatforms && (
+                  <span className="text-[10px] text-emerald-600">{item.suggestedPlatforms.length} sources</span>
+                )}
               </Button>
             ))}
           </div>
@@ -419,21 +571,29 @@ export const AdminResearchChatbot = () => {
       {/* Chat Interface */}
       <Card className="border-slate-200 shadow-lg">
         <CardContent className="p-0">
+          {/* Loading indicator for research fetch */}
+          {isFetchingResearch && (
+            <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-3 flex items-center gap-3">
+              <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
+              <span className="text-sm text-emerald-700">Fetching live research from platforms...</span>
+            </div>
+          )}
+          
           {/* Messages Area */}
           <ScrollArea className="h-[500px] p-4" ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                 <Bot className="h-16 w-16 mb-4 text-violet-300" />
-                <h3 className="text-lg font-semibold text-slate-700">Financial Research Assistant</h3>
+                <h3 className="text-lg font-semibold text-slate-700">AI Research Assistant with Live Data</h3>
                 <p className="text-sm max-w-md mt-2">
-                  Ask me anything about financial markets, investments, or generate professional research reports. 
-                  Use the quick templates above for instant report generation.
+                  Select research platforms above, then ask questions or generate reports. 
+                  I'll fetch live data and synthesize insights from your selected sources.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                  <Badge variant="secondary" className="text-xs">Investment Analysis</Badge>
-                  <Badge variant="secondary" className="text-xs">Market Research</Badge>
-                  <Badge variant="secondary" className="text-xs">Risk Assessment</Badge>
-                  <Badge variant="secondary" className="text-xs">ESG Analysis</Badge>
+                  <Badge variant="secondary" className="text-xs">18 Research Platforms</Badge>
+                  <Badge variant="secondary" className="text-xs">Live Data Fetching</Badge>
+                  <Badge variant="secondary" className="text-xs">AI Synthesis</Badge>
+                  <Badge variant="secondary" className="text-xs">PDF Export</Badge>
                 </div>
               </div>
             ) : (
