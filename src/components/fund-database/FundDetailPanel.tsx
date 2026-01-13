@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,8 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { 
-  X, 
+import {
+  X,
   Download,
   Scale,
   TrendingUp,
@@ -20,10 +21,21 @@ import {
   ExternalLink,
   AlertTriangle,
   CheckCircle,
-  Info
+  Info,
 } from "lucide-react";
 import type { CompleteFund, AIInsight } from "@/types/fund";
-import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
+import {
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 interface FundDetailPanelProps {
   fund: CompleteFund;
@@ -31,16 +43,31 @@ interface FundDetailPanelProps {
   onAddToComparison: (fund: CompleteFund) => void;
 }
 
+type FundDetailTab = "overview" | "performance" | "risk" | "holdings" | "insights";
+
 export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetailPanelProps) {
+  const [activeTab, setActiveTab] = useState<FundDetailTab>("overview");
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as FundDetailTab);
+
+    // Ensure users always see the start of the selected tab (prevents "blank" views
+    // when switching tabs while scrolled down).
+    requestAnimationFrame(() => {
+      viewportRef.current?.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    });
+  };
+
   const COLORS = [
-    'hsl(var(--primary))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
-    'hsl(var(--warning))',
-    'hsl(var(--success))',
-    'hsl(var(--destructive))'
+    "hsl(var(--primary))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+    "hsl(var(--warning))",
+    "hsl(var(--success))",
+    "hsl(var(--destructive))",
   ];
 
   const getReturnColor = (value: number) => {
@@ -55,22 +82,32 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
     return "text-red-500";
   };
 
-  const getInsightIcon = (type: AIInsight['type']) => {
+  const getInsightIcon = (type: AIInsight["type"]) => {
     switch (type) {
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-amber-500" />;
-      case 'performance': return <TrendingUp className="h-4 w-4 text-emerald-500" />;
-      case 'risk': return <Shield className="h-4 w-4 text-red-500" />;
-      case 'cost': return <DollarSign className="h-4 w-4 text-blue-500" />;
-      case 'alternative': return <Lightbulb className="h-4 w-4 text-purple-500" />;
-      default: return <Info className="h-4 w-4" />;
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case "performance":
+        return <TrendingUp className="h-4 w-4 text-emerald-500" />;
+      case "risk":
+        return <Shield className="h-4 w-4 text-red-500" />;
+      case "cost":
+        return <DollarSign className="h-4 w-4 text-blue-500" />;
+      case "alternative":
+        return <Lightbulb className="h-4 w-4 text-purple-500" />;
+      default:
+        return <Info className="h-4 w-4" />;
     }
   };
 
   const performanceData = [
-    { period: 'YTD', return: fund.performance.ytdReturn, benchmark: fund.performance.benchmarkReturn1Y * (new Date().getMonth() + 1) / 12 },
-    { period: '1Y', return: fund.performance.oneYearReturn, benchmark: fund.performance.benchmarkReturn1Y },
-    { period: '3Y', return: fund.performance.threeYearReturn, benchmark: fund.performance.benchmarkReturn3Y },
-    { period: '5Y', return: fund.performance.fiveYearReturn, benchmark: fund.performance.benchmarkReturn5Y }
+    {
+      period: "YTD",
+      return: fund.performance.ytdReturn,
+      benchmark: (fund.performance.benchmarkReturn1Y * (new Date().getMonth() + 1)) / 12,
+    },
+    { period: "1Y", return: fund.performance.oneYearReturn, benchmark: fund.performance.benchmarkReturn1Y },
+    { period: "3Y", return: fund.performance.threeYearReturn, benchmark: fund.performance.benchmarkReturn3Y },
+    { period: "5Y", return: fund.performance.fiveYearReturn, benchmark: fund.performance.benchmarkReturn5Y },
   ];
 
   return (
@@ -95,11 +132,11 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
           {fund.ucitsStatus && <Badge variant="secondary">UCITS</Badge>}
         </div>
       </CardHeader>
-      
-      <ScrollArea className="flex-1 min-h-0">
+
+      <ScrollArea viewportRef={viewportRef} className="flex-1 min-h-0">
         <CardContent className="space-y-4">
-          <Tabs defaultValue="overview" className="w-full">
-            <div className="w-full overflow-x-auto scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/50">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <div className="-mx-1 w-full overflow-x-auto px-1 pb-1 touch-pan-x">
               <TabsList className="w-max max-w-none overflow-visible text-xs justify-start">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
