@@ -199,7 +199,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
                                     "ring-1 ring-white/20"
                                   )
                                 : cn(
-                                    "text-slate-400 hover:text-white",
+                                    "text-white/90 hover:text-white",
                                     "hover:bg-slate-800/60",
                                     "hover:shadow-sm hover:ring-1 hover:ring-slate-700/50"
                                   )
@@ -218,7 +218,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
                             )}>
                               <Icon className={cn(
                                 "h-4 w-4",
-                                active ? "text-white" : "text-slate-400 group-hover:text-white"
+                                active ? "text-white" : "text-white/80 group-hover:text-white"
                               )} />
                             </div>
                             
