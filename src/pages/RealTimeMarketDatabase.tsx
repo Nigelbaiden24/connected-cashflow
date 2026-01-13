@@ -74,22 +74,30 @@ export default function RealTimeMarketDatabase() {
     }
   });
 
+  // Prices from CoinGecko/AlphaVantage are returned in USD; display in GBP by default.
+  // (Static FX to keep the UI responsive; replace with live FX if/when you add it.)
+  const USD_TO_GBP = 0.79;
+
   const formatCurrency = (value: number | null, decimals = 2) => {
-    if (!value) return '—';
-    return new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD',
-      minimumFractionDigits: value < 1 ? 4 : decimals,
-      maximumFractionDigits: value < 1 ? 6 : decimals
-    }).format(value);
+    if (value === null || value === undefined) return "—";
+    const gbp = value * USD_TO_GBP;
+
+    return new Intl.NumberFormat("en-GB", {
+      style: "currency",
+      currency: "GBP",
+      minimumFractionDigits: Math.abs(gbp) < 1 ? 4 : decimals,
+      maximumFractionDigits: Math.abs(gbp) < 1 ? 6 : decimals,
+    }).format(gbp);
   };
 
   const formatMarketCap = (value: number | null) => {
-    if (!value) return '—';
-    if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
-    if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-    if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-    return `$${value.toFixed(0)}`;
+    if (value === null || value === undefined) return "—";
+    const gbp = value * USD_TO_GBP;
+
+    if (gbp >= 1e12) return `£${(gbp / 1e12).toFixed(2)}T`;
+    if (gbp >= 1e9) return `£${(gbp / 1e9).toFixed(2)}B`;
+    if (gbp >= 1e6) return `£${(gbp / 1e6).toFixed(2)}M`;
+    return `£${gbp.toFixed(0)}`;
   };
 
   const formatPercentage = (value: number | null) => {
@@ -657,7 +665,7 @@ export default function RealTimeMarketDatabase() {
 
                 <div className="grid grid-cols-4 gap-3">
                   <FundamentalCard label="P/E Ratio" value={selectedStock.peRatio?.toFixed(2) || '—'} />
-                  <FundamentalCard label="EPS" value={selectedStock.eps ? `$${selectedStock.eps.toFixed(2)}` : '—'} />
+                  <FundamentalCard label="EPS" value={selectedStock.eps ? formatCurrency(selectedStock.eps) : '—'} />
                   <FundamentalCard label="Dividend" value={selectedStock.dividendYield ? `${selectedStock.dividendYield.toFixed(2)}%` : '—'} />
                   <FundamentalCard label="Beta" value={selectedStock.beta?.toFixed(2) || '—'} />
                 </div>
