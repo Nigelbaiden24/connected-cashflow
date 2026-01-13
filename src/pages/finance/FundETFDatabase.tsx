@@ -1,22 +1,35 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, lazy, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Database, Search, Scale, Sparkles, TrendingUp, DollarSign, BarChart3, Globe, Download, Bookmark, Star, Building2, Landmark, ShieldCheck } from "lucide-react";
 import { fundDatabase } from "@/data/fundDatabase";
-import { allFunds, propertyFunds as propertyFundsData, standardFunds } from "@/data/funds";
+import { propertyFunds as propertyFundsData } from "@/data/funds";
 import { FundSearchFilters } from "@/components/fund-database/FundSearchFilters";
 import { FundTable } from "@/components/fund-database/FundTable";
 import { FundDetailPanel } from "@/components/fund-database/FundDetailPanel";
 import { FundComparison } from "@/components/fund-database/FundComparison";
-import { AIFundInsights } from "@/components/fund-database/AIFundInsights";
-import { FundScreener } from "@/components/fund-database/FundScreener";
-import { FundWatchlist } from "@/components/fund-database/FundWatchlist";
-import { FundAnalystActivityHub } from "@/components/market/FundAnalystActivityHub";
 import { DataIntegrityBanner } from "@/components/fund-database/DataIntegrityBanner";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
+
+// Lazy load heavy components
+const AIFundInsights = lazy(() => import("@/components/fund-database/AIFundInsights").then(m => ({ default: m.AIFundInsights })));
+const FundScreener = lazy(() => import("@/components/fund-database/FundScreener").then(m => ({ default: m.FundScreener })));
+const FundWatchlist = lazy(() => import("@/components/fund-database/FundWatchlist").then(m => ({ default: m.FundWatchlist })));
+const FundAnalystActivityHub = lazy(() => import("@/components/market/FundAnalystActivityHub").then(m => ({ default: m.FundAnalystActivityHub })));
+
+// Pre-compute static stats once at module level
+const STATIC_STATS = {
+  totalFunds: fundDatabase.length,
+  totalAUM: fundDatabase.reduce((sum, f) => sum + f.aum, 0),
+  avgOCF: (fundDatabase.reduce((sum, f) => sum + f.costs.ocf, 0) / fundDatabase.length).toFixed(2),
+  avgReturn: (fundDatabase.reduce((sum, f) => sum + f.performance.oneYearReturn, 0) / fundDatabase.length).toFixed(1),
+  ratedFunds: fundDatabase.filter(f => f.ratings?.starRating).length,
+  propertyFundCount: propertyFundsData.length,
+};
 
 export default function FundETFDatabase() {
   const [filters, setFilters] = useState<FiltersType>({});
@@ -25,6 +38,7 @@ export default function FundETFDatabase() {
   const [comparisonFunds, setComparisonFunds] = useState<CompleteFund[]>([]);
   const [showComparison, setShowComparison] = useState(false);
   const [fundCategory, setFundCategory] = useState<'all' | 'standard' | 'property'>('all');
+  const [activeTab, setActiveTab] = useState('search');
   const { toast } = useToast();
 
   const filteredFunds = useMemo(() => {
@@ -68,11 +82,11 @@ export default function FundETFDatabase() {
     return result;
   }, [filters]);
 
-  const handleSelectFund = (isin: string) => {
+  const handleSelectFund = useCallback((isin: string) => {
     setSelectedFunds(prev => prev.includes(isin) ? prev.filter(i => i !== isin) : [...prev, isin]);
-  };
+  }, []);
 
-  const handleAddToComparison = (fund: CompleteFund) => {
+  const handleAddToComparison = useCallback((fund: CompleteFund) => {
     if (comparisonFunds.length >= 5) {
       toast({ title: "Limit reached", description: "Maximum 5 funds for comparison", variant: "destructive" });
       return;
@@ -84,14 +98,14 @@ export default function FundETFDatabase() {
     setComparisonFunds(prev => [...prev, fund]);
     setShowComparison(true);
     toast({ title: "Added to comparison", description: fund.name });
-  };
+  }, [comparisonFunds, toast]);
 
-  // Calculate stats
-  const totalAUM = fundDatabase.reduce((sum, f) => sum + f.aum, 0);
-  const avgOCF = (fundDatabase.reduce((sum, f) => sum + f.costs.ocf, 0) / fundDatabase.length).toFixed(2);
-  const avgReturn = (fundDatabase.reduce((sum, f) => sum + f.performance.oneYearReturn, 0) / fundDatabase.length).toFixed(1);
-  const ratedFunds = fundDatabase.filter(f => f.ratings?.starRating).length;
-  const propertyFundCount = propertyFundsData.length;
+  const handleViewFund = useCallback((fund: CompleteFund) => {
+    setViewingFund(fund);
+  }, []);
+
+  // Use pre-computed static stats
+  const { totalFunds, totalAUM, avgOCF, avgReturn, ratedFunds, propertyFundCount } = STATIC_STATS;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -235,8 +249,10 @@ export default function FundETFDatabase() {
         {/* Data Integrity Banner */}
         <DataIntegrityBanner variant="verified" />
 
-        {/* Fund Analyst Activity Hub */}
-        <FundAnalystActivityHub />
+        {/* Fund Analyst Activity Hub - Lazy loaded */}
+        <Suspense fallback={<Skeleton className="h-[500px] w-full rounded-lg" />}>
+          <FundAnalystActivityHub />
+        </Suspense>
 
         {showComparison && comparisonFunds.length > 0 && (
           <FundComparison 
@@ -298,7 +314,7 @@ export default function FundETFDatabase() {
           </Card>
         )}
 
-        <Tabs defaultValue="search" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-muted/50 backdrop-blur-sm p-1 h-auto">
             <TabsTrigger value="search" className="data-[state=active]:bg-background data-[state=active]:shadow-sm px-4 py-2.5 gap-2">
               <Search className="h-4 w-4" />
@@ -323,10 +339,10 @@ export default function FundETFDatabase() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className={viewingFund ? "lg:col-span-2" : "lg:col-span-3"}>
                 <FundTable 
-                  funds={filteredFunds} 
+                  funds={filteredFunds.slice(0, 50)} 
                   selectedFunds={selectedFunds} 
                   onSelectFund={handleSelectFund}
-                  onViewFund={setViewingFund}
+                  onViewFund={handleViewFund}
                   onAddToComparison={handleAddToComparison}
                   isAdmin={false}
                 />
@@ -342,28 +358,34 @@ export default function FundETFDatabase() {
           </TabsContent>
 
           <TabsContent value="ai" className="mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
-                <FundTable 
-                  funds={filteredFunds.slice(0, 15)} 
-                  selectedFunds={selectedFunds} 
-                  onSelectFund={handleSelectFund}
-                  onViewFund={setViewingFund}
-                  onAddToComparison={handleAddToComparison}
-                  isAdmin={false}
-                />
+            <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-lg" />}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <FundSearchFilters filters={filters} onFiltersChange={setFilters} resultCount={filteredFunds.length} />
+                  <FundTable 
+                    funds={filteredFunds.slice(0, 15)} 
+                    selectedFunds={selectedFunds} 
+                    onSelectFund={handleSelectFund}
+                    onViewFund={handleViewFund}
+                    onAddToComparison={handleAddToComparison}
+                    isAdmin={false}
+                  />
+                </div>
+                <AIFundInsights fund={viewingFund || undefined} />
               </div>
-              <AIFundInsights fund={viewingFund || undefined} />
-            </div>
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="screener" className="mt-0">
-            <FundScreener onViewFund={setViewingFund} onAddToComparison={handleAddToComparison} />
+            <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-lg" />}>
+              <FundScreener onViewFund={handleViewFund} onAddToComparison={handleAddToComparison} />
+            </Suspense>
           </TabsContent>
 
           <TabsContent value="watchlist" className="mt-0">
-            <FundWatchlist onViewFund={setViewingFund} />
+            <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-lg" />}>
+              <FundWatchlist onViewFund={handleViewFund} />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>
