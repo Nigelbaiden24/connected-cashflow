@@ -133,18 +133,16 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
         </div>
       </CardHeader>
 
-      <ScrollArea viewportRef={viewportRef} className="flex-1 min-h-0">
+      <ScrollArea viewportRef={viewportRef} scrollbars="both" className="flex-1 min-h-0">
         <CardContent className="space-y-4">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="-mx-1 w-full overflow-x-auto px-1 pb-1 touch-pan-x">
-              <TabsList className="w-max max-w-none overflow-visible text-xs justify-start">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="performance">Performance</TabsTrigger>
-                <TabsTrigger value="risk">Risk</TabsTrigger>
-                <TabsTrigger value="holdings">Holdings</TabsTrigger>
-                <TabsTrigger value="insights">AI Insights</TabsTrigger>
-              </TabsList>
-            </div>
+            <TabsList className="text-xs">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="performance">Performance</TabsTrigger>
+              <TabsTrigger value="risk">Risk</TabsTrigger>
+              <TabsTrigger value="holdings">Holdings</TabsTrigger>
+              <TabsTrigger value="insights">AI Insights</TabsTrigger>
+            </TabsList>
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-4 mt-4">
@@ -235,17 +233,19 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
             {/* Performance Tab */}
             <TabsContent value="performance" className="space-y-4 mt-4">
               {/* Performance Chart */}
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={performanceData}>
-                    <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
-                    <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
-                    <Legend />
-                    <Bar dataKey="return" name="Fund" fill="hsl(var(--primary))" />
-                    <Bar dataKey="benchmark" name="Benchmark" fill="hsl(var(--muted-foreground))" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="w-full overflow-x-auto">
+                <div className="h-48 min-w-[520px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={performanceData}>
+                      <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => `${v}%`} />
+                      <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                      <Legend />
+                      <Bar dataKey="return" name="Fund" fill="hsl(var(--primary))" />
+                      <Bar dataKey="benchmark" name="Benchmark" fill="hsl(var(--muted-foreground))" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
               {/* Performance Table */}
@@ -418,27 +418,29 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
               {/* Sector Allocation */}
               <div>
                 <h4 className="font-semibold mb-2">Sector Allocation</h4>
-                <div className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPie>
-                      <Pie
-                        data={fund.exposure.sectorExposure.slice(0, 6)}
-                        dataKey="weight"
-                        nameKey="sector"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={60}
-                        label={({ sector, weight }) => `${sector.slice(0, 8)}: ${weight}%`}
-                        labelLine={false}
-                      >
-                        {fund.exposure.sectorExposure.slice(0, 6).map((_, index) => (
-                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
-                    </RechartsPie>
-                  </ResponsiveContainer>
-                </div>
+                 <div className="w-full overflow-x-auto">
+                   <div className="h-48 min-w-[520px]">
+                     <ResponsiveContainer width="100%" height="100%">
+                       <RechartsPie>
+                         <Pie
+                           data={fund.exposure.sectorExposure.slice(0, 6)}
+                           dataKey="weight"
+                           nameKey="sector"
+                           cx="50%"
+                           cy="50%"
+                           outerRadius={60}
+                           label={({ sector, weight }) => `${sector.slice(0, 8)}: ${weight}%`}
+                           labelLine={false}
+                         >
+                           {fund.exposure.sectorExposure.slice(0, 6).map((_, index) => (
+                             <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                           ))}
+                         </Pie>
+                         <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
+                       </RechartsPie>
+                     </ResponsiveContainer>
+                   </div>
+                 </div>
               </div>
 
               {/* Top Holdings */}
@@ -448,13 +450,13 @@ export function FundDetailPanel({ fund, onClose, onAddToComparison }: FundDetail
                   {fund.exposure.topHoldings.slice(0, 10).map((holding, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground w-4">{i + 1}</span>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium">{holding.name}</div>
-                        <div className="text-xs text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{holding.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">
                           {holding.sector} • {holding.country}
                         </div>
                       </div>
-                      <span className="text-sm font-medium">{holding.weight.toFixed(1)}%</span>
+                      <span className="text-sm font-medium shrink-0">{holding.weight.toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>
