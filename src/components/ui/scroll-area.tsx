@@ -6,12 +6,14 @@ import { cn } from "@/lib/utils";
 type ScrollAreaProps = React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
   viewportClassName?: string;
   viewportRef?: React.Ref<React.ElementRef<typeof ScrollAreaPrimitive.Viewport>>;
+  /** Which scrollbars to render. Viewport can still scroll, but scrollbars improve discoverability. */
+  scrollbars?: "vertical" | "horizontal" | "both" | "none";
 };
 
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
   ScrollAreaProps
->(({ className, children, viewportClassName, viewportRef, ...props }, ref) => (
+>(({ className, children, viewportClassName, viewportRef, scrollbars = "vertical", ...props }, ref) => (
   <ScrollAreaPrimitive.Root
     ref={ref}
     className={cn("relative overflow-hidden", className)}
@@ -23,8 +25,12 @@ const ScrollArea = React.forwardRef<
     >
       {children}
     </ScrollAreaPrimitive.Viewport>
-    <ScrollBar />
-    <ScrollAreaPrimitive.Corner />
+
+    {(scrollbars === "vertical" || scrollbars === "both") && <ScrollBar />}
+    {(scrollbars === "horizontal" || scrollbars === "both") && (
+      <ScrollBar orientation="horizontal" />
+    )}
+    {scrollbars === "both" && <ScrollAreaPrimitive.Corner />}
   </ScrollAreaPrimitive.Root>
 ));
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
