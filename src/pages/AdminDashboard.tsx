@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles, Bot, Contact } from "lucide-react";
+import { FinancialNewsFeed } from "@/components/news/FinancialNewsFeed";
 import { CRMBoard } from "@/components/CRMBoard";
 import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
 import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
@@ -576,6 +577,8 @@ export default function AdminDashboard() {
           {activeTab === 'enquiries' && <PlatformEnquiries />}
           
           {activeTab === 'demo-requests' && <DemoRequests />}
+          
+          {activeTab === 'news' && <FinancialNewsFeed />}
           
           {activeTab === 'reports' && (
             <Tabs defaultValue="general" className="w-full">
