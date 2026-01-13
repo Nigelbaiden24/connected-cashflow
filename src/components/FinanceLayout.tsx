@@ -1,9 +1,14 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
-import { Button } from "./ui/button";
-import { Menu } from "lucide-react";
-import { TranslatedText } from "./TranslatedText";
+import { SidebarProvider } from "./ui/sidebar";
+import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { 
+  LayoutDashboard, 
+  Users, 
+  Calculator, 
+  FileText, 
+  MessageSquare 
+} from "lucide-react";
 
 interface FinanceLayoutProps {
   children: ReactNode;
@@ -12,25 +17,52 @@ interface FinanceLayoutProps {
   hideHeader?: boolean;
 }
 
+const mobileNavItems = [
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Clients", path: "/clients", icon: Users },
+  { label: "Planning", path: "/financial-planning", icon: Calculator },
+  { label: "Reports", path: "/finance/reports", icon: FileText },
+  { label: "Chat", path: "/theodore", icon: MessageSquare },
+];
+
 export function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
         <div className="flex-1 flex flex-col min-w-0 md:pl-64 peer-data-[state=collapsed]:md:pl-16 transition-[padding] duration-200">
-          {/* Mobile Header with Menu Trigger */}
-          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:hidden">
-            <SidebarTrigger>
-              <Menu className="h-5 w-5" />
-            </SidebarTrigger>
-            <TranslatedText as="h1" className="text-lg font-semibold">FlowPulse Finance</TranslatedText>
-          </header>
+          {/* Enterprise Mobile Header */}
+          {!hideHeader && (
+            <MobileHeader
+              title="FlowPulse Finance"
+              userEmail={userEmail}
+              onLogout={onLogout}
+              variant="finance"
+              showSearch={true}
+              onSearchClick={() => setSearchOpen(true)}
+              notificationCount={3}
+            />
+          )}
           
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto pb-20 md:pb-0">
             {children}
           </main>
+
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomNav items={mobileNavItems} variant="finance" />
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      <MobileSearchOverlay
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        placeholder="Search clients, funds, reports..."
+        recentSearches={["Client Portfolio", "FTSE 100", "Risk Assessment"]}
+        trendingSearches={["Market Commentary", "ESG Funds", "Retirement Planning"]}
+      />
     </SidebarProvider>
   );
 }

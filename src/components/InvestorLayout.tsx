@@ -1,9 +1,14 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { InvestorSidebar } from "./InvestorSidebar";
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
-import { Button } from "./ui/button";
-import { Menu } from "lucide-react";
-import { TranslatedText } from "./TranslatedText";
+import { SidebarProvider } from "./ui/sidebar";
+import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  TrendingUp, 
+  Eye, 
+  Brain 
+} from "lucide-react";
 
 interface InvestorLayoutProps {
   children: ReactNode;
@@ -11,25 +16,50 @@ interface InvestorLayoutProps {
   onLogout: () => void;
 }
 
+const mobileNavItems = [
+  { label: "Dashboard", path: "/investor/dashboard", icon: LayoutDashboard },
+  { label: "Research", path: "/investor/research", icon: FileText },
+  { label: "Markets", path: "/investor/commentary", icon: TrendingUp },
+  { label: "Watchlists", path: "/investor/watchlists", icon: Eye },
+  { label: "AI Analyst", path: "/investor/ai-analyst", icon: Brain },
+];
+
 export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full investor-theme">
         <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Mobile Header with Menu Trigger */}
-          <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
-            <SidebarTrigger>
-              <Menu className="h-5 w-5" />
-            </SidebarTrigger>
-            <TranslatedText as="h1" className="text-lg font-semibold">FlowPulse Investor</TranslatedText>
-          </header>
+          {/* Enterprise Mobile Header */}
+          <MobileHeader
+            title="FlowPulse Investor"
+            userEmail={userEmail}
+            onLogout={onLogout}
+            variant="investor"
+            showSearch={true}
+            onSearchClick={() => setSearchOpen(true)}
+            notificationCount={7}
+          />
           
-          <main className="flex-1 sidebar-layout-main">
+          <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children}
           </main>
+
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomNav items={mobileNavItems} variant="investor" />
         </div>
       </div>
+
+      {/* Mobile Search Overlay */}
+      <MobileSearchOverlay
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        placeholder="Search stocks, funds, research..."
+        recentSearches={["Apple Inc", "S&P 500 ETF", "Tech Sector Analysis"]}
+        trendingSearches={["AI Stocks", "Dividend Funds", "Market Outlook 2025"]}
+      />
     </SidebarProvider>
   );
 }
