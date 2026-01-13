@@ -29,6 +29,7 @@ import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
 
 interface Profile {
   user_id: string;
@@ -1224,6 +1225,8 @@ export default function AdminDashboard() {
           {activeTab === 'document-generator' && <AdminDocumentGenerator />}
 
           {activeTab === 'research-ai' && <AdminResearchChatbot />}
+
+          {activeTab === 'research-scraper' && <FinancialResearchScraper />}
 
           {activeTab === 'crm' && (
             <div className="space-y-6">

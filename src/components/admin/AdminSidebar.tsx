@@ -26,6 +26,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
+  Globe,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -63,6 +64,7 @@ const navItems: NavItem[] = [
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600" },
   { id: "document-generator", label: "Document Generator", icon: Sparkles, gradient: "from-violet-500 to-violet-600" },
   { id: "research-ai", label: "Research AI", icon: Bot, gradient: "from-rose-500 to-pink-600" },
+  { id: "research-scraper", label: "Research Scraper", icon: Globe, gradient: "from-sky-500 to-blue-600" },
   { id: "crm", label: "CRM", icon: Contact, gradient: "from-blue-500 to-blue-600" },
 ];
 
