@@ -152,37 +152,68 @@ export default function StocksCryptoDatabase() {
     totalMarketCap: assets.reduce((sum, a) => sum + (a.market_cap || 0), 0),
   }), [assets]);
 
-  const convertPrice = (valueInUSD: number | null): number | null => {
-    if (!valueInUSD) return null;
-    const currencyConfig = CURRENCY_RATES[selectedCurrency];
-    return valueInUSD * currencyConfig.rate;
+  type CurrencyCode = keyof typeof CURRENCY_RATES;
+
+  const normalizeCurrency = (code?: string | null): CurrencyCode => {
+    const upper = (code || "USD").toUpperCase();
+    return (upper in CURRENCY_RATES ? upper : "USD") as CurrencyCode;
   };
 
-  const formatCurrency = (value: number | null, originalCurrency = 'USD') => {
-    if (!value) return '—';
-    // Convert from original currency (assumed USD) to selected currency
-    const convertedValue = convertPrice(value);
-    if (!convertedValue) return '—';
-    
-    const currencyConfig = CURRENCY_RATES[selectedCurrency];
-    return new Intl.NumberFormat(currencyConfig.locale, { 
-      style: 'currency', 
-      currency: selectedCurrency,
-      minimumFractionDigits: convertedValue < 1 ? 4 : 2,
-      maximumFractionDigits: convertedValue < 1 ? 6 : 2
+  // Convert between currencies using USD as the base.
+  // Rates are defined as: 1 USD = rate * targetCurrency
+  const convertAmount = (
+    amount: number | null,
+    fromCurrency?: string | null,
+    toCurrency?: CurrencyCode
+  ): number | null => {
+    if (amount === null || amount === undefined) return null;
+
+    const from = normalizeCurrency(fromCurrency);
+    const to = toCurrency ?? normalizeCurrency(selectedCurrency);
+
+    const fromRate = CURRENCY_RATES[from]?.rate;
+    const toRate = CURRENCY_RATES[to]?.rate;
+
+    if (!fromRate || !toRate) return null;
+
+    const amountInUSD = amount / fromRate;
+    const converted = amountInUSD * toRate;
+
+    return Number.isFinite(converted) ? converted : null;
+  };
+
+  const formatCurrency = (value: number | null, originalCurrency?: string | null) => {
+    const to = normalizeCurrency(selectedCurrency);
+    const convertedValue = convertAmount(value, originalCurrency, to);
+    if (convertedValue === null) return "—";
+
+    const currencyConfig = CURRENCY_RATES[to];
+    const abs = Math.abs(convertedValue);
+    const minFrac = abs < 1 ? 4 : 2;
+    const maxFrac = abs < 1 ? 6 : 2;
+
+    const formattedNumber = new Intl.NumberFormat(currencyConfig.locale, {
+      minimumFractionDigits: minFrac,
+      maximumFractionDigits: maxFrac,
     }).format(convertedValue);
+
+    const sep = currencyConfig.symbol.length > 2 ? " " : "";
+    return `${currencyConfig.symbol}${sep}${formattedNumber}`;
   };
 
-  const formatMarketCap = (value: number | null) => {
-    if (!value) return '—';
-    const convertedValue = convertPrice(value);
-    if (!convertedValue) return '—';
-    
-    const symbol = CURRENCY_RATES[selectedCurrency].symbol;
-    if (convertedValue >= 1e12) return `${symbol}${(convertedValue / 1e12).toFixed(2)}T`;
-    if (convertedValue >= 1e9) return `${symbol}${(convertedValue / 1e9).toFixed(2)}B`;
-    if (convertedValue >= 1e6) return `${symbol}${(convertedValue / 1e6).toFixed(2)}M`;
-    return `${symbol}${convertedValue.toFixed(0)}`;
+  const formatMarketCap = (value: number | null, originalCurrency: string | null = "USD") => {
+    const to = normalizeCurrency(selectedCurrency);
+    const convertedValue = convertAmount(value, originalCurrency, to);
+    if (convertedValue === null) return "—";
+
+    const { symbol } = CURRENCY_RATES[to];
+    const sep = symbol.length > 2 ? " " : "";
+    const abs = Math.abs(convertedValue);
+
+    if (abs >= 1e12) return `${symbol}${sep}${(convertedValue / 1e12).toFixed(2)}T`;
+    if (abs >= 1e9) return `${symbol}${sep}${(convertedValue / 1e9).toFixed(2)}B`;
+    if (abs >= 1e6) return `${symbol}${sep}${(convertedValue / 1e6).toFixed(2)}M`;
+    return `${symbol}${sep}${convertedValue.toFixed(0)}`;
   };
 
   const formatPercentage = (value: number | null) => {
@@ -605,7 +636,7 @@ function AssetTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right font-semibold tabular-nums text-slate-900">
-                  {formatCurrency(asset.current_price)}
+                  {formatCurrency(asset.current_price, asset.price_currency)}
                 </TableCell>
                 <TableCell className="text-right">
                   <span className={`inline-flex items-center gap-1 font-semibold tabular-nums px-2 py-1 rounded-md ${
@@ -717,7 +748,7 @@ function AssetDetailPanel({
             Price Metrics
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <MetricCard label="Current Price" value={formatCurrency(asset.current_price)} />
+            <MetricCard label="Current Price" value={formatCurrency(asset.current_price, asset.price_currency)} />
             <MetricCard 
               label="24h Change" 
               value={formatPercentage(asset.price_change_24h)}
