@@ -32,7 +32,8 @@ import {
   Globe,
   Layers,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Coins
 } from "lucide-react";
 
 interface StockCrypto {
@@ -71,6 +72,17 @@ interface StockCrypto {
   is_featured: boolean | null;
 }
 
+// Currency conversion rates (relative to USD)
+const CURRENCY_RATES: Record<string, { rate: number; symbol: string; locale: string }> = {
+  GBP: { rate: 0.79, symbol: '£', locale: 'en-GB' },
+  USD: { rate: 1, symbol: '$', locale: 'en-US' },
+  EUR: { rate: 0.92, symbol: '€', locale: 'de-DE' },
+  JPY: { rate: 149.50, symbol: '¥', locale: 'ja-JP' },
+  CHF: { rate: 0.88, symbol: 'CHF', locale: 'de-CH' },
+  AUD: { rate: 1.53, symbol: 'A$', locale: 'en-AU' },
+  CAD: { rate: 1.36, symbol: 'C$', locale: 'en-CA' },
+};
+
 export default function StocksCryptoDatabase() {
   const [assets, setAssets] = useState<StockCrypto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,6 +93,7 @@ export default function StocksCryptoDatabase() {
   const [sortBy, setSortBy] = useState<string>("market_cap");
   const [selectedAsset, setSelectedAsset] = useState<StockCrypto | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>("GBP");
 
   useEffect(() => {
     fetchAssets();
@@ -139,22 +152,37 @@ export default function StocksCryptoDatabase() {
     totalMarketCap: assets.reduce((sum, a) => sum + (a.market_cap || 0), 0),
   }), [assets]);
 
-  const formatCurrency = (value: number | null, currency = 'USD') => {
+  const convertPrice = (valueInUSD: number | null): number | null => {
+    if (!valueInUSD) return null;
+    const currencyConfig = CURRENCY_RATES[selectedCurrency];
+    return valueInUSD * currencyConfig.rate;
+  };
+
+  const formatCurrency = (value: number | null, originalCurrency = 'USD') => {
     if (!value) return '—';
-    return new Intl.NumberFormat('en-US', { 
+    // Convert from original currency (assumed USD) to selected currency
+    const convertedValue = convertPrice(value);
+    if (!convertedValue) return '—';
+    
+    const currencyConfig = CURRENCY_RATES[selectedCurrency];
+    return new Intl.NumberFormat(currencyConfig.locale, { 
       style: 'currency', 
-      currency,
-      minimumFractionDigits: value < 1 ? 4 : 2,
-      maximumFractionDigits: value < 1 ? 6 : 2
-    }).format(value);
+      currency: selectedCurrency,
+      minimumFractionDigits: convertedValue < 1 ? 4 : 2,
+      maximumFractionDigits: convertedValue < 1 ? 6 : 2
+    }).format(convertedValue);
   };
 
   const formatMarketCap = (value: number | null) => {
     if (!value) return '—';
-    if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
-    if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-    if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-    return `$${value.toFixed(0)}`;
+    const convertedValue = convertPrice(value);
+    if (!convertedValue) return '—';
+    
+    const symbol = CURRENCY_RATES[selectedCurrency].symbol;
+    if (convertedValue >= 1e12) return `${symbol}${(convertedValue / 1e12).toFixed(2)}T`;
+    if (convertedValue >= 1e9) return `${symbol}${(convertedValue / 1e9).toFixed(2)}B`;
+    if (convertedValue >= 1e6) return `${symbol}${(convertedValue / 1e6).toFixed(2)}M`;
+    return `${symbol}${convertedValue.toFixed(0)}`;
   };
 
   const formatPercentage = (value: number | null) => {
@@ -206,6 +234,22 @@ export default function StocksCryptoDatabase() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Currency Selector */}
+              <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                <SelectTrigger className="w-[100px] bg-white border-slate-200 text-slate-700">
+                  <Coins className="h-4 w-4 mr-1 text-slate-400" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="GBP">🇬🇧 GBP</SelectItem>
+                  <SelectItem value="USD">🇺🇸 USD</SelectItem>
+                  <SelectItem value="EUR">🇪🇺 EUR</SelectItem>
+                  <SelectItem value="JPY">🇯🇵 JPY</SelectItem>
+                  <SelectItem value="CHF">🇨🇭 CHF</SelectItem>
+                  <SelectItem value="AUD">🇦🇺 AUD</SelectItem>
+                  <SelectItem value="CAD">🇨🇦 CAD</SelectItem>
+                </SelectContent>
+              </Select>
               <Button 
                 variant="outline" 
                 size="sm" 
