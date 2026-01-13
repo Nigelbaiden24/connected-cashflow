@@ -171,30 +171,37 @@ async function generateAINews(count: number): Promise<NewsArticle[]> {
         messages: [
           {
             role: 'system',
-            content: `You are a financial news aggregator. Generate ${count} realistic, current financial news headlines based on recent market trends. 
-            Return ONLY a JSON array with this exact format:
-            [{"title": "headline", "description": "2-sentence summary", "category": "markets|crypto|business", "source": "Reuters|Bloomberg|CNBC|FT|WSJ|MarketWatch|CoinDesk|The Block"}]
-            Make headlines specific, timely, and professional. Include variety: stocks, crypto, commodities, forex, earnings, M&A, IPOs, regulations.`
+            content: `You are a financial news aggregator. Generate exactly ${count} realistic financial news headlines.
+Return ONLY a JSON array: [{"title": "...", "description": "...", "category": "markets|crypto|business", "source": "Reuters|Bloomberg|CNBC|FT|WSJ"}]
+Keep titles under 100 chars, descriptions under 150 chars. Mix: stocks, crypto, commodities, forex, earnings, M&A.`
           },
           {
             role: 'user',
-            content: `Generate ${count} unique financial news headlines covering markets, crypto, business, commodities, and global finance.`
+            content: `Generate exactly ${count} unique financial news items NOW.`
           }
         ],
-        max_tokens: 4000,
+        max_tokens: 8000,
       }),
     });
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.error('AI news generation failed:', response.status);
+      return [];
+    }
     
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
     
     const jsonMatch = content.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) return [];
+    if (!jsonMatch) {
+      console.error('No JSON array found in AI response');
+      return [];
+    }
     
     const newsItems = JSON.parse(jsonMatch[0]);
     const now = new Date();
+    
+    console.log(`Generated ${newsItems.length} AI news articles`);
     
     return newsItems.map((item: any, index: number) => ({
       title: item.title,
@@ -275,33 +282,37 @@ serve(async (req) => {
     }
 
     // Generate enough AI news to fill 10 pages (90 articles total)
-    const targetCount = limit;
+    const targetCount = 90;
     const neededAINews = Math.max(0, targetCount - articles.length);
     
     if (neededAINews > 0) {
-      console.log(`Generating ${neededAINews} AI news articles...`);
+      console.log(`Generating ${neededAINews} AI news articles in batches...`);
       
-      // Generate in batches to avoid token limits
-      const batchSize = 30;
+      // Generate in smaller batches for reliability
+      const batchSize = 15;
       const batches = Math.ceil(neededAINews / batchSize);
       
       for (let i = 0; i < batches; i++) {
         const batchCount = Math.min(batchSize, neededAINews - (i * batchSize));
+        console.log(`Batch ${i + 1}/${batches}: generating ${batchCount} articles...`);
         const aiNews = await generateAINews(batchCount);
         
         // Offset timestamps for each batch
         aiNews.forEach((article, idx) => {
           const now = new Date();
-          article.publishedAt = new Date(now.getTime() - (articles.length + idx) * 35 * 60 * 1000).toISOString();
+          article.publishedAt = new Date(now.getTime() - (articles.length + idx) * 20 * 60 * 1000).toISOString();
         });
         
         articles.push(...aiNews);
+        console.log(`Total articles so far: ${articles.length}`);
       }
       
       if (!sources.includes('FlowPulse AI')) {
         sources.push('FlowPulse AI');
       }
     }
+    
+    console.log(`Final article count: ${articles.length}`);
 
     // Filter by category if specified
     let filteredArticles = articles;
