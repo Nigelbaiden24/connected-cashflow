@@ -581,139 +581,139 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <div className="overflow-x-auto pb-2 -mx-2 px-2">
-            <TabsList className="inline-flex min-w-max gap-1 bg-white p-2 border border-slate-200 rounded-xl shadow-sm">
+          <div className="overflow-x-auto pb-4 -mx-2 px-2">
+            <TabsList className="inline-flex min-w-max gap-2 bg-gradient-to-r from-slate-50 via-white to-slate-50 p-3 border-2 border-slate-200/80 rounded-2xl shadow-lg backdrop-blur-sm">
               <TabsTrigger 
                 value="users"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="h-5 w-5 mr-2" />
                 Users
               </TabsTrigger>
               <TabsTrigger 
                 value="enquiries"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/25 data-[state=active]:border-orange-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-orange-50 hover:border-orange-200 hover:scale-[1.01]"
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
+                <MessageSquare className="h-5 w-5 mr-2" />
                 Enquiries
               </TabsTrigger>
               <TabsTrigger 
                 value="demo-requests"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <Calendar className="h-4 w-4 mr-2" />
+                <Calendar className="h-5 w-5 mr-2" />
                 Demo Requests
               </TabsTrigger>
               <TabsTrigger 
                 value="reports"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className="h-5 w-5 mr-2" />
                 Reports
               </TabsTrigger>
               <TabsTrigger 
                 value="newsletters"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <Newspaper className="h-4 w-4 mr-2" />
+                <Newspaper className="h-5 w-5 mr-2" />
                 Newsletters
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolios"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <TrendingUp className="h-4 w-4 mr-2" />
+                <TrendingUp className="h-5 w-5 mr-2" />
                 Portfolios
               </TabsTrigger>
               <TabsTrigger 
                 value="commentary"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <FileText className="h-4 w-4 mr-2" />
+                <FileText className="h-5 w-5 mr-2" />
                 Commentary
               </TabsTrigger>
               <TabsTrigger 
                 value="learning"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <BookOpen className="h-4 w-4 mr-2" />
+                <BookOpen className="h-5 w-5 mr-2" />
                 Learning
               </TabsTrigger>
               <TabsTrigger 
                 value="videos"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <Video className="h-4 w-4 mr-2" />
+                <Video className="h-5 w-5 mr-2" />
                 Videos
               </TabsTrigger>
               <TabsTrigger 
                 value="watchlists"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <List className="h-4 w-4 mr-2" />
+                <List className="h-5 w-5 mr-2" />
                 Watchlists
               </TabsTrigger>
               <TabsTrigger 
                 value="risk-compliance"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <Shield className="h-4 w-4 mr-2" />
+                <Shield className="h-5 w-5 mr-2" />
                 Risk & Compliance
               </TabsTrigger>
               <TabsTrigger 
                 value="alerts"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/25 data-[state=active]:border-primary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <Bell className="h-4 w-4 mr-2" />
+                <Bell className="h-5 w-5 mr-2" />
                 Signals & Alerts
               </TabsTrigger>
               <TabsTrigger 
                 value="market-trends"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-secondary data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-secondary data-[state=active]:to-secondary/80 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-secondary/25 data-[state=active]:border-secondary/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-slate-100 hover:border-slate-200 hover:scale-[1.01]"
               >
-                <TrendingUp className="h-4 w-4 mr-2" />
+                <TrendingUp className="h-5 w-5 mr-2" />
                 Market Trends
               </TabsTrigger>
               <TabsTrigger 
                 value="purchasable-reports"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 data-[state=active]:border-emerald-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-emerald-50 hover:border-emerald-200 hover:scale-[1.01]"
               >
-                <ShoppingBag className="h-4 w-4 mr-2" />
+                <ShoppingBag className="h-5 w-5 mr-2" />
                 Shop Reports
               </TabsTrigger>
               <TabsTrigger 
                 value="fund-scoring"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 data-[state=active]:border-amber-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-amber-50 hover:border-amber-200 hover:scale-[1.01]"
               >
-                <Star className="h-4 w-4 mr-2" />
+                <Star className="h-5 w-5 mr-2" />
                 Fund Scoring
               </TabsTrigger>
               <TabsTrigger 
                 value="fund-analyst"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-teal-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/25 data-[state=active]:border-teal-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-teal-50 hover:border-teal-200 hover:scale-[1.01]"
               >
-                <TrendingUp className="h-4 w-4 mr-2" />
+                <TrendingUp className="h-5 w-5 mr-2" />
                 Fund Analyst
               </TabsTrigger>
               <TabsTrigger 
                 value="opportunities"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 data-[state=active]:border-purple-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-purple-50 hover:border-purple-200 hover:scale-[1.01]"
               >
-                <Lightbulb className="h-4 w-4 mr-2" />
+                <Lightbulb className="h-5 w-5 mr-2" />
                 Opportunities
               </TabsTrigger>
               <TabsTrigger 
                 value="stocks-crypto"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-cyan-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/25 data-[state=active]:border-cyan-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-cyan-50 hover:border-cyan-200 hover:scale-[1.01]"
               >
-                <Bitcoin className="h-4 w-4 mr-2" />
+                <Bitcoin className="h-5 w-5 mr-2" />
                 Stocks & Crypto
               </TabsTrigger>
               <TabsTrigger 
                 value="research-engine"
-                className="whitespace-nowrap text-slate-600 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all hover:bg-slate-100"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-indigo-500/25 data-[state=active]:border-indigo-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-indigo-50 hover:border-indigo-200 hover:scale-[1.01]"
               >
-                <FlaskConical className="h-4 w-4 mr-2" />
+                <FlaskConical className="h-5 w-5 mr-2" />
                 Research Engine
               </TabsTrigger>
             </TabsList>
