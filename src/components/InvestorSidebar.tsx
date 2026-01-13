@@ -173,7 +173,7 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
           {navGroups.map((group) => (
             <SidebarGroup key={group.label} className="mb-4">
               {!collapsed && (
-                <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/80">
                   <TranslatedText>{group.label}</TranslatedText>
                 </SidebarGroupLabel>
               )}
