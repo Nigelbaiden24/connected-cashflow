@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles, Bot } from "lucide-react";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
 import { FundAnalystAdmin } from "@/components/admin/FundAnalystAdmin";
 import { StocksCryptoAdmin } from "@/components/admin/StocksCryptoAdmin";
@@ -24,6 +24,7 @@ import { PurchasableReportUpload } from "@/components/admin/PurchasableReportUpl
 import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
+import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 
 interface Profile {
   user_id: string;
@@ -723,6 +724,13 @@ export default function AdminDashboard() {
               >
                 <Sparkles className="h-5 w-5 mr-2" />
                 Document Generator
+              </TabsTrigger>
+              <TabsTrigger 
+                value="research-ai"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-rose-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-rose-500/25 data-[state=active]:border-rose-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-rose-50 hover:border-rose-200 hover:scale-[1.01]"
+              >
+                <Bot className="h-5 w-5 mr-2" />
+                Research AI
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1474,6 +1482,11 @@ export default function AdminDashboard() {
         {/* Document Generator Tab */}
         <TabsContent value="document-generator">
           <AdminDocumentGenerator />
+        </TabsContent>
+
+        {/* Research AI Tab */}
+        <TabsContent value="research-ai">
+          <AdminResearchChatbot />
         </TabsContent>
       </Tabs>
       </div>
