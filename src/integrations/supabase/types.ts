@@ -4203,7 +4203,55 @@ export type Database = {
           can_access_tasks: boolean | null
           can_access_team_management: boolean | null
           created_at: string
+          finance_ai_analyst: boolean | null
+          finance_ai_chatbot: boolean | null
+          finance_automation: boolean | null
+          finance_benchmarking_trends: boolean | null
+          finance_calendar: boolean | null
+          finance_client_management: boolean | null
+          finance_client_onboarding: boolean | null
+          finance_compliance: boolean | null
+          finance_crm: boolean | null
+          finance_dashboard: boolean | null
+          finance_document_generator: boolean | null
+          finance_financial_planning: boolean | null
+          finance_fund_database: boolean | null
+          finance_goal_planning: boolean | null
+          finance_investment_analysis: boolean | null
+          finance_market_commentary: boolean | null
+          finance_market_data: boolean | null
+          finance_model_portfolios: boolean | null
+          finance_opportunities: boolean | null
+          finance_payroll: boolean | null
+          finance_portfolio_management: boolean | null
+          finance_practice_management: boolean | null
+          finance_reports: boolean | null
+          finance_risk_assessment: boolean | null
+          finance_scenario_analysis: boolean | null
+          finance_screeners: boolean | null
+          finance_security: boolean | null
+          finance_stocks_crypto: boolean | null
+          finance_watchlists: boolean | null
           id: string
+          investor_ai_analyst: boolean | null
+          investor_analysis_reports: boolean | null
+          investor_benchmarking_trends: boolean | null
+          investor_dashboard: boolean | null
+          investor_fund_database: boolean | null
+          investor_learning_hub: boolean | null
+          investor_market_commentary: boolean | null
+          investor_market_data_hub: boolean | null
+          investor_model_portfolios: boolean | null
+          investor_newsletters: boolean | null
+          investor_opportunities: boolean | null
+          investor_research_reports: boolean | null
+          investor_risk_compliance: boolean | null
+          investor_screeners: boolean | null
+          investor_signals_alerts: boolean | null
+          investor_stocks_crypto: boolean | null
+          investor_tasks: boolean | null
+          investor_tools_calculators: boolean | null
+          investor_watchlists: boolean | null
           organization_id: string | null
           updated_at: string
           user_id: string
@@ -4226,7 +4274,55 @@ export type Database = {
           can_access_tasks?: boolean | null
           can_access_team_management?: boolean | null
           created_at?: string
+          finance_ai_analyst?: boolean | null
+          finance_ai_chatbot?: boolean | null
+          finance_automation?: boolean | null
+          finance_benchmarking_trends?: boolean | null
+          finance_calendar?: boolean | null
+          finance_client_management?: boolean | null
+          finance_client_onboarding?: boolean | null
+          finance_compliance?: boolean | null
+          finance_crm?: boolean | null
+          finance_dashboard?: boolean | null
+          finance_document_generator?: boolean | null
+          finance_financial_planning?: boolean | null
+          finance_fund_database?: boolean | null
+          finance_goal_planning?: boolean | null
+          finance_investment_analysis?: boolean | null
+          finance_market_commentary?: boolean | null
+          finance_market_data?: boolean | null
+          finance_model_portfolios?: boolean | null
+          finance_opportunities?: boolean | null
+          finance_payroll?: boolean | null
+          finance_portfolio_management?: boolean | null
+          finance_practice_management?: boolean | null
+          finance_reports?: boolean | null
+          finance_risk_assessment?: boolean | null
+          finance_scenario_analysis?: boolean | null
+          finance_screeners?: boolean | null
+          finance_security?: boolean | null
+          finance_stocks_crypto?: boolean | null
+          finance_watchlists?: boolean | null
           id?: string
+          investor_ai_analyst?: boolean | null
+          investor_analysis_reports?: boolean | null
+          investor_benchmarking_trends?: boolean | null
+          investor_dashboard?: boolean | null
+          investor_fund_database?: boolean | null
+          investor_learning_hub?: boolean | null
+          investor_market_commentary?: boolean | null
+          investor_market_data_hub?: boolean | null
+          investor_model_portfolios?: boolean | null
+          investor_newsletters?: boolean | null
+          investor_opportunities?: boolean | null
+          investor_research_reports?: boolean | null
+          investor_risk_compliance?: boolean | null
+          investor_screeners?: boolean | null
+          investor_signals_alerts?: boolean | null
+          investor_stocks_crypto?: boolean | null
+          investor_tasks?: boolean | null
+          investor_tools_calculators?: boolean | null
+          investor_watchlists?: boolean | null
           organization_id?: string | null
           updated_at?: string
           user_id: string
@@ -4249,7 +4345,55 @@ export type Database = {
           can_access_tasks?: boolean | null
           can_access_team_management?: boolean | null
           created_at?: string
+          finance_ai_analyst?: boolean | null
+          finance_ai_chatbot?: boolean | null
+          finance_automation?: boolean | null
+          finance_benchmarking_trends?: boolean | null
+          finance_calendar?: boolean | null
+          finance_client_management?: boolean | null
+          finance_client_onboarding?: boolean | null
+          finance_compliance?: boolean | null
+          finance_crm?: boolean | null
+          finance_dashboard?: boolean | null
+          finance_document_generator?: boolean | null
+          finance_financial_planning?: boolean | null
+          finance_fund_database?: boolean | null
+          finance_goal_planning?: boolean | null
+          finance_investment_analysis?: boolean | null
+          finance_market_commentary?: boolean | null
+          finance_market_data?: boolean | null
+          finance_model_portfolios?: boolean | null
+          finance_opportunities?: boolean | null
+          finance_payroll?: boolean | null
+          finance_portfolio_management?: boolean | null
+          finance_practice_management?: boolean | null
+          finance_reports?: boolean | null
+          finance_risk_assessment?: boolean | null
+          finance_scenario_analysis?: boolean | null
+          finance_screeners?: boolean | null
+          finance_security?: boolean | null
+          finance_stocks_crypto?: boolean | null
+          finance_watchlists?: boolean | null
           id?: string
+          investor_ai_analyst?: boolean | null
+          investor_analysis_reports?: boolean | null
+          investor_benchmarking_trends?: boolean | null
+          investor_dashboard?: boolean | null
+          investor_fund_database?: boolean | null
+          investor_learning_hub?: boolean | null
+          investor_market_commentary?: boolean | null
+          investor_market_data_hub?: boolean | null
+          investor_model_portfolios?: boolean | null
+          investor_newsletters?: boolean | null
+          investor_opportunities?: boolean | null
+          investor_research_reports?: boolean | null
+          investor_risk_compliance?: boolean | null
+          investor_screeners?: boolean | null
+          investor_signals_alerts?: boolean | null
+          investor_stocks_crypto?: boolean | null
+          investor_tasks?: boolean | null
+          investor_tools_calculators?: boolean | null
+          investor_watchlists?: boolean | null
           organization_id?: string | null
           updated_at?: string
           user_id?: string
@@ -5843,6 +5987,10 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_hr_admin: { Args: { _user_id: string }; Returns: boolean }
       is_payroll_admin: { Args: { _user_id: string }; Returns: boolean }
+      update_tab_permissions: {
+        Args: { _permissions: Json; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       user_role:

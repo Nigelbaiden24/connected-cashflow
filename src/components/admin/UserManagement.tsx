@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { UserPlus, UserMinus, CheckCircle2, XCircle, Shield, Users, Search, Mail, Loader2, MoreHorizontal, Trash2, Edit, Building2, TrendingUp, Briefcase } from "lucide-react";
+import { UserPlus, UserMinus, CheckCircle2, XCircle, Shield, Users, Search, Mail, Loader2, MoreHorizontal, Trash2, Edit, Building2, TrendingUp, Briefcase, Settings2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { UserTabPermissionsDialog } from "./UserTabPermissionsDialog";
 
 interface UserWithRole {
   user_id: string;
@@ -51,6 +52,21 @@ export function UserManagement() {
     platforms: { finance: false, business: false, investor: false }
   });
   const [submitting, setSubmitting] = useState(false);
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
+  const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<{
+    user_id: string;
+    email: string;
+    full_name: string;
+  } | null>(null);
+
+  const handleOpenPermissionsDialog = (user: UserWithRole) => {
+    setSelectedUserForPermissions({
+      user_id: user.user_id,
+      email: user.email,
+      full_name: user.full_name
+    });
+    setPermissionsDialogOpen(true);
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -708,6 +724,11 @@ export function UserManagement() {
                                 {user.platforms.investor ? "Revoke" : "Grant"} Investor Access
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleOpenPermissionsDialog(user)}>
+                                <Settings2 className="h-4 w-4 mr-2" />
+                                Configure Tab Permissions
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => handleRemoveUser(user.user_id, user.email)}
                                 className="text-destructive focus:text-destructive"
@@ -727,6 +748,13 @@ export function UserManagement() {
           )}
         </CardContent>
       </Card>
+
+      <UserTabPermissionsDialog
+        open={permissionsDialogOpen}
+        onOpenChange={setPermissionsDialogOpen}
+        user={selectedUserForPermissions}
+        onPermissionsUpdated={fetchUsers}
+      />
     </div>
   );
 }
