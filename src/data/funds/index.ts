@@ -1,23 +1,29 @@
 // Fund Database Index - Aggregates all fund data for UK IFA platform
+// IMPORTANT: Only verified, real funds are exported
 import { IngestibleFund } from '@/types/fundIngestion';
+import { isVerifiedFund } from '@/lib/fundDataIntegrity';
 import { ukEquityFunds } from './ukEquityFunds';
 import { globalEquityFunds } from './globalEquityFunds';
 import { fixedIncomeFunds } from './fixedIncomeFunds';
 import { multiAssetFunds } from './multiAssetFunds';
 import { propertyFunds } from './propertyFunds';
 
-// Aggregate all standard funds (non-property)
-export const standardFunds: IngestibleFund[] = [
+// Filter to only include verified funds with real ISINs
+const filterVerified = (funds: IngestibleFund[]): IngestibleFund[] => 
+  funds.filter(f => isVerifiedFund(f.isin));
+
+// Aggregate all standard funds (non-property) - verified only
+export const standardFunds: IngestibleFund[] = filterVerified([
   ...ukEquityFunds,
   ...globalEquityFunds,
   ...fixedIncomeFunds,
   ...multiAssetFunds,
-];
+]);
 
-// Aggregate all funds including property
+// Aggregate all funds including property - verified only
 export const allFunds: IngestibleFund[] = [
   ...standardFunds,
-  ...propertyFunds,
+  ...filterVerified(propertyFunds),
 ];
 
 // Export individual categories
