@@ -13,6 +13,7 @@ import { FundComparison } from "@/components/fund-database/FundComparison";
 import { AIFundInsights } from "@/components/fund-database/AIFundInsights";
 import { FundScreener } from "@/components/fund-database/FundScreener";
 import { FundWatchlist } from "@/components/fund-database/FundWatchlist";
+import { FundAnalystActivityHub } from "@/components/market/FundAnalystActivityHub";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
 
@@ -230,6 +231,9 @@ export default function FundETFDatabase() {
 
       {/* Main Content */}
       <div className="p-6 space-y-6">
+        {/* Fund Analyst Activity Hub */}
+        <FundAnalystActivityHub />
+
         {showComparison && comparisonFunds.length > 0 && (
           <FundComparison 
             funds={comparisonFunds} 

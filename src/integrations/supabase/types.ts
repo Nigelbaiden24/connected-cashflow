@@ -2684,6 +2684,105 @@ export type Database = {
         }
         Relationships: []
       }
+      fund_analyst_activity: {
+        Row: {
+          analyst_rating: string | null
+          asset_class: string | null
+          aum: number | null
+          created_at: string | null
+          created_by: string | null
+          five_year_return: number | null
+          fund_name: string
+          fund_type: string | null
+          id: string
+          investment_thesis: string | null
+          is_featured: boolean | null
+          isin: string
+          key_watchpoints: string | null
+          last_updated_by: string | null
+          ocf: number | null
+          one_year_return: number | null
+          overall_score: number | null
+          provider: string | null
+          rating_rationale: string | null
+          risks: string | null
+          score_cost: number | null
+          score_esg: number | null
+          score_fundamentals: number | null
+          score_performance: number | null
+          score_risk: number | null
+          status: string | null
+          strengths: string | null
+          suitable_investor_type: string | null
+          three_year_return: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          analyst_rating?: string | null
+          asset_class?: string | null
+          aum?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          five_year_return?: number | null
+          fund_name: string
+          fund_type?: string | null
+          id?: string
+          investment_thesis?: string | null
+          is_featured?: boolean | null
+          isin: string
+          key_watchpoints?: string | null
+          last_updated_by?: string | null
+          ocf?: number | null
+          one_year_return?: number | null
+          overall_score?: number | null
+          provider?: string | null
+          rating_rationale?: string | null
+          risks?: string | null
+          score_cost?: number | null
+          score_esg?: number | null
+          score_fundamentals?: number | null
+          score_performance?: number | null
+          score_risk?: number | null
+          status?: string | null
+          strengths?: string | null
+          suitable_investor_type?: string | null
+          three_year_return?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          analyst_rating?: string | null
+          asset_class?: string | null
+          aum?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          five_year_return?: number | null
+          fund_name?: string
+          fund_type?: string | null
+          id?: string
+          investment_thesis?: string | null
+          is_featured?: boolean | null
+          isin?: string
+          key_watchpoints?: string | null
+          last_updated_by?: string | null
+          ocf?: number | null
+          one_year_return?: number | null
+          overall_score?: number | null
+          provider?: string | null
+          rating_rationale?: string | null
+          risks?: string | null
+          score_cost?: number | null
+          score_esg?: number | null
+          score_fundamentals?: number | null
+          score_performance?: number | null
+          score_risk?: number | null
+          status?: string | null
+          strengths?: string | null
+          suitable_investor_type?: string | null
+          three_year_return?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       income_sources: {
         Row: {
           annual_amount: number
