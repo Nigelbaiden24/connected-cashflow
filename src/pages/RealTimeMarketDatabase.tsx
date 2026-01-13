@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCryptoData, useStockData, CryptoData, StockData } from "@/hooks/useRealTimeMarketData";
 import { AnalystPicksSection } from "@/components/market/AnalystPicksSection";
+import { AssetAnalystActivity } from "@/components/market/AssetAnalystActivity";
 import { 
   Search, 
   TrendingUp, 
@@ -25,7 +26,8 @@ import {
   Layers,
   Globe,
   Zap,
-  Activity
+  Activity,
+  FileText
 } from "lucide-react";
 
 export default function RealTimeMarketDatabase() {
@@ -533,38 +535,57 @@ export default function RealTimeMarketDatabase() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <MetricCard label="Current Price" value={formatCurrency(selectedCrypto.currentPrice)} />
-              <MetricCard 
-                label="24h Change" 
-                value={formatPercentage(selectedCrypto.priceChange24h)}
-                positive={(selectedCrypto.priceChange24h || 0) >= 0}
-              />
-              <MetricCard label="Market Cap" value={formatMarketCap(selectedCrypto.marketCap)} />
-            </div>
+            <Tabs defaultValue="overview" className="mt-4">
+              <TabsList className="w-full bg-slate-100">
+                <TabsTrigger value="overview" className="flex-1 gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="analyst" className="flex-1 gap-2">
+                  <FileText className="h-4 w-4" />
+                  Analyst Activity
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="grid grid-cols-2 gap-6 mt-6">
-              <div className="space-y-1">
-                <DetailRow label="24h High" value={formatCurrency(selectedCrypto.high24h)} />
-                <DetailRow label="24h Low" value={formatCurrency(selectedCrypto.low24h)} />
-                <DetailRow label="All-Time High" value={formatCurrency(selectedCrypto.ath)} />
-                <DetailRow label="All-Time Low" value={formatCurrency(selectedCrypto.atl)} />
-              </div>
-              <div className="space-y-1">
-                <DetailRow label="Volume (24h)" value={formatMarketCap(selectedCrypto.volume24h)} />
-                <DetailRow label="Circulating Supply" value={selectedCrypto.circulatingSupply?.toLocaleString() || '—'} />
-                <DetailRow label="Total Supply" value={selectedCrypto.totalSupply?.toLocaleString() || '—'} />
-                <DetailRow label="Max Supply" value={selectedCrypto.maxSupply?.toLocaleString() || '∞'} />
-              </div>
-            </div>
+              <TabsContent value="overview" className="mt-4 space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <MetricCard label="Current Price" value={formatCurrency(selectedCrypto.currentPrice)} />
+                  <MetricCard 
+                    label="24h Change" 
+                    value={formatPercentage(selectedCrypto.priceChange24h)}
+                    positive={(selectedCrypto.priceChange24h || 0) >= 0}
+                  />
+                  <MetricCard label="Market Cap" value={formatMarketCap(selectedCrypto.marketCap)} />
+                </div>
 
-            <div className="grid grid-cols-5 gap-2 mt-6">
-              <PerformanceCard label="1h" value={selectedCrypto.priceChange1h} formatPercentage={formatPercentage} />
-              <PerformanceCard label="24h" value={selectedCrypto.priceChange24h} formatPercentage={formatPercentage} />
-              <PerformanceCard label="7d" value={selectedCrypto.priceChange7d} formatPercentage={formatPercentage} />
-              <PerformanceCard label="30d" value={selectedCrypto.priceChange30d} formatPercentage={formatPercentage} />
-              <PerformanceCard label="1y" value={selectedCrypto.priceChange1y} formatPercentage={formatPercentage} />
-            </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <DetailRow label="24h High" value={formatCurrency(selectedCrypto.high24h)} />
+                    <DetailRow label="24h Low" value={formatCurrency(selectedCrypto.low24h)} />
+                    <DetailRow label="All-Time High" value={formatCurrency(selectedCrypto.ath)} />
+                    <DetailRow label="All-Time Low" value={formatCurrency(selectedCrypto.atl)} />
+                  </div>
+                  <div className="space-y-1">
+                    <DetailRow label="Volume (24h)" value={formatMarketCap(selectedCrypto.volume24h)} />
+                    <DetailRow label="Circulating Supply" value={selectedCrypto.circulatingSupply?.toLocaleString() || '—'} />
+                    <DetailRow label="Total Supply" value={selectedCrypto.totalSupply?.toLocaleString() || '—'} />
+                    <DetailRow label="Max Supply" value={selectedCrypto.maxSupply?.toLocaleString() || '∞'} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-5 gap-2">
+                  <PerformanceCard label="1h" value={selectedCrypto.priceChange1h} formatPercentage={formatPercentage} />
+                  <PerformanceCard label="24h" value={selectedCrypto.priceChange24h} formatPercentage={formatPercentage} />
+                  <PerformanceCard label="7d" value={selectedCrypto.priceChange7d} formatPercentage={formatPercentage} />
+                  <PerformanceCard label="30d" value={selectedCrypto.priceChange30d} formatPercentage={formatPercentage} />
+                  <PerformanceCard label="1y" value={selectedCrypto.priceChange1y} formatPercentage={formatPercentage} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="analyst" className="mt-4">
+                <AssetAnalystActivity symbol={selectedCrypto.symbol} assetType="crypto" />
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       )}
@@ -592,41 +613,60 @@ export default function RealTimeMarketDatabase() {
               )}
             </DialogHeader>
 
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <MetricCard label="Current Price" value={formatCurrency(selectedStock.currentPrice)} />
-              <MetricCard 
-                label="Change" 
-                value={formatPercentage(selectedStock.changePercent)}
-                positive={(selectedStock.changePercent || 0) >= 0}
-              />
-              <MetricCard label="Market Cap" value={formatMarketCap(selectedStock.marketCap)} />
-            </div>
+            <Tabs defaultValue="overview" className="mt-4">
+              <TabsList className="w-full bg-slate-100">
+                <TabsTrigger value="overview" className="flex-1 gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="analyst" className="flex-1 gap-2">
+                  <FileText className="h-4 w-4" />
+                  Analyst Activity
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="grid grid-cols-2 gap-6 mt-6">
-              <div className="space-y-1">
-                <DetailRow label="Open" value={formatCurrency(selectedStock.open)} />
-                <DetailRow label="Previous Close" value={formatCurrency(selectedStock.previousClose)} />
-                <DetailRow label="Day High" value={formatCurrency(selectedStock.high)} />
-                <DetailRow label="Day Low" value={formatCurrency(selectedStock.low)} />
-                <DetailRow label="52 Week High" value={formatCurrency(selectedStock.fiftyTwoWeekHigh)} />
-                <DetailRow label="52 Week Low" value={formatCurrency(selectedStock.fiftyTwoWeekLow)} />
-              </div>
-              <div className="space-y-1">
-                <DetailRow label="P/E Ratio" value={selectedStock.peRatio?.toFixed(2) || '—'} />
-                <DetailRow label="Forward P/E" value={selectedStock.forwardPE?.toFixed(2) || '—'} />
-                <DetailRow label="EPS" value={selectedStock.eps ? formatCurrency(selectedStock.eps) : '—'} />
-                <DetailRow label="Dividend Yield" value={selectedStock.dividendYield ? `${selectedStock.dividendYield.toFixed(2)}%` : '—'} />
-                <DetailRow label="Beta" value={selectedStock.beta?.toFixed(2) || '—'} />
-                <DetailRow label="Volume" value={selectedStock.volume?.toLocaleString() || '—'} />
-              </div>
-            </div>
+              <TabsContent value="overview" className="mt-4 space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <MetricCard label="Current Price" value={formatCurrency(selectedStock.currentPrice)} />
+                  <MetricCard 
+                    label="Change" 
+                    value={formatPercentage(selectedStock.changePercent)}
+                    positive={(selectedStock.changePercent || 0) >= 0}
+                  />
+                  <MetricCard label="Market Cap" value={formatMarketCap(selectedStock.marketCap)} />
+                </div>
 
-            <div className="grid grid-cols-4 gap-3 mt-6">
-              <FundamentalCard label="P/E Ratio" value={selectedStock.peRatio?.toFixed(2) || '—'} />
-              <FundamentalCard label="EPS" value={selectedStock.eps ? `$${selectedStock.eps.toFixed(2)}` : '—'} />
-              <FundamentalCard label="Dividend" value={selectedStock.dividendYield ? `${selectedStock.dividendYield.toFixed(2)}%` : '—'} />
-              <FundamentalCard label="Beta" value={selectedStock.beta?.toFixed(2) || '—'} />
-            </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <DetailRow label="Open" value={formatCurrency(selectedStock.open)} />
+                    <DetailRow label="Previous Close" value={formatCurrency(selectedStock.previousClose)} />
+                    <DetailRow label="Day High" value={formatCurrency(selectedStock.high)} />
+                    <DetailRow label="Day Low" value={formatCurrency(selectedStock.low)} />
+                    <DetailRow label="52 Week High" value={formatCurrency(selectedStock.fiftyTwoWeekHigh)} />
+                    <DetailRow label="52 Week Low" value={formatCurrency(selectedStock.fiftyTwoWeekLow)} />
+                  </div>
+                  <div className="space-y-1">
+                    <DetailRow label="P/E Ratio" value={selectedStock.peRatio?.toFixed(2) || '—'} />
+                    <DetailRow label="Forward P/E" value={selectedStock.forwardPE?.toFixed(2) || '—'} />
+                    <DetailRow label="EPS" value={selectedStock.eps ? formatCurrency(selectedStock.eps) : '—'} />
+                    <DetailRow label="Dividend Yield" value={selectedStock.dividendYield ? `${selectedStock.dividendYield.toFixed(2)}%` : '—'} />
+                    <DetailRow label="Beta" value={selectedStock.beta?.toFixed(2) || '—'} />
+                    <DetailRow label="Volume" value={selectedStock.volume?.toLocaleString() || '—'} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-3">
+                  <FundamentalCard label="P/E Ratio" value={selectedStock.peRatio?.toFixed(2) || '—'} />
+                  <FundamentalCard label="EPS" value={selectedStock.eps ? `$${selectedStock.eps.toFixed(2)}` : '—'} />
+                  <FundamentalCard label="Dividend" value={selectedStock.dividendYield ? `${selectedStock.dividendYield.toFixed(2)}%` : '—'} />
+                  <FundamentalCard label="Beta" value={selectedStock.beta?.toFixed(2) || '—'} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="analyst" className="mt-4">
+                <AssetAnalystActivity symbol={selectedStock.symbol} assetType="stock" />
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       )}
