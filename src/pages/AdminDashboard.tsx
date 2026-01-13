@@ -10,7 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles, Bot } from "lucide-react";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles, Bot, Contact } from "lucide-react";
+import { CRMBoard } from "@/components/CRMBoard";
+import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
+import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
 import { FundScoringAdmin } from "@/components/admin/FundScoringAdmin";
 import { FundAnalystAdmin } from "@/components/admin/FundAnalystAdmin";
 import { StocksCryptoAdmin } from "@/components/admin/StocksCryptoAdmin";
@@ -38,6 +41,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0);
+  const [crmActiveTab, setCrmActiveTab] = useState('board');
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
@@ -731,6 +737,13 @@ export default function AdminDashboard() {
               >
                 <Bot className="h-5 w-5 mr-2" />
                 Research AI
+              </TabsTrigger>
+              <TabsTrigger 
+                value="crm"
+                className="whitespace-nowrap px-5 py-3 text-sm font-semibold text-slate-700 rounded-xl border border-transparent data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 data-[state=active]:border-blue-400/20 data-[state=active]:scale-[1.02] transition-all duration-200 hover:bg-blue-50 hover:border-blue-200 hover:scale-[1.01]"
+              >
+                <Contact className="h-5 w-5 mr-2" />
+                CRM
               </TabsTrigger>
             </TabsList>
           </div>
@@ -1487,6 +1500,62 @@ export default function AdminDashboard() {
         {/* Research AI Tab */}
         <TabsContent value="research-ai">
           <AdminResearchChatbot />
+        </TabsContent>
+
+        {/* CRM Tab */}
+        <TabsContent value="crm">
+          <div className="space-y-6">
+            {/* CRM Header */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                  CRM
+                </h2>
+                <p className="text-slate-500 text-sm">
+                  Customer Relationship Management
+                </p>
+              </div>
+              {crmActiveTab === 'board' && (
+                <Button 
+                  onClick={() => setImportDialogOpen(true)}
+                  className="shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Bulk Import
+                </Button>
+              )}
+            </div>
+
+            {/* CRM Tabs */}
+            <Tabs value={crmActiveTab} onValueChange={setCrmActiveTab} className="space-y-6">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="board" className="gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Contact Board
+                </TabsTrigger>
+                <TabsTrigger value="scraper" className="gap-2">
+                  <Users className="h-4 w-4" />
+                  Companies House
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="board" className="space-y-6">
+                <CRMBoard key={crmRefreshTrigger} />
+              </TabsContent>
+
+              <TabsContent value="scraper">
+                <CompaniesHouseScraper />
+              </TabsContent>
+            </Tabs>
+
+            <BulkImportDialog
+              open={importDialogOpen}
+              onOpenChange={setImportDialogOpen}
+              onImportComplete={() => {
+                setCrmRefreshTrigger(prev => prev + 1);
+              }}
+            />
+          </div>
         </TabsContent>
       </Tabs>
       </div>
