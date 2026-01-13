@@ -543,7 +543,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t bg-muted/30">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
               <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
               <span className="font-semibold">FlowPulse</span>
@@ -551,6 +551,15 @@ const Index = () => {
             <p className="text-sm text-muted-foreground">
               © 2024 FlowPulse. Enterprise workflow intelligence.
             </p>
+          </div>
+          
+          {/* FCA Disclaimer */}
+          <div className="border-t pt-6">
+            <div className="max-w-4xl mx-auto">
+              <p className="text-xs text-muted-foreground leading-relaxed text-center">
+                <strong>Important Notice:</strong> FlowPulse is a technology platform providing software tools for information, research, and workflow management purposes only. FlowPulse is not authorised or regulated by the Financial Conduct Authority (FCA) or any other financial regulatory body. We do not provide financial advice, investment advice, or any other regulated financial services. Nothing on this platform constitutes a personal recommendation or advice on the merits of any transaction or investment. Any information provided is for general informational purposes only and should not be relied upon when making investment decisions. You should seek independent financial advice from a suitably qualified and FCA-authorised adviser before making any investment decisions. Past performance is not indicative of future results. The value of investments can go down as well as up, and you may get back less than you invest.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
