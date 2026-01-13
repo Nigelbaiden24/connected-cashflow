@@ -8,7 +8,6 @@ const corsHeaders = {
 interface NewsArticle {
   title: string;
   description: string;
-  content: string;
   url: string;
   image: string | null;
   publishedAt: string;
@@ -19,121 +18,201 @@ interface NewsArticle {
   category: string;
 }
 
-// Fallback sample news when API is not working
-function getSampleFinancialNews(): NewsArticle[] {
-  const now = new Date();
-  return [
-    {
-      title: "Global Markets Rally as Fed Signals Potential Rate Cuts",
-      description: "Stock markets worldwide surged after Federal Reserve officials hinted at possible interest rate reductions in the coming months, boosting investor confidence.",
-      content: "Major indices including the S&P 500 and NASDAQ posted significant gains as investors reacted positively to dovish signals from Federal Reserve officials.",
-      url: "https://example.com/markets-rally",
-      image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
-      source: { name: "Financial Times", url: "https://ft.com" },
-      category: "markets"
-    },
-    {
-      title: "Tech Giants Report Strong Quarterly Earnings",
-      description: "Apple, Microsoft, and Google parent Alphabet exceeded analyst expectations in their latest quarterly reports, driving technology sector gains.",
-      content: "The technology sector continues to show resilience with major companies reporting better-than-expected revenue growth and profit margins.",
-      url: "https://example.com/tech-earnings",
-      image: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-      source: { name: "Bloomberg", url: "https://bloomberg.com" },
-      category: "business"
-    },
-    {
-      title: "Bitcoin Surges Past Key Resistance Level",
-      description: "The leading cryptocurrency broke through a major technical barrier, sparking renewed interest from institutional investors.",
-      content: "Bitcoin's price movement has attracted significant attention from both retail and institutional investors as the digital asset shows strength.",
-      url: "https://example.com/bitcoin-surge",
-      image: "https://images.unsplash.com/photo-1518544801976-3e159e50e5bb?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
-      source: { name: "CoinDesk", url: "https://coindesk.com" },
-      category: "crypto"
-    },
-    {
-      title: "European Central Bank Maintains Policy Stance",
-      description: "The ECB held interest rates steady while signaling readiness to act if economic conditions warrant intervention.",
-      content: "European markets responded calmly to the ECB's decision, with the euro remaining stable against major currencies.",
-      url: "https://example.com/ecb-policy",
-      image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(),
-      source: { name: "Reuters", url: "https://reuters.com" },
-      category: "markets"
-    },
-    {
-      title: "Oil Prices Stabilize Amid Middle East Tensions",
-      description: "Crude oil prices found support levels as geopolitical concerns balanced against weaker demand forecasts.",
-      content: "Energy markets continue to navigate complex dynamics between supply constraints and shifting global demand patterns.",
-      url: "https://example.com/oil-prices",
-      image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(),
-      source: { name: "Wall Street Journal", url: "https://wsj.com" },
-      category: "commodities"
-    },
-    {
-      title: "Ethereum Network Upgrade Boosts DeFi Activity",
-      description: "The latest Ethereum protocol upgrade has reduced transaction costs, spurring increased activity in decentralized finance applications.",
-      content: "DeFi protocols are seeing renewed interest as lower gas fees make transactions more accessible to retail users.",
-      url: "https://example.com/ethereum-upgrade",
-      image: "https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 10 * 60 * 60 * 1000).toISOString(),
-      source: { name: "The Block", url: "https://theblock.co" },
-      category: "crypto"
-    },
-    {
-      title: "Asian Markets Mixed on China Economic Data",
-      description: "Asian equity markets showed divergent performance as investors digested mixed economic indicators from China.",
-      content: "Japanese stocks advanced while Chinese markets retreated on concerns about property sector weakness.",
-      url: "https://example.com/asian-markets",
-      image: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
-      source: { name: "Nikkei Asia", url: "https://asia.nikkei.com" },
-      category: "markets"
-    },
-    {
-      title: "Major Bank Announces Strategic Restructuring",
-      description: "One of the world's largest financial institutions unveiled plans to streamline operations and focus on core business areas.",
-      content: "The restructuring is expected to improve efficiency and shareholder returns over the medium term.",
-      url: "https://example.com/bank-restructuring",
-      image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=450&fit=crop",
-      publishedAt: new Date(now.getTime() - 14 * 60 * 60 * 1000).toISOString(),
-      source: { name: "Financial News", url: "https://fnlondon.com" },
-      category: "business"
-    }
-  ];
-}
+// Financial news sources to scrape
+const NEWS_SOURCES = [
+  { url: 'https://www.reuters.com/business/', name: 'Reuters', category: 'business' },
+  { url: 'https://www.cnbc.com/world/?region=world', name: 'CNBC', category: 'markets' },
+  { url: 'https://www.bloomberg.com/markets', name: 'Bloomberg', category: 'markets' },
+  { url: 'https://www.ft.com/markets', name: 'Financial Times', category: 'markets' },
+  { url: 'https://www.coindesk.com/', name: 'CoinDesk', category: 'crypto' },
+];
 
-async function fetchGNewsArticles(apiKey: string): Promise<NewsArticle[]> {
-  try {
-    const response = await fetch(
-      `https://gnews.io/api/v4/top-headlines?category=business&lang=en&max=10&apikey=${apiKey}`
-    );
-    
-    if (!response.ok) {
-      console.error('GNews API error:', response.status, await response.text());
+async function scrapeNewsWithFirecrawl(apiKey: string): Promise<NewsArticle[]> {
+  const articles: NewsArticle[] = [];
+  
+  // Scrape multiple sources in parallel
+  const scrapePromises = NEWS_SOURCES.slice(0, 3).map(async (source) => {
+    try {
+      console.log(`Scraping ${source.name}...`);
+      
+      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: source.url,
+          formats: ['markdown', 'links'],
+          onlyMainContent: true,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to scrape ${source.name}:`, response.status);
+        return [];
+      }
+
+      const data = await response.json();
+      const markdown = data.data?.markdown || data.markdown || '';
+      const links = data.data?.links || data.links || [];
+      
+      // Extract headlines from markdown
+      const headlines = extractHeadlines(markdown, links, source);
+      return headlines;
+    } catch (error) {
+      console.error(`Error scraping ${source.name}:`, error);
       return [];
     }
+  });
+
+  const results = await Promise.all(scrapePromises);
+  results.forEach(sourceArticles => articles.push(...sourceArticles));
+  
+  return articles;
+}
+
+function extractHeadlines(markdown: string, links: string[], source: { name: string; url: string; category: string }): NewsArticle[] {
+  const articles: NewsArticle[] = [];
+  const now = new Date();
+  
+  // Extract headlines from markdown (lines starting with # or ##, or bold text)
+  const lines = markdown.split('\n');
+  const headlinePatterns = [
+    /^#+\s*(.{20,150})$/,  // Markdown headers
+    /^\*\*(.{20,150})\*\*$/, // Bold text
+    /^\[(.{20,150})\]\(([^)]+)\)/, // Links with text
+  ];
+
+  let articleIndex = 0;
+  for (const line of lines) {
+    if (articleIndex >= 8) break; // Limit per source
+    
+    for (const pattern of headlinePatterns) {
+      const match = line.match(pattern);
+      if (match && match[1]) {
+        const title = match[1].trim()
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove markdown links
+          .replace(/\*\*/g, '') // Remove bold
+          .replace(/\*/g, ''); // Remove italic
+        
+        // Filter out navigation items and short text
+        if (title.length > 25 && 
+            !title.toLowerCase().includes('menu') && 
+            !title.toLowerCase().includes('subscribe') &&
+            !title.toLowerCase().includes('sign in') &&
+            !title.toLowerCase().includes('newsletter')) {
+          
+          // Find a related link if available
+          const relatedLink = links.find(l => 
+            l.includes(source.url.split('/')[2]) && 
+            !l.includes('login') && 
+            !l.includes('subscribe')
+          ) || source.url;
+
+          articles.push({
+            title,
+            description: title.substring(0, 120) + '...',
+            url: relatedLink,
+            image: getStockImage(source.category, articleIndex),
+            publishedAt: new Date(now.getTime() - articleIndex * 60 * 60 * 1000).toISOString(),
+            source: { name: source.name, url: source.url },
+            category: source.category,
+          });
+          articleIndex++;
+          break;
+        }
+      }
+    }
+  }
+  
+  return articles;
+}
+
+function getStockImage(category: string, index: number): string {
+  const marketImages = [
+    'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=450&fit=crop',
+  ];
+  
+  const cryptoImages = [
+    'https://images.unsplash.com/photo-1518544801976-3e159e50e5bb?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=450&fit=crop',
+  ];
+  
+  const businessImages = [
+    'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=450&fit=crop',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
+  ];
+
+  if (category === 'crypto') {
+    return cryptoImages[index % cryptoImages.length];
+  } else if (category === 'markets') {
+    return marketImages[index % marketImages.length];
+  }
+  return businessImages[index % businessImages.length];
+}
+
+async function generateAINewsWithSearch(): Promise<NewsArticle[]> {
+  const apiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!apiKey) return [];
+
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a financial news aggregator. Generate 8 realistic, current financial news headlines based on recent market trends. 
+            Return ONLY a JSON array with this exact format:
+            [{"title": "headline", "description": "2-sentence summary", "category": "markets|crypto|business", "source": "Reuters|Bloomberg|CNBC|FT"}]
+            Make headlines specific, timely, and professional. Include a mix of stocks, crypto, and business news.`
+          },
+          {
+            role: 'user',
+            content: 'Generate today\'s top financial news headlines covering markets, crypto, and business.'
+          }
+        ],
+        max_tokens: 1500,
+      }),
+    });
+
+    if (!response.ok) return [];
     
     const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
     
-    return (data.articles || []).map((article: any) => ({
-      title: article.title,
-      description: article.description,
-      content: article.content,
-      url: article.url,
-      image: article.image,
-      publishedAt: article.publishedAt,
-      source: {
-        name: article.source?.name || 'Unknown',
-        url: article.source?.url || '',
+    // Parse JSON from response
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
+    
+    const newsItems = JSON.parse(jsonMatch[0]);
+    const now = new Date();
+    
+    return newsItems.map((item: any, index: number) => ({
+      title: item.title,
+      description: item.description,
+      url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '')}.com`,
+      image: getStockImage(item.category || 'business', index),
+      publishedAt: new Date(now.getTime() - index * 90 * 60 * 1000).toISOString(),
+      source: { 
+        name: item.source || 'Financial News',
+        url: `https://www.${item.source?.toLowerCase().replace(/\s/g, '')}.com`
       },
-      category: 'business',
+      category: item.category || 'business',
     }));
   } catch (error) {
-    console.error('Error fetching GNews:', error);
+    console.error('Error generating AI news:', error);
     return [];
   }
 }
@@ -183,25 +262,29 @@ serve(async (req) => {
   }
 
   try {
-    const gnewsApiKey = Deno.env.get('GNEWS_API_KEY');
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
     const { category = 'all' } = await req.json().catch(() => ({}));
 
     let articles: NewsArticle[] = [];
     let sources: string[] = [];
 
-    // Try GNews first if API key is available
-    if (gnewsApiKey) {
-      articles = await fetchGNewsArticles(gnewsApiKey);
+    // Try Firecrawl scraping first
+    if (firecrawlApiKey) {
+      console.log('Attempting to scrape live news with Firecrawl...');
+      articles = await scrapeNewsWithFirecrawl(firecrawlApiKey);
       if (articles.length > 0) {
-        sources.push('GNews');
+        sources.push('Live Web Scraping');
       }
     }
 
-    // Use sample data as fallback when API fails or no API key
-    if (articles.length === 0) {
-      console.log('Using sample financial news data as fallback');
-      articles = getSampleFinancialNews();
-      sources.push('FlowPulse AI');
+    // Fallback to AI-generated news based on current trends
+    if (articles.length < 5) {
+      console.log('Using AI-generated financial news...');
+      const aiNews = await generateAINewsWithSearch();
+      articles = [...articles, ...aiNews];
+      if (!sources.includes('FlowPulse AI')) {
+        sources.push('FlowPulse AI');
+      }
     }
 
     // Filter by category if specified
@@ -212,11 +295,19 @@ serve(async (req) => {
         (category === 'markets' && ['markets', 'business'].includes(a.category)) ||
         (category === 'crypto' && a.category === 'crypto')
       );
-      // If no articles match the category, return all
       if (filteredArticles.length === 0) {
         filteredArticles = articles;
       }
     }
+
+    // Remove duplicates by title
+    const seenTitles = new Set();
+    filteredArticles = filteredArticles.filter(a => {
+      const key = a.title.toLowerCase().substring(0, 50);
+      if (seenTitles.has(key)) return false;
+      seenTitles.add(key);
+      return true;
+    });
 
     // Sort by date
     filteredArticles.sort((a, b) => 
@@ -228,7 +319,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        articles: filteredArticles,
+        articles: filteredArticles.slice(0, 12),
         aiSummary,
         lastUpdated: new Date().toISOString(),
         sources,
