@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { format, formatDistanceToNow } from "date-fns";
 import { 
   Award, 
   TrendingUp, 
@@ -21,7 +22,11 @@ import {
   Sparkles,
   AlertTriangle,
   Users,
-  Eye
+  Eye,
+  Bell,
+  Clock,
+  Radio,
+  RefreshCw
 } from "lucide-react";
 
 type AnalystRating = 'Gold' | 'Silver' | 'Bronze' | 'Neutral' | 'Negative';
@@ -50,15 +55,57 @@ interface AnalystAsset {
   logo_url: string | null;
   sector: string | null;
   updated_at: string;
+  created_at: string;
 }
 
 export function AnalystPicksSection() {
   const [assets, setAssets] = useState<AnalystAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAsset, setSelectedAsset] = useState<AnalystAsset | null>(null);
+  const [isLive, setIsLive] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchAnalystPicks();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('analyst-activity')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'stocks_crypto'
+        },
+        (payload) => {
+          console.log('Real-time update:', payload);
+          setLastUpdate(new Date());
+          
+          if (payload.eventType === 'INSERT') {
+            const newAsset = payload.new as AnalystAsset;
+            if (newAsset.analyst_rating) {
+              setAssets(prev => [newAsset, ...prev.filter(a => a.id !== newAsset.id)].slice(0, 30));
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedAsset = payload.new as AnalystAsset;
+            setAssets(prev => {
+              const filtered = prev.filter(a => a.id !== updatedAsset.id);
+              return [updatedAsset, ...filtered].slice(0, 30);
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as any).id;
+            setAssets(prev => prev.filter(a => a.id !== deletedId));
+          }
+        }
+      )
+      .subscribe((status) => {
+        setIsLive(status === 'SUBSCRIBED');
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchAnalystPicks = async () => {
@@ -67,12 +114,13 @@ export function AnalystPicksSection() {
         .from('stocks_crypto')
         .select('*')
         .eq('status', 'published')
-        .order('is_featured', { ascending: false })
-        .order('overall_score', { ascending: false })
-        .limit(20);
+        .not('analyst_rating', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(30);
 
       if (error) throw error;
       setAssets((data || []) as AnalystAsset[]);
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Error fetching analyst picks:', error);
     } finally {
@@ -88,7 +136,7 @@ export function AnalystPicksSection() {
       'Neutral': 'bg-slate-200 text-slate-700',
       'Negative': 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30'
     };
-    return styles[rating];
+    return styles[rating] || styles['Neutral'];
   };
 
   const getScoreColor = (score: number) => {
@@ -106,6 +154,7 @@ export function AnalystPicksSection() {
   };
 
   const formatPrice = (price: number) => {
+    if (!price) return '—';
     if (price >= 1) return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     return `$${price.toFixed(6)}`;
   };
@@ -118,8 +167,20 @@ export function AnalystPicksSection() {
     return `$${cap.toLocaleString()}`;
   };
 
+  const getTimeAgo = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch {
+      return 'recently';
+    }
+  };
+
+  // Separate recent updates (last 24h) from older ones
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const recentAssets = assets.filter(a => new Date(a.updated_at) > oneDayAgo);
+  const olderAssets = assets.filter(a => new Date(a.updated_at) <= oneDayAgo);
   const featuredAssets = assets.filter(a => a.is_featured);
-  const otherAssets = assets.filter(a => !a.is_featured);
 
   if (loading) {
     return (
@@ -127,18 +188,18 @@ export function AnalystPicksSection() {
         <CardHeader className="bg-gradient-to-r from-violet-50 via-purple-50 to-fuchsia-50 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-white" />
+              <Radio className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-slate-900">Analyst Picks & Commentary</CardTitle>
-              <CardDescription>Expert ratings and investment insights</CardDescription>
+              <CardTitle className="text-slate-900">Analyst Activity Hub</CardTitle>
+              <CardDescription>Real-time analyst ratings and insights</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-48 w-full bg-slate-100 rounded-xl" />
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full bg-slate-100 rounded-xl" />
             ))}
           </div>
         </CardContent>
@@ -152,17 +213,17 @@ export function AnalystPicksSection() {
         <CardHeader className="bg-gradient-to-r from-violet-50 via-purple-50 to-fuchsia-50 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-white" />
+              <Radio className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-slate-900">Analyst Picks & Commentary</CardTitle>
-              <CardDescription>Expert ratings and investment insights</CardDescription>
+              <CardTitle className="text-slate-900">Analyst Activity Hub</CardTitle>
+              <CardDescription>Real-time analyst ratings and insights</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-12 text-center">
           <Award className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500">No analyst ratings available yet.</p>
+          <p className="text-slate-500">No analyst activity yet.</p>
           <p className="text-sm text-slate-400 mt-1">Check back soon for expert insights.</p>
         </CardContent>
       </Card>
@@ -176,63 +237,123 @@ export function AnalystPicksSection() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                <Sparkles className="h-5 w-5 text-white" />
+                <Radio className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-slate-900">Analyst Picks & Commentary</CardTitle>
-                <CardDescription>Expert ratings, scores, and investment insights from our research team</CardDescription>
+                <CardTitle className="text-slate-900 flex items-center gap-2">
+                  Analyst Activity Hub
+                  {isLive && (
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      Live
+                    </span>
+                  )}
+                </CardTitle>
+                <CardDescription>Real-time analyst ratings, scores, and commentary updates</CardDescription>
               </div>
             </div>
-            <Badge className="bg-violet-100 text-violet-700 border-0">
-              {assets.length} rated assets
-            </Badge>
+            <div className="flex items-center gap-3">
+              {lastUpdate && (
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
+                  <Clock className="h-3.5 w-3.5" />
+                  Updated {getTimeAgo(lastUpdate.toISOString())}
+                </div>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchAnalystPicks}
+                className="gap-1.5"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Refresh
+              </Button>
+              <Badge className="bg-violet-100 text-violet-700 border-0">
+                {assets.length} updates
+              </Badge>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="p-6 space-y-6">
-          {/* Featured Picks */}
-          {featuredAssets.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
-                <h3 className="font-semibold text-slate-900">Featured Picks</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {featuredAssets.map((asset) => (
-                  <AssetCard
-                    key={asset.id}
-                    asset={asset}
-                    featured
-                    onClick={() => setSelectedAsset(asset)}
-                    getAnalystBadgeStyle={getAnalystBadgeStyle}
-                    getScoreColor={getScoreColor}
-                    formatPrice={formatPrice}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+        
+        <CardContent className="p-0">
+          <ScrollArea className="h-[500px]">
+            <div className="p-6 space-y-6">
+              {/* Recent Activity (Last 24h) */}
+              {recentAssets.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 sticky top-0 bg-white py-2 z-10">
+                    <Bell className="h-4 w-4 text-violet-500" />
+                    <h3 className="font-semibold text-slate-900 text-sm">Recent Activity (Last 24h)</h3>
+                    <Badge variant="secondary" className="bg-violet-100 text-violet-700 text-xs">
+                      {recentAssets.length} new
+                    </Badge>
+                  </div>
+                  <div className="space-y-3">
+                    {recentAssets.map((asset) => (
+                      <ActivityCard
+                        key={asset.id}
+                        asset={asset}
+                        isRecent
+                        onClick={() => setSelectedAsset(asset)}
+                        getAnalystBadgeStyle={getAnalystBadgeStyle}
+                        getScoreColor={getScoreColor}
+                        formatPrice={formatPrice}
+                        getTimeAgo={getTimeAgo}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* All Rated Assets */}
-          {otherAssets.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-violet-500" />
-                <h3 className="font-semibold text-slate-900">All Rated Assets</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {otherAssets.map((asset) => (
-                  <AssetCard
-                    key={asset.id}
-                    asset={asset}
-                    onClick={() => setSelectedAsset(asset)}
-                    getAnalystBadgeStyle={getAnalystBadgeStyle}
-                    getScoreColor={getScoreColor}
-                    formatPrice={formatPrice}
-                  />
-                ))}
-              </div>
+              {/* Featured Picks */}
+              {featuredAssets.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                    <h3 className="font-semibold text-slate-900 text-sm">Featured Picks</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {featuredAssets.slice(0, 4).map((asset) => (
+                      <FeaturedCard
+                        key={asset.id}
+                        asset={asset}
+                        onClick={() => setSelectedAsset(asset)}
+                        getAnalystBadgeStyle={getAnalystBadgeStyle}
+                        getScoreColor={getScoreColor}
+                        formatPrice={formatPrice}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Older Activity */}
+              {olderAssets.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-slate-400" />
+                    <h3 className="font-semibold text-slate-900 text-sm">Earlier Updates</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {olderAssets.map((asset) => (
+                      <ActivityCard
+                        key={asset.id}
+                        asset={asset}
+                        onClick={() => setSelectedAsset(asset)}
+                        getAnalystBadgeStyle={getAnalystBadgeStyle}
+                        getScoreColor={getScoreColor}
+                        formatPrice={formatPrice}
+                        getTimeAgo={getTimeAgo}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </ScrollArea>
         </CardContent>
       </Card>
 
@@ -296,7 +417,7 @@ export function AnalystPicksSection() {
                     <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4">
                       <p className="text-sm text-violet-600 mb-1">Overall Score</p>
                       <p className={`text-3xl font-bold ${getScoreColor(selectedAsset.overall_score)}`}>
-                        {selectedAsset.overall_score.toFixed(1)}
+                        {selectedAsset.overall_score?.toFixed(1) || '—'}
                         <span className="text-lg text-slate-400">/5</span>
                       </p>
                       <p className="text-sm text-slate-500 mt-1">Market Cap: {formatMarketCap(selectedAsset.market_cap)}</p>
@@ -387,13 +508,7 @@ export function AnalystPicksSection() {
 
                   {/* Last Updated */}
                   <p className="text-xs text-slate-400 text-center pt-2">
-                    Last updated: {new Date(selectedAsset.updated_at).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    Last updated: {format(new Date(selectedAsset.updated_at), 'MMM d, yyyy \'at\' h:mm a')}
                   </p>
                 </div>
               </ScrollArea>
@@ -405,80 +520,151 @@ export function AnalystPicksSection() {
   );
 }
 
-interface AssetCardProps {
+interface ActivityCardProps {
   asset: AnalystAsset;
-  featured?: boolean;
+  isRecent?: boolean;
+  onClick: () => void;
+  getAnalystBadgeStyle: (rating: AnalystRating) => string;
+  getScoreColor: (score: number) => string;
+  formatPrice: (price: number) => string;
+  getTimeAgo: (date: string) => string;
+}
+
+function ActivityCard({ asset, isRecent, onClick, getAnalystBadgeStyle, getScoreColor, formatPrice, getTimeAgo }: ActivityCardProps) {
+  return (
+    <div
+      onClick={onClick}
+      className={`group relative p-4 rounded-xl border cursor-pointer transition-all hover:shadow-md ${
+        isRecent 
+          ? 'bg-gradient-to-r from-violet-50/50 to-purple-50/50 border-violet-200 hover:border-violet-300' 
+          : 'bg-white border-slate-200 hover:border-slate-300'
+      }`}
+    >
+      <div className="flex items-start gap-4">
+        {/* Asset Icon */}
+        {asset.logo_url ? (
+          <img src={asset.logo_url} alt={asset.name} className="h-12 w-12 rounded-xl shadow-sm flex-shrink-0" />
+        ) : (
+          <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            asset.asset_type === 'crypto' 
+              ? 'bg-gradient-to-br from-amber-500 to-orange-500' 
+              : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+          }`}>
+            {asset.asset_type === 'crypto' ? (
+              <Bitcoin className="h-6 w-6 text-white" />
+            ) : (
+              <BarChart3 className="h-6 w-6 text-white" />
+            )}
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-900">{asset.symbol}</span>
+              <Badge className={`${getAnalystBadgeStyle(asset.analyst_rating)} text-[10px] px-1.5 py-0`}>
+                {asset.analyst_rating}
+              </Badge>
+              {asset.is_featured && (
+                <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Clock className="h-3 w-3" />
+              {getTimeAgo(asset.updated_at)}
+            </div>
+          </div>
+          
+          <p className="text-sm text-slate-600 truncate">{asset.name}</p>
+          
+          <div className="flex items-center gap-4 mt-2">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-slate-900">{formatPrice(asset.current_price)}</span>
+              <span className={`text-xs font-medium ${asset.price_change_24h >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                {asset.price_change_24h >= 0 ? '+' : ''}{asset.price_change_24h?.toFixed(2)}%
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-slate-500">Score:</span>
+              <span className={`text-sm font-bold ${getScoreColor(asset.overall_score || 0)}`}>
+                {asset.overall_score?.toFixed(1) || '—'}
+              </span>
+            </div>
+          </div>
+
+          {asset.rating_rationale && (
+            <p className="mt-2 text-xs text-slate-500 line-clamp-2">
+              {asset.rating_rationale}
+            </p>
+          )}
+        </div>
+
+        <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-violet-500 transition-colors flex-shrink-0 mt-1" />
+      </div>
+    </div>
+  );
+}
+
+interface FeaturedCardProps {
+  asset: AnalystAsset;
   onClick: () => void;
   getAnalystBadgeStyle: (rating: AnalystRating) => string;
   getScoreColor: (score: number) => string;
   formatPrice: (price: number) => string;
 }
 
-function AssetCard({ asset, featured, onClick, getAnalystBadgeStyle, getScoreColor, formatPrice }: AssetCardProps) {
+function FeaturedCard({ asset, onClick, getAnalystBadgeStyle, getScoreColor, formatPrice }: FeaturedCardProps) {
   return (
     <div
       onClick={onClick}
-      className={`group relative p-4 rounded-xl border cursor-pointer transition-all hover:shadow-lg ${
-        featured 
-          ? 'bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 border-violet-200 hover:border-violet-300 hover:shadow-violet-100' 
-          : 'bg-white border-slate-200 hover:border-slate-300'
-      }`}
+      className="group relative p-4 rounded-xl bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border border-amber-200 cursor-pointer transition-all hover:shadow-lg hover:border-amber-300"
     >
-      {featured && (
-        <div className="absolute -top-2 -right-2">
-          <Star className="h-6 w-6 text-amber-500 fill-amber-500 drop-shadow-sm" />
-        </div>
-      )}
-      
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          {asset.logo_url ? (
-            <img src={asset.logo_url} alt={asset.name} className="h-10 w-10 rounded-lg shadow-sm" />
-          ) : (
-            <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-              asset.asset_type === 'crypto' 
-                ? 'bg-gradient-to-br from-amber-500 to-orange-500' 
-                : 'bg-gradient-to-br from-blue-500 to-indigo-600'
-            }`}>
-              {asset.asset_type === 'crypto' ? (
-                <Bitcoin className="h-5 w-5 text-white" />
-              ) : (
-                <BarChart3 className="h-5 w-5 text-white" />
-              )}
-            </div>
-          )}
-          <div>
-            <p className="font-semibold text-slate-900 text-sm">{asset.symbol}</p>
-            <p className="text-xs text-slate-500 truncate max-w-[100px]">{asset.name}</p>
-          </div>
-        </div>
-        <Badge className={`${getAnalystBadgeStyle(asset.analyst_rating)} text-xs`}>
-          {asset.analyst_rating}
-        </Badge>
+      <div className="absolute -top-2 -right-2">
+        <Star className="h-6 w-6 text-amber-500 fill-amber-500 drop-shadow-sm" />
       </div>
-
-      <div className="flex items-center justify-between mb-3">
-        <span className="font-semibold text-slate-900">{formatPrice(asset.current_price)}</span>
-        <span className={`text-sm font-medium ${asset.price_change_24h >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-          {asset.price_change_24h >= 0 ? '+' : ''}{asset.price_change_24h?.toFixed(2)}%
-        </span>
+      
+      <div className="flex items-start gap-3 mb-3">
+        {asset.logo_url ? (
+          <img src={asset.logo_url} alt={asset.name} className="h-10 w-10 rounded-lg shadow-sm" />
+        ) : (
+          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+            asset.asset_type === 'crypto' 
+              ? 'bg-gradient-to-br from-amber-500 to-orange-500' 
+              : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+          }`}>
+            {asset.asset_type === 'crypto' ? (
+              <Bitcoin className="h-5 w-5 text-white" />
+            ) : (
+              <BarChart3 className="h-5 w-5 text-white" />
+            )}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="font-bold text-slate-900">{asset.symbol}</p>
+            <Badge className={`${getAnalystBadgeStyle(asset.analyst_rating)} text-[10px]`}>
+              {asset.analyst_rating}
+            </Badge>
+          </div>
+          <p className="text-xs text-slate-500 truncate">{asset.name}</p>
+        </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-slate-500">Score:</span>
-          <span className={`font-bold ${getScoreColor(asset.overall_score)}`}>
-            {asset.overall_score.toFixed(1)}
+        <div>
+          <span className="font-semibold text-slate-900">{formatPrice(asset.current_price)}</span>
+          <span className={`ml-2 text-sm font-medium ${asset.price_change_24h >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            {asset.price_change_24h >= 0 ? '+' : ''}{asset.price_change_24h?.toFixed(2)}%
           </span>
         </div>
-        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-slate-500">Score:</span>
+          <span className={`font-bold ${getScoreColor(asset.overall_score || 0)}`}>
+            {asset.overall_score?.toFixed(1) || '—'}
+          </span>
+        </div>
       </div>
-
-      {asset.rating_rationale && (
-        <p className="mt-3 text-xs text-slate-500 line-clamp-2 border-t border-slate-100 pt-3">
-          {asset.rating_rationale}
-        </p>
-      )}
     </div>
   );
 }
@@ -498,12 +684,12 @@ function ScoreBar({ label, score, icon: Icon, getScoreProgressColor }: ScoreBarP
           <Icon className="h-3.5 w-3.5 text-slate-400" />
           {label}
         </span>
-        <span className="text-sm font-semibold text-slate-900">{score.toFixed(1)}</span>
+        <span className="text-sm font-semibold text-slate-900">{score?.toFixed(1) || '—'}</span>
       </div>
       <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
         <div 
-          className={`h-full rounded-full transition-all ${getScoreProgressColor(score)}`}
-          style={{ width: `${(score / 5) * 100}%` }}
+          className={`h-full rounded-full transition-all ${getScoreProgressColor(score || 0)}`}
+          style={{ width: `${((score || 0) / 5) * 100}%` }}
         />
       </div>
     </div>
