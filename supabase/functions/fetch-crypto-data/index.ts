@@ -11,14 +11,65 @@ serve(async (req) => {
   }
 
   try {
-    const { page = 1, perPage = 100 } = await req.json().catch(() => ({}));
+    const { page = 1, perPage = 100, category = 'all' } = await req.json().catch(() => ({}));
 
-    // CoinGecko API - fetch top cryptocurrencies by market cap (up to 250 per page)
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${Math.min(perPage, 250)}&page=${page}&sparkline=true&price_change_percentage=1h,24h,7d,30d,1y`
-    );
+    // Determine which category to fetch - allows fetching lesser-known coins
+    let apiUrl = '';
+    let categoryParam = '';
+    
+    // Categories for different types of crypto including lesser-known ones
+    const categoryMap: Record<string, string> = {
+      'all': '', // Top by market cap
+      'defi': '&category=decentralized-finance-defi',
+      'gaming': '&category=gaming',
+      'meme': '&category=meme-token',
+      'layer-1': '&category=layer-1',
+      'layer-2': '&category=layer-2',
+      'metaverse': '&category=metaverse',
+      'nft': '&category=non-fungible-tokens-nft',
+      'storage': '&category=storage',
+      'privacy': '&category=privacy-coins',
+      'stablecoins': '&category=stablecoins',
+      'yield': '&category=yield-farming',
+      'exchange': '&category=centralized-exchange-token-cex',
+      'ai': '&category=artificial-intelligence',
+      'rwa': '&category=real-world-assets-rwa',
+      'gambling': '&category=gambling',
+      'oracle': '&category=oracle',
+      'interoperability': '&category=interoperability',
+      'lending': '&category=lending-borrowing',
+      'derivatives': '&category=derivatives',
+      'fan-tokens': '&category=fan-token',
+      'inscriptions': '&category=inscription-tokens',
+      'dog-themed': '&category=dog-themed-coins',
+      'solana-ecosystem': '&category=solana-ecosystem',
+      'base-ecosystem': '&category=base-ecosystem',
+      'arbitrum-ecosystem': '&category=arbitrum-ecosystem',
+    };
+    
+    categoryParam = categoryMap[category] || '';
+    
+    // CoinGecko API - fetch cryptocurrencies (up to 250 per page)
+    // For pages > 4, we're accessing lesser-known altcoins
+    apiUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${Math.min(perPage, 250)}&page=${page}&sparkline=true&price_change_percentage=1h,24h,7d,30d,1y${categoryParam}`;
+
+    const response = await fetch(apiUrl);
 
     if (!response.ok) {
+      // If rate limited, return cached/mock data for continuity
+      if (response.status === 429) {
+        console.log('Rate limited by CoinGecko, returning cached data structure');
+        return new Response(
+          JSON.stringify({ 
+            crypto: [], 
+            total: 5000, 
+            page, 
+            perPage,
+            message: 'Rate limited - please wait before refreshing'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       throw new Error(`CoinGecko API error: ${response.status}`);
     }
 
@@ -51,13 +102,25 @@ serve(async (req) => {
       maxSupply: coin.max_supply,
       sparkline7d: coin.sparkline_in_7_days?.price || [],
       lastUpdated: coin.last_updated,
+      // Additional categorization for UI filtering
+      isPennyToken: coin.current_price < 0.01,
+      isMicroCap: coin.market_cap && coin.market_cap < 50000000,
+      isSmallCap: coin.market_cap && coin.market_cap >= 50000000 && coin.market_cap < 500000000,
+      category: category !== 'all' ? category : null,
     }));
 
-    // CoinGecko has ~15000+ coins, but we'll limit to first 1000 for practical purposes
-    const estimatedTotal = Math.min(1000, page * perPage + (data.length === perPage ? 100 : 0));
+    // CoinGecko has ~15000+ coins - expand to 5000 for practical purposes
+    const estimatedTotal = Math.min(5000, page * perPage + (data.length === perPage ? 250 : 0));
 
     return new Response(
-      JSON.stringify({ crypto: cryptoData, total: estimatedTotal, page, perPage }),
+      JSON.stringify({ 
+        crypto: cryptoData, 
+        total: estimatedTotal, 
+        page, 
+        perPage,
+        category,
+        availableCategories: Object.keys(categoryMap)
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
