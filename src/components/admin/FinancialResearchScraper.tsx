@@ -135,25 +135,36 @@ export function FinancialResearchScraper() {
       status: 'pending' as const,
     })));
 
-    // Scrape each platform
+    // Scrape each platform using the scrapeAll option to get all research URLs
     for (const platform of platformsToScrape) {
       try {
         const { data, error } = await supabase.functions.invoke('financial-research-scraper', {
-          body: { url: platform.url, platformName: platform.name }
+          body: { 
+            platformName: platform.id, 
+            scrapeAll: true  // This tells the backend to scrape all research URLs for the platform
+          }
         });
 
         if (error) throw error;
+
+        const urlCount = data.scrapedUrls?.length || 0;
+        const totalUrls = data.totalUrls || 0;
 
         setScrapedData(prev => prev.map(item =>
           item.platform === platform.name
             ? {
                 ...item,
-                content: data.content || data.markdown || "No content extracted",
-                status: 'success' as const,
+                content: data.content || "No content extracted",
+                status: data.success ? 'success' as const : 'error' as const,
                 scrapedAt: new Date().toISOString(),
+                error: data.success ? undefined : data.error,
               }
             : item
         ));
+
+        if (data.success) {
+          toast.success(`${platform.name}: Scraped ${urlCount}/${totalUrls} research pages`);
+        }
       } catch (error) {
         console.error(`Error scraping ${platform.name}:`, error);
         setScrapedData(prev => prev.map(item =>
@@ -169,7 +180,8 @@ export function FinancialResearchScraper() {
     }
 
     setIsScrapingInProgress(false);
-    toast.success("Scraping completed!");
+    const successCount = scrapedData.filter(d => d.status === 'success').length;
+    toast.success(`Scraping completed! ${successCount}/${platformsToScrape.length} platforms scraped successfully`);
   };
 
   const generateAIReport = async () => {
