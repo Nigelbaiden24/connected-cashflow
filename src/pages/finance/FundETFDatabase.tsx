@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Database, Search, Scale, Sparkles, TrendingUp, DollarSign, BarChart3, Globe, Download, Bookmark, Star, Building2, Landmark } from "lucide-react";
+import { Database, Search, Scale, Sparkles, TrendingUp, DollarSign, BarChart3, Globe, Download, Bookmark, Star, Building2, Landmark, ShieldCheck } from "lucide-react";
 import { fundDatabase } from "@/data/fundDatabase";
 import { allFunds, propertyFunds as propertyFundsData, standardFunds } from "@/data/funds";
 import { FundSearchFilters } from "@/components/fund-database/FundSearchFilters";
@@ -14,6 +14,7 @@ import { AIFundInsights } from "@/components/fund-database/AIFundInsights";
 import { FundScreener } from "@/components/fund-database/FundScreener";
 import { FundWatchlist } from "@/components/fund-database/FundWatchlist";
 import { FundAnalystActivityHub } from "@/components/market/FundAnalystActivityHub";
+import { DataIntegrityBanner } from "@/components/fund-database/DataIntegrityBanner";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
 
@@ -231,6 +232,9 @@ export default function FundETFDatabase() {
 
       {/* Main Content */}
       <div className="p-6 space-y-6">
+        {/* Data Integrity Banner */}
+        <DataIntegrityBanner variant="verified" />
+
         {/* Fund Analyst Activity Hub */}
         <FundAnalystActivityHub />
 

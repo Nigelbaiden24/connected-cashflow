@@ -14,10 +14,12 @@ import {
   Plus,
   ChevronRight,
   Sparkles,
-  Settings
+  Settings,
+  ShieldCheck
 } from "lucide-react";
 import type { CompleteFund } from "@/types/fund";
 import { StarRating, AnalystRatingBadge, PillarRatings } from "./FundRatingBadges";
+import { DataIntegrityBadge } from "./DataIntegrityBadge";
 
 interface FundTableProps {
   funds: CompleteFund[];
@@ -128,10 +130,13 @@ export function FundTable({
                     className="border-border/50"
                   />
                 </TableCell>
-                <TableCell>
+<TableCell>
                   <div className="space-y-1.5">
-                    <div className="font-medium text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1">
-                      {fund.name}
+                    <div className="flex items-center gap-1.5">
+                      <div className="font-medium text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                        {fund.name}
+                      </div>
+                      <DataIntegrityBadge isin={fund.isin} />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
