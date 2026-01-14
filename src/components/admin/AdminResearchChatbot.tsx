@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
   Send, 
@@ -27,11 +28,14 @@ import {
   Database,
   ChevronDown,
   Zap,
-  Newspaper
+  Newspaper,
+  Video,
+  MessageSquare
 } from "lucide-react";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AdminMeetingPanel } from "./AdminMeetingPanel";
 
 interface Message {
   id: string;
@@ -130,8 +134,22 @@ export const AdminResearchChatbot = () => {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [isFetchingResearch, setIsFetchingResearch] = useState(false);
   const [platformSelectorOpen, setPlatformSelectorOpen] = useState(false);
+  const [activeMode, setActiveMode] = useState<'chat' | 'meeting'>('chat');
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Handle meeting summary being added to chat
+  const handleMeetingSummaryToChat = (summary: string) => {
+    const summaryMessage: Message = {
+      id: `msg-meeting-${Date.now()}`,
+      role: "assistant",
+      content: summary,
+      timestamp: new Date(),
+      isReport: true,
+    };
+    setMessages(prev => [...prev, summaryMessage]);
+    setActiveMode('chat');
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -454,10 +472,10 @@ export const AdminResearchChatbot = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header with Mode Toggle */}
       <Card className="border-slate-200 shadow-lg bg-gradient-to-r from-violet-50 via-white to-indigo-50">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl shadow-lg">
                 <Sparkles className="h-6 w-6 text-white" />
@@ -465,20 +483,51 @@ export const AdminResearchChatbot = () => {
               <div>
                 <CardTitle className="text-2xl text-slate-900">Research AI Assistant</CardTitle>
                 <CardDescription className="text-slate-600">
-                  Powered by 18 live research platforms with AI synthesis
+                  Powered by 18 live research platforms with AI synthesis & meeting transcription
                 </CardDescription>
               </div>
             </div>
-            {messages.length > 0 && (
-              <Button variant="outline" size="sm" onClick={clearChat}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Clear Chat
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Mode Toggle */}
+              <div className="flex bg-slate-100 rounded-lg p-1">
+                <Button
+                  variant={activeMode === 'chat' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveMode('chat')}
+                  className={activeMode === 'chat' ? 'bg-white shadow-sm' : ''}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Chat
+                </Button>
+                <Button
+                  variant={activeMode === 'meeting' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setActiveMode('meeting')}
+                  className={activeMode === 'meeting' ? 'bg-white shadow-sm' : ''}
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Meeting
+                </Button>
+              </div>
+              {messages.length > 0 && activeMode === 'chat' && (
+                <Button variant="outline" size="sm" onClick={clearChat}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
       </Card>
 
+      {/* Meeting Mode */}
+      {activeMode === 'meeting' && (
+        <AdminMeetingPanel onAddToChat={handleMeetingSummaryToChat} />
+      )}
+
+      {/* Chat Mode */}
+      {activeMode === 'chat' && (
+        <>
       {/* Research Platform Selector */}
       <Card className="border-slate-200 shadow-md bg-white">
         <Collapsible open={platformSelectorOpen} onOpenChange={setPlatformSelectorOpen}>
@@ -712,7 +761,7 @@ export const AdminResearchChatbot = () => {
             <BookOpen className="h-5 w-5 text-slate-600" />
             <span className="font-semibold text-slate-700">AI Capabilities</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
             <div className="flex items-center gap-2 text-slate-600">
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span>Market Analysis</span>
@@ -729,9 +778,15 @@ export const AdminResearchChatbot = () => {
               <FileText className="h-4 w-4 text-violet-600" />
               <span>PDF Reports</span>
             </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <Video className="h-4 w-4 text-indigo-600" />
+              <span>Meeting Transcription</span>
+            </div>
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 };
