@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { UserPlus, UserMinus, CheckCircle2, XCircle, Shield, Users, Search, Mail, Loader2, MoreHorizontal, Trash2, Edit, Building2, TrendingUp, Briefcase, Settings2 } from "lucide-react";
+import { UserPlus, UserMinus, CheckCircle2, XCircle, Shield, Users, Search, Mail, Loader2, MoreHorizontal, Trash2, Edit, Building2, TrendingUp, Briefcase, Settings2, RefreshCw } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { UserTabPermissionsDialog } from "./UserTabPermissionsDialog";
@@ -20,6 +20,8 @@ interface UserWithRole {
   email: string;
   full_name: string;
   created_at: string;
+  email_confirmed: boolean;
+  last_sign_in: string | null;
   roles: string[];
   status: "active" | "pending" | "inactive";
   platforms: {
@@ -27,6 +29,13 @@ interface UserWithRole {
     business: boolean;
     investor: boolean;
   };
+  pending_invite: {
+    invited_role: string;
+    platform_finance: boolean;
+    platform_business: boolean;
+    platform_investor: boolean;
+    invited_at: string;
+  } | null;
 }
 
 interface InviteForm {
@@ -75,6 +84,34 @@ export function UserManagement() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
+      // Use edge function to get complete user data including auth.users
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke("admin-user-management", {
+        body: { action: "list" },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to fetch users");
+      }
+
+      if (response.data?.users) {
+        setUsers(response.data.users);
+      } else {
+        // Fallback to direct query if edge function fails
+        await fetchUsersFallback();
+      }
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      // Try fallback method
+      await fetchUsersFallback();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUsersFallback = async () => {
+    try {
       // Fetch all user profiles
       const { data: profilesData, error: profilesError } = await supabase
         .from("user_profiles")
@@ -97,32 +134,46 @@ export function UserManagement() {
 
       if (permissionsError) throw permissionsError;
 
+      // Fetch pending invitations
+      const { data: pendingInvites } = await supabase
+        .from("pending_invitations")
+        .select("*")
+        .is("completed_at", null);
+
       // Combine the data
       const usersWithRoles: UserWithRole[] = (profilesData || []).map((profile) => {
         const userRoles = rolesData?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
         const userPermissions = permissionsData?.find(p => p.user_id === profile.user_id);
+        const pendingInvite = pendingInvites?.find(i => i.user_id === profile.user_id);
         
         return {
           user_id: profile.user_id,
-          email: profile.email || "",
-          full_name: profile.full_name || "",
+          email: profile.email || pendingInvite?.email || "No email",
+          full_name: profile.full_name || pendingInvite?.full_name || "Unknown",
           created_at: profile.created_at || "",
+          email_confirmed: true,
+          last_sign_in: null,
           roles: userRoles,
           status: userRoles.length > 0 ? "active" : "pending",
           platforms: {
             finance: userPermissions?.can_access_finance_platform || false,
             business: userPermissions?.can_access_business_platform || false,
             investor: userPermissions?.can_access_investor_platform || false
-          }
+          },
+          pending_invite: pendingInvite ? {
+            invited_role: pendingInvite.invited_role,
+            platform_finance: pendingInvite.platform_finance,
+            platform_business: pendingInvite.platform_business,
+            platform_investor: pendingInvite.platform_investor,
+            invited_at: pendingInvite.invited_at,
+          } : null,
         };
       });
 
       setUsers(usersWithRoles);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Fallback fetch error:", error);
       toast.error("Failed to load users");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -135,119 +186,34 @@ export function UserManagement() {
 
     setSubmitting(true);
     try {
-      // First check if user already exists
-      const { data: existingUser } = await supabase
-        .from("user_profiles")
-        .select("user_id")
-        .eq("email", inviteForm.email)
-        .single();
-
-      if (existingUser) {
-        toast.error("User with this email already exists");
-        setSubmitting(false);
-        return;
-      }
-
-      // Create a temporary password
-      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-
-      // Create the user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: inviteForm.email,
-        password: tempPassword,
-        options: {
-          data: {
-            full_name: inviteForm.fullName
-          },
-          emailRedirectTo: `${window.location.origin}/auth`
-        }
+      const response = await supabase.functions.invoke("admin-user-management", {
+        body: {
+          action: "invite",
+          email: inviteForm.email,
+          fullName: inviteForm.fullName,
+          role: inviteForm.role,
+          platforms: inviteForm.platforms,
+        },
       });
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        // Store invitation details - roles and permissions will be assigned when user confirms email
-        const { error: invitationError } = await supabase
-          .from("pending_invitations")
-          .insert({
-            user_id: authData.user.id,
-            email: inviteForm.email,
-            full_name: inviteForm.fullName,
-            invited_role: inviteForm.role,
-            platform_finance: inviteForm.platforms.finance,
-            platform_business: inviteForm.platforms.business,
-            platform_investor: inviteForm.platforms.investor,
-            invited_by: (await supabase.auth.getUser()).data.user?.id
-          });
-
-        if (invitationError) {
-          console.error('Error storing invitation:', invitationError);
-          throw new Error('Failed to store invitation details');
-        }
-
-        // Send custom invitation email
-        const platformsList = Object.entries(inviteForm.platforms)
-          .filter(([_, hasAccess]) => hasAccess)
-          .map(([platform]) => platform.charAt(0).toUpperCase() + platform.slice(1))
-          .join(', ') || 'None';
-
-        const emailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2563eb;">Welcome to FlowPulse!</h2>
-            <p>Hi ${inviteForm.fullName},</p>
-            <p>You have been invited to join FlowPulse with the following access:</p>
-            <ul>
-              <li><strong>Role:</strong> ${inviteForm.role.replace('_', ' ').toUpperCase()}</li>
-              <li><strong>Platform Access:</strong> ${platformsList}</li>
-            </ul>
-            <p>Your temporary credentials:</p>
-            <ul>
-              <li><strong>Email:</strong> ${inviteForm.email}</li>
-              <li><strong>Temporary Password:</strong> ${tempPassword}</li>
-            </ul>
-            <p style="padding: 15px; background: #fef3c7; border-left: 4px solid #f59e0b; margin: 20px 0;">
-              ⚠️ <strong>Important:</strong> Please change your password after your first login.
-            </p>
-            <p>
-              <a href="${window.location.origin}/auth" style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin: 10px 0;">
-                Login to FlowPulse
-              </a>
-            </p>
-            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-              If you have any questions, please contact our support team.
-            </p>
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-            <p style="color: #9ca3af; font-size: 12px;">
-              © ${new Date().getFullYear()} FlowPulse. All rights reserved.
-            </p>
-          </div>
-        `;
-
-        const { error: emailError } = await supabase.functions.invoke('send-auth-email', {
-          body: {
-            to: inviteForm.email,
-            subject: 'Welcome to FlowPulse - Your Account Details',
-            html: emailHtml,
-            from: 'FlowPulse Support <support@flowpulse.co.uk>'
-          }
-        });
-
-        if (emailError) {
-          console.error('Error sending invitation email:', emailError);
-          toast.warning('User created but invitation email failed to send');
-        } else {
-          toast.success(`Invitation sent to ${inviteForm.email}. User will be activated once they confirm their email.`);
-        }
-
-        setAddUserOpen(false);
-        setInviteForm({ 
-          email: "", 
-          fullName: "", 
-          role: "viewer",
-          platforms: { finance: false, business: false, investor: false }
-        });
-        await fetchUsers();
+      if (response.error) {
+        throw new Error(response.error.message || "Failed to invite user");
       }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast.success(response.data?.message || `User ${inviteForm.email} invited successfully`);
+      
+      setAddUserOpen(false);
+      setInviteForm({ 
+        email: "", 
+        fullName: "", 
+        role: "viewer",
+        platforms: { finance: false, business: false, investor: false }
+      });
+      await fetchUsers();
     } catch (error: any) {
       console.error("Error inviting user:", error);
       toast.error(error.message || "Failed to invite user");
@@ -258,11 +224,17 @@ export function UserManagement() {
 
   const handleApproveUser = async (userId: string) => {
     try {
-      // Assign basic viewer role if no roles exist
-      await supabase.from("user_roles").insert([{
-        user_id: userId,
-        role: "viewer"
-      }]);
+      const response = await supabase.functions.invoke("admin-user-management", {
+        body: {
+          action: "update_role",
+          userId,
+          role: "viewer",
+        },
+      });
+
+      if (response.error || response.data?.error) {
+        throw new Error(response.error?.message || response.data?.error);
+      }
 
       toast.success("User approved successfully");
       await fetchUsers();
@@ -278,11 +250,16 @@ export function UserManagement() {
     }
 
     try {
-      // Remove all user roles
-      await supabase.from("user_roles").delete().eq("user_id", userId);
+      const response = await supabase.functions.invoke("admin-user-management", {
+        body: {
+          action: "delete",
+          userId,
+        },
+      });
 
-      // Delete user profile
-      await supabase.from("user_profiles").delete().eq("user_id", userId);
+      if (response.error || response.data?.error) {
+        throw new Error(response.error?.message || response.data?.error);
+      }
 
       toast.success("User removed successfully");
       await fetchUsers();
@@ -294,25 +271,19 @@ export function UserManagement() {
 
   const handleUpdateRole = async (userId: string, newRole: "admin" | "analyst" | "hr_admin" | "manager" | "payroll_admin" | "viewer") => {
     try {
-      // Check if role already exists
-      const { data: existingRole } = await supabase
-        .from("user_roles")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("role", newRole)
-        .single();
+      const response = await supabase.functions.invoke("admin-user-management", {
+        body: {
+          action: "update_role",
+          userId,
+          role: newRole,
+        },
+      });
 
-      if (existingRole) {
-        toast.info("User already has this role");
-        return;
+      if (response.error || response.data?.error) {
+        throw new Error(response.error?.message || response.data?.error);
       }
 
-      await supabase.from("user_roles").insert([{
-        user_id: userId,
-        role: newRole
-      }]);
-
-      toast.success(`Role ${newRole} added successfully`);
+      toast.success(`Role ${newRole.replace("_", " ")} added successfully`);
       await fetchUsers();
     } catch (error: any) {
       console.error("Error updating role:", error);
@@ -326,7 +297,10 @@ export function UserManagement() {
       user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, emailConfirmed?: boolean) => {
+    if (status === "pending" && emailConfirmed === false) {
+      return <Badge className="bg-orange-500/20 text-orange-600 border-orange-500/30">Email Not Confirmed</Badge>;
+    }
     switch (status) {
       case "active":
         return <Badge className="bg-success/20 text-success border-success/30">Active</Badge>;
@@ -345,27 +319,20 @@ export function UserManagement() {
     hasAccess: boolean
   ) => {
     try {
-      const platformMap = {
-        finance: hasAccess,
-        business: platform === "business" ? false : hasAccess,
-        investor: platform === "investor" ? false : hasAccess
-      };
-
-      // Get current permissions first
-      const { data: currentPerms } = await supabase
-        .from("platform_permissions")
-        .select("can_access_finance_platform, can_access_business_platform, can_access_investor_platform")
-        .eq("user_id", userId)
-        .single();
-
-      await supabase.rpc('grant_platform_access', {
-        _user_id: userId,
-        _finance: platform === "finance" ? hasAccess : (currentPerms?.can_access_finance_platform || false),
-        _business: platform === "business" ? hasAccess : (currentPerms?.can_access_business_platform || false),
-        _investor: platform === "investor" ? hasAccess : (currentPerms?.can_access_investor_platform || false)
+      const response = await supabase.functions.invoke("admin-user-management", {
+        body: {
+          action: "update_platform_access",
+          userId,
+          platform,
+          hasAccess,
+        },
       });
 
-      toast.success(`${platform} platform access ${hasAccess ? 'granted' : 'revoked'}`);
+      if (response.error || response.data?.error) {
+        throw new Error(response.error?.message || response.data?.error);
+      }
+
+      toast.success(`${platform.charAt(0).toUpperCase() + platform.slice(1)} platform access ${hasAccess ? 'granted' : 'revoked'}`);
       await fetchUsers();
     } catch (error: any) {
       console.error("Error updating platform access:", error);
@@ -489,114 +456,120 @@ export function UserManagement() {
               </CardTitle>
               <CardDescription>Manage user accounts, roles, and permissions</CardDescription>
             </div>
-            <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Invite User
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Invite New User</DialogTitle>
-                  <DialogDescription>
-                    Send an invitation to join the platform
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleInviteUser} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-email">Email *</Label>
-                    <Input
-                      id="invite-email"
-                      type="email"
-                      value={inviteForm.email}
-                      onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-                      placeholder="user@example.com"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-name">Full Name *</Label>
-                    <Input
-                      id="invite-name"
-                      value={inviteForm.fullName}
-                      onChange={(e) => setInviteForm({ ...inviteForm, fullName: e.target.value })}
-                      placeholder="John Doe"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="invite-role">Initial Role</Label>
-                    <Select value={inviteForm.role} onValueChange={(value) => setInviteForm({ ...inviteForm, role: value })}>
-                      <SelectTrigger id="invite-role">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="viewer">Viewer</SelectItem>
-                        <SelectItem value="analyst">Analyst</SelectItem>
-                        <SelectItem value="manager">Manager</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="hr_admin">HR Admin</SelectItem>
-                        <SelectItem value="payroll_admin">Payroll Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-3">
-                    <Label>Platform Access</Label>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={fetchUsers} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-primary hover:bg-primary/90">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Invite New User</DialogTitle>
+                    <DialogDescription>
+                      Send an invitation to join the platform
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleInviteUser} className="space-y-4">
                     <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="platform-finance"
-                          checked={inviteForm.platforms.finance}
-                          onCheckedChange={(checked) => 
-                            setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, finance: checked as boolean }})
-                          }
-                        />
-                        <label htmlFor="platform-finance" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                          <Briefcase className="h-4 w-4 text-primary" />
-                          Finance Platform
-                        </label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="platform-business"
-                          checked={inviteForm.platforms.business}
-                          onCheckedChange={(checked) => 
-                            setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, business: checked as boolean }})
-                          }
-                        />
-                        <label htmlFor="platform-business" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                          <Building2 className="h-4 w-4 text-success" />
-                          Business Platform
-                        </label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="platform-investor"
-                          checked={inviteForm.platforms.investor}
-                          onCheckedChange={(checked) => 
-                            setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, investor: checked as boolean }})
-                          }
-                        />
-                        <label htmlFor="platform-investor" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                          <TrendingUp className="h-4 w-4 text-secondary" />
-                          Investor Platform
-                        </label>
+                      <Label htmlFor="invite-email">Email *</Label>
+                      <Input
+                        id="invite-email"
+                        type="email"
+                        value={inviteForm.email}
+                        onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
+                        placeholder="user@example.com"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-name">Full Name *</Label>
+                      <Input
+                        id="invite-name"
+                        value={inviteForm.fullName}
+                        onChange={(e) => setInviteForm({ ...inviteForm, fullName: e.target.value })}
+                        placeholder="John Doe"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invite-role">Initial Role</Label>
+                      <Select value={inviteForm.role} onValueChange={(value) => setInviteForm({ ...inviteForm, role: value })}>
+                        <SelectTrigger id="invite-role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Viewer</SelectItem>
+                          <SelectItem value="analyst">Analyst</SelectItem>
+                          <SelectItem value="manager">Manager</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="hr_admin">HR Admin</SelectItem>
+                          <SelectItem value="payroll_admin">Payroll Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-3">
+                      <Label>Platform Access</Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="platform-finance"
+                            checked={inviteForm.platforms.finance}
+                            onCheckedChange={(checked) => 
+                              setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, finance: checked as boolean }})
+                            }
+                          />
+                          <label htmlFor="platform-finance" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                            <Briefcase className="h-4 w-4 text-primary" />
+                            Finance Platform
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="platform-business"
+                            checked={inviteForm.platforms.business}
+                            onCheckedChange={(checked) => 
+                              setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, business: checked as boolean }})
+                            }
+                          />
+                          <label htmlFor="platform-business" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                            <Building2 className="h-4 w-4 text-success" />
+                            Business Platform
+                          </label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="platform-investor"
+                            checked={inviteForm.platforms.investor}
+                            onCheckedChange={(checked) => 
+                              setInviteForm({ ...inviteForm, platforms: { ...inviteForm.platforms, investor: checked as boolean }})
+                            }
+                          />
+                          <label htmlFor="platform-investor" className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+                            <TrendingUp className="h-4 w-4 text-secondary" />
+                            Investor Platform
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setAddUserOpen(false)} className="flex-1">
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={submitting} className="flex-1">
-                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-                      Send Invite
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                    <div className="flex gap-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setAddUserOpen(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={submitting} className="flex-1">
+                        {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+                        Send Invite
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
@@ -669,7 +642,7 @@ export function UserManagement() {
                             {getPlatformBadges(user.platforms)}
                           </div>
                         </TableCell>
-                        <TableCell>{getStatusBadge(user.status)}</TableCell>
+                        <TableCell>{getStatusBadge(user.status, user.email_confirmed)}</TableCell>
                         <TableCell className="text-muted-foreground">
                           {new Date(user.created_at).toLocaleDateString()}
                         </TableCell>
