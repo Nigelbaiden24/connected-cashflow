@@ -14,6 +14,152 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_planner_ai_history: {
+        Row: {
+          context_data: Json | null
+          created_at: string
+          id: string
+          prompt: string
+          response: string
+          user_id: string | null
+        }
+        Insert: {
+          context_data?: Json | null
+          created_at?: string
+          id?: string
+          prompt: string
+          response: string
+          user_id?: string | null
+        }
+        Update: {
+          context_data?: Json | null
+          created_at?: string
+          id?: string
+          prompt?: string
+          response?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_planner_items: {
+        Row: {
+          calendar_event_id: string | null
+          created_at: string
+          crm_contact_id: string | null
+          description: string | null
+          id: string
+          item_name: string
+          item_type: string
+          outcome_notes: string | null
+          priority: string
+          status: string
+          target_date: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          calendar_event_id?: string | null
+          created_at?: string
+          crm_contact_id?: string | null
+          description?: string | null
+          id?: string
+          item_name: string
+          item_type: string
+          outcome_notes?: string | null
+          priority?: string
+          status?: string
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          calendar_event_id?: string | null
+          created_at?: string
+          crm_contact_id?: string | null
+          description?: string | null
+          id?: string
+          item_name?: string
+          item_type?: string
+          outcome_notes?: string | null
+          priority?: string
+          status?: string
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_planner_items_crm_contact_id_fkey"
+            columns: ["crm_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_time_daily: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          session_count: number
+          total_seconds: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          session_count?: number
+          total_seconds?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          session_count?: number
+          total_seconds?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_time_sessions: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          end_time: string | null
+          id: string
+          is_active: boolean | null
+          session_date: string
+          start_time: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          session_date?: string
+          start_time?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          session_date?: string
+          start_time?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       advisor_activity: {
         Row: {
           activity_type: string
