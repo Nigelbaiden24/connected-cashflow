@@ -26,6 +26,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   LogOut,
+  ClipboardList,
   Globe,
 } from "lucide-react";
 
@@ -43,6 +44,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  { id: "planner", label: "Planner", icon: ClipboardList, gradient: "from-indigo-500 to-purple-600" },
   { id: "users", label: "Users", icon: Users, gradient: "from-blue-500 to-blue-600" },
   { id: "enquiries", label: "Enquiries", icon: MessageSquare, gradient: "from-orange-500 to-orange-600" },
   { id: "demo-requests", label: "Demo Requests", icon: Calendar, gradient: "from-slate-500 to-slate-600" },
