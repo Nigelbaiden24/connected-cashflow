@@ -1637,7 +1637,7 @@ export type Database = {
         Row: {
           action_items: string[] | null
           agenda: string[] | null
-          client_id: string
+          client_id: string | null
           created_at: string
           duration_minutes: number | null
           id: string
@@ -1653,7 +1653,7 @@ export type Database = {
         Insert: {
           action_items?: string[] | null
           agenda?: string[] | null
-          client_id: string
+          client_id?: string | null
           created_at?: string
           duration_minutes?: number | null
           id?: string
@@ -1669,7 +1669,7 @@ export type Database = {
         Update: {
           action_items?: string[] | null
           agenda?: string[] | null
-          client_id?: string
+          client_id?: string | null
           created_at?: string
           duration_minutes?: number | null
           id?: string
