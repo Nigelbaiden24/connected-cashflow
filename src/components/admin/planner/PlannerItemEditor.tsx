@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { PlannerItem } from "./PlannerItemsTable";
 
+const NONE_CRM_VALUE = "__none__";
+
 interface CRMContact {
   id: string;
   name: string;
@@ -40,7 +42,7 @@ export function PlannerItemEditor({
   const [formData, setFormData] = useState({
     item_name: "",
     item_type: "task" as "task" | "job_application",
-    crm_contact_id: "",
+    crm_contact_id: NONE_CRM_VALUE,
     status: "todo" as PlannerItem["status"],
     priority: "medium" as PlannerItem["priority"],
     target_date: null as Date | null,
@@ -57,7 +59,7 @@ export function PlannerItemEditor({
       setFormData({
         item_name: item.item_name,
         item_type: item.item_type,
-        crm_contact_id: item.crm_contact_id || "",
+        crm_contact_id: item.crm_contact_id || NONE_CRM_VALUE,
         status: item.status,
         priority: item.priority,
         target_date: item.target_date ? new Date(item.target_date) : null,
@@ -68,7 +70,7 @@ export function PlannerItemEditor({
       setFormData({
         item_name: "",
         item_type: "task",
-        crm_contact_id: "",
+        crm_contact_id: NONE_CRM_VALUE,
         status: "todo",
         priority: "medium",
         target_date: null,
@@ -82,8 +84,8 @@ export function PlannerItemEditor({
     const { data } = await supabase
       .from("crm_contacts")
       .select("id, name, company")
-      .order("company_name");
-    
+      .order("company");
+
     if (data) {
       setCrmContacts(data);
     }
@@ -103,7 +105,7 @@ export function PlannerItemEditor({
       const payload = {
         item_name: formData.item_name,
         item_type: formData.item_type,
-        crm_contact_id: formData.crm_contact_id || null,
+        crm_contact_id: formData.crm_contact_id === NONE_CRM_VALUE ? null : formData.crm_contact_id,
         status: formData.status,
         priority: formData.priority,
         target_date: formData.target_date?.toISOString().split("T")[0] || null,
@@ -200,7 +202,7 @@ export function PlannerItemEditor({
                 <SelectValue placeholder="Select a contact..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value={NONE_CRM_VALUE}>None</SelectItem>
                 {crmContacts.map((contact) => (
                   <SelectItem key={contact.id} value={contact.id}>
                     {contact.company || contact.name}
