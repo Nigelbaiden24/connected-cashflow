@@ -7,12 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { CalendarIcon, Trash2, Save, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { PlannerItem } from "./PlannerItemsTable";
+import { PlannerNotesTimeline } from "./PlannerNotesTimeline";
 
 const NONE_CRM_VALUE = "__none__";
 
@@ -292,14 +294,21 @@ export function PlannerItemEditor({
 
           {/* Outcome Notes */}
           <div className="space-y-2">
-            <Label htmlFor="outcome_notes">Outcome Notes</Label>
+            <Label htmlFor="outcome_notes">Final Outcome</Label>
             <Textarea
               id="outcome_notes"
               value={formData.outcome_notes}
               onChange={(e) => setFormData({ ...formData, outcome_notes: e.target.value })}
-              placeholder="Record outcomes, feedback, results..."
-              rows={3}
+              placeholder="Record final outcome, feedback, results..."
+              rows={2}
             />
+          </div>
+
+          {/* Progress Notes Timeline */}
+          <Separator />
+          <div className="space-y-2">
+            <Label>Progress Notes</Label>
+            <PlannerNotesTimeline plannerItemId={item?.id || null} />
           </div>
 
           {/* Actions */}

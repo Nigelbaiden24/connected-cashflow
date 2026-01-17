@@ -97,6 +97,38 @@ export type Database = {
           },
         ]
       }
+      admin_planner_notes: {
+        Row: {
+          created_at: string
+          id: string
+          note_text: string
+          planner_item_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_text: string
+          planner_item_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_text?: string
+          planner_item_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_planner_notes_planner_item_id_fkey"
+            columns: ["planner_item_id"]
+            isOneToOne: false
+            referencedRelation: "admin_planner_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_time_daily: {
         Row: {
           created_at: string
