@@ -400,7 +400,7 @@ const Index = () => {
           <span className="text-green-600">research reports</span>
         </h2>
         <p className="mt-3 text-gray-800 text-base md:text-lg">
-          sourced by professional human analysts
+          studied and written by expert human analysts
         </p>
       </div>
 
