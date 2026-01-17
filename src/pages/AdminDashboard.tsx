@@ -32,6 +32,8 @@ import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerato
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
+import { AdminPlanner } from "@/components/admin/AdminPlanner";
+import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 
 interface Profile {
   user_id: string;
@@ -49,6 +51,9 @@ export default function AdminDashboard() {
   const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0);
   const [crmActiveTab, setCrmActiveTab] = useState('board');
   const [activeTab, setActiveTab] = useState('users');
+
+  // Time tracking for admin dashboard - always active when on this page
+  useAdminTimeTracking(true);
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
@@ -1282,6 +1287,8 @@ export default function AdminDashboard() {
               />
             </div>
           )}
+
+          {activeTab === 'planner' && <AdminPlanner />}
         </div>
       </main>
     </div>

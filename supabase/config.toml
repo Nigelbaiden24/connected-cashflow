@@ -119,3 +119,6 @@ verify_jwt = false
 
 [functions.admin-user-management]
 verify_jwt = false
+
+[functions.planner-ai-assistant]
+verify_jwt = true
