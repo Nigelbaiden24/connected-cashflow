@@ -129,6 +129,95 @@ export type Database = {
           },
         ]
       }
+      admin_target_updates: {
+        Row: {
+          created_at: string
+          id: string
+          new_value: number | null
+          previous_value: number | null
+          target_id: string
+          update_text: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_value?: number | null
+          previous_value?: number | null
+          target_id: string
+          update_text: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_value?: number | null
+          previous_value?: number | null
+          target_id?: string
+          update_text?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_target_updates_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "admin_targets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_targets: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_value: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          start_date: string | null
+          status: string
+          target_type: string
+          target_value: number | null
+          title: string
+          unit: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string
+          target_type?: string
+          target_value?: number | null
+          title: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          start_date?: string | null
+          status?: string
+          target_type?: string
+          target_value?: number | null
+          title?: string
+          unit?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_time_daily: {
         Row: {
           created_at: string

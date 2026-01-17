@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, subWeeks, startOfDay, endOfDay, eachDayOfInterval, subDays } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, ListTodo, BarChart3 } from "lucide-react";
+import { LayoutDashboard, ListTodo, BarChart3, Target } from "lucide-react";
 
 import { PlannerKPICards } from "./planner/PlannerKPICards";
 import { PlannerItemsTable, type PlannerItem } from "./planner/PlannerItemsTable";
@@ -11,6 +11,7 @@ import { PlannerItemEditor } from "./planner/PlannerItemEditor";
 import { PlannerAIAssistant } from "./planner/PlannerAIAssistant";
 import { PlannerPerformanceCharts } from "./planner/PlannerPerformanceCharts";
 import { PlannerTimeWidget } from "./planner/PlannerTimeWidget";
+import { PlannerTargetsTab } from "./planner/PlannerTargetsTab";
 
 export function AdminPlanner() {
   const [items, setItems] = useState<PlannerItem[]>([]);
@@ -23,6 +24,7 @@ export function AdminPlanner() {
     totalActiveTasks: 0,
     openApplications: 0,
     completedThisWeek: 0,
+    completedToday: 0,
     timeSpentToday: { hours: 0, minutes: 0 },
     productivityScore: 0,
   });
@@ -214,10 +216,20 @@ export function AdminPlanner() {
       i => i.item_type === 'job_application' && !['completed', 'rejected', 'offer'].includes(i.status)
     ).length;
 
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+    
+    // Count items completed this week (based on updated_at for when status changed to completed)
     const completedThisWeek = plannerItems.filter(i => 
       i.status === 'completed' && 
       new Date(i.created_at) >= weekStart
+    ).length;
+
+    // Count items completed today
+    const completedToday = plannerItems.filter(i => 
+      i.status === 'completed' && 
+      new Date(i.created_at) >= todayStart
     ).length;
 
     // Calculate productivity score (simple formula)
@@ -232,6 +244,7 @@ export function AdminPlanner() {
       totalActiveTasks: activeTasks,
       openApplications: openApps,
       completedThisWeek,
+      completedToday,
       productivityScore,
     }));
   };
@@ -316,6 +329,10 @@ export function AdminPlanner() {
             <ListTodo className="h-4 w-4" />
             Tasks & Applications
           </TabsTrigger>
+          <TabsTrigger value="targets" className="gap-2">
+            <Target className="h-4 w-4" />
+            Targets
+          </TabsTrigger>
           <TabsTrigger value="performance" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Performance
@@ -363,6 +380,11 @@ export function AdminPlanner() {
           />
         </TabsContent>
 
+        {/* Targets Tab */}
+        <TabsContent value="targets">
+          <PlannerTargetsTab />
+        </TabsContent>
+
         {/* Performance Tab */}
         <TabsContent value="performance">
           <PlannerPerformanceCharts
@@ -370,7 +392,7 @@ export function AdminPlanner() {
             taskCompletionData={taskCompletionData}
             applicationFunnel={applicationFunnel}
             dailyTarget={5}
-            dailyActual={kpiData.completedThisWeek}
+            dailyActual={kpiData.completedToday}
             weeklyTaskTarget={20}
             weeklyTaskActual={kpiData.completedThisWeek}
             timeOnPlatformTarget={40}
