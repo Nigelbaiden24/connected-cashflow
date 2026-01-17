@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, AlertTriangle, Target, Clock, TrendingUp } from "lucide-react";
+import { Bot, Send, Loader2, AlertTriangle, Target, Clock, TrendingUp, Sparkles, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -78,38 +78,84 @@ export function PlannerAIAssistant({ items, timeToday, timeThisWeek }: PlannerAI
       case 'priority': return TrendingUp;
       case 'risk': return AlertTriangle;
       case 'time': return Clock;
-      default: return Bot;
+      default: return Lightbulb;
     }
   };
 
-  const getIconColor = (type: string) => {
+  const getIconConfig = (type: string) => {
     switch (type) {
-      case 'action': return 'text-blue-500';
-      case 'priority': return 'text-purple-500';
-      case 'risk': return 'text-amber-500';
-      case 'time': return 'text-emerald-500';
-      default: return 'text-muted-foreground';
+      case 'action': return { 
+        color: 'text-blue-600 dark:text-blue-400', 
+        bg: 'bg-blue-100 dark:bg-blue-900/30',
+        border: 'border-blue-200 dark:border-blue-800/30'
+      };
+      case 'priority': return { 
+        color: 'text-purple-600 dark:text-purple-400', 
+        bg: 'bg-purple-100 dark:bg-purple-900/30',
+        border: 'border-purple-200 dark:border-purple-800/30'
+      };
+      case 'risk': return { 
+        color: 'text-amber-600 dark:text-amber-400', 
+        bg: 'bg-amber-100 dark:bg-amber-900/30',
+        border: 'border-amber-200 dark:border-amber-800/30'
+      };
+      case 'time': return { 
+        color: 'text-emerald-600 dark:text-emerald-400', 
+        bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+        border: 'border-emerald-200 dark:border-emerald-800/30'
+      };
+      default: return { 
+        color: 'text-muted-foreground', 
+        bg: 'bg-muted',
+        border: 'border-border'
+      };
     }
   };
+
+  const quickPrompts = [
+    "What should I prioritize today?",
+    "Are there any at-risk deadlines?",
+    "How can I improve my productivity?",
+  ];
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <div className="p-1.5 rounded-md bg-gradient-to-br from-violet-500 to-purple-600">
-            <Bot className="h-4 w-4 text-white" />
+    <Card className="h-full flex flex-col border-border/50 shadow-sm overflow-hidden">
+      <CardHeader className="pb-3 border-b bg-gradient-to-r from-violet-50/50 via-purple-50/30 to-background dark:from-violet-950/20 dark:via-purple-950/10 dark:to-background">
+        <CardTitle className="flex items-center gap-3 text-base">
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/20">
+            <Sparkles className="h-4 w-4 text-white" />
           </div>
-          Planner AI Assistant
+          <div>
+            <span className="font-semibold">AI Planning Assistant</span>
+            <p className="text-xs font-normal text-muted-foreground mt-0.5">
+              Get intelligent recommendations
+            </p>
+          </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-4">
+      <CardContent className="flex-1 flex flex-col gap-4 p-4">
+        {/* Quick Prompts */}
+        <div className="flex flex-wrap gap-2">
+          {quickPrompts.map((qp) => (
+            <Button
+              key={qp}
+              variant="outline"
+              size="sm"
+              className="text-xs h-7 bg-muted/30 hover:bg-muted/50"
+              onClick={() => setPrompt(qp)}
+            >
+              {qp}
+            </Button>
+          ))}
+        </div>
+
         {/* Input */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <Textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Ask for planning suggestions, priority advice, or risk analysis..."
-            className="min-h-[80px] resize-none"
+            className="min-h-[80px] resize-none bg-muted/30 border-border/50"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 handleSubmit();
@@ -119,7 +165,7 @@ export function PlannerAIAssistant({ items, timeToday, timeThisWeek }: PlannerAI
           <Button
             onClick={handleSubmit}
             disabled={loading || !prompt.trim()}
-            className="w-full gap-2"
+            className="w-full gap-2 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-lg shadow-violet-500/20"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -131,31 +177,38 @@ export function PlannerAIAssistant({ items, timeToday, timeThisWeek }: PlannerAI
         </div>
 
         {/* Recommendations */}
-        <ScrollArea className="flex-1 min-h-[200px]">
+        <ScrollArea className="flex-1 min-h-[180px]">
           {recommendations.length > 0 ? (
             <div className="space-y-3">
               {recommendations.map((rec, index) => {
                 const Icon = getIcon(rec.type);
+                const config = getIconConfig(rec.type);
                 return (
                   <div
                     key={index}
                     className={cn(
-                      "p-3 rounded-lg border bg-muted/30",
-                      "flex items-start gap-3"
+                      "p-4 rounded-xl border",
+                      "flex items-start gap-3 transition-all",
+                      config.bg,
+                      config.border
                     )}
                   >
-                    <Icon className={cn("h-5 w-5 mt-0.5 shrink-0", getIconColor(rec.type))} />
+                    <div className={cn("p-1.5 rounded-lg", config.bg)}>
+                      <Icon className={cn("h-4 w-4 shrink-0", config.color)} />
+                    </div>
                     <p className="text-sm leading-relaxed">{rec.content}</p>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground text-sm">
-              <Bot className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>Ask a question to get AI-powered planning insights</p>
-              <p className="text-xs mt-1 opacity-70">
-                Tip: Try "What should I prioritize today?"
+            <div className="text-center py-8">
+              <div className="inline-flex p-4 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 mb-3">
+                <Bot className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+              </div>
+              <p className="text-sm font-medium text-foreground">Ask a question to get started</p>
+              <p className="text-xs mt-1 text-muted-foreground max-w-[200px] mx-auto">
+                Get AI-powered insights to optimize your workflow and productivity
               </p>
             </div>
           )}

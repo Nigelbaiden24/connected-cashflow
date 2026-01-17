@@ -2333,6 +2333,48 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_boards: {
+        Row: {
+          column_configs: Json | null
+          columns: Json
+          created_at: string
+          display_order: number | null
+          id: string
+          is_collapsed: boolean | null
+          name: string
+          rows: Json
+          updated_at: string
+          user_id: string
+          view_mode: string | null
+        }
+        Insert: {
+          column_configs?: Json | null
+          columns?: Json
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_collapsed?: boolean | null
+          name: string
+          rows?: Json
+          updated_at?: string
+          user_id: string
+          view_mode?: string | null
+        }
+        Update: {
+          column_configs?: Json | null
+          columns?: Json
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_collapsed?: boolean | null
+          name?: string
+          rows?: Json
+          updated_at?: string
+          user_id?: string
+          view_mode?: string | null
+        }
+        Relationships: []
+      }
       crm_contact_data: {
         Row: {
           column_id: string

@@ -75,9 +75,47 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
     priority: "medium",
   });
 
+  // Fetch custom boards from database
+  const fetchBoards = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("crm_boards")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      
+      const boardsFromDb: CRMTable[] = (data || []).map(boardData => ({
+        id: boardData.id,
+        name: boardData.name,
+        columns: Array.isArray(boardData.columns) ? boardData.columns as string[] : ["Item", "Status"],
+        columnConfigs: (boardData.column_configs as unknown as Record<string, ColumnConfig>) || {},
+        rows: Array.isArray(boardData.rows) ? boardData.rows as Record<string, string>[] : [],
+        viewMode: (boardData.view_mode || "table") as "table" | "cards",
+        compactView: false,
+      }));
+      
+      setTables(boardsFromDb);
+      
+      // Set initial open state for boards
+      const openState: Record<string, boolean> = {};
+      boardsFromDb.forEach(b => {
+        openState[b.id] = true;
+      });
+      setCustomTableOpenState(openState);
+    } catch (error) {
+      console.error("Error fetching boards:", error);
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
     fetchCustomColumns();
+    fetchBoards();
   }, []);
 
   useEffect(() => {
@@ -458,132 +496,249 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
     }
   };
 
-  const addTable = () => {
+  const addTable = async () => {
     if (!newTableName.trim()) {
       toast.error("Please enter a table name");
       return;
     }
 
-    const newTable: CRMTable = {
-      id: Date.now().toString(),
-      name: newTableName,
-      columns: ["Item", "Status"],
-      rows: [],
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to create boards");
+        return;
+      }
 
-    setTables([...tables, newTable]);
-    setNewTableName("");
-    toast.success("Table created successfully");
+      const { data, error } = await supabase
+        .from("crm_boards")
+        .insert({
+          user_id: user.id,
+          name: newTableName,
+          columns: ["Item", "Status"],
+          rows: [],
+          display_order: tables.length,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newTable: CRMTable = {
+        id: data.id,
+        name: data.name,
+        columns: data.columns as string[],
+        rows: data.rows as Record<string, string>[],
+      };
+
+      setTables([...tables, newTable]);
+      setNewTableName("");
+      toast.success("Board created successfully");
+    } catch (error) {
+      console.error("Error creating board:", error);
+      toast.error("Failed to create board");
+    }
   };
 
-  const deleteTable = (tableId: string) => {
-    setTables(tables.filter((t) => t.id !== tableId));
-    toast.success("Table deleted");
+  const deleteTable = async (tableId: string) => {
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .delete()
+        .eq("id", tableId);
+
+      if (error) throw error;
+      
+      setTables(tables.filter((t) => t.id !== tableId));
+      toast.success("Board deleted");
+    } catch (error) {
+      console.error("Error deleting board:", error);
+      toast.error("Failed to delete board");
+    }
   };
 
-  const renameTable = (tableId: string) => {
+  const renameTable = async (tableId: string) => {
     if (!editTableName.trim()) return;
 
-    setTables(
-      tables.map((t) =>
-        t.id === tableId ? { ...t, name: editTableName } : t
-      )
-    );
-    setEditingTable(null);
-    setEditTableName("");
-    toast.success("Table renamed");
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .update({ name: editTableName })
+        .eq("id", tableId);
+
+      if (error) throw error;
+
+      setTables(
+        tables.map((t) =>
+          t.id === tableId ? { ...t, name: editTableName } : t
+        )
+      );
+      setEditingTable(null);
+      setEditTableName("");
+      toast.success("Board renamed");
+    } catch (error) {
+      console.error("Error renaming board:", error);
+      toast.error("Failed to rename board");
+    }
   };
 
-  const addColumn = (tableId: string, columnName: string, config: ColumnConfig) => {
+  const addColumn = async (tableId: string, columnName: string, config: ColumnConfig) => {
     if (!columnName.trim()) {
       toast.error("Please enter a column name");
       return;
     }
 
-    setTables(
-      tables.map((t) =>
-        t.id === tableId
-          ? {
-              ...t,
-              columns: [...t.columns, columnName],
-              columnConfigs: {
-                ...t.columnConfigs,
-                [columnName]: config
-              },
-              rows: t.rows.map((row) => ({ 
-                ...row, 
-                [columnName]: config.type === "checkbox" ? "false" : "" 
-              })),
-            }
-          : t
-      )
-    );
-    toast.success("Column added with type: " + config.type);
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+
+    const updatedColumns = [...table.columns, columnName];
+    const updatedColumnConfigs = { ...table.columnConfigs, [columnName]: config };
+    const updatedRows = table.rows.map((row) => ({ 
+      ...row, 
+      [columnName]: config.type === "checkbox" ? "false" : "" 
+    }));
+
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .update({ 
+          columns: updatedColumns, 
+          column_configs: JSON.parse(JSON.stringify(updatedColumnConfigs)),
+          rows: updatedRows,
+        })
+        .eq("id", tableId);
+
+      if (error) throw error;
+
+      setTables(
+        tables.map((t) =>
+          t.id === tableId
+            ? { ...t, columns: updatedColumns, columnConfigs: updatedColumnConfigs, rows: updatedRows }
+            : t
+        )
+      );
+      toast.success("Column added with type: " + config.type);
+    } catch (error) {
+      console.error("Error adding column:", error);
+      toast.error("Failed to add column");
+    }
   };
 
-  const deleteColumn = (tableId: string, columnName: string) => {
-    setTables(
-      tables.map((t) =>
-        t.id === tableId
-          ? {
-              ...t,
-              columns: t.columns.filter((col) => col !== columnName),
-              rows: t.rows.map((row) => {
-                const newRow = { ...row };
-                delete newRow[columnName];
-                return newRow;
-              }),
-            }
-          : t
-      )
-    );
-    toast.success("Column deleted");
+  const deleteColumn = async (tableId: string, columnName: string) => {
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+
+    const updatedColumns = table.columns.filter((col) => col !== columnName);
+    const updatedRows = table.rows.map((row) => {
+      const newRow = { ...row };
+      delete newRow[columnName];
+      return newRow;
+    });
+
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .update({ columns: updatedColumns, rows: updatedRows })
+        .eq("id", tableId);
+
+      if (error) throw error;
+
+      setTables(
+        tables.map((t) =>
+          t.id === tableId
+            ? { ...t, columns: updatedColumns, rows: updatedRows }
+            : t
+        )
+      );
+      toast.success("Column deleted");
+    } catch (error) {
+      console.error("Error deleting column:", error);
+      toast.error("Failed to delete column");
+    }
   };
 
-  const addRow = (tableId: string) => {
-    setTables(
-      tables.map((t) =>
-        t.id === tableId
-          ? {
-              ...t,
-              rows: [
-                ...t.rows,
-                {
-                  id: Date.now().toString(),
-                  ...t.columns.reduce((acc, col) => ({ ...acc, [col]: "" }), {}),
-                },
-              ],
-            }
-          : t
-      )
-    );
-    toast.success("Row added");
+  const addRow = async (tableId: string) => {
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+
+    const newRow = {
+      id: Date.now().toString(),
+      ...table.columns.reduce((acc, col) => ({ ...acc, [col]: "" }), {}),
+    };
+    const updatedRows = [...table.rows, newRow];
+
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .update({ rows: updatedRows })
+        .eq("id", tableId);
+
+      if (error) throw error;
+
+      setTables(
+        tables.map((t) =>
+          t.id === tableId ? { ...t, rows: updatedRows } : t
+        )
+      );
+      toast.success("Row added");
+    } catch (error) {
+      console.error("Error adding row:", error);
+      toast.error("Failed to add row");
+    }
   };
 
-  const deleteRow = (tableId: string, rowId: string) => {
-    setTables(
-      tables.map((t) =>
-        t.id === tableId
-          ? { ...t, rows: t.rows.filter((row) => row.id !== rowId) }
-          : t
-      )
-    );
-    toast.success("Row deleted");
+  const deleteRow = async (tableId: string, rowId: string) => {
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+
+    const updatedRows = table.rows.filter((row) => row.id !== rowId);
+
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .update({ rows: updatedRows })
+        .eq("id", tableId);
+
+      if (error) throw error;
+
+      setTables(
+        tables.map((t) =>
+          t.id === tableId ? { ...t, rows: updatedRows } : t
+        )
+      );
+      toast.success("Row deleted");
+    } catch (error) {
+      console.error("Error deleting row:", error);
+      toast.error("Failed to delete row");
+    }
   };
 
-  const updateCell = (tableId: string, rowId: string, column: string, value: string) => {
+  // Debounce cell updates to avoid too many DB calls
+  const updateCell = async (tableId: string, rowId: string, column: string, value: string) => {
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
+
+    const updatedRows = table.rows.map((row) =>
+      row.id === rowId ? { ...row, [column]: value } : row
+    );
+
+    // Update local state immediately for responsiveness
     setTables(
       tables.map((t) =>
-        t.id === tableId
-          ? {
-              ...t,
-              rows: t.rows.map((row) =>
-                row.id === rowId ? { ...row, [column]: value } : row
-              ),
-            }
-          : t
+        t.id === tableId ? { ...t, rows: updatedRows } : t
       )
     );
+
+    // Debounced database update
+    try {
+      const { error } = await supabase
+        .from("crm_boards")
+        .update({ rows: updatedRows })
+        .eq("id", tableId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error updating cell:", error);
+    }
   };
 
   const toggleTableCompactView = (tableId: string) => {
