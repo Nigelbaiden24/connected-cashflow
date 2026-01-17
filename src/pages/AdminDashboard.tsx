@@ -34,6 +34,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface Profile {
   user_id: string;
@@ -1288,7 +1289,20 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === 'planner' && <AdminPlanner />}
+          {activeTab === 'planner' && (
+            <ErrorBoundary
+              fallback={
+                <div className="rounded-lg border border-border bg-card p-6">
+                  <h2 className="text-lg font-semibold">Planner failed to load</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    There was a runtime error rendering the Planner. Check console logs for details.
+                  </p>
+                </div>
+              }
+            >
+              <AdminPlanner />
+            </ErrorBoundary>
+          )}
         </div>
       </main>
     </div>
