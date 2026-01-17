@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain, ChevronLeft, ChevronRight, LayoutGrid, Table2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain, ChevronLeft, ChevronRight, LayoutGrid, Table2, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
@@ -62,6 +63,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [pageSize, setPageSize] = useState(25);
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [goToPageInput, setGoToPageInput] = useState("");
+  const [mainBoardOpen, setMainBoardOpen] = useState(true);
+  const [customTableOpenState, setCustomTableOpenState] = useState<Record<string, boolean>>({});
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -886,14 +889,35 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         existingColumns={customColumns}
       />
 
-      {/* Contacts View - Table or Cards */}
-      {viewMode === "table" ? (
+      {/* Contacts View - Collapsible Table or Cards */}
+      <Collapsible open={mainBoardOpen} onOpenChange={setMainBoardOpen}>
         <Card className="border-border/50 shadow-sm overflow-hidden">
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-              <thead>
-                <tr className={compactView ? "bg-gradient-to-r from-muted/40 to-muted/20 border-b h-9" : "bg-gradient-to-r from-muted/40 to-muted/20 border-b"}>
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  {mainBoardOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+                <h3 className="font-semibold text-lg">Contacts</h3>
+                <Badge variant="secondary" className="text-xs">{sortedContacts.length}</Badge>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-muted-foreground"
+                onClick={(e) => { e.stopPropagation(); setMainBoardOpen(!mainBoardOpen); }}
+              >
+                {mainBoardOpen ? "Minimize" : "Expand"}
+              </Button>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            {viewMode === "table" ? (
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className={compactView ? "bg-gradient-to-r from-muted/40 to-muted/20 border-b h-9" : "bg-gradient-to-r from-muted/40 to-muted/20 border-b"}>
                   <th className="p-0 w-12">
                     <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
@@ -1370,11 +1394,10 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </PaginationContent>
             </Pagination>
           </div>
-        </CardContent>
-      </Card>
-      ) : (
-        /* Cards View */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              </CardContent>
+            ) : (
+              /* Cards View */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {paginatedContacts.map((contact) => (
             <Card 
               key={contact.id} 
@@ -1484,164 +1507,189 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </CardContent>
             </Card>
           ))}
-        </div>
-      )}
-
-      {/* Pagination for both views */}
-      {viewMode === "cards" && (
-        <Card className="border-border/50 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="pageSize-cards" className="text-sm text-muted-foreground">
-                    Show:
-                  </Label>
-                  <Select
-                    value={pageSize.toString()}
-                    onValueChange={(value) => {
-                      setPageSize(Number(value));
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <SelectTrigger id="pageSize-cards" className="w-[80px] h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="12">12</SelectItem>
-                      <SelectItem value="24">24</SelectItem>
-                      <SelectItem value="48">48</SelectItem>
-                      <SelectItem value="96">96</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredContacts.length)} of {filteredContacts.length}
-                </p>
               </div>
+            )}
 
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="gap-1"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Previous
-                    </Button>
-                  </PaginationItem>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    if (
-                      page === 1 ||
-                      page === totalPages ||
-                      (page >= currentPage - 1 && page <= currentPage + 1)
-                    ) {
-                      return (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className="cursor-pointer"
+            {/* Pagination for both views */}
+            {viewMode === "cards" && (
+              <Card className="border-border/50 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="pageSize-cards" className="text-sm text-muted-foreground">
+                          Show:
+                        </Label>
+                        <Select
+                          value={pageSize.toString()}
+                          onValueChange={(value) => {
+                            setPageSize(Number(value));
+                            setCurrentPage(1);
+                          }}
+                        >
+                          <SelectTrigger id="pageSize-cards" className="w-[80px] h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="12">12</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                            <SelectItem value="96">96</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Showing {startIndex + 1}-{Math.min(endIndex, filteredContacts.length)} of {filteredContacts.length}
+                      </p>
+                    </div>
+
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                            disabled={currentPage === 1}
+                            className="gap-1"
                           >
-                            {page}
-                          </PaginationLink>
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                          </Button>
                         </PaginationItem>
-                      );
-                    } else if (page === currentPage - 2 || page === currentPage + 2) {
-                      return (
-                        <PaginationItem key={page}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      );
-                    }
-                    return null;
-                  })}
+                        
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => setCurrentPage(page)}
+                                  isActive={currentPage === page}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          } else if (page === currentPage - 2 || page === currentPage + 2) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            );
+                          }
+                          return null;
+                        })}
 
-                  <PaginationItem>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages || totalPages === 0}
-                      className="gap-1"
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          </CardContent>
+                        <PaginationItem>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="gap-1"
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </CollapsibleContent>
         </Card>
-      )}
+      </Collapsible>
 
       {/* Enhanced Custom Tables */}
       <div className="grid gap-6">
         {tables.map((table) => {
           const filteredRows = getFilteredTableRows(table);
           const selectedRows = table.selectedRows || [];
+          const isTableOpen = customTableOpenState[table.id] !== false; // Default to open
           
           return (
-          <Card key={table.id} className="border-border/50 shadow-sm">
-            <CardHeader className="space-y-4 bg-gradient-to-r from-muted/20 to-transparent border-b">
-              {/* Table Title Row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
-                  {editingTable === table.id ? (
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={editTableName}
-                        onChange={(e) => setEditTableName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") renameTable(table.id);
-                          if (e.key === "Escape") setEditingTable(null);
-                        }}
-                        className="h-8 w-48"
-                        autoFocus
-                      />
-                      <Button size="sm" onClick={() => renameTable(table.id)}>
-                        Save
-                      </Button>
-                    </div>
-                  ) : (
-                    <CardTitle>{table.name}</CardTitle>
-                  )}
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-4 w-4" />
+          <Collapsible 
+            key={table.id} 
+            open={isTableOpen} 
+            onOpenChange={(open) => setCustomTableOpenState(prev => ({ ...prev, [table.id]: open }))}
+          >
+            <Card className="border-border/50 shadow-sm">
+              <CollapsibleTrigger asChild>
+                <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b">
+                  <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      {isTableOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setEditingTable(table.id);
-                        setEditTableName(table.name);
-                      }}
+                    <GripVertical className="h-5 w-5 text-muted-foreground cursor-move" />
+                    {editingTable === table.id ? (
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Input
+                          value={editTableName}
+                          onChange={(e) => setEditTableName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") renameTable(table.id);
+                            if (e.key === "Escape") setEditingTable(null);
+                          }}
+                          className="h-8 w-48"
+                          autoFocus
+                        />
+                        <Button size="sm" onClick={() => renameTable(table.id)}>
+                          Save
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <CardTitle className="text-lg">{table.name}</CardTitle>
+                        <Badge variant="secondary" className="text-xs">{filteredRows.length}</Badge>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-xs text-muted-foreground"
+                      onClick={() => setCustomTableOpenState(prev => ({ ...prev, [table.id]: !isTableOpen }))}
                     >
-                      <Edit2 className="h-4 w-4 mr-2" />
-                      Rename Table
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => deleteTable(table.id)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Table
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Enhanced Toolbar */}
+                      {isTableOpen ? "Minimize" : "Expand"}
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setEditingTable(table.id);
+                            setEditTableName(table.name);
+                          }}
+                        >
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Rename Table
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => deleteTable(table.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Table
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardHeader className="space-y-4 bg-gradient-to-r from-muted/20 to-transparent border-b">
               <div className="flex items-center gap-2 flex-wrap">
                 {/* View Toggle */}
                 <div className="flex items-center border border-border/50 rounded-lg p-1 bg-background">
@@ -2045,7 +2093,9 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 </Button>
               )}
             </CardContent>
-          </Card>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
           );
         })}
       </div>
