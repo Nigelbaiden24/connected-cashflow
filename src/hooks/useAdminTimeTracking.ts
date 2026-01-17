@@ -5,7 +5,7 @@ const HEARTBEAT_INTERVAL = 30000; // 30 seconds
 
 export function useAdminTimeTracking(isAdminArea: boolean) {
   const sessionIdRef = useRef<string | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<Date | null>(null);
 
   const startSession = useCallback(async () => {
