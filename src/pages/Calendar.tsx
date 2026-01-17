@@ -191,7 +191,7 @@ const Calendar = () => {
     const { data, error } = await supabase
       .from("client_meetings")
       .select("*")
-      .eq("client_id", user.id)
+      .eq("user_id", user.id)
       .order("meeting_date", { ascending: true });
 
     if (error) {
@@ -361,7 +361,7 @@ const Calendar = () => {
     meetingDateTime.setHours(parseInt(hours), parseInt(minutes));
 
     const { error } = await supabase.from("client_meetings").insert({
-      client_id: user.id,
+      user_id: user.id,
       meeting_date: meetingDateTime.toISOString(),
       duration_minutes: 60,
       meeting_type: formData.type,

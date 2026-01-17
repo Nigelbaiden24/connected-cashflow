@@ -1648,6 +1648,7 @@ export type Database = {
           notes: string | null
           status: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           action_items?: string[] | null
@@ -1663,6 +1664,7 @@ export type Database = {
           notes?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           action_items?: string[] | null
@@ -1678,6 +1680,7 @@ export type Database = {
           notes?: string | null
           status?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
