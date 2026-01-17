@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarColorLegend, getEventCategory, getEventDotColor, EVENT_CATEGORIES } from "@/components/calendar/CalendarColorLegend";
+import { cn } from "@/lib/utils";
 
 const Calendar = () => {
   const navigate = useNavigate();
@@ -511,21 +513,7 @@ const Calendar = () => {
     ...daysInMonth
   ];
 
-  const getEventColor = (type: string, provider?: string) => {
-    if (provider === 'google') return "bg-blue-100 text-blue-800 border-blue-200";
-    if (provider === 'outlook') return "bg-orange-100 text-orange-800 border-orange-200";
-    
-    switch (type) {
-      case "meeting":
-        return "bg-primary text-primary-foreground";
-      case "presentation":
-        return "bg-warning text-warning-foreground";
-      case "deadline":
-        return "bg-destructive text-destructive-foreground";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
+  // Using imported getEventCategory from CalendarColorLegend
 
   const allEvents = [...events, ...integratedEvents];
 
@@ -611,12 +599,20 @@ const Calendar = () => {
                 <Label htmlFor="type">Event Type</Label>
                 <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
                   <SelectTrigger className="bg-background/50">
-                    <SelectValue />
+                    <div className="flex items-center gap-2">
+                      <span className={cn("h-2 w-2 rounded-full", getEventDotColor(formData.type))} />
+                      <SelectValue />
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="meeting">Meeting</SelectItem>
-                    <SelectItem value="presentation">Presentation</SelectItem>
-                    <SelectItem value="deadline">Deadline</SelectItem>
+                    {EVENT_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("h-2 w-2 rounded-full", cat.dotColor)} />
+                          {cat.label}
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -966,8 +962,8 @@ const Calendar = () => {
                     <span className="relative z-10">{format(day, 'd')}</span>
                     {hasEvent && !isToday && (
                       <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
-                        {dayEvents.slice(0, 3).map((_, idx) => (
-                          <div key={idx} className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        {dayEvents.slice(0, 3).map((evt, idx) => (
+                          <div key={idx} className={cn("w-1.5 h-1.5 rounded-full", getEventDotColor(evt.type, evt.provider))} />
                         ))}
                       </div>
                     )}
@@ -979,6 +975,10 @@ const Calendar = () => {
                   </button>
                 );
               })}
+            </div>
+            {/* Color Legend */}
+            <div className="mt-6 pt-4 border-t border-border/50">
+              <CalendarColorLegend showProviders={googleConnected || outlookConnected} compact />
             </div>
           </CardContent>
         </Card>
@@ -1033,8 +1033,8 @@ const Calendar = () => {
                         )}
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <Badge className={`${getEventColor(event.type, event.provider)} text-xs`}>
-                          {event.provider === 'google' ? 'Google' : event.provider === 'outlook' ? 'Outlook' : event.type}
+                        <Badge className={cn(getEventCategory(event.type, event.provider).color, "text-xs")}>
+                          {event.provider === 'google' ? 'Google' : event.provider === 'outlook' ? 'Outlook' : getEventCategory(event.type).label}
                         </Badge>
                         {isLocal && (
                           <Button variant="ghost" size="icon" onClick={() => handleEditEvent(event)} className="h-8 w-8 hover:bg-primary/10">
@@ -1091,12 +1091,20 @@ const Calendar = () => {
               <Label htmlFor="edit-type">Event Type</Label>
               <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <div className="flex items-center gap-2">
+                    <span className={cn("h-2 w-2 rounded-full", getEventDotColor(formData.type))} />
+                    <SelectValue />
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="meeting">Meeting</SelectItem>
-                  <SelectItem value="presentation">Presentation</SelectItem>
-                  <SelectItem value="deadline">Deadline</SelectItem>
+                  {EVENT_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("h-2 w-2 rounded-full", cat.dotColor)} />
+                        {cat.label}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
