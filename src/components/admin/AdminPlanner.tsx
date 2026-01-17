@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, subWeeks, startOfDay, endOfDay, eachDayOfInterval, subDays } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, ListTodo, BarChart3, Target } from "lucide-react";
+import { LayoutDashboard, ListTodo, BarChart3, Target, Clock, Layers, Bell } from "lucide-react";
 
 import { PlannerKPICards } from "./planner/PlannerKPICards";
 import { PlannerItemsTable, type PlannerItem } from "./planner/PlannerItemsTable";
@@ -12,6 +12,9 @@ import { PlannerAIAssistant } from "./planner/PlannerAIAssistant";
 import { PlannerPerformanceCharts } from "./planner/PlannerPerformanceCharts";
 import { PlannerTimeWidget } from "./planner/PlannerTimeWidget";
 import { PlannerTargetsTab } from "./planner/PlannerTargetsTab";
+import { PlannerTimeBlockedView } from "./planner/PlannerTimeBlockedView";
+import { PlannerDailyKPIOverlay } from "./planner/PlannerDailyKPIOverlay";
+import { PlannerNotificationsPanel } from "./planner/PlannerNotificationsPanel";
 
 export function AdminPlanner() {
   const [items, setItems] = useState<PlannerItem[]>([]);
@@ -320,10 +323,18 @@ export function AdminPlanner() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="overview" className="gap-2">
             <LayoutDashboard className="h-4 w-4" />
             Overview
+          </TabsTrigger>
+          <TabsTrigger value="time-blocks" className="gap-2">
+            <Clock className="h-4 w-4" />
+            Time Blocks
+          </TabsTrigger>
+          <TabsTrigger value="daily-kpi" className="gap-2">
+            <Layers className="h-4 w-4" />
+            Daily KPIs
           </TabsTrigger>
           <TabsTrigger value="items" className="gap-2">
             <ListTodo className="h-4 w-4" />
@@ -351,6 +362,23 @@ export function AdminPlanner() {
               />
             </div>
 
+            {/* Notifications Panel */}
+            <div>
+              <PlannerNotificationsPanel items={items} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Quick Tasks Table */}
+            <div className="lg:col-span-2">
+              <PlannerItemsTable
+                items={items.slice(0, 5)}
+                onItemClick={handleItemClick}
+                onAddItem={handleAddItem}
+                loading={loading}
+              />
+            </div>
+
             {/* Time Widget */}
             <div>
               <PlannerTimeWidget
@@ -360,13 +388,21 @@ export function AdminPlanner() {
               />
             </div>
           </div>
+        </TabsContent>
 
-          {/* Quick Tasks Table */}
-          <PlannerItemsTable
-            items={items.slice(0, 5)}
+        {/* Time Blocked Execution View Tab */}
+        <TabsContent value="time-blocks">
+          <PlannerTimeBlockedView 
+            items={items} 
             onItemClick={handleItemClick}
-            onAddItem={handleAddItem}
-            loading={loading}
+          />
+        </TabsContent>
+
+        {/* Daily KPI Overlay Tab */}
+        <TabsContent value="daily-kpi">
+          <PlannerDailyKPIOverlay 
+            items={items}
+            timeData={timeData}
           />
         </TabsContent>
 
