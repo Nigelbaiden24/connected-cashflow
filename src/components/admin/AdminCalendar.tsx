@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay, isSameMonth, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, getHours, getMinutes } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarColorLegend, getEventCategory, getEventDotColor, EVENT_CATEGORIES } from "@/components/calendar/CalendarColorLegend";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function AdminCalendar() {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -34,6 +35,7 @@ export function AdminCalendar() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showSyncPanel, setShowSyncPanel] = useState(false);
+  const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('week');
 
   const isEmbeddedPreview = (() => {
     try {
@@ -483,6 +485,36 @@ export function AdminCalendar() {
 
   const allEvents = [...events, ...integratedEvents];
 
+  // Week view helpers
+  const weekStart = startOfWeek(currentDate);
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  
+  // Time slots for day/week view (6 AM to 9 PM)
+  const timeSlots = Array.from({ length: 16 }, (_, i) => i + 6); // 6 AM to 9 PM
+
+  const getEventsForTimeSlot = (day: Date, hour: number) => {
+    return allEvents.filter(e => {
+      const eventDate = e.provider === 'local' ? new Date(`${e.date}T${e.time}`) : new Date(e.start);
+      return isSameDay(eventDate, day) && getHours(eventDate) === hour;
+    });
+  };
+
+  const getEventsForDay = (day: Date) => {
+    return allEvents.filter(e => {
+      const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+      return isSameDay(eventDate, day);
+    }).sort((a, b) => {
+      const timeA = a.provider === 'local' ? a.time : format(new Date(a.start), 'HH:mm');
+      const timeB = b.provider === 'local' ? b.time : format(new Date(b.start), 'HH:mm');
+      return timeA.localeCompare(timeB);
+    });
+  };
+
+  const handlePreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
+  const handleNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
+  const handlePreviousDay = () => setCurrentDate(addDays(currentDate, -1));
+  const handleNextDay = () => setCurrentDate(addDays(currentDate, 1));
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -584,13 +616,24 @@ export function AdminCalendar() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="time">Time *</Label>
-                    <Input
-                      id="time"
-                      type="time"
-                      value={formData.time}
-                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                      className="bg-background/50"
-                    />
+                    <Select value={formData.time} onValueChange={(value) => setFormData({ ...formData, time: value })}>
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {Array.from({ length: 48 }, (_, i) => {
+                          const hours = Math.floor(i / 2);
+                          const minutes = (i % 2) * 30;
+                          const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                          const displayTime = `${hours === 0 ? 12 : hours > 12 ? hours - 12 : hours}:${minutes.toString().padStart(2, '0')} ${hours < 12 ? 'AM' : 'PM'}`;
+                          return (
+                            <SelectItem key={timeStr} value={timeStr}>
+                              {displayTime}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
@@ -822,74 +865,251 @@ export function AdminCalendar() {
         {/* Calendar */}
         <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-border/50 shadow-xl">
           <CardHeader className="border-b border-border/50">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-2xl">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
                   <CalendarIcon className="h-6 w-6 text-primary" />
                 </div>
-                {format(currentDate, 'MMMM yyyy')}
-              </CardTitle>
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" onClick={handlePreviousMonth} className="hover:bg-primary/10 hover:border-primary/30">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" onClick={handleNextMonth} className="hover:bg-primary/10 hover:border-primary/30">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                <CardTitle className="text-2xl">
+                  {viewMode === 'month' && format(currentDate, 'MMMM yyyy')}
+                  {viewMode === 'week' && `Week of ${format(weekStart, 'MMM d, yyyy')}`}
+                  {viewMode === 'day' && format(currentDate, 'EEEE, MMMM d, yyyy')}
+                </CardTitle>
+              </div>
+              <div className="flex items-center gap-3">
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'month' | 'week' | 'day')}>
+                  <TabsList className="grid grid-cols-3 w-[200px]">
+                    <TabsTrigger value="day">Day</TabsTrigger>
+                    <TabsTrigger value="week">Week</TabsTrigger>
+                    <TabsTrigger value="month">Month</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={viewMode === 'month' ? handlePreviousMonth : viewMode === 'week' ? handlePreviousWeek : handlePreviousDay} 
+                    className="hover:bg-primary/10 hover:border-primary/30"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCurrentDate(new Date())}
+                    className="hover:bg-primary/10 hover:border-primary/30"
+                  >
+                    Today
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={viewMode === 'month' ? handleNextMonth : viewMode === 'week' ? handleNextWeek : handleNextDay} 
+                    className="hover:bg-primary/10 hover:border-primary/30"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="text-center text-sm font-bold text-primary py-3 bg-primary/5 rounded-lg">
-                  {day}
+          <CardContent className="pt-4">
+            {/* Month View */}
+            {viewMode === 'month' && (
+              <>
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                    <div key={day} className="text-center text-sm font-bold text-primary py-3 bg-primary/5 rounded-lg">
+                      {day}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-2">
-              {calendarDays.map((day, i) => {
-                if (!day) {
-                  return <div key={`empty-${i}`} className="aspect-square p-2" />;
-                }
-                
-                const dayEvents = allEvents.filter(e => {
-                  const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
-                  return isSameDay(eventDate, day);
-                });
-                const hasEvent = dayEvents.length > 0;
-                const isToday = isSameDay(day, new Date());
-                const isCurrentMonth = isSameMonth(day, currentDate);
-                
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleDateClick(day)}
-                    className={`aspect-square p-2 rounded-xl transition-all duration-200 text-sm relative group hover:scale-105 ${
-                      isToday 
-                        ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold shadow-lg shadow-primary/30' 
-                        : hasEvent 
-                          ? 'bg-primary/10 border-2 border-primary/30 hover:border-primary hover:bg-primary/20' 
-                          : 'hover:bg-muted/50 border border-transparent hover:border-border'
-                    } ${!isCurrentMonth ? 'text-muted-foreground opacity-40' : ''}`}
-                  >
-                    <span className="relative z-10">{format(day, 'd')}</span>
-                    {hasEvent && !isToday && (
-                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
-                        {dayEvents.slice(0, 3).map((evt, idx) => (
-                          <div key={idx} className={cn("w-1.5 h-1.5 rounded-full", getEventDotColor(evt.type, evt.provider))} />
-                        ))}
+                <div className="grid grid-cols-7 gap-2">
+                  {calendarDays.map((day, i) => {
+                    if (!day) {
+                      return <div key={`empty-${i}`} className="aspect-square p-2" />;
+                    }
+                    
+                    const dayEvents = allEvents.filter(e => {
+                      const eventDate = e.provider === 'local' ? new Date(e.date) : new Date(e.start);
+                      return isSameDay(eventDate, day);
+                    });
+                    const hasEvent = dayEvents.length > 0;
+                    const isToday = isSameDay(day, new Date());
+                    const isCurrentMonth = isSameMonth(day, currentDate);
+                    
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleDateClick(day)}
+                        className={`aspect-square p-2 rounded-xl transition-all duration-200 text-sm relative group hover:scale-105 ${
+                          isToday 
+                            ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground font-bold shadow-lg shadow-primary/30' 
+                            : hasEvent 
+                              ? 'bg-primary/10 border-2 border-primary/30 hover:border-primary hover:bg-primary/20' 
+                              : 'hover:bg-muted/50 border border-transparent hover:border-border'
+                        } ${!isCurrentMonth ? 'text-muted-foreground opacity-40' : ''}`}
+                      >
+                        <span className="relative z-10">{format(day, 'd')}</span>
+                        {hasEvent && !isToday && (
+                          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+                            {dayEvents.slice(0, 3).map((evt, idx) => (
+                              <div key={idx} className={cn("w-1.5 h-1.5 rounded-full", getEventDotColor(evt.type, evt.provider))} />
+                            ))}
+                          </div>
+                        )}
+                        {isToday && hasEvent && (
+                          <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
+                            {dayEvents.length}
+                          </Badge>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Week View - Outlook Style */}
+            {viewMode === 'week' && (
+              <div className="overflow-x-auto">
+                <div className="min-w-[800px]">
+                  {/* Week header */}
+                  <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-border/50">
+                    <div className="p-2 text-xs text-muted-foreground font-medium">Time</div>
+                    {weekDays.map((day, i) => {
+                      const isToday = isSameDay(day, new Date());
+                      return (
+                        <div 
+                          key={i} 
+                          className={cn(
+                            "p-2 text-center border-l border-border/30",
+                            isToday && "bg-primary/10"
+                          )}
+                        >
+                          <div className="text-xs text-muted-foreground">{format(day, 'EEE')}</div>
+                          <div className={cn(
+                            "text-lg font-semibold",
+                            isToday && "text-primary"
+                          )}>
+                            {format(day, 'd')}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Time grid */}
+                  <div className="max-h-[500px] overflow-y-auto">
+                    {timeSlots.map((hour) => (
+                      <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] min-h-[60px] border-b border-border/20">
+                        <div className="p-2 text-xs text-muted-foreground text-right pr-3 pt-1">
+                          {format(new Date().setHours(hour, 0), 'h a')}
+                        </div>
+                        {weekDays.map((day, dayIdx) => {
+                          const slotEvents = getEventsForTimeSlot(day, hour);
+                          const isToday = isSameDay(day, new Date());
+                          return (
+                            <div 
+                              key={dayIdx} 
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  date: format(day, 'yyyy-MM-dd'),
+                                  time: `${hour.toString().padStart(2, '0')}:00`
+                                });
+                                setDialogOpen(true);
+                              }}
+                              className={cn(
+                                "border-l border-border/30 p-1 min-h-[60px] cursor-pointer hover:bg-muted/30 transition-colors",
+                                isToday && "bg-primary/5"
+                              )}
+                            >
+                              {slotEvents.map((evt, idx) => (
+                                <div 
+                                  key={idx}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (evt.provider === 'local') handleEditEvent(evt);
+                                  }}
+                                  className={cn(
+                                    "text-xs p-1 rounded mb-1 truncate cursor-pointer hover:opacity-80",
+                                    getEventCategory(evt.type, evt.provider).color
+                                  )}
+                                >
+                                  <span className="font-medium">{evt.title}</span>
+                                  {evt.time && <span className="ml-1 opacity-70">{evt.time}</span>}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })}
                       </div>
-                    )}
-                    {isToday && hasEvent && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-destructive">
-                        {dayEvents.length}
-                      </Badge>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Day View - Outlook Style */}
+            {viewMode === 'day' && (
+              <div className="space-y-0">
+                <div className="max-h-[500px] overflow-y-auto">
+                  {timeSlots.map((hour) => {
+                    const slotEvents = getEventsForTimeSlot(currentDate, hour);
+                    const isCurrentHour = new Date().getHours() === hour && isSameDay(currentDate, new Date());
+                    return (
+                      <div 
+                        key={hour} 
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            date: format(currentDate, 'yyyy-MM-dd'),
+                            time: `${hour.toString().padStart(2, '0')}:00`
+                          });
+                          setDialogOpen(true);
+                        }}
+                        className={cn(
+                          "grid grid-cols-[80px_1fr] min-h-[60px] border-b border-border/20 cursor-pointer hover:bg-muted/30 transition-colors",
+                          isCurrentHour && "bg-primary/10"
+                        )}
+                      >
+                        <div className="p-2 text-sm text-muted-foreground text-right pr-3 pt-1 border-r border-border/30">
+                          {format(new Date().setHours(hour, 0), 'h:00 a')}
+                        </div>
+                        <div className="p-2 flex flex-wrap gap-2">
+                          {slotEvents.map((evt, idx) => (
+                            <div 
+                              key={idx}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (evt.provider === 'local') handleEditEvent(evt);
+                              }}
+                              className={cn(
+                                "flex-1 min-w-[200px] p-3 rounded-lg cursor-pointer hover:opacity-90 transition-opacity",
+                                getEventCategory(evt.type, evt.provider).color
+                              )}
+                            >
+                              <div className="font-semibold">{evt.title}</div>
+                              <div className="text-sm opacity-80">
+                                {evt.time || format(new Date(evt.start), 'h:mm a')}
+                                {evt.duration_minutes && ` • ${evt.duration_minutes} min`}
+                              </div>
+                              {evt.description && (
+                                <div className="text-xs mt-1 opacity-70 truncate">{evt.description}</div>
+                              )}
+                            </div>
+                          ))}
+                          {slotEvents.length === 0 && isCurrentHour && (
+                            <div className="text-sm text-muted-foreground italic">Current time</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Color Legend */}
             <div className="mt-6 pt-4 border-t border-border/50">
               <CalendarColorLegend showProviders={googleConnected || outlookConnected} compact />
