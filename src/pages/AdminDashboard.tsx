@@ -34,6 +34,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
+import { PDFGenerator } from "@/components/admin/PDFGenerator";
 import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -586,6 +587,8 @@ export default function AdminDashboard() {
           {activeTab === 'enquiries' && <PlatformEnquiries />}
           
           {activeTab === 'demo-requests' && <DemoRequests />}
+          
+          {activeTab === 'pdf-generator' && <PDFGenerator />}
           
           {activeTab === 'calendar' && <AdminCalendar />}
           
