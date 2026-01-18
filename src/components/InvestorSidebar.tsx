@@ -67,6 +67,7 @@ const navGroups: NavGroup[] = [
     label: "Overview",
     items: [
       { title: "Dashboard", url: "/investor/dashboard", icon: LayoutDashboard, gradient: "from-blue-500 to-blue-600" },
+      { title: "Featured Picks", url: "/investor/featured-picks", icon: Sparkles, gradient: "from-amber-500 to-yellow-600" },
     ]
   },
   {
