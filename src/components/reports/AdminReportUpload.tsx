@@ -235,6 +235,9 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
       const uploadedBy = authData?.user?.id ?? null;
 
       // Insert report metadata
+      // Set target_user_id for user-specific access (null means universal for that platform)
+      const targetUserId = selectedUserId && selectedUserId !== "all" ? selectedUserId : null;
+      
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
         .insert({
@@ -245,6 +248,7 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
           platform: finalPlatform,
           uploaded_by: uploadedBy,
           thumbnail_url: thumbnailUrl,
+          target_user_id: targetUserId,
           ...(reportCategory && { report_category: reportCategory })
         })
         .select()

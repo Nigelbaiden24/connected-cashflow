@@ -18,6 +18,7 @@ interface Report {
   published_date: string | null;
   created_at: string;
   report_category?: string | null;
+  target_user_id?: string | null;
 }
 
 const ResearchReports = () => {
@@ -40,8 +41,8 @@ const ResearchReports = () => {
         return;
       }
 
-      // Fetch reports the user has access to
-      const { data, error } = await supabase
+      // Fetch reports the user has access to via user_report_access
+      const { data: accessData, error: accessError } = await supabase
         .from('user_report_access')
         .select(`
           report_id,
@@ -55,15 +56,26 @@ const ResearchReports = () => {
             thumbnail_url,
             published_date,
             created_at,
-            report_category
+            report_category,
+            target_user_id
           )
         `)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (accessError) throw accessError;
       
-      // Filter for investor research reports and flatten the data
-      const researchReports = (data || [])
+      // Also fetch universal investor research reports (target_user_id is null)
+      const { data: universalData, error: universalError } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('platform', 'investor')
+        .is('target_user_id', null)
+        .or('report_category.is.null,report_category.eq.research');
+        
+      if (universalError) throw universalError;
+      
+      // Filter for investor research reports from access data
+      const accessReports = (accessData || [])
         .map(item => item.reports as any)
         .filter((report): report is Report => 
           report !== null && 
@@ -72,7 +84,15 @@ const ResearchReports = () => {
           (!report.report_category || report.report_category === 'research')
         );
       
-      setReports(researchReports);
+      // Combine and deduplicate reports
+      const allReports = [...accessReports];
+      (universalData || []).forEach(report => {
+        if (!allReports.some(r => r.id === report.id)) {
+          allReports.push(report as Report);
+        }
+      });
+      
+      setReports(allReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
       toast.error('Failed to load reports');
