@@ -2901,6 +2901,84 @@ export type Database = {
           },
         ]
       }
+      featured_analyst_picks: {
+        Row: {
+          analyst_rating: string | null
+          asset_id: string
+          asset_name: string
+          asset_symbol: string | null
+          asset_type: string
+          conviction_score: number | null
+          created_at: string
+          created_by: string | null
+          current_price: number | null
+          display_order: number | null
+          id: string
+          investment_thesis: string | null
+          is_active: boolean | null
+          key_catalysts: string[] | null
+          market_cap: string | null
+          price_target: number | null
+          risk_factors: string[] | null
+          sector: string | null
+          time_horizon: string | null
+          updated_at: string
+          upside_potential: number | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          analyst_rating?: string | null
+          asset_id: string
+          asset_name: string
+          asset_symbol?: string | null
+          asset_type: string
+          conviction_score?: number | null
+          created_at?: string
+          created_by?: string | null
+          current_price?: number | null
+          display_order?: number | null
+          id?: string
+          investment_thesis?: string | null
+          is_active?: boolean | null
+          key_catalysts?: string[] | null
+          market_cap?: string | null
+          price_target?: number | null
+          risk_factors?: string[] | null
+          sector?: string | null
+          time_horizon?: string | null
+          updated_at?: string
+          upside_potential?: number | null
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          analyst_rating?: string | null
+          asset_id?: string
+          asset_name?: string
+          asset_symbol?: string | null
+          asset_type?: string
+          conviction_score?: number | null
+          created_at?: string
+          created_by?: string | null
+          current_price?: number | null
+          display_order?: number | null
+          id?: string
+          investment_thesis?: string | null
+          is_active?: boolean | null
+          key_catalysts?: string[] | null
+          market_cap?: string | null
+          price_target?: number | null
+          risk_factors?: string[] | null
+          sector?: string | null
+          time_horizon?: string | null
+          updated_at?: string
+          upside_potential?: number | null
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       financial_plan_sections: {
         Row: {
           created_at: string
