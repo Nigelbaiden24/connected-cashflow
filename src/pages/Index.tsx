@@ -394,12 +394,22 @@ const Index = () => {
       </section>
 
       {/* White Space Separator */}
-      <div className="bg-white py-16 md:py-24 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold">
-          <span className="text-blue-600">Expert Financial</span>{" "}
-          <span className="text-green-600">research reports</span>
+      <div className="bg-white py-20 md:py-32 text-center">
+        <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold">
+          <span className="relative inline-block">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent animate-pulse bg-[length:200%_auto]" style={{ animation: 'shimmer 3s ease-in-out infinite' }}>
+              Expert Financial
+            </span>
+            <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent blur-sm opacity-50" />
+          </span>{" "}
+          <span className="relative inline-block">
+            <span className="bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent" style={{ animation: 'shimmer 3s ease-in-out infinite', animationDelay: '0.5s' }}>
+              research reports
+            </span>
+            <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent blur-sm opacity-50" />
+          </span>
         </h2>
-        <p className="mt-3 text-gray-800 text-base md:text-lg">
+        <p className="mt-6 text-gray-700 text-xl md:text-2xl font-medium tracking-wide">
           studied and written by expert human analysts
         </p>
       </div>
