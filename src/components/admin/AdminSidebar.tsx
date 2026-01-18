@@ -46,6 +46,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { id: "planner", label: "Planner", icon: ClipboardList, gradient: "from-indigo-500 to-purple-600" },
   { id: "featured-picks", label: "Featured Picks", icon: Star, gradient: "from-amber-500 to-orange-600" },
+  { id: "pdf-generator", label: "PDF Generator", icon: FileText, gradient: "from-rose-500 to-pink-600" },
   { id: "users", label: "Users", icon: Users, gradient: "from-blue-500 to-blue-600" },
   { id: "enquiries", label: "Enquiries", icon: MessageSquare, gradient: "from-orange-500 to-orange-600" },
   { id: "demo-requests", label: "Demo Requests", icon: Calendar, gradient: "from-slate-500 to-slate-600" },

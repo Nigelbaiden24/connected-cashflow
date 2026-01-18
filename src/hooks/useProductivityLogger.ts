@@ -22,7 +22,9 @@ export type ActionType =
   | "session_ended"
   | "item_viewed"
   | "report_uploaded"
-  | "calendar_event_created";
+  | "calendar_event_created"
+  | "document_template_selected"
+  | "document_generated";
 
 interface LogActionParams {
   actionType: ActionType;
