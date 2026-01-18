@@ -1,12 +1,28 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Clock, CheckCircle2, AlertCircle, Play, Pause, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addDays, subDays, isSameDay, addHours, startOfDay, setHours, setMinutes } from "date-fns";
+import { Calendar, Clock, CheckCircle2, AlertCircle, Play, Pause, SkipForward, ChevronLeft, ChevronRight, Plus, Edit2 } from "lucide-react";
+import { format, addDays, subDays, isSameDay, setHours } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useProductivityLogger } from "@/hooks/useProductivityLogger";
+import { TimeBlockEditDialog } from "./TimeBlockEditDialog";
 import type { PlannerItem } from "./PlannerItemsTable";
+
+interface TimeBlockSchedule {
+  id?: string;
+  block_date: string;
+  start_hour: number;
+  end_hour: number;
+  block_type: string;
+  task_id: string | null;
+  custom_label: string | null;
+  is_completed: boolean;
+  notes: string | null;
+}
 
 interface TimeBlock {
   id: string;
@@ -16,6 +32,9 @@ interface TimeBlock {
   type: 'task' | 'break' | 'meeting' | 'focus' | 'buffer';
   isActive?: boolean;
   isCompleted?: boolean;
+  customLabel?: string | null;
+  scheduleId?: string;
+  notes?: string | null;
 }
 
 interface PlannerTimeBlockedViewProps {
@@ -24,52 +43,100 @@ interface PlannerTimeBlockedViewProps {
 }
 
 export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlockedViewProps) {
+  const { logAction } = useProductivityLogger();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
-  const [completedBlocks, setCompletedBlocks] = useState<Set<string>>(new Set());
+  const [schedules, setSchedules] = useState<TimeBlockSchedule[]>([]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<TimeBlockSchedule | null>(null);
 
-  // Generate time blocks for the day (8 AM to 6 PM)
+  const fetchSchedules = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const { data, error } = await supabase
+        .from("admin_time_block_schedules")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("block_date", dateStr)
+        .order("start_hour", { ascending: true });
+
+      if (error) throw error;
+      setSchedules(data || []);
+    } catch (error) {
+      console.error("Error fetching schedules:", error);
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    fetchSchedules();
+  }, [fetchSchedules]);
+
+  // Generate time blocks for the day (6 AM to 10 PM)
   const timeBlocks = useMemo(() => {
     const blocks: TimeBlock[] = [];
-    const todayTasks = items.filter(item => {
-      if (!item.target_date) return false;
-      return isSameDay(new Date(item.target_date), selectedDate);
-    });
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-    // Create hourly blocks
-    for (let hour = 8; hour < 18; hour++) {
-      const taskForHour = todayTasks[Math.floor((hour - 8) / 2)] || null;
-      const blockType = hour === 12 ? 'break' : hour % 3 === 0 ? 'focus' : 'task';
+    // Create blocks from schedules
+    for (let hour = 6; hour < 22; hour++) {
+      const schedule = schedules.find(s => s.start_hour <= hour && s.end_hour > hour);
       
-      blocks.push({
-        id: `block-${hour}`,
-        startHour: hour,
-        endHour: hour + 1,
-        task: blockType === 'task' || blockType === 'focus' ? taskForHour : null,
-        type: taskForHour ? 'task' : blockType,
-        isActive: activeBlockId === `block-${hour}`,
-        isCompleted: completedBlocks.has(`block-${hour}`),
-      });
+      if (schedule) {
+        // Check if we already added this schedule's block
+        const existingBlock = blocks.find(b => b.scheduleId === schedule.id);
+        if (!existingBlock) {
+          const task = schedule.task_id ? items.find(i => i.id === schedule.task_id) : null;
+          blocks.push({
+            id: `block-${schedule.id}`,
+            startHour: schedule.start_hour,
+            endHour: schedule.end_hour,
+            task: task || null,
+            type: schedule.block_type as TimeBlock['type'],
+            isActive: activeBlockId === `block-${schedule.id}`,
+            isCompleted: schedule.is_completed,
+            customLabel: schedule.custom_label,
+            scheduleId: schedule.id,
+            notes: schedule.notes,
+          });
+        }
+      } else {
+        // Check if this hour is already covered by a multi-hour block
+        const covered = blocks.some(b => b.startHour <= hour && b.endHour > hour);
+        if (!covered) {
+          blocks.push({
+            id: `empty-${hour}`,
+            startHour: hour,
+            endHour: hour + 1,
+            task: null,
+            type: 'buffer',
+            isActive: false,
+            isCompleted: false,
+          });
+        }
+      }
     }
 
-    return blocks;
-  }, [items, selectedDate, activeBlockId, completedBlocks]);
+    return blocks.sort((a, b) => a.startHour - b.startHour);
+  }, [items, selectedDate, activeBlockId, schedules]);
 
   const todaysTasks = items.filter(item => {
     if (!item.target_date) return false;
     return isSameDay(new Date(item.target_date), selectedDate);
   });
 
-  const completedCount = todaysTasks.filter(t => t.status === 'completed').length;
-  const totalScheduled = todaysTasks.length;
+  const completedCount = schedules.filter(s => s.is_completed).length;
+  const totalScheduled = schedules.length;
   const completionRate = totalScheduled > 0 ? Math.round((completedCount / totalScheduled) * 100) : 0;
 
   const currentHour = new Date().getHours();
-  const focusedMinutes = completedBlocks.size * 60;
+  const focusedMinutes = completedCount * 60;
 
   const getBlockColor = (block: TimeBlock) => {
     if (block.isCompleted) return 'bg-green-500/20 border-green-500/50';
     if (block.isActive) return 'bg-primary/20 border-primary animate-pulse';
+    if (!block.scheduleId) return 'bg-muted/30 border-dashed border-muted-foreground/30';
     switch (block.type) {
       case 'break': return 'bg-amber-500/10 border-amber-500/30';
       case 'focus': return 'bg-violet-500/10 border-violet-500/30';
@@ -87,26 +154,78 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
     }
   };
 
-  const toggleBlockActive = (blockId: string) => {
-    if (activeBlockId === blockId) {
+  const toggleBlockActive = async (block: TimeBlock) => {
+    if (activeBlockId === block.id) {
       setActiveBlockId(null);
+      await logAction({
+        actionType: "focus_paused",
+        description: `Paused focus on: ${block.customLabel || block.type}`,
+        entityType: "time_block",
+        entityId: block.scheduleId,
+      });
     } else {
-      setActiveBlockId(blockId);
+      setActiveBlockId(block.id);
+      await logAction({
+        actionType: "focus_started",
+        description: `Started focus on: ${block.customLabel || block.type}`,
+        entityType: "time_block",
+        entityId: block.scheduleId,
+      });
     }
   };
 
-  const markBlockComplete = (blockId: string) => {
-    setCompletedBlocks(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(blockId)) {
-        newSet.delete(blockId);
-      } else {
-        newSet.add(blockId);
+  const markBlockComplete = async (block: TimeBlock) => {
+    if (!block.scheduleId) return;
+
+    try {
+      const newCompleted = !block.isCompleted;
+      const { error } = await supabase
+        .from("admin_time_block_schedules")
+        .update({ is_completed: newCompleted })
+        .eq("id", block.scheduleId);
+
+      if (error) throw error;
+
+      await logAction({
+        actionType: "time_block_completed",
+        description: `${newCompleted ? "Completed" : "Uncompleted"} time block: ${block.customLabel || block.type}`,
+        entityType: "time_block",
+        entityId: block.scheduleId,
+      });
+
+      fetchSchedules();
+      if (activeBlockId === block.id) {
+        setActiveBlockId(null);
       }
-      return newSet;
+    } catch (error) {
+      console.error("Error updating block:", error);
+      toast.error("Failed to update block");
+    }
+  };
+
+  const handleAddBlock = (hour?: number) => {
+    setSelectedBlock({
+      block_date: format(selectedDate, "yyyy-MM-dd"),
+      start_hour: hour ?? 9,
+      end_hour: (hour ?? 9) + 1,
+      block_type: "task",
+      task_id: null,
+      custom_label: null,
+      is_completed: false,
+      notes: null,
     });
-    if (activeBlockId === blockId) {
-      setActiveBlockId(null);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditBlock = (block: TimeBlock) => {
+    if (block.scheduleId) {
+      const schedule = schedules.find(s => s.id === block.scheduleId);
+      if (schedule) {
+        setSelectedBlock(schedule);
+        setEditDialogOpen(true);
+      }
+    } else {
+      handleAddBlock(block.startHour);
     }
   };
 
@@ -115,7 +234,7 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
       {/* Day Header */}
       <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-violet-500/5">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <Button 
                 variant="outline" 
@@ -148,6 +267,10 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
             </div>
 
             <div className="flex items-center gap-6">
+              <Button onClick={() => handleAddBlock()} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Block
+              </Button>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">{completionRate}%</div>
                 <div className="text-xs text-muted-foreground">Day Progress</div>
@@ -158,7 +281,7 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">{completedCount}/{totalScheduled}</div>
-                <div className="text-xs text-muted-foreground">Tasks Done</div>
+                <div className="text-xs text-muted-foreground">Blocks Done</div>
               </div>
             </div>
           </div>
@@ -167,9 +290,9 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
           <div className="mt-6">
             <div className="flex items-center justify-between text-sm mb-2">
               <span className="text-muted-foreground">Daily execution progress</span>
-              <span className="font-medium">{completedBlocks.size} of {timeBlocks.length} blocks completed</span>
+              <span className="font-medium">{completedCount} of {totalScheduled} blocks completed</span>
             </div>
-            <Progress value={(completedBlocks.size / timeBlocks.length) * 100} className="h-3" />
+            <Progress value={completionRate} className="h-3" />
           </div>
         </CardContent>
       </Card>
@@ -184,7 +307,7 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
                   <Clock className="h-5 w-5 text-primary" />
                   Time Block Schedule
                 </CardTitle>
-                <CardDescription>Hour-by-hour execution plan</CardDescription>
+                <CardDescription>Click on any block to edit or add new blocks</CardDescription>
               </div>
               <div className="flex gap-2">
                 <Badge variant="outline" className="gap-1">
@@ -204,18 +327,19 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
                 {timeBlocks.map((block) => (
                   <div
                     key={block.id}
-                    className={`relative p-4 rounded-xl border-2 transition-all ${getBlockColor(block)} ${
+                    className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer hover:shadow-md ${getBlockColor(block)} ${
                       block.startHour === currentHour && isSameDay(selectedDate, new Date()) 
                         ? 'ring-2 ring-primary ring-offset-2' 
                         : ''
                     }`}
+                    onClick={() => handleEditBlock(block)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         {/* Time Column */}
-                        <div className="w-20 text-center">
+                        <div className="w-24 text-center">
                           <div className="text-lg font-semibold">
-                            {format(setHours(new Date(), block.startHour), 'h:mm')}
+                            {format(setHours(new Date(), block.startHour), 'h:mm')} - {format(setHours(new Date(), block.endHour), 'h:mm')}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {format(setHours(new Date(), block.startHour), 'a')}
@@ -231,10 +355,15 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
                         </Badge>
 
                         {/* Task Info */}
-                        {block.task ? (
+                        {block.customLabel ? (
+                          <span className="font-medium">{block.customLabel}</span>
+                        ) : block.task ? (
                           <div 
                             className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
-                            onClick={() => onItemClick(block.task!)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onItemClick(block.task!);
+                            }}
                           >
                             {getPriorityIcon(block.task.priority)}
                             <span className="font-medium">{block.task.item_name}</span>
@@ -243,43 +372,73 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
                             </Badge>
                           </div>
                         ) : (
-                          <span className="text-muted-foreground italic">
-                            {block.type === 'break' ? '☕ Break Time' : 'Available slot'}
+                          <span className="text-muted-foreground italic flex items-center gap-2">
+                            {block.scheduleId ? (
+                              block.type === 'break' ? '☕ Break Time' : 'Scheduled block'
+                            ) : (
+                              <>
+                                <Plus className="h-4 w-4" />
+                                Click to add block
+                              </>
+                            )}
                           </span>
                         )}
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center gap-2">
-                        {block.isCompleted ? (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-green-600 hover:text-green-700"
-                            onClick={() => markBlockComplete(block.id)}
-                          >
-                            <CheckCircle2 className="h-5 w-5" />
-                          </Button>
-                        ) : (
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        {block.scheduleId && (
                           <>
                             <Button
                               size="sm"
-                              variant={block.isActive ? 'default' : 'outline'}
-                              onClick={() => toggleBlockActive(block.id)}
-                            >
-                              {block.isActive ? (
-                                <Pause className="h-4 w-4" />
-                              ) : (
-                                <Play className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button
-                              size="sm"
                               variant="ghost"
-                              onClick={() => markBlockComplete(block.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditBlock(block);
+                              }}
                             >
-                              <CheckCircle2 className="h-4 w-4" />
+                              <Edit2 className="h-4 w-4" />
                             </Button>
+                            {block.isCompleted ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-green-600 hover:text-green-700"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markBlockComplete(block);
+                                }}
+                              >
+                                <CheckCircle2 className="h-5 w-5" />
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant={block.isActive ? 'default' : 'outline'}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleBlockActive(block);
+                                  }}
+                                >
+                                  {block.isActive ? (
+                                    <Pause className="h-4 w-4" />
+                                  ) : (
+                                    <Play className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markBlockComplete(block);
+                                  }}
+                                >
+                                  <CheckCircle2 className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
                           </>
                         )}
                       </div>
@@ -297,6 +456,11 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
                         </div>
                         <Progress value={45} className="h-2" />
                       </div>
+                    )}
+
+                    {/* Notes */}
+                    {block.notes && (
+                      <p className="mt-2 text-sm text-muted-foreground">{block.notes}</p>
                     )}
                   </div>
                 ))}
@@ -355,12 +519,21 @@ export function PlannerTimeBlockedView({ items, onItemClick }: PlannerTimeBlocke
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Blocks Remaining</span>
-                <span className="font-semibold">{timeBlocks.length - completedBlocks.size}</span>
+                <span className="font-semibold">{totalScheduled - completedCount}</span>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <TimeBlockEditDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        block={selectedBlock}
+        tasks={items}
+        onSave={fetchSchedules}
+      />
     </div>
   );
 }

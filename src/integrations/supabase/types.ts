@@ -129,6 +129,39 @@ export type Database = {
           },
         ]
       }
+      admin_productivity_logs: {
+        Row: {
+          action_description: string
+          action_type: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_target_updates: {
         Row: {
           created_at: string
@@ -217,6 +250,59 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      admin_time_block_schedules: {
+        Row: {
+          block_date: string
+          block_type: string
+          created_at: string
+          custom_label: string | null
+          end_hour: number
+          id: string
+          is_completed: boolean | null
+          notes: string | null
+          start_hour: number
+          task_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          block_date: string
+          block_type?: string
+          created_at?: string
+          custom_label?: string | null
+          end_hour: number
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          start_hour: number
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          block_date?: string
+          block_type?: string
+          created_at?: string
+          custom_label?: string | null
+          end_hour?: number
+          id?: string
+          is_completed?: boolean | null
+          notes?: string | null
+          start_hour?: number
+          task_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_time_block_schedules_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "admin_planner_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_time_daily: {
         Row: {

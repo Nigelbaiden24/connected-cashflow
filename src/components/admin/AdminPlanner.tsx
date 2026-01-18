@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek, subWeeks, startOfDay, endOfDay, eachDayOfInterval, subDays } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, ListTodo, BarChart3, Target, Clock, Layers, Bell } from "lucide-react";
+import { LayoutDashboard, ListTodo, BarChart3, Target, Clock, Layers, Activity } from "lucide-react";
 
 import { PlannerKPICards } from "./planner/PlannerKPICards";
 import { PlannerItemsTable, type PlannerItem } from "./planner/PlannerItemsTable";
@@ -15,6 +15,8 @@ import { PlannerTargetsTab } from "./planner/PlannerTargetsTab";
 import { PlannerTimeBlockedView } from "./planner/PlannerTimeBlockedView";
 import { PlannerDailyKPIOverlay } from "./planner/PlannerDailyKPIOverlay";
 import { PlannerNotificationsPanel } from "./planner/PlannerNotificationsPanel";
+import { PlannerProductivityTab } from "./planner/PlannerProductivityTab";
+import { useProductivityLogger } from "@/hooks/useProductivityLogger";
 
 export function AdminPlanner() {
   const [items, setItems] = useState<PlannerItem[]>([]);
@@ -348,6 +350,10 @@ export function AdminPlanner() {
             <BarChart3 className="h-4 w-4" />
             Performance
           </TabsTrigger>
+          <TabsTrigger value="productivity" className="gap-2">
+            <Activity className="h-4 w-4" />
+            Productivity
+          </TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -434,6 +440,11 @@ export function AdminPlanner() {
             timeOnPlatformTarget={40}
             timeOnPlatformActual={timeThisWeek / 3600}
           />
+        </TabsContent>
+
+        {/* Productivity Tab */}
+        <TabsContent value="productivity">
+          <PlannerProductivityTab />
         </TabsContent>
       </Tabs>
 
