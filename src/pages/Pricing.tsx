@@ -67,66 +67,116 @@ const Pricing = () => {
     }
   };
 
-  const tiers = [
+  // FlowPulse Finance tiers - for financial advisors and wealth managers
+  const financeTiers = [
     {
-      name: "Basic",
-      description: "Perfect for getting started",
+      name: "Advisor Essentials",
+      description: "For independent financial advisors",
       monthlyPrice: 39.99,
-      investorPrice: 12.99,
       stripePriceId: isAnnual ? "price_1SR1idKj5iDjtHZwymZ2NX9I" : "price_1SR1huKj5iDjtHZwSEDU4CHd",
-      investorMonthlyPriceId: "price_1SUqctKj5iDjtHZwuD0Mcje2",
-      investorAnnualPriceId: "price_1SUqdqKj5iDjtHZwIiFIu18E",
       features: [
-        "Core platform features",
-        "Up to 5 team members",
-        "Basic analytics",
+        "Client portfolio management",
+        "Market data & commentary access",
+        "AI-powered research assistant",
+        "Up to 25 client accounts",
+        "Basic compliance reporting",
         "Email support",
-        "Mobile app access",
-        "Standard security",
       ],
       gradient: "from-blue-500 to-cyan-500",
       icon: Sparkles,
     },
     {
-      name: "Pro",
-      description: "For growing teams",
+      name: "Wealth Manager Pro",
+      description: "For growing advisory practices",
       monthlyPrice: 72.99,
-      investorPrice: 23.99,
       stripePriceId: isAnnual ? "price_1SR1jDKj5iDjtHZwJ1OP209L" : "price_1SR1isKj5iDjtHZwiiP9YxA4",
-      investorMonthlyPriceId: "price_1SUqe4Kj5iDjtHZwbkK9UcFX",
-      investorAnnualPriceId: "price_1SUqeIKj5iDjtHZwMcZB6MDH",
       features: [
-        "All Basic features",
-        "Up to 20 team members",
-        "Advanced analytics & reports",
+        "Everything in Essentials",
+        "Up to 100 client accounts",
+        "Advanced analytics & benchmarking",
+        "Model portfolio builder",
+        "Custom report generation",
+        "Fund & ETF research database",
         "Priority support",
-        "Custom integrations",
-        "Advanced security & compliance",
-        "API access",
-        "Custom workflows",
+        "CRM integration",
       ],
       gradient: "from-purple-500 to-pink-500",
       icon: TrendingUp,
       popular: true,
     },
     {
-      name: "Enterprise",
-      description: "For large organizations",
+      name: "Enterprise Advisory",
+      description: "For RIAs and wealth management firms",
       monthlyPrice: 104.99,
-      investorPrice: 41.99,
       stripePriceId: isAnnual ? "price_1SR1k7Kj5iDjtHZwTOYaYKXr" : "price_1SR1jjKj5iDjtHZw0NVFE780",
-      investorMonthlyPriceId: "price_1SUqeZKj5iDjtHZwA31i890b",
-      investorAnnualPriceId: "price_1SUqfBKj5iDjtHZwM5PtAONO",
       features: [
-        "All Pro features",
-        "Unlimited team members",
-        "White-label options",
+        "Everything in Pro",
+        "Unlimited client accounts",
+        "White-label client portal",
+        "Regulatory compliance suite",
+        "Team collaboration tools",
         "Dedicated account manager",
-        "24/7 phone support",
-        "Custom SLA",
-        "Advanced security suite",
-        "On-premise deployment option",
+        "Custom API integrations",
+        "24/7 priority support",
         "Custom training & onboarding",
+      ],
+      gradient: "from-orange-500 to-red-500",
+      icon: Building2,
+    },
+  ];
+
+  // FlowPulse Investor tiers - for individual investors
+  const investorTiers = [
+    {
+      name: "Starter",
+      description: "For new investors getting started",
+      monthlyPrice: 12.99,
+      stripePriceId: isAnnual ? "price_1SUqdqKj5iDjtHZwIiFIu18E" : "price_1SUqctKj5iDjtHZwuD0Mcje2",
+      features: [
+        "Market news & commentary",
+        "Basic stock screeners",
+        "AI analyst Q&A access",
+        "Educational learning hub",
+        "Up to 3 watchlists",
+        "Email alerts",
+      ],
+      gradient: "from-blue-500 to-cyan-500",
+      icon: Sparkles,
+    },
+    {
+      name: "Active Investor",
+      description: "For serious self-directed investors",
+      monthlyPrice: 23.99,
+      stripePriceId: isAnnual ? "price_1SUqeIKj5iDjtHZwMcZB6MDH" : "price_1SUqe4Kj5iDjtHZwbkK9UcFX",
+      features: [
+        "Everything in Starter",
+        "Full research reports access",
+        "Advanced screeners & filters",
+        "Model portfolio insights",
+        "Unlimited watchlists",
+        "Real-time signals & alerts",
+        "Fund & ETF database",
+        "Priority support",
+      ],
+      gradient: "from-purple-500 to-pink-500",
+      icon: TrendingUp,
+      popular: true,
+    },
+    {
+      name: "Professional",
+      description: "For sophisticated investors & traders",
+      monthlyPrice: 41.99,
+      stripePriceId: isAnnual ? "price_1SUqfBKj5iDjtHZwM5PtAONO" : "price_1SUqeZKj5iDjtHZwA31i890b",
+      features: [
+        "Everything in Active",
+        "Exclusive analyst picks",
+        "Alternative investment reports",
+        "Risk & scenario analysis tools",
+        "Early access to new features",
+        "Dedicated research support",
+        "Custom portfolio analytics",
+        "Direct analyst consultation",
+        "Premium newsletters",
       ],
       gradient: "from-orange-500 to-red-500",
       icon: Building2,
@@ -187,10 +237,10 @@ const Pricing = () => {
           <TabsContent value="finance">
             <div className="mb-6 text-center">
               <h2 className="text-3xl font-bold mb-2 text-primary">FlowPulse Finance</h2>
-              <p className="text-muted-foreground">Comprehensive financial planning and wealth management</p>
+              <p className="text-muted-foreground">Professional wealth management & advisory platform for financial professionals</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {tiers.map((tier, index) => (
+              {financeTiers.map((tier, index) => (
                 <Card
                   key={`finance-${tier.name}`}
                   className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
@@ -216,7 +266,7 @@ const Pricing = () => {
                     <div className="mb-6">
                       <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold">£{calculateMonthlyEquivalent(tier.monthlyPrice)}</span>
-                        <span className="text-muted-foreground">/{isAnnual ? 'month' : 'month'}</span>
+                        <span className="text-muted-foreground">/month</span>
                       </div>
                       {isAnnual && (
                         <p className="text-sm text-muted-foreground mt-2">
@@ -265,10 +315,10 @@ const Pricing = () => {
           <TabsContent value="investor">
             <div className="mb-6 text-center">
               <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(270, 76%, 56%)' }}>FlowPulse Investor</h2>
-              <p className="text-muted-foreground">Advanced investment analysis and portfolio management</p>
+              <p className="text-muted-foreground">Research, analysis & insights for self-directed investors</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {tiers.map((tier, index) => (
+              {investorTiers.map((tier, index) => (
                 <Card
                   key={`investor-${tier.name}`}
                   className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
@@ -294,12 +344,12 @@ const Pricing = () => {
                   <CardContent>
                     <div className="mb-6">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">£{isAnnual ? calculateMonthlyEquivalent(tier.investorPrice) : tier.investorPrice}</span>
-                        <span className="text-muted-foreground">/{isAnnual ? 'month' : 'month'}</span>
+                        <span className="text-4xl font-bold">£{calculateMonthlyEquivalent(tier.monthlyPrice)}</span>
+                        <span className="text-muted-foreground">/month</span>
                       </div>
                       {isAnnual && (
                         <p className="text-sm text-muted-foreground mt-2">
-                          Billed annually at £{calculatePrice(tier.investorPrice)}
+                          Billed annually at £{calculatePrice(tier.monthlyPrice)}
                         </p>
                       )}
                       {!isAnnual && (
@@ -327,7 +377,7 @@ const Pricing = () => {
                       size="lg"
                       style={{ background: 'linear-gradient(to right, hsl(270, 76%, 56%), hsl(280, 70%, 60%))' }}
                       onClick={() => handleCheckout(
-                        isAnnual ? tier.investorAnnualPriceId : tier.investorMonthlyPriceId,
+                        tier.stripePriceId,
                         'subscription',
                         tier.name,
                         'investor'
