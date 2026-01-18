@@ -3238,6 +3238,7 @@ export type Database = {
           id: string
           is_public: boolean | null
           name: string
+          platform: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -3249,6 +3250,7 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           name: string
+          platform?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -3260,6 +3262,7 @@ export type Database = {
           id?: string
           is_public?: boolean | null
           name?: string
+          platform?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -4990,6 +4993,7 @@ export type Database = {
           daily_change_percent: number | null
           id: string
           last_updated: string | null
+          platform: string | null
           symbol: string
           user_id: string | null
         }
@@ -5002,6 +5006,7 @@ export type Database = {
           daily_change_percent?: number | null
           id?: string
           last_updated?: string | null
+          platform?: string | null
           symbol: string
           user_id?: string | null
         }
@@ -5014,6 +5019,7 @@ export type Database = {
           daily_change_percent?: number | null
           id?: string
           last_updated?: string | null
+          platform?: string | null
           symbol?: string
           user_id?: string | null
         }
@@ -5265,6 +5271,7 @@ export type Database = {
           published_date: string | null
           report_category: string | null
           report_type: string
+          target_user_id: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string | null
@@ -5279,6 +5286,7 @@ export type Database = {
           published_date?: string | null
           report_category?: string | null
           report_type: string
+          target_user_id?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string | null
@@ -5293,6 +5301,7 @@ export type Database = {
           published_date?: string | null
           report_category?: string | null
           report_type?: string
+          target_user_id?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string | null
@@ -6094,6 +6103,7 @@ export type Database = {
           holdings: Json
           id: string
           metadata: Json | null
+          platform: string | null
           portfolio_name: string
           total_value: number | null
           updated_at: string | null
@@ -6105,6 +6115,7 @@ export type Database = {
           holdings: Json
           id?: string
           metadata?: Json | null
+          platform?: string | null
           portfolio_name: string
           total_value?: number | null
           updated_at?: string | null
@@ -6116,6 +6127,7 @@ export type Database = {
           holdings?: Json
           id?: string
           metadata?: Json | null
+          platform?: string | null
           portfolio_name?: string
           total_value?: number | null
           updated_at?: string | null

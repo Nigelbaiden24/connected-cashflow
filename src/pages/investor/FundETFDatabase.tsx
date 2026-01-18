@@ -284,7 +284,7 @@ export default function FundETFDatabase() {
           </TabsContent>
 
           <TabsContent value="watchlist" className="mt-0">
-            <FundWatchlist onViewFund={setViewingFund} />
+            <FundWatchlist onViewFund={setViewingFund} platform="investor" />
           </TabsContent>
         </Tabs>
       </div>

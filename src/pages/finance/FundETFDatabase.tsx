@@ -373,7 +373,7 @@ export default function FundETFDatabase() {
 
           <TabsContent value="watchlist" className="mt-0">
             <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-lg" />}>
-              <FundWatchlist onViewFund={handleViewFund} />
+              <FundWatchlist onViewFund={handleViewFund} platform="finance" />
             </Suspense>
           </TabsContent>
         </Tabs>

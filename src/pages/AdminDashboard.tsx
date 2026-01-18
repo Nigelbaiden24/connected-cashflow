@@ -201,6 +201,7 @@ export default function AdminDashboard() {
         report_type: "admin_upload",
         platform: "investor",
         uploaded_by: reportForm.userId,
+        target_user_id: reportForm.userId, // Set target user for private access
       });
 
       // Grant access to the specific user

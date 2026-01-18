@@ -167,7 +167,8 @@ export default function FinanceBenchmarkingTrends() {
             portfolio_name: file.name.replace(/\.[^/.]+$/, ""),
             holdings: holdings,
             total_value: totalValue,
-            metadata: { uploadDate: new Date().toISOString() }
+            metadata: { uploadDate: new Date().toISOString() },
+            platform: "finance"
           })
           .select()
           .single();
