@@ -69,6 +69,7 @@ export default function Watchlists() {
       const { data, error } = await supabase
         .from("investment_watchlists")
         .select("*")
+        .or("platform.eq.investor,platform.is.null")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -132,6 +133,7 @@ export default function Watchlists() {
           name: newWatchlistName,
           description: newWatchlistDescription || null,
           category: newWatchlistCategory || null,
+          platform: "investor",
         });
 
       if (error) throw error;

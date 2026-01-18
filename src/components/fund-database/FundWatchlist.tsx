@@ -51,9 +51,10 @@ interface WatchlistItem {
 
 interface FundWatchlistProps {
   onViewFund?: (fund: CompleteFund) => void;
+  platform?: "finance" | "investor";
 }
 
-export function FundWatchlist({ onViewFund }: FundWatchlistProps) {
+export function FundWatchlist({ onViewFund, platform = "finance" }: FundWatchlistProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [watchlists, setWatchlists] = useState<Watchlist[]>([]);
@@ -87,6 +88,7 @@ export function FundWatchlist({ onViewFund }: FundWatchlistProps) {
       const { data, error } = await supabase
         .from("investment_watchlists")
         .select("*")
+        .or(`platform.eq.${platform},platform.is.null`)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -141,6 +143,7 @@ export function FundWatchlist({ onViewFund }: FundWatchlistProps) {
           name: newWatchlistName,
           description: newWatchlistDescription || null,
           category: newWatchlistCategory,
+          platform: platform,
         })
         .select()
         .single();
