@@ -35,6 +35,7 @@ import { FinancialResearchScraper } from "@/components/admin/FinancialResearchSc
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
+import { ContentTargetSelector, Platform } from "@/components/admin/ContentTargetSelector";
 import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -42,6 +43,12 @@ interface Profile {
   user_id: string;
   email: string;
   full_name: string;
+}
+
+interface ContentTarget {
+  platform: Platform;
+  selectedUsers: string[];
+  allUsers: boolean;
 }
 
 export default function AdminDashboard() {
@@ -54,6 +61,17 @@ export default function AdminDashboard() {
   const [crmRefreshTrigger, setCrmRefreshTrigger] = useState(0);
   const [crmActiveTab, setCrmActiveTab] = useState('board');
   const [activeTab, setActiveTab] = useState('users');
+
+  // Content target states for each tab
+  const [newsletterTarget, setNewsletterTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [portfolioTarget, setPortfolioTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [learningTarget, setLearningTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [videoTarget, setVideoTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [watchlistTarget, setWatchlistTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [riskComplianceTarget, setRiskComplianceTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [alertTarget, setAlertTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [marketTrendsTarget, setMarketTrendsTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+  const [opportunityTarget, setOpportunityTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
 
   // Time tracking for admin dashboard - always active when on this page
   useAdminTimeTracking(true);
@@ -683,10 +701,18 @@ export default function AdminDashboard() {
                   <Newspaper className="h-6 w-6 text-secondary" />
                   Upload Newsletter
                 </CardTitle>
-                <CardDescription className="text-slate-500">Upload newsletters for all investors</CardDescription>
+                <CardDescription className="text-slate-500">Upload newsletters for selected platforms and users</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleNewsletterUpload} className="space-y-4">
+                  <ContentTargetSelector
+                    selectedPlatform={newsletterTarget.platform}
+                    onPlatformChange={(platform) => setNewsletterTarget({ ...newsletterTarget, platform })}
+                    selectedUsers={newsletterTarget.selectedUsers}
+                    onUsersChange={(users) => setNewsletterTarget({ ...newsletterTarget, selectedUsers: users })}
+                    allUsersSelected={newsletterTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setNewsletterTarget({ ...newsletterTarget, allUsers })}
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="newsletter-title">Title *</Label>
                     <Input
@@ -741,10 +767,18 @@ export default function AdminDashboard() {
                   <TrendingUp className="h-6 w-6 text-primary" />
                   Upload Model Portfolio
                 </CardTitle>
-                <CardDescription className="text-slate-500">Upload model portfolios for investors to view</CardDescription>
+                <CardDescription className="text-slate-500">Upload model portfolios for selected platforms and users</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handlePortfolioUpload} className="space-y-4">
+                  <ContentTargetSelector
+                    selectedPlatform={portfolioTarget.platform}
+                    onPlatformChange={(platform) => setPortfolioTarget({ ...portfolioTarget, platform })}
+                    selectedUsers={portfolioTarget.selectedUsers}
+                    onUsersChange={(users) => setPortfolioTarget({ ...portfolioTarget, selectedUsers: users })}
+                    allUsersSelected={portfolioTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setPortfolioTarget({ ...portfolioTarget, allUsers })}
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="portfolio-title">Title *</Label>
                     <Input
@@ -839,10 +873,18 @@ export default function AdminDashboard() {
                   <BookOpen className="h-6 w-6 text-primary" />
                   Upload Learning Content
                 </CardTitle>
-                <CardDescription className="text-slate-500">Upload educational content for all 6 Learning Hub categories</CardDescription>
+                <CardDescription className="text-slate-500">Upload educational content for selected platforms and users</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleLearningUpload} className="space-y-4">
+                  <ContentTargetSelector
+                    selectedPlatform={learningTarget.platform}
+                    onPlatformChange={(platform) => setLearningTarget({ ...learningTarget, platform })}
+                    selectedUsers={learningTarget.selectedUsers}
+                    onUsersChange={(users) => setLearningTarget({ ...learningTarget, selectedUsers: users })}
+                    allUsersSelected={learningTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setLearningTarget({ ...learningTarget, allUsers })}
+                  />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="learning-title">Title *</Label>
@@ -1014,10 +1056,18 @@ export default function AdminDashboard() {
                   <Video className="h-6 w-6 text-secondary" />
                   Upload Video
                 </CardTitle>
-                <CardDescription className="text-slate-500">Upload video content for investors</CardDescription>
+                <CardDescription className="text-slate-500">Upload video content for selected platforms and users</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleVideoUpload} className="space-y-4">
+                  <ContentTargetSelector
+                    selectedPlatform={videoTarget.platform}
+                    onPlatformChange={(platform) => setVideoTarget({ ...videoTarget, platform })}
+                    selectedUsers={videoTarget.selectedUsers}
+                    onUsersChange={(users) => setVideoTarget({ ...videoTarget, selectedUsers: users })}
+                    allUsersSelected={videoTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setVideoTarget({ ...videoTarget, allUsers })}
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="video-title">Title *</Label>
                     <Input
@@ -1072,10 +1122,18 @@ export default function AdminDashboard() {
                   <List className="h-6 w-6 text-primary" />
                   Create Public Watchlist
                 </CardTitle>
-                <CardDescription className="text-slate-500">Create watchlists that all investors can view</CardDescription>
+                <CardDescription className="text-slate-500">Create watchlists for selected platforms and users</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleWatchlistUpload} className="space-y-4">
+                  <ContentTargetSelector
+                    selectedPlatform={watchlistTarget.platform}
+                    onPlatformChange={(platform) => setWatchlistTarget({ ...watchlistTarget, platform })}
+                    selectedUsers={watchlistTarget.selectedUsers}
+                    onUsersChange={(users) => setWatchlistTarget({ ...watchlistTarget, selectedUsers: users })}
+                    allUsersSelected={watchlistTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setWatchlistTarget({ ...watchlistTarget, allUsers })}
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="watchlist-name">Name *</Label>
                     <Input
@@ -1120,10 +1178,18 @@ export default function AdminDashboard() {
                   <Shield className="h-6 w-6 text-secondary" />
                   Upload Risk & Compliance Content
                 </CardTitle>
-                <CardDescription className="text-slate-500">Upload risk analysis and compliance monitoring content for investors</CardDescription>
+                <CardDescription className="text-slate-500">Upload risk analysis for selected platforms and users</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleRiskComplianceUpload} className="space-y-4">
+                  <ContentTargetSelector
+                    selectedPlatform={riskComplianceTarget.platform}
+                    onPlatformChange={(platform) => setRiskComplianceTarget({ ...riskComplianceTarget, platform })}
+                    selectedUsers={riskComplianceTarget.selectedUsers}
+                    onUsersChange={(users) => setRiskComplianceTarget({ ...riskComplianceTarget, selectedUsers: users })}
+                    allUsersSelected={riskComplianceTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setRiskComplianceTarget({ ...riskComplianceTarget, allUsers })}
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="risk-title">Title *</Label>
                     <Input
@@ -1202,15 +1268,37 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === 'alerts' && (
-            <AlertsForm
-              form={alertForm}
-              setForm={setAlertForm}
-              onSubmit={handleAlertUpload}
-              uploading={uploading}
-            />
+            <div className="space-y-4">
+              <ContentTargetSelector
+                selectedPlatform={alertTarget.platform}
+                onPlatformChange={(platform) => setAlertTarget({ ...alertTarget, platform })}
+                selectedUsers={alertTarget.selectedUsers}
+                onUsersChange={(users) => setAlertTarget({ ...alertTarget, selectedUsers: users })}
+                allUsersSelected={alertTarget.allUsers}
+                onAllUsersChange={(allUsers) => setAlertTarget({ ...alertTarget, allUsers })}
+              />
+              <AlertsForm
+                form={alertForm}
+                setForm={setAlertForm}
+                onSubmit={handleAlertUpload}
+                uploading={uploading}
+              />
+            </div>
           )}
 
-          {activeTab === 'market-trends' && <MarketTrendsUpload />}
+          {activeTab === 'market-trends' && (
+            <div className="space-y-4">
+              <ContentTargetSelector
+                selectedPlatform={marketTrendsTarget.platform}
+                onPlatformChange={(platform) => setMarketTrendsTarget({ ...marketTrendsTarget, platform })}
+                selectedUsers={marketTrendsTarget.selectedUsers}
+                onUsersChange={(users) => setMarketTrendsTarget({ ...marketTrendsTarget, selectedUsers: users })}
+                allUsersSelected={marketTrendsTarget.allUsers}
+                onAllUsersChange={(allUsers) => setMarketTrendsTarget({ ...marketTrendsTarget, allUsers })}
+              />
+              <MarketTrendsUpload />
+            </div>
+          )}
 
           {activeTab === 'purchasable-reports' && <PurchasableReportUpload />}
 
@@ -1219,20 +1307,30 @@ export default function AdminDashboard() {
           {activeTab === 'fund-analyst' && <FundAnalystAdmin />}
 
           {activeTab === 'opportunities' && (
-            <Card className="bg-white border-slate-200 shadow-lg">
-              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <Lightbulb className="h-5 w-5 text-purple-600" />
-                  Upload Opportunity
-                </CardTitle>
-                <CardDescription className="text-slate-500">
-                  Add investment opportunities for Real Estate, Private Businesses, and Collectibles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <OpportunityUpload />
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <ContentTargetSelector
+                selectedPlatform={opportunityTarget.platform}
+                onPlatformChange={(platform) => setOpportunityTarget({ ...opportunityTarget, platform })}
+                selectedUsers={opportunityTarget.selectedUsers}
+                onUsersChange={(users) => setOpportunityTarget({ ...opportunityTarget, selectedUsers: users })}
+                allUsersSelected={opportunityTarget.allUsers}
+                onAllUsersChange={(allUsers) => setOpportunityTarget({ ...opportunityTarget, allUsers })}
+              />
+              <Card className="bg-white border-slate-200 shadow-lg">
+                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                    <Lightbulb className="h-5 w-5 text-purple-600" />
+                    Upload Opportunity
+                  </CardTitle>
+                  <CardDescription className="text-slate-500">
+                    Add investment opportunities for Real Estate, Private Businesses, and Collectibles
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <OpportunityUpload />
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {activeTab === 'stocks-crypto' && <StocksCryptoAdmin />}

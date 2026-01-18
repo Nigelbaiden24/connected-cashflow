@@ -62,7 +62,7 @@ const navItems: NavItem[] = [
   { id: "risk-compliance", label: "Risk & Compliance", icon: Shield, gradient: "from-amber-500 to-amber-600" },
   { id: "alerts", label: "Signals & Alerts", icon: Bell, gradient: "from-rose-500 to-rose-600" },
   { id: "market-trends", label: "Market Trends", icon: TrendingUp, gradient: "from-lime-500 to-lime-600" },
-  { id: "purchasable-reports", label: "Shop Reports", icon: ShoppingBag, gradient: "from-emerald-500 to-emerald-600" },
+  { id: "purchasable-reports", label: "Lead Magnet Reports", icon: ShoppingBag, gradient: "from-emerald-500 to-emerald-600" },
   { id: "fund-scoring", label: "Fund Scoring", icon: Star, gradient: "from-amber-500 to-amber-600" },
   { id: "fund-analyst", label: "Fund Analyst", icon: TrendingUp, gradient: "from-teal-500 to-teal-600" },
   { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600" },
