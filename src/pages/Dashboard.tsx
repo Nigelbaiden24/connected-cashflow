@@ -19,6 +19,7 @@ import { QuickLinks } from "@/components/dashboard/QuickLinks";
 import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
 import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
+import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalystPicksSection";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -213,6 +214,9 @@ const Dashboard = () => {
 
         {/* Pipeline Overview */}
         <PipelineOverview />
+
+        {/* Featured Analyst Picks */}
+        <FeaturedAnalystPicksSection />
 
         {/* Revenue & Goals Row */}
         <div className="grid gap-6 lg:grid-cols-3">

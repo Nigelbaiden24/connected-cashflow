@@ -33,6 +33,7 @@ import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
+import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -1288,6 +1289,8 @@ export default function AdminDashboard() {
               />
             </div>
           )}
+
+          {activeTab === 'featured-picks' && <FeaturedAnalystPicks />}
 
           {activeTab === 'planner' && (
             <ErrorBoundary

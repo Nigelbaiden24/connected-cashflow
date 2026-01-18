@@ -7,6 +7,7 @@ import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { TranslatedText } from "@/components/TranslatedText";
+import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalystPicksSection";
 
 const InvestorDashboard = () => {
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
@@ -249,6 +250,9 @@ const InvestorDashboard = () => {
           </Card>
         )}
       </div>
+
+      {/* Featured Analyst Picks */}
+      <FeaturedAnalystPicksSection />
 
       {/* Macro Overview */}
       <Card>
