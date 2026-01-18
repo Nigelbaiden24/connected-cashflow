@@ -21,6 +21,7 @@ interface Report {
   thumbnail_url: string | null;
   published_date: string;
   created_at: string;
+  target_user_id?: string | null;
 }
 
 export default function Reports() {
@@ -60,8 +61,8 @@ export default function Reports() {
         return;
       }
 
-      // Fetch reports the user has access to
-      const { data, error } = await supabase
+      // Fetch reports the user has access to via user_report_access
+      const { data: accessData, error: accessError } = await supabase
         .from('user_report_access')
         .select(`
           report_id,
@@ -74,23 +75,48 @@ export default function Reports() {
             platform,
             thumbnail_url,
             published_date,
-            created_at
+            created_at,
+            target_user_id
           )
         `)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (accessError) throw accessError;
       
-      // Filter for finance platform reports and flatten the data
-      const financeReports = (data || [])
-        .map(item => item.reports)
+      // Also fetch universal reports (target_user_id is null) for finance platform
+      const { data: universalData, error: universalError } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('platform', 'finance')
+        .is('target_user_id', null);
+        
+      if (universalError) throw universalError;
+      
+      // Filter for finance platform reports from access data
+      const accessReports: Report[] = (accessData || [])
+        .map(item => item.reports as unknown as Report | null)
         .filter((report): report is Report => 
           report !== null && 
           typeof report === 'object' && 
           'platform' in report && 
           report.platform === 'finance'
-        )
-        .sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+        );
+      
+      // Combine and deduplicate reports
+      const allReports: Report[] = [...accessReports];
+      (universalData || []).forEach(report => {
+        if (!allReports.some(r => r.id === report.id)) {
+          allReports.push({
+            ...report,
+            target_user_id: report.target_user_id ?? null
+          } as Report);
+        }
+      });
+      
+      // Sort by published date
+      const financeReports = allReports.sort((a, b) => 
+        new Date(b.published_date).getTime() - new Date(a.published_date).getTime()
+      );
       
       setReports(financeReports);
     } catch (error) {
