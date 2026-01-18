@@ -395,7 +395,7 @@ const Index = () => {
 
       {/* White Space Separator */}
       <div className="bg-white py-20 md:py-32 text-center">
-        <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold">
+        <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold">
           <span className="relative inline-block">
             <span className="bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent animate-pulse bg-[length:200%_auto]" style={{ animation: 'shimmer 3s ease-in-out infinite' }}>
               Expert Financial
