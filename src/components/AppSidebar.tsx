@@ -89,6 +89,11 @@ const aiToolsItems = [
     url: "/market",
     icon: TrendingUp,
   },
+  {
+    title: "Featured Picks",
+    url: "/finance/featured-picks",
+    icon: Sparkles,
+  },
 ];
 
 const researchToolsItems = [

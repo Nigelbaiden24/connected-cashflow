@@ -44,7 +44,9 @@ import FinanceScreenersDiscovery from "./pages/finance/ScreenersDiscovery";
 import StocksCryptoDatabase from "./pages/StocksCryptoDatabase";
 import RealTimeMarketDatabase from "./pages/RealTimeMarketDatabase";
 import FinanceNews from "./pages/finance/News";
+import FinanceFeaturedPicks from "./pages/finance/FeaturedPicks";
 import InvestorNews from "./pages/investor/News";
+import InvestorFeaturedPicks from "./pages/investor/FeaturedPicks";
 import AdminNews from "./pages/admin/News";
 
 // Lazy load heavy components with large data files
@@ -444,6 +446,22 @@ const App = () => {
             } />
             
             <Route path="/finance/news" element={<FinanceNews />} />
+            
+            <Route path="/finance/featured-picks" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <FinanceFeaturedPicks />
+                </FinanceLayout>
+              )
+            } />
+            
+            <Route path="/investor/featured-picks" element={
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
+                <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <InvestorFeaturedPicks />
+                </InvestorLayout>
+              )
+            } />
             
             <Route path="/investor/tasks" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
