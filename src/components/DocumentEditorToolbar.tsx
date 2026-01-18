@@ -436,36 +436,140 @@ export function DocumentEditorToolbar({
                 Insert Chart
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Shapes</DropdownMenuLabel>
-              <div className="grid grid-cols-4 gap-1 p-2">
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('rectangle')} className="h-9 w-9 p-0">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Basic Shapes</DropdownMenuLabel>
+              <div className="grid grid-cols-6 gap-1 p-2">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('rectangle')} className="h-8 w-8 p-0" title="Rectangle">
                   <Square className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('circle')} className="h-9 w-9 p-0">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('roundedRect')} className="h-8 w-8 p-0" title="Rounded Rectangle">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="4" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('circle')} className="h-8 w-8 p-0" title="Circle/Ellipse">
                   <Circle className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('triangle')} className="h-9 w-9 p-0">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('triangle')} className="h-8 w-8 p-0" title="Triangle">
                   <Triangle className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('star')} className="h-9 w-9 p-0">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
-                  </svg>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('diamond')} className="h-8 w-8 p-0" title="Diamond">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2 L22 12 L12 22 L2 12 Z" strokeWidth="2" /></svg>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('arrow')} className="h-9 w-9 p-0">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" />
-                  </svg>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('pill')} className="h-8 w-8 p-0" title="Pill">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="20" height="8" rx="4" strokeWidth="2" /></svg>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('diamond')} className="h-9 w-9 p-0">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 2 L22 12 L12 22 L2 12 Z" strokeWidth="2" />
-                  </svg>
+              </div>
+              
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Polygons</DropdownMenuLabel>
+              <div className="grid grid-cols-6 gap-1 p-2">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('pentagon')} className="h-8 w-8 p-0" title="Pentagon">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12,2 22,9 18,21 6,21 2,9" strokeWidth="2" /></svg>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => onAddShape('line')} className="h-9 w-9 p-0">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M5 19 L19 5" strokeWidth="2" />
-                  </svg>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('hexagon')} className="h-8 w-8 p-0" title="Hexagon">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('octagon')} className="h-8 w-8 p-0" title="Octagon">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="7,2 17,2 22,7 22,17 17,22 7,22 2,17 2,7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('parallelogram')} className="h-8 w-8 p-0" title="Parallelogram">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="6,4 22,4 18,20 2,20" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('trapezoid')} className="h-8 w-8 p-0" title="Trapezoid">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="6,4 18,4 22,20 2,20" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('star')} className="h-8 w-8 p-0" title="Star">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" strokeWidth="2" /></svg>
+                </Button>
+              </div>
+
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Arrows & Lines</DropdownMenuLabel>
+              <div className="grid grid-cols-6 gap-1 p-2">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('line')} className="h-8 w-8 p-0" title="Line">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 19 L19 5" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('arrow')} className="h-8 w-8 p-0" title="Arrow Right">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M12 5l7 7-7 7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('arrowUp')} className="h-8 w-8 p-0" title="Arrow Up">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 19V5M5 12l7-7 7 7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('arrowDown')} className="h-8 w-8 p-0" title="Arrow Down">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12l7 7 7-7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('arrowLeft')} className="h-8 w-8 p-0" title="Arrow Left">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 12H5M12 5l-7 7 7 7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('doubleArrow')} className="h-8 w-8 p-0" title="Double Arrow">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M8 8l-4 4 4 4M16 8l4 4-4 4" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('curvedArrow')} className="h-8 w-8 p-0" title="Curved Arrow">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 0 1 9-9m4 5l4-4-4-4" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('chevronRight')} className="h-8 w-8 p-0" title="Chevron Right">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 6l6 6-6 6" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('chevronLeft')} className="h-8 w-8 p-0" title="Chevron Left">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 6l-6 6 6 6" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('chevronUp')} className="h-8 w-8 p-0" title="Chevron Up">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 15l6-6 6 6" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('chevronDown')} className="h-8 w-8 p-0" title="Chevron Down">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('bracket')} className="h-8 w-8 p-0" title="Brackets">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 4H6v16h2M16 4h2v16h-2" strokeWidth="2" /></svg>
+                </Button>
+              </div>
+
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Symbols & Icons</DropdownMenuLabel>
+              <div className="grid grid-cols-6 gap-1 p-2">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('heart')} className="h-8 w-8 p-0" title="Heart">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21C12 21 3 13.5 3 8.5C3 5.5 5.5 3 8.5 3C10.5 3 12 4 12 4C12 4 13.5 3 15.5 3C18.5 3 21 5.5 21 8.5C21 13.5 12 21 12 21Z" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('plus')} className="h-8 w-8 p-0" title="Plus">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('minus')} className="h-8 w-8 p-0" title="Minus">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('cross')} className="h-8 w-8 p-0" title="Cross">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M2 12h20" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('checkmark')} className="h-8 w-8 p-0" title="Checkmark">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12l5 5L20 7" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('xmark')} className="h-8 w-8 p-0" title="X Mark">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 6l12 12M18 6L6 18" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('lightning')} className="h-8 w-8 p-0" title="Lightning">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('sun')} className="h-8 w-8 p-0" title="Sun">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4" strokeWidth="2" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('moon')} className="h-8 w-8 p-0" title="Moon">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('explosion')} className="h-8 w-8 p-0" title="Explosion/Burst">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12,2 14,8 20,8 15,12 17,18 12,14 7,18 9,12 4,8 10,8" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('cloud')} className="h-8 w-8 p-0" title="Cloud">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('speechBubble')} className="h-8 w-8 p-0" title="Speech Bubble">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeWidth="2" /></svg>
+                </Button>
+              </div>
+
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Callouts & Banners</DropdownMenuLabel>
+              <div className="grid grid-cols-6 gap-1 p-2">
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('callout')} className="h-8 w-8 p-0" title="Callout">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="14" rx="2" strokeWidth="2" /><path d="M8 17l4 4 4-4" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('banner')} className="h-8 w-8 p-0" title="Banner">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 6h20v12H2zM2 6l2-2h16l2 2M2 18l2 2h16l2-2" strokeWidth="2" /></svg>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onAddShape('brace')} className="h-8 w-8 p-0" title="Braces">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 4c-2 0-3 1-3 3v3c0 1-1 2-2 2 1 0 2 1 2 2v3c0 2 1 3 3 3M16 4c2 0 3 1 3 3v3c0 1 1 2 2 2-1 0-2 1-2 2v3c0 2-1 3-3 3" strokeWidth="2" /></svg>
                 </Button>
               </div>
             </DropdownMenuContent>

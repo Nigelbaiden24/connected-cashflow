@@ -453,29 +453,89 @@ export function DraggableShape({
                   <Palette className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64" onClick={(e) => e.stopPropagation()}>
-                <div className="space-y-2">
-                  <Label>Shape Color</Label>
-                  <div className="flex gap-2 items-center">
-                    <Input
-                      type="color"
-                      value={localColor}
-                      onChange={(e) => {
-                        setLocalColor(e.target.value);
-                        onColorChange?.(id, e.target.value);
+              <PopoverContent className="w-72" onClick={(e) => e.stopPropagation()}>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Color</Label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        type="color"
+                        value={localColor}
+                        onChange={(e) => {
+                          setLocalColor(e.target.value);
+                          onColorChange?.(id, e.target.value);
+                        }}
+                        className="w-12 h-8 cursor-pointer"
+                      />
+                      <Input
+                        type="text"
+                        value={localColor}
+                        onChange={(e) => {
+                          setLocalColor(e.target.value);
+                          onColorChange?.(id, e.target.value);
+                        }}
+                        className="flex-1"
+                        placeholder="#000000"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Dimensions</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Width (px)</Label>
+                        <Input
+                          type="number"
+                          min="20"
+                          max="800"
+                          value={width}
+                          onChange={(e) => {
+                            const newWidth = Math.max(20, Math.min(800, Number(e.target.value)));
+                            onSizeChange(id, newWidth, height);
+                          }}
+                          className="h-8"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">Height (px)</Label>
+                        <Input
+                          type="number"
+                          min="20"
+                          max="800"
+                          value={height}
+                          onChange={(e) => {
+                            const newHeight = Math.max(20, Math.min(800, Number(e.target.value)));
+                            onSizeChange(id, width, newHeight);
+                          }}
+                          className="h-8"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => {
+                        const maxDim = Math.max(width, height);
+                        onSizeChange(id, maxDim, maxDim);
                       }}
-                      className="w-12 h-8 cursor-pointer"
-                    />
-                    <Input
-                      type="text"
-                      value={localColor}
-                      onChange={(e) => {
-                        setLocalColor(e.target.value);
-                        onColorChange?.(id, e.target.value);
+                    >
+                      Make Square
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs"
+                      onClick={() => {
+                        onSizeChange(id, width * 2, height);
                       }}
-                      className="flex-1"
-                      placeholder="#000000"
-                    />
+                    >
+                      Double Width
+                    </Button>
                   </div>
                 </div>
               </PopoverContent>
