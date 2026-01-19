@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, MoreVertical, Trash2, Edit2, GripVertical, ExternalLink, Filter, Download, Upload, Search, CheckSquare, Columns, Minimize2, Maximize2, Brain, ChevronLeft, ChevronRight, LayoutGrid, Table2, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { ColumnManager } from "./crm/ColumnManager";
 import { CustomTableColumnManager, ColumnConfig } from "./crm/CustomTableColumnManager";
@@ -509,13 +510,26 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         return;
       }
 
+      // Use same columns as Contacts table
+      const defaultColumns = ["Name", "Email", "Phone", "Company", "Position", "Status", "Priority"];
+      const defaultColumnConfigs: Record<string, ColumnConfig> = {
+        "Name": { type: "text", required: true },
+        "Email": { type: "text", required: false },
+        "Phone": { type: "text", required: false },
+        "Company": { type: "text", required: false },
+        "Position": { type: "text", required: false },
+        "Status": { type: "select", required: false, options: ["active", "inactive", "prospect", "qualified lead", "proposal", "negotiation", "contract sent", "closed"] },
+        "Priority": { type: "select", required: false, options: ["high", "medium", "low"] },
+      };
+
       const { data, error } = await supabase
         .from("crm_boards")
         .insert({
           user_id: user.id,
           name: newTableName,
-          columns: ["Item", "Status"],
-          rows: [],
+          columns: defaultColumns as unknown as Json,
+          column_configs: defaultColumnConfigs as unknown as Json,
+          rows: [] as unknown as Json,
           display_order: tables.length,
         })
         .select()
@@ -527,6 +541,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         id: data.id,
         name: data.name,
         columns: data.columns as string[],
+        columnConfigs: defaultColumnConfigs,
         rows: data.rows as Record<string, string>[],
       };
 
