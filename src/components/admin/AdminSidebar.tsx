@@ -28,6 +28,7 @@ import {
   LogOut,
   ClipboardList,
   Globe,
+  Settings,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -72,6 +73,7 @@ const navItems: NavItem[] = [
   { id: "research-ai", label: "Research AI", icon: Bot, gradient: "from-rose-500 to-pink-600" },
   { id: "research-scraper", label: "Research Scraper", icon: Globe, gradient: "from-sky-500 to-blue-600" },
   { id: "crm", label: "CRM", icon: Contact, gradient: "from-blue-500 to-blue-600" },
+  { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700" },
 ];
 
 export function AdminSidebar({ activeTab, onTabChange, onLogout }: AdminSidebarProps) {

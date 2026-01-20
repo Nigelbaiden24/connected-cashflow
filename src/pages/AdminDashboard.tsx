@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,8 @@ import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
 import { ContentTargetSelector, Platform } from "@/components/admin/ContentTargetSelector";
 import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
+import { useAdminAutoLogout } from "@/hooks/useAdminAutoLogout";
+import { AdminSettings } from "@/components/admin/AdminSettings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 interface Profile {
@@ -62,6 +64,10 @@ export default function AdminDashboard() {
   const [crmActiveTab, setCrmActiveTab] = useState('board');
   const [activeTab, setActiveTab] = useState('users');
 
+  // Auto-logout settings state
+  const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(true);
+  const [autoLogoutMinutes, setAutoLogoutMinutes] = useState(30);
+
   // Content target states for each tab
   const [newsletterTarget, setNewsletterTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
   const [portfolioTarget, setPortfolioTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
@@ -75,6 +81,57 @@ export default function AdminDashboard() {
 
   // Time tracking for admin dashboard - always active when on this page
   useAdminTimeTracking(true);
+
+  // Auto-logout hook - will log out admin after inactivity
+  useAdminAutoLogout({
+    timeoutMinutes: autoLogoutMinutes,
+    enabled: autoLogoutEnabled && isAdmin,
+    warningMinutes: 1,
+  });
+
+  // Load auto-logout settings from database
+  useEffect(() => {
+    const loadAutoLogoutSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from("admin_settings")
+          .select("setting_key, setting_value")
+          .eq("user_id", user.id)
+          .in("setting_key", ["autoLogoutEnabled", "autoLogoutMinutes"]);
+
+        if (data) {
+          data.forEach((row) => {
+            const value = row.setting_value as any;
+            if (row.setting_key === "autoLogoutEnabled" && typeof value?.value === "boolean") {
+              setAutoLogoutEnabled(value.value);
+            }
+            if (row.setting_key === "autoLogoutMinutes" && typeof value?.value === "number") {
+              setAutoLogoutMinutes(value.value);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error loading auto-logout settings:", error);
+      }
+    };
+
+    if (isAdmin) {
+      loadAutoLogoutSettings();
+    }
+  }, [isAdmin]);
+
+  // Callback to update settings from AdminSettings component
+  const handleSettingsChange = useCallback((settings: any) => {
+    if (typeof settings.autoLogoutEnabled === "boolean") {
+      setAutoLogoutEnabled(settings.autoLogoutEnabled);
+    }
+    if (typeof settings.autoLogoutMinutes === "number") {
+      setAutoLogoutMinutes(settings.autoLogoutMinutes);
+    }
+  }, []);
 
   // Form states for each content type
   const [reportForm, setReportForm] = useState({ title: "", description: "", userId: "", file: null as File | null });
@@ -1407,6 +1464,10 @@ export default function AdminDashboard() {
             >
               <AdminPlanner />
             </ErrorBoundary>
+          )}
+
+          {activeTab === 'settings' && (
+            <AdminSettings onSettingsChange={handleSettingsChange} />
           )}
         </div>
       </main>
