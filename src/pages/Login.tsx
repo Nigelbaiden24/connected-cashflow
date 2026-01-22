@@ -177,6 +177,25 @@ const Login = ({ onLogin }: LoginProps) => {
                 </p>
               </div>
 
+              {/* Demo Credentials Card */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">Demo Account</span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p className="text-muted-foreground">
+                    <span className="font-medium text-foreground">Email:</span> demo.finance@flowpulse.com
+                  </p>
+                  <p className="text-muted-foreground">
+                    <span className="font-medium text-foreground">Password:</span> FlowPulse2024!
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  * Demo accounts require admin approval for access
+                </p>
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium">
