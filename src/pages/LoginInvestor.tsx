@@ -169,25 +169,6 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
                 <p className="text-muted-foreground mt-2">Sign in to access your investment portal</p>
               </div>
 
-              {/* Demo Credentials Card */}
-              <div className="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
-                  <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">Demo Account</span>
-                </div>
-                <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">
-                    <span className="font-medium text-foreground">Email:</span> demo.investor@flowpulse.com
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-medium text-foreground">Password:</span> FlowPulse2024!
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  * Demo accounts require admin approval for access
-                </p>
-              </div>
-
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
