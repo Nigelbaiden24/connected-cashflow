@@ -259,7 +259,7 @@ const Index = () => {
             </SheetContent>
           </Sheet>
           
-          <nav className="hidden md:flex items-center gap-12">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
             <button 
               onClick={() => navigate('/login')}
               className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
@@ -319,7 +319,7 @@ const Index = () => {
 
           <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 font-semibold">
+              <Button className="hidden lg:flex bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 font-semibold">
                 <Video className="mr-2 h-4 w-4" />
                 Book Demo
               </Button>
