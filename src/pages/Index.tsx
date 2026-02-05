@@ -18,7 +18,9 @@ import {
   Sparkles,
   Lock,
   Video,
-  Menu
+  Menu,
+  FileText,
+  ExternalLink
 } from "lucide-react";
 import {
   Sheet,
@@ -218,16 +220,6 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
-                      navigate("/reports");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Reports
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
                       navigate("/pricing");
                       setMobileMenuOpen(false);
                     }}
@@ -286,13 +278,6 @@ const Index = () => {
               className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               Jenrate
-            </button>
-
-            <button 
-              onClick={() => navigate('/reports')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              Reports
             </button>
 
             <button 
@@ -515,6 +500,95 @@ const Index = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </section>
+
+      {/* Reports Feature Section */}
+      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
+        <div className="container mx-auto px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium text-primary">Research Reports</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold">
+                  Expert Financial Research
+                </h2>
+                <p className="text-xl text-muted-foreground">
+                  Access comprehensive research reports studied and written by expert human analysts. Get deep insights into markets, sectors, and investment opportunities.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span>In-depth market analysis and commentary</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span>Sector-specific research and trends</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span>Expert insights from professional analysts</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                    <span>Regular updates and new publications</span>
+                  </li>
+                </ul>
+                <Button 
+                  onClick={() => navigate('/reports')}
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 gap-2"
+                >
+                  Browse Reports
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-chart-1/20 rounded-3xl blur-3xl" />
+                <Card className="relative border-border/50 bg-card/80 backdrop-blur-sm overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-chart-1/10 border-b">
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      Latest Reports
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-3">
+                      {[
+                        { title: "Q4 2024 Market Outlook", category: "Market Analysis", date: "Dec 2024" },
+                        { title: "Tech Sector Deep Dive", category: "Sector Research", date: "Nov 2024" },
+                        { title: "Emerging Markets Report", category: "Global Markets", date: "Nov 2024" },
+                        { title: "ESG Investment Trends", category: "Sustainability", date: "Oct 2024" },
+                      ].map((report, idx) => (
+                        <div 
+                          key={idx}
+                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                          onClick={() => navigate('/reports')}
+                        >
+                          <div>
+                            <p className="font-medium text-sm">{report.title}</p>
+                            <p className="text-xs text-muted-foreground">{report.category}</p>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{report.date}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => navigate('/reports')}
+                    >
+                      View All Reports
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
