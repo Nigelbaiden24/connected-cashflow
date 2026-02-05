@@ -18,9 +18,7 @@ import {
   Sparkles,
   Lock,
   Video,
-  Menu,
-  FileText,
-  LayoutGrid
+  Menu
 } from "lucide-react";
 import {
   Sheet,
@@ -42,8 +40,6 @@ import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
 import businessScreenshot from "@/assets/business-dashboard-screenshot.png";
 import investorScreenshot from "@/assets/investor-dashboard-real.png";
 import globalFinance from "@/assets/global-finance-districts.jpg";
-import { CRMBoard } from "@/components/CRMBoard";
-import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -202,6 +198,26 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
+                      navigate("/login-crm");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    FlowPulse CRM
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start font-semibold"
+                    onClick={() => {
+                      navigate("/login-jenrate");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Jenrate
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start font-semibold"
+                    onClick={() => {
                       navigate("/reports");
                       setMobileMenuOpen(false);
                     }}
@@ -256,6 +272,20 @@ const Index = () => {
               className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
               FlowPulse Investor
+            </button>
+
+            <button 
+              onClick={() => navigate('/login-crm')}
+              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
+            >
+              FlowPulse CRM
+            </button>
+
+            <button 
+              onClick={() => navigate('/login-jenrate')}
+              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
+            >
+              Jenrate
             </button>
 
             <button 
@@ -447,62 +477,6 @@ const Index = () => {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CRM Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-4">
-                <LayoutGrid className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium text-primary">CRM System</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Customer Relationship Management
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Manage your contacts, track leads, and streamline your client relationships with our powerful CRM
-              </p>
-            </div>
-            
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
-              <CardContent className="p-0">
-                <div className="max-h-[800px] overflow-auto">
-                  <CRMBoard />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Document Generator Section */}
-      <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
-        <div className="container mx-auto px-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-chart-1/10 rounded-full mb-4">
-                <FileText className="h-5 w-5 text-chart-1" />
-                <span className="text-sm font-medium text-chart-1">Document Generator</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-chart-1 to-chart-2 bg-clip-text text-transparent">
-                AI-Powered Document Generator
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Create professional documents with AI assistance, customizable templates, and advanced editing tools
-              </p>
-            </div>
-            
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
-              <CardContent className="p-0">
-                <div className="max-h-[900px] overflow-auto">
-                  <AdminDocumentGenerator />
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
