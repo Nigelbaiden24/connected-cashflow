@@ -14,6 +14,10 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import LoginBusiness from "./pages/LoginBusiness";
 import LoginInvestor from "./pages/LoginInvestor";
+import LoginCRM from "./pages/LoginCRM";
+import LoginJenrate from "./pages/LoginJenrate";
+import CRMStandalone from "./pages/CRMStandalone";
+import JenrateStandalone from "./pages/JenrateStandalone";
 import Dashboard from "./pages/Dashboard";
 import InvestorDashboard from "./pages/InvestorDashboard";
 import InvestorResearchReports from "./pages/investor/ResearchReports";
@@ -141,6 +145,14 @@ const App = () => {
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
           <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
+          <Route path="/login-crm" element={<LoginCRM onLogin={handleLogin} />} />
+          <Route path="/login-jenrate" element={<LoginJenrate onLogin={handleLogin} />} />
+          <Route path="/crm-standalone" element={
+            !isAuthenticated ? <Navigate to="/login-crm" replace /> : <CRMStandalone userEmail={userEmail} onLogout={handleLogout} />
+          } />
+          <Route path="/jenrate" element={
+            !isAuthenticated ? <Navigate to="/login-jenrate" replace /> : <JenrateStandalone userEmail={userEmail} onLogout={handleLogout} />
+          } />
           <Route path="/opportunities" element={<Opportunities />} />
           <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
           <Route path="/about-us" element={<Features />} />
