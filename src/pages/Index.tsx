@@ -127,10 +127,10 @@ const Index = () => {
   };
 
   const financeFeatures = [
-    { icon: TrendingUp, title: "Portfolio Management", desc: "Advanced investment tracking" },
-    { icon: BarChart3, title: "Financial Planning", desc: "Comprehensive wealth strategies" },
-    { icon: Users, title: "Client Management", desc: "Centralized CRM system" },
-    { icon: Shield, title: "Compliance", desc: "Built-in regulatory tools" },
+    { icon: TrendingUp, title: "Deal Alerts", desc: "Real-time opportunity notifications" },
+    { icon: BarChart3, title: "Watchlists", desc: "Track companies and deals" },
+    { icon: Users, title: "Market Commentary", desc: "Expert analysis and insights" },
+    { icon: Shield, title: "Discovery Tools", desc: "Screeners & deal database" },
   ];
 
   const businessFeatures = [
