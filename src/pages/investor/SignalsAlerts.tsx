@@ -20,10 +20,28 @@ const SignalsAlerts = () => {
 
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [preferencesLoading, setPreferencesLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchAlerts();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        await Promise.all([fetchAlerts(), fetchPreferences(user.id)]);
+      } else {
+        await fetchAlerts();
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchAlerts = async () => {
     try {
@@ -37,9 +55,55 @@ const SignalsAlerts = () => {
     } catch (error) {
       console.error('Error fetching alerts:', error);
       toast.error('Failed to load alerts');
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const fetchPreferences = async (uid: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('investor_alert_preferences')
+        .select('*')
+        .eq('user_id', uid);
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const prefs: Record<string, boolean> = {};
+        data.forEach((pref) => {
+          const key = alertTypeToKey(pref.alert_type);
+          if (key) {
+            prefs[key] = pref.platform_enabled ?? true;
+          }
+        });
+        setNotifications(prev => ({ ...prev, ...prefs }));
+      }
+    } catch (error) {
+      console.error('Error fetching preferences:', error);
+    }
+  };
+
+  const alertTypeToKey = (alertType: string): string | null => {
+    const mapping: Record<string, string> = {
+      'price_surge': 'priceSurge',
+      'volume_spike': 'volumeSpike',
+      'insider_buying': 'insiderBuying',
+      'analyst_rating': 'analystRating',
+      'filing': 'filings',
+      'macro': 'macro'
+    };
+    return mapping[alertType] || null;
+  };
+
+  const keyToAlertType = (key: string): string => {
+    const mapping: Record<string, string> = {
+      'priceSurge': 'price_surge',
+      'volumeSpike': 'volume_spike',
+      'insiderBuying': 'insider_buying',
+      'analystRating': 'analyst_rating',
+      'filings': 'filing',
+      'macro': 'macro'
+    };
+    return mapping[key] || key;
   };
 
   const getAlertsByType = (type: string) => {
@@ -52,9 +116,44 @@ const SignalsAlerts = () => {
   const analystRatingAlerts = getAlertsByType('analyst_rating');
   const filingAlerts = getAlertsByType('filing');
   const macroAlerts = getAlertsByType('macro');
-  const handleToggleNotification = (type: keyof typeof notifications) => {
-    setNotifications({ ...notifications, [type]: !notifications[type] });
-    toast.success(`${type} alerts ${!notifications[type] ? 'enabled' : 'disabled'}`);
+
+  const handleToggleNotification = async (type: keyof typeof notifications) => {
+    if (!userId) {
+      // Update local state only if not logged in
+      setNotifications({ ...notifications, [type]: !notifications[type] });
+      toast.success(`${type} alerts ${!notifications[type] ? 'enabled' : 'disabled'}`);
+      return;
+    }
+
+    const newValue = !notifications[type];
+    setNotifications({ ...notifications, [type]: newValue });
+    setPreferencesLoading(true);
+
+    try {
+      const alertType = keyToAlertType(type);
+      
+      const { error } = await supabase
+        .from('investor_alert_preferences')
+        .upsert({
+          user_id: userId,
+          alert_type: alertType,
+          platform_enabled: newValue,
+          email_enabled: newValue,
+        }, {
+          onConflict: 'user_id,alert_type'
+        });
+
+      if (error) throw error;
+      
+      toast.success(`${type} alerts ${newValue ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Error updating preference:', error);
+      toast.error('Failed to save preference');
+      // Revert on error
+      setNotifications({ ...notifications, [type]: !newValue });
+    } finally {
+      setPreferencesLoading(false);
+    }
   };
 
   if (loading) {

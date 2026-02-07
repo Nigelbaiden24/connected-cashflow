@@ -17,7 +17,7 @@ const Pricing = () => {
     priceId: string,
     mode: 'subscription' | 'payment',
     planName: string,
-    platform: 'investor' | 'business'
+    platform: 'investor' | 'finance'
   ) => {
     setLoading(`${platform}-${planName}`);
     
@@ -79,23 +79,23 @@ const Pricing = () => {
     icon: TrendingUp,
   };
 
-  // FlowPulse Business - Team pricing tiers
-  const businessTiers = [
+  // FlowPulse Finance - Team pricing tiers
+  const financeTiers = [
     {
       name: "Team of 3",
       description: "Perfect for small advisory teams",
       annualPrice: 3597,
       seats: 3,
-      stripePriceId: "price_business_3_seats", // Replace with actual Stripe price ID
+      stripePriceId: "price_finance_3_seats", // Replace with actual Stripe price ID
       features: [
-        "All Investor features included",
+        "Deal alerts & notifications",
+        "Unlimited watchlists",
+        "Market commentary access",
+        "Basic screeners & discovery",
+        "Company/deal database",
+        "Featured analyst picks",
+        "Opportunities intelligence",
         "3 team member seats",
-        "Shared client portfolio management",
-        "Team collaboration tools",
-        "Compliance reporting dashboard",
-        "CRM integration",
-        "Custom report generation",
-        "Email support",
       ],
       gradient: "from-blue-600 to-cyan-600",
       icon: Users,
@@ -106,16 +106,16 @@ const Pricing = () => {
       annualPrice: 5876,
       originalPrice: 7345,
       seats: 5,
-      stripePriceId: "price_business_5_seats", // Replace with actual Stripe price ID
+      stripePriceId: "price_finance_5_seats", // Replace with actual Stripe price ID
       features: [
-        "All Investor features included",
+        "Deal alerts & notifications",
+        "Unlimited watchlists",
+        "Market commentary access",
+        "Basic screeners & discovery",
+        "Company/deal database",
+        "Featured analyst picks",
+        "Opportunities intelligence",
         "5 team member seats",
-        "Shared client portfolio management",
-        "Team collaboration tools",
-        "Compliance reporting dashboard",
-        "Advanced CRM integration",
-        "Custom report generation",
-        "White-label client portal",
         "Priority support",
         "Dedicated account manager",
       ],
@@ -134,17 +134,28 @@ const Pricing = () => {
         "All Team of 5 features",
         "Unlimited team seats",
         "Custom API integrations",
-        "Regulatory compliance suite",
         "24/7 priority support",
         "Custom training & onboarding",
         "Dedicated success manager",
         "SLA guarantees",
-        "Custom security requirements",
       ],
       gradient: "from-orange-600 to-red-600",
       icon: Shield,
       isEnterprise: true,
     },
+  ];
+
+  // Add-on features
+  const addOnFeatures = [
+    { name: "Fund Scoring", description: "AI-powered fund analysis and scoring" },
+    { name: "Advanced Screening & Discovery", description: "Enhanced filters and discovery tools" },
+    { name: "Model Portfolios", description: "Pre-built investment strategies" },
+    { name: "Predictive Analytics", description: "AI-driven market predictions" },
+    { name: "Comprehensive Fund & ETF Database", description: "Extended fund coverage" },
+    { name: "Stocks & Crypto Database", description: "Full equity and crypto coverage" },
+    { name: "CRM Integration", description: "Customer relationship management" },
+    { name: "API Access", description: "Programmatic data access" },
+    { name: "Learning Hub", description: "Educational resources and training" },
   ];
 
   // Payment partner logos - using text representations for authenticity
@@ -187,8 +198,8 @@ const Pricing = () => {
             <TabsTrigger value="investor" className="text-base md:text-lg py-3 px-4">
               FlowPulse Investor
             </TabsTrigger>
-            <TabsTrigger value="business" className="text-base md:text-lg py-3 px-4">
-              FlowPulse Business
+            <TabsTrigger value="finance" className="text-base md:text-lg py-3 px-4">
+              FlowPulse Finance
             </TabsTrigger>
           </TabsList>
 
@@ -257,17 +268,17 @@ const Pricing = () => {
             </div>
           </TabsContent>
 
-          {/* FlowPulse Business Tab */}
-          <TabsContent value="business">
+          {/* FlowPulse Finance Tab */}
+          <TabsContent value="finance">
             <div className="mb-6 text-center">
-              <h2 className="text-3xl font-bold mb-2 text-primary">FlowPulse Business</h2>
+              <h2 className="text-3xl font-bold mb-2 text-primary">FlowPulse Finance</h2>
               <p className="text-muted-foreground">
                 Team solutions for financial advisors and wealth managers
               </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {businessTiers.map((tier) => (
+              {financeTiers.map((tier) => (
                 <Card
                   key={tier.name}
                   className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
@@ -349,16 +360,60 @@ const Pricing = () => {
                           tier.stripePriceId!,
                           'subscription',
                           tier.name,
-                          'business'
+                          'finance'
                         )}
-                        disabled={loading === `business-${tier.name}`}
+                        disabled={loading === `finance-${tier.name}`}
                       >
-                        {loading === `business-${tier.name}` ? 'Loading...' : 'Get Started'}
+                        {loading === `finance-${tier.name}` ? 'Loading...' : 'Get Started'}
                       </Button>
                     )}
                   </CardFooter>
                 </Card>
               ))}
+            </div>
+
+            {/* Add-ons Section */}
+            <div className="mt-16">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold mb-2">Optional Add-ons</h3>
+                <p className="text-muted-foreground">
+                  Enhance your experience with premium features
+                </p>
+              </div>
+              
+              <Card className="max-w-5xl mx-auto bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+                <CardContent className="p-8">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    {addOnFeatures.map((addon, idx) => (
+                      <div 
+                        key={idx}
+                        className="flex items-start gap-3 p-4 bg-background/80 rounded-lg border border-border/50 hover:border-primary/30 transition-colors"
+                      >
+                        <div className="rounded-full p-1 bg-gradient-to-r from-primary/20 to-secondary/20 flex-shrink-0 mt-0.5">
+                          <Check className="h-3 w-3 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{addon.name}</p>
+                          <p className="text-xs text-muted-foreground">{addon.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-4">
+                      Contact us to customize your plan with these premium features
+                    </p>
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-primary to-secondary hover:opacity-90"
+                      onClick={handleContactSales}
+                    >
+                      Contact Us for Add-ons
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
