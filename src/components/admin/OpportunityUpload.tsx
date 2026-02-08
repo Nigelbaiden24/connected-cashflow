@@ -24,20 +24,55 @@ import {
 } from "lucide-react";
 
 const categoryConfig = {
-  real_estate: {
-    label: "Real Estate",
+  uk_property: {
+    label: "UK Property",
     icon: Building2,
-    subCategories: ["Residential UK", "Residential Overseas", "Commercial", "Offices", "Retail", "Land", "Development Plots"]
+    subCategories: ["B2F", "B2L", "HMO", "R2R", "B2SA", "Commercial Property", "Land", "Parking Spaces"]
   },
-  private_business: {
-    label: "Private Businesses",
+  vehicles: {
+    label: "Vehicles",
+    icon: Briefcase, // Using Briefcase as placeholder since Car icon not imported
+    subCategories: ["Classic Cars", "Luxury Vehicles", "Motorcycles", "Commercial Vehicles"]
+  },
+  overseas_property: {
+    label: "Overseas Property & Land",
+    icon: Building2,
+    subCategories: ["Residential Overseas", "Commercial Overseas", "Land Overseas", "Development Projects"]
+  },
+  businesses: {
+    label: "Businesses",
     icon: Briefcase,
-    subCategories: ["SMEs", "Startups", "Family-owned Businesses"]
+    subCategories: ["SMEs", "Startups", "Franchises", "Established Businesses"]
   },
-  collectibles_luxury: {
-    label: "Collectibles & Luxury",
+  stocks: {
+    label: "Stocks",
+    icon: Briefcase,
+    subCategories: ["UK Equities", "US Equities", "International Equities", "Penny Stocks"]
+  },
+  crypto: {
+    label: "Crypto & Digital Assets",
     icon: Gem,
-    subCategories: ["Art", "Antiques", "Rare Cars", "Wine", "Watches", "Jewellery"]
+    subCategories: ["Cryptocurrency", "NFTs", "Digital Tokens", "DeFi"]
+  },
+  private_equity: {
+    label: "Private Equity",
+    icon: Briefcase,
+    subCategories: ["Growth Equity", "Buyouts", "Venture Capital", "Mezzanine"]
+  },
+  memorabilia: {
+    label: "Memorabilia",
+    icon: Gem,
+    subCategories: ["Sports Memorabilia", "Entertainment", "Historical Items", "Signed Items"]
+  },
+  commodities: {
+    label: "Commodities & Hard Assets",
+    icon: Gem,
+    subCategories: ["Gold", "Silver", "Precious Metals", "Raw Materials"]
+  },
+  funds: {
+    label: "Funds",
+    icon: Building2,
+    subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs"]
   }
 };
 
@@ -587,11 +622,11 @@ export function OpportunityUpload() {
 
           {/* Product Details Tab */}
           <TabsContent value="details" className="space-y-4 mt-4">
-            {form.category === "real_estate" && (
+            {(form.category === "uk_property" || form.category === "overseas_property") && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" /> Real Estate Details
+                    <Building2 className="h-5 w-5" /> Property Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-2">
@@ -608,6 +643,8 @@ export function OpportunityUpload() {
                         <SelectItem value="villa">Villa</SelectItem>
                         <SelectItem value="commercial">Commercial Unit</SelectItem>
                         <SelectItem value="land">Land</SelectItem>
+                        <SelectItem value="hmo">HMO</SelectItem>
+                        <SelectItem value="parking">Parking Space</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -656,7 +693,7 @@ export function OpportunityUpload() {
               </Card>
             )}
 
-            {form.category === "private_business" && (
+            {(form.category === "businesses" || form.category === "private_equity") && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -716,11 +753,11 @@ export function OpportunityUpload() {
               </Card>
             )}
 
-            {form.category === "collectibles_luxury" && (
+            {(form.category === "memorabilia" || form.category === "vehicles" || form.category === "commodities") && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Gem className="h-5 w-5" /> Collectible Details
+                    <Gem className="h-5 w-5" /> Asset Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -766,6 +803,46 @@ export function OpportunityUpload() {
                       onCheckedChange={(v) => updateForm("authenticity_verified", v)}
                     />
                     <Label htmlFor="authenticity">Authenticity Verified</Label>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {(form.category === "stocks" || form.category === "crypto" || form.category === "funds") && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Gem className="h-5 w-5" /> Financial Asset Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Investment Thesis Details</Label>
+                    <Textarea
+                      value={form.provenance}
+                      onChange={(e) => updateForm("provenance", e.target.value)}
+                      placeholder="Why this asset is a good investment opportunity..."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Est. Annual Return (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={form.estimated_appreciation}
+                        onChange={(e) => updateForm("estimated_appreciation", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Industry/Sector</Label>
+                      <Input
+                        value={form.industry}
+                        onChange={(e) => updateForm("industry", e.target.value)}
+                        placeholder="e.g., Technology, Healthcare, DeFi"
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
