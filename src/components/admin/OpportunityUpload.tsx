@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createOpportunityNotification } from "@/utils/notificationService";
 import { 
   Upload, 
   Building2, 
@@ -302,11 +303,21 @@ export function OpportunityUpload() {
         uploaded_by: user?.id || null
       };
 
-      const { error } = await supabase
+      const { data: insertedOpportunity, error } = await supabase
         .from("opportunity_products")
-        .insert(opportunityData);
+        .insert(opportunityData)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Create notifications for all users about the new opportunity
+      await createOpportunityNotification({
+        opportunityId: insertedOpportunity.id,
+        title: form.title,
+        category: form.category,
+        subCategory: form.sub_category,
+      });
 
       toast.success("Opportunity uploaded successfully!");
       setForm(initialForm);
