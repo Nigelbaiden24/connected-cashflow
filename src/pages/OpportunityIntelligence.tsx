@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -18,7 +21,18 @@ import {
   TrendingUp,
   MapPin,
   Clock,
-  Eye
+  Eye,
+  LayoutGrid,
+  List,
+  Car,
+  Globe,
+  LineChart,
+  Bitcoin,
+  Users,
+  Award,
+  Package,
+  Landmark,
+  ChevronRight
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -39,24 +53,67 @@ interface OpportunityProduct {
   created_at: string;
 }
 
+// Updated category configuration
 const categoryConfig = {
-  real_estate: {
-    label: "Real Estate",
+  uk_property: {
+    label: "UK Property",
     icon: Building2,
     color: "bg-blue-500/10 text-blue-500",
-    subCategories: ["Residential UK", "Residential Overseas", "Commercial", "Offices", "Retail", "Land", "Development Plots"]
+    subCategories: ["B2F", "B2L", "HMO", "R2R", "B2SA", "Commercial Property", "Land", "Parking Spaces"]
   },
-  private_business: {
-    label: "Private Businesses",
+  vehicles: {
+    label: "Vehicles",
+    icon: Car,
+    color: "bg-orange-500/10 text-orange-500",
+    subCategories: ["Classic Cars", "Luxury Vehicles", "Motorcycles", "Commercial Vehicles"]
+  },
+  overseas_property: {
+    label: "Overseas Property & Land",
+    icon: Globe,
+    color: "bg-teal-500/10 text-teal-500",
+    subCategories: ["Residential Overseas", "Commercial Overseas", "Land Overseas", "Development Projects"]
+  },
+  businesses: {
+    label: "Businesses",
     icon: Briefcase,
     color: "bg-green-500/10 text-green-500",
-    subCategories: ["SMEs", "Startups", "Family-owned Businesses"]
+    subCategories: ["SMEs", "Startups", "Franchises", "Established Businesses"]
   },
-  collectibles_luxury: {
-    label: "Collectibles & Luxury",
-    icon: Gem,
+  stocks: {
+    label: "Stocks",
+    icon: LineChart,
+    color: "bg-indigo-500/10 text-indigo-500",
+    subCategories: ["UK Equities", "US Equities", "International Equities", "Penny Stocks"]
+  },
+  crypto: {
+    label: "Crypto & Digital Assets",
+    icon: Bitcoin,
+    color: "bg-amber-500/10 text-amber-500",
+    subCategories: ["Cryptocurrency", "NFTs", "Digital Tokens", "DeFi"]
+  },
+  private_equity: {
+    label: "Private Equity",
+    icon: Users,
     color: "bg-purple-500/10 text-purple-500",
-    subCategories: ["Art", "Antiques", "Rare Cars", "Wine", "Watches", "Jewellery"]
+    subCategories: ["Growth Equity", "Buyouts", "Venture Capital", "Mezzanine"]
+  },
+  memorabilia: {
+    label: "Memorabilia",
+    icon: Award,
+    color: "bg-pink-500/10 text-pink-500",
+    subCategories: ["Sports Memorabilia", "Entertainment", "Historical Items", "Signed Items"]
+  },
+  commodities: {
+    label: "Commodities & Hard Assets",
+    icon: Package,
+    color: "bg-yellow-500/10 text-yellow-600",
+    subCategories: ["Gold", "Silver", "Precious Metals", "Raw Materials"]
+  },
+  funds: {
+    label: "Funds",
+    icon: Landmark,
+    color: "bg-slate-500/10 text-slate-500",
+    subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs"]
   }
 };
 
@@ -75,6 +132,7 @@ export default function OpportunityIntelligence() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     fetchOpportunities();
@@ -218,13 +276,103 @@ export default function OpportunityIntelligence() {
     );
   };
 
+  // List View Row Component
+  const OpportunityRow = ({ opportunity }: { opportunity: OpportunityProduct }) => {
+    const config = categoryConfig[opportunity.category as keyof typeof categoryConfig];
+    const Icon = config?.icon || Building2;
+
+    return (
+      <TableRow className="cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30">
+        <TableCell className="pl-4">
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
+              {opportunity.thumbnail_url ? (
+                <img 
+                  src={opportunity.thumbnail_url} 
+                  alt={opportunity.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-muted-foreground/40" />
+                </div>
+              )}
+            </div>
+            <div className="space-y-1">
+              <div className="font-medium text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                {opportunity.title}
+              </div>
+              <div className="text-xs text-muted-foreground line-clamp-1">
+                {opportunity.short_description}
+              </div>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="space-y-1">
+            <Badge variant="outline" className={`text-xs ${config?.color}`}>
+              {config?.label || opportunity.category}
+            </Badge>
+            <div className="text-xs text-muted-foreground">{opportunity.sub_category}</div>
+          </div>
+        </TableCell>
+        <TableCell className="text-right whitespace-nowrap">
+          {opportunity.price ? (
+            <span className="font-semibold text-primary">
+              {formatPrice(opportunity.price, opportunity.price_currency)}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </TableCell>
+        <TableCell className="text-center whitespace-nowrap">
+          {opportunity.analyst_rating ? (
+            <Badge className={`${ratingColors[opportunity.analyst_rating]} border`}>
+              {opportunity.analyst_rating}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground text-xs">Not rated</span>
+          )}
+        </TableCell>
+        <TableCell className="text-center whitespace-nowrap">
+          {opportunity.overall_conviction_score ? (
+            <div className="flex items-center justify-center gap-1">
+              <TrendingUp className="h-3 w-3 text-green-500" />
+              <span className="font-medium text-sm">{opportunity.overall_conviction_score.toFixed(1)}/5</span>
+            </div>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </TableCell>
+        <TableCell className="whitespace-nowrap">
+          {opportunity.location && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3" />
+              <span>{opportunity.location}</span>
+            </div>
+          )}
+        </TableCell>
+        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+          {new Date(opportunity.created_at).toLocaleDateString()}
+        </TableCell>
+        <TableCell>
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button size="icon" variant="ghost" className="h-7 w-7 hover:bg-primary/10 hover:text-primary">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Opportunity Intelligence</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Live Deal Alerts</h1>
         <p className="text-muted-foreground">
-          Curated investment opportunities across Real Estate, Private Businesses, and Luxury Assets
+          Real-time investment opportunities across multiple asset classes
         </p>
       </div>
 
@@ -250,42 +398,54 @@ export default function OpportunityIntelligence() {
             <SelectItem value="rating">Highest Rating</SelectItem>
           </SelectContent>
         </Select>
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list")}>
+          <ToggleGroupItem value="grid" aria-label="Grid view">
+            <LayoutGrid className="h-4 w-4" />
+          </ToggleGroupItem>
+          <ToggleGroupItem value="list" aria-label="List view">
+            <List className="h-4 w-4" />
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       {/* Category Tabs */}
       <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">All Opportunities</TabsTrigger>
-          <TabsTrigger value="real_estate" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Real Estate</span>
-          </TabsTrigger>
-          <TabsTrigger value="private_business" className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            <span className="hidden sm:inline">Private Business</span>
-          </TabsTrigger>
-          <TabsTrigger value="collectibles_luxury" className="flex items-center gap-2">
-            <Gem className="h-4 w-4" />
-            <span className="hidden sm:inline">Collectibles</span>
-          </TabsTrigger>
+        <TabsList className="flex flex-wrap h-auto gap-1 p-1">
+          <TabsTrigger value="all" className="flex-shrink-0">All Deals</TabsTrigger>
+          {Object.entries(categoryConfig).map(([key, config]) => (
+            <TabsTrigger key={key} value={key} className="flex items-center gap-1.5 flex-shrink-0">
+              <config.icon className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">{config.label}</span>
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value={activeCategory} className="mt-6">
           {loading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i}>
-                  <Skeleton className="aspect-video" />
-                  <CardHeader>
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-16" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            viewMode === "grid" ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Card key={i}>
+                    <Skeleton className="aspect-video" />
+                    <CardHeader>
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-16" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <div className="p-4 space-y-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              </Card>
+            )
           ) : filteredOpportunities.length === 0 ? (
             <Card className="p-12 text-center">
               <div className="space-y-4">
@@ -300,12 +460,38 @@ export default function OpportunityIntelligence() {
                 </p>
               </div>
             </Card>
-          ) : (
+          ) : viewMode === "grid" ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredOpportunities.map((opportunity) => (
                 <OpportunityCard key={opportunity.id} opportunity={opportunity} />
               ))}
             </div>
+          ) : (
+            <Card className="border-border/50 overflow-hidden bg-gradient-to-br from-background to-muted/10">
+              <ScrollArea className="h-[650px]">
+                <div className="overflow-x-auto">
+                  <Table className="min-w-[900px]">
+                    <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="min-w-[300px] font-semibold text-foreground whitespace-nowrap pl-4">Opportunity</TableHead>
+                        <TableHead className="min-w-[120px] font-semibold text-foreground whitespace-nowrap">Category</TableHead>
+                        <TableHead className="min-w-[100px] text-right font-semibold text-foreground whitespace-nowrap">Price</TableHead>
+                        <TableHead className="min-w-[80px] text-center font-semibold text-foreground whitespace-nowrap">Rating</TableHead>
+                        <TableHead className="min-w-[80px] text-center font-semibold text-foreground whitespace-nowrap">Score</TableHead>
+                        <TableHead className="min-w-[100px] font-semibold text-foreground whitespace-nowrap">Location</TableHead>
+                        <TableHead className="min-w-[90px] font-semibold text-foreground whitespace-nowrap">Date</TableHead>
+                        <TableHead className="w-10"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOpportunities.map((opportunity) => (
+                        <OpportunityRow key={opportunity.id} opportunity={opportunity} />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            </Card>
           )}
         </TabsContent>
       </Tabs>
