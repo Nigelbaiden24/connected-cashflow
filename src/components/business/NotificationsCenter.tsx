@@ -2,101 +2,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, AlertCircle, CheckCircle, XCircle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Notification {
-  id: string;
-  notification_type: string;
-  title: string;
-  message: string;
-  severity: string;
-  is_read: boolean;
-  created_at: string;
-}
+import { Bell, AlertCircle, CheckCircle, XCircle, FileText, Zap } from "lucide-react";
+import { useBusinessNotifications } from "@/hooks/useNotifications";
 
 export function NotificationsCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const unreadCount = notifications.filter(n => !n.is_read).length;
-
-  useEffect(() => {
-    fetchNotifications();
-
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('notifications')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'business_notifications'
-      }, (payload) => {
-        setNotifications(prev => [payload.new as Notification, ...prev]);
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) return;
-
-      const { data } = await supabase
-        .from('business_notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      setNotifications(data || []);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    try {
-      await supabase
-        .from('business_notifications')
-        .update({ is_read: true })
-        .eq('id', id);
-
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, is_read: true } : n)
-      );
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) return;
-
-      await supabase
-        .from('business_notifications')
-        .update({ is_read: true })
-        .eq('user_id', userId)
-        .eq('is_read', false);
-
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch (error) {
-      console.error('Error marking all as read:', error);
-    }
-  };
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useBusinessNotifications();
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'task_overdue': return AlertCircle;
       case 'workflow_failed': return XCircle;
+      case 'new_report': return FileText;
+      case 'deal_alert': return Zap;
       default: return Bell;
     }
   };

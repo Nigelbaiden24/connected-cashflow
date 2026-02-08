@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { createReportNotification } from "@/utils/notificationService";
 import { Upload, Loader2, ImageIcon, X } from "lucide-react";
 
 interface Profile {
@@ -280,6 +281,15 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
           if (accessError) throw accessError;
         }
       }
+
+      // Create notification for users about the new report
+      await createReportNotification({
+        reportId: reportData.id,
+        title,
+        reportType,
+        platform: finalPlatform,
+        targetUserId: selectedUserId === "all" ? null : selectedUserId,
+      });
 
       toast.success("Report uploaded successfully");
       setOpen(false);

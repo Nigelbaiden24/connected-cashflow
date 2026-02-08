@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { useBusinessNotifications } from "@/hooks/useNotifications";
 import { 
   LayoutDashboard, 
   Users, 
@@ -27,6 +28,7 @@ const mobileNavItems = [
 
 export function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { unreadCount } = useBusinessNotifications();
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -42,7 +44,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
               variant="finance"
               showSearch={true}
               onSearchClick={() => setSearchOpen(true)}
-              notificationCount={3}
+              notificationCount={unreadCount}
             />
           )}
           
