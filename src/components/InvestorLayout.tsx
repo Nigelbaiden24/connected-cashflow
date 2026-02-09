@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
-import { useInvestorAlerts } from "@/hooks/useNotifications";
+import { InvestorNotificationsDropdown } from "@/components/notifications";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -27,7 +27,6 @@ const mobileNavItems = [
 
 export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const { unreadCount } = useInvestorAlerts();
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -42,7 +41,8 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
             variant="investor"
             showSearch={true}
             onSearchClick={() => setSearchOpen(true)}
-            notificationCount={unreadCount}
+            notificationCount={0}
+            rightContent={<InvestorNotificationsDropdown variant="investor" />}
           />
           
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">

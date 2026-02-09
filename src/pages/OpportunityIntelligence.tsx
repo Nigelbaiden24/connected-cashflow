@@ -144,7 +144,7 @@ export default function OpportunityIntelligence() {
       let query = supabase
         .from("opportunity_products")
         .select("*")
-        .eq("status", "active")
+        .in("status", ["active", "draft"]) // Show both active and draft opportunities
         .order("featured", { ascending: false });
 
       if (activeCategory !== "all") {

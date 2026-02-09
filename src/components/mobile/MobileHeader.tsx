@@ -115,23 +115,25 @@ export function MobileHeader({
 
           {rightContent}
 
-          {/* Notifications */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("h-9 w-9 touch-target relative", getTextColor())}
-          >
-            <Bell className="h-5 w-5" />
-            {notificationCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs flex items-center justify-center"
-              >
-                {notificationCount > 99 ? "99+" : notificationCount}
-              </Badge>
-            )}
-            <span className="sr-only">Notifications</span>
-          </Button>
+          {/* Notifications - only show if no custom rightContent */}
+          {!rightContent && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("h-9 w-9 touch-target relative", getTextColor())}
+            >
+              <Bell className="h-5 w-5" />
+              {notificationCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1 h-5 min-w-5 px-1 text-xs flex items-center justify-center"
+                >
+                  {notificationCount > 99 ? "99+" : notificationCount}
+                </Badge>
+              )}
+              <span className="sr-only">Notifications</span>
+            </Button>
+          )}
 
           {/* User menu */}
           {userEmail && onLogout && (
