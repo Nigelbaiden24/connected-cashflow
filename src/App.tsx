@@ -60,6 +60,7 @@ import InvestorTasks from "./pages/investor/Tasks";
 import Opportunities from "./pages/Opportunities";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import OpportunityIntelligence from "./pages/OpportunityIntelligence";
+import OpportunityDetailPage from "./pages/investor/OpportunityDetailPage";
 import Chat from "./pages/Chat";
 import FinanceAIGenerator from "./pages/FinanceAIGenerator";
 import BusinessAIGenerator from "./pages/BusinessAIGenerator";
@@ -629,6 +630,9 @@ const App = () => {
             } />
             <Route path="/investor/opportunities" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityIntelligence /></InvestorLayout>
+            } />
+            <Route path="/investor/opportunities/:id" element={
+              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityDetailPage /></InvestorLayout>
             } />
             <Route path="/investor/stocks-crypto" element={
               !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><StocksCryptoDatabase /></InvestorLayout>

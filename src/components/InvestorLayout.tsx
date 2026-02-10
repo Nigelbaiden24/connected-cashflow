@@ -45,6 +45,11 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
             rightContent={<InvestorNotificationsDropdown variant="investor" />}
           />
           
+          {/* Desktop notification bell */}
+          <div className="hidden md:flex items-center justify-end px-4 py-2">
+            <InvestorNotificationsDropdown variant="investor" className="text-foreground hover:bg-muted" />
+          </div>
+
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children}
           </main>

@@ -48,6 +48,11 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
             />
           )}
           
+          {/* Desktop notification bell */}
+          <div className="hidden md:flex items-center justify-end px-4 py-2">
+            <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
+          </div>
+
           <main className="flex-1 overflow-auto pb-20 md:pb-0">
             {children}
           </main>

@@ -36,6 +36,7 @@ interface UseNotificationsResult {
 interface UseInvestorAlertsResult {
   alerts: InvestorAlert[];
   unreadCount: number;
+  unreadIds: Set<string>;
   loading: boolean;
   markAsRead: (alertId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
@@ -270,6 +271,7 @@ export function useInvestorAlerts(): UseInvestorAlertsResult {
   return {
     alerts,
     unreadCount: unreadIds.size,
+    unreadIds,
     loading,
     markAsRead,
     markAllAsRead,
