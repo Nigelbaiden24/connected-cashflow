@@ -268,7 +268,7 @@ export default function OpportunityIntelligence() {
             </div>
           </div>
 
-          <Button className="w-full" variant="outline" size="sm">
+          <Button className="w-full" variant="outline" size="sm" onClick={() => navigate(`/investor/opportunities/${opportunity.id}`)}>
             <Eye className="h-4 w-4 mr-2" /> View Details
           </Button>
         </CardContent>
@@ -282,7 +282,7 @@ export default function OpportunityIntelligence() {
     const Icon = config?.icon || Building2;
 
     return (
-      <TableRow className="cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30">
+      <TableRow className="cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30" onClick={() => navigate(`/investor/opportunities/${opportunity.id}`)}>
         <TableCell className="pl-4">
           <div className="flex items-center gap-3">
             <div className="relative h-12 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
