@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -98,7 +98,7 @@ export default function OpportunityDetailPage() {
     return (
       <div className="container mx-auto p-6 text-center space-y-4">
         <h2 className="text-xl font-semibold">Opportunity not found</h2>
-        <Button onClick={() => navigate("/investor/opportunities")}>
+        <Button onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Opportunities
         </Button>
       </div>
@@ -122,7 +122,7 @@ export default function OpportunityDetailPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Back */}
-      <Button variant="ghost" size="sm" onClick={() => navigate("/investor/opportunities")}>
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)}>
         <ArrowLeft className="h-4 w-4 mr-2" /> Back to Opportunities
       </Button>
 
