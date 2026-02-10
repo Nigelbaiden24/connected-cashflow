@@ -435,6 +435,13 @@ const App = () => {
                 </FinanceLayout>
               )
             } />
+            <Route path="/finance/opportunities/:id" element={
+              !isAuthenticated ? <Navigate to="/login" replace /> : (
+                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
+                  <OpportunityDetailPage />
+                </FinanceLayout>
+              )
+            } />
             <Route path="/finance/stocks-crypto" element={
               !isAuthenticated ? <Navigate to="/login" replace /> : (
                 <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>

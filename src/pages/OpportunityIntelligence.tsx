@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -127,6 +127,9 @@ const ratingColors: Record<string, string> = {
 
 export default function OpportunityIntelligence() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isFinancePlatform = location.pathname.startsWith("/finance");
+  const detailBasePath = isFinancePlatform ? "/finance/opportunities" : "/investor/opportunities";
   const [opportunities, setOpportunities] = useState<OpportunityProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -268,7 +271,7 @@ export default function OpportunityIntelligence() {
             </div>
           </div>
 
-          <Button className="w-full" variant="outline" size="sm" onClick={() => navigate(`/investor/opportunities/${opportunity.id}`)}>
+          <Button className="w-full" variant="outline" size="sm" onClick={() => navigate(`${detailBasePath}/${opportunity.id}`)}>
             <Eye className="h-4 w-4 mr-2" /> View Details
           </Button>
         </CardContent>
@@ -282,7 +285,7 @@ export default function OpportunityIntelligence() {
     const Icon = config?.icon || Building2;
 
     return (
-      <TableRow className="cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30" onClick={() => navigate(`/investor/opportunities/${opportunity.id}`)}>
+      <TableRow className="cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30" onClick={() => navigate(`${detailBasePath}/${opportunity.id}`)}>
         <TableCell className="pl-4">
           <div className="flex items-center gap-3">
             <div className="relative h-12 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
