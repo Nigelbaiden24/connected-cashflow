@@ -77,7 +77,14 @@ export function NotificationsDropdown({
       onMarkAsRead(notification.id);
     }
     if (notification.actionUrl) {
-      navigate(notification.actionUrl);
+      // Ensure finance platform notifications stay within finance context
+      let url = notification.actionUrl;
+      if (variant === "finance" || variant === "business") {
+        url = url.replace(/^\/investor\//, "/finance/");
+      } else if (variant === "investor") {
+        url = url.replace(/^\/finance\//, "/investor/");
+      }
+      navigate(url);
       setOpen(false);
     }
   };
@@ -234,7 +241,13 @@ export function NotificationsDropdown({
                 variant="ghost"
                 className="w-full h-9 text-xs text-muted-foreground hover:text-foreground"
                 onClick={() => {
-                  navigate(variant === "investor" ? "/investor/alerts" : "/finance/notifications");
+                  if (variant === "investor") {
+                    navigate("/investor/alerts");
+                  } else if (variant === "finance" || variant === "business") {
+                    navigate("/finance/notifications");
+                  } else {
+                    navigate("/notifications");
+                  }
                   setOpen(false);
                 }}
               >

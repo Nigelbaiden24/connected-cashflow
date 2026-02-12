@@ -80,7 +80,7 @@ export function FinanceNotificationsDropdown({
       unreadCount={totalUnread}
       onMarkAsRead={handleMarkAsRead}
       onMarkAllAsRead={handleMarkAllAsRead}
-      variant={variant}
+      variant="finance"
       className={className}
     />
   );
