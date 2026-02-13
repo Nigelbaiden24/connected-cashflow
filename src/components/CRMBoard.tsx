@@ -857,9 +857,9 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
         <BulkAIScoring contacts={contacts} onComplete={fetchContacts} />
       )}
 
-      {/* Enhanced Toolbar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h2 className="text-2xl font-bold tracking-tight">CRM Board</h2>
+      {/* Enhanced Toolbar - Enterprise Grade */}
+      <div className="flex items-center justify-between gap-4 flex-wrap p-4 rounded-xl bg-gradient-to-r from-muted/30 via-muted/20 to-transparent border border-border/40 backdrop-blur-sm">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">CRM Board</h2>
         <div className="flex items-center gap-2 flex-wrap">
           {/* View Toggle */}
           <div className="flex items-center border border-border/50 rounded-lg p-1 bg-background">
@@ -1061,20 +1061,20 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
 
       {/* Contacts View - Collapsible Table or Cards */}
       <Collapsible open={mainBoardOpen} onOpenChange={setMainBoardOpen}>
-        <Card className="border-border/50 shadow-sm overflow-hidden">
+        <Card className="border-border/40 shadow-lg shadow-black/[0.03] overflow-hidden rounded-xl">
           <CollapsibleTrigger asChild>
-            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b">
+            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-all duration-200 border-b border-border/40 bg-gradient-to-r from-muted/20 to-transparent">
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 transition-colors">
                   {mainBoardOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </Button>
                 <h3 className="font-semibold text-lg">Contacts</h3>
-                <Badge variant="secondary" className="text-xs">{sortedContacts.length}</Badge>
+                <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20 font-semibold">{sortedContacts.length}</Badge>
               </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-xs text-muted-foreground"
+                className="text-xs text-muted-foreground hover:text-foreground"
                 onClick={(e) => { e.stopPropagation(); setMainBoardOpen(!mainBoardOpen); }}
               >
                 {mainBoardOpen ? "Minimize" : "Expand"}
@@ -1087,7 +1087,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className={compactView ? "bg-gradient-to-r from-muted/40 to-muted/20 border-b h-9" : "bg-gradient-to-r from-muted/40 to-muted/20 border-b"}>
+                      <tr className={compactView ? "bg-gradient-to-r from-muted/50 via-muted/30 to-muted/10 border-b border-border/40 h-9" : "bg-gradient-to-r from-muted/50 via-muted/30 to-muted/10 border-b border-border/40"}>
                   <th className="p-0 w-12">
                     <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
@@ -1134,8 +1134,10 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 {paginatedContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
-                    className={compactView ? "border-b hover:bg-accent/30 transition-all duration-200 group h-8" : "border-b hover:bg-accent/30 hover:shadow-sm transition-all duration-200 group"}
-                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.03)" }}
+                    className={compactView 
+                      ? "border-b border-border/30 hover:bg-primary/[0.04] transition-all duration-200 group h-8" 
+                      : "border-b border-border/30 hover:bg-primary/[0.04] hover:shadow-sm transition-all duration-200 group"}
+                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.02)" }}
                   >
                     <td className="p-0">
                       <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-14"}>

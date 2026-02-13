@@ -199,16 +199,27 @@ export function useInvestorAlerts(): UseInvestorAlertsResult {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      await supabase
+      // Try update first (for existing records)
+      const { data: updated, error: updateError } = await supabase
         .from('investor_alert_notifications')
-        .upsert({
-          user_id: user.id,
-          alert_id: alertId,
-          is_read: true,
-          read_at: new Date().toISOString(),
-          delivery_method: 'platform',
-          delivered_at: new Date().toISOString(),
-        }, { onConflict: 'user_id,alert_id' });
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .eq('alert_id', alertId)
+        .select();
+
+      // If no row was updated, insert a new one
+      if (!updateError && (!updated || updated.length === 0)) {
+        await supabase
+          .from('investor_alert_notifications')
+          .upsert({
+            user_id: user.id,
+            alert_id: alertId,
+            is_read: true,
+            read_at: new Date().toISOString(),
+            delivery_method: 'platform',
+            delivered_at: new Date().toISOString(),
+          }, { onConflict: 'user_id,alert_id' });
+      }
 
       setUnreadIds(prev => {
         const newSet = new Set(prev);
