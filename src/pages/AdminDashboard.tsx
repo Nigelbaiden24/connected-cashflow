@@ -28,6 +28,7 @@ import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { PurchasableReportUpload } from "@/components/admin/PurchasableReportUpload";
 import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
+import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -1364,7 +1365,8 @@ export default function AdminDashboard() {
           {activeTab === 'fund-analyst' && <FundAnalystAdmin />}
 
           {activeTab === 'opportunities' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              <OpportunityResearchEngine />
               <ContentTargetSelector
                 selectedPlatform={opportunityTarget.platform}
                 onPlatformChange={(platform) => setOpportunityTarget({ ...opportunityTarget, platform })}
