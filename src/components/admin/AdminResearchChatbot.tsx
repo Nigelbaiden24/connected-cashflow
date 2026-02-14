@@ -30,7 +30,11 @@ import {
   Zap,
   Newspaper,
   Video,
-  MessageSquare
+  MessageSquare,
+  Upload,
+  Bell,
+  GraduationCap,
+  LineChart,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import ReactMarkdown from "react-markdown";
@@ -126,6 +130,15 @@ const QUICK_PROMPTS = [
   },
 ];
 
+const CONTENT_ACTION_PROMPTS = [
+  { label: "Post Newsletter", icon: Newspaper, prompt: "Create and post a weekly market newsletter to all investor platform users covering this week's key market movements, sector performance, and outlook for next week." },
+  { label: "Send Alert", icon: Bell, prompt: "Post a market update alert to all users about today's significant market developments and any important price movements or economic data releases." },
+  { label: "Post Learning", icon: GraduationCap, prompt: "Create and post a beginner-friendly educational article about portfolio diversification strategies to the learning hub for all users." },
+  { label: "Market Commentary", icon: LineChart, prompt: "Write and post a market commentary for all finance platform users analyzing the current macro environment and its implications for portfolios." },
+  { label: "Post Trend", icon: TrendingUp, prompt: "Create and post a market trend update about the latest sector rotation patterns and what they signal for investors." },
+  { label: "List Users", icon: User, prompt: "Show me a list of all available users so I can target content to specific people." },
+];
+
 export const AdminResearchChatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -181,6 +194,24 @@ export const AdminResearchChatbot = () => {
   ) => {
     const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-research-chat`;
 
+    const updateAssistantMessage = (content: string, isReport: boolean) => {
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          return prev.map((m, i) => 
+            i === prev.length - 1 ? { ...m, content, isReport } : m
+          );
+        }
+        return [...prev, {
+          id: `msg-${Date.now()}`,
+          role: "assistant" as const,
+          content,
+          timestamp: new Date(),
+          isReport,
+        }];
+      });
+    };
+
     if (fetchResearch && platforms.length > 0) {
       setIsFetchingResearch(true);
       toast.info(`Fetching live research from ${platforms.length} platform(s)...`);
@@ -216,28 +247,33 @@ export const AdminResearchChatbot = () => {
 
     if (!response.body) throw new Error("No response body");
 
+    const contentType = response.headers.get("content-type") || "";
+    
+    // Handle non-streaming JSON response (tool call results)
+    if (contentType.includes("application/json")) {
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "Action completed.";
+      
+      // Show action notifications
+      if (data.tool_actions) {
+        for (const action of data.tool_actions) {
+          if (action.success) {
+            toast.success(`✅ ${action.type} "${action.title}" posted successfully!`);
+          } else {
+            toast.error(`Failed: ${action.error}`);
+          }
+        }
+      }
+      
+      updateAssistantMessage(content, generateReport);
+      return content;
+    }
+
+    // Handle SSE stream
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let textBuffer = "";
     let assistantContent = "";
-
-    const updateAssistantMessage = (content: string, isReport: boolean) => {
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant") {
-          return prev.map((m, i) => 
-            i === prev.length - 1 ? { ...m, content, isReport } : m
-          );
-        }
-        return [...prev, {
-          id: `msg-${Date.now()}`,
-          role: "assistant" as const,
-          content,
-          timestamp: new Date(),
-          isReport,
-        }];
-      });
-    };
 
     while (true) {
       const { done, value } = await reader.read();
@@ -617,6 +653,35 @@ export const AdminResearchChatbot = () => {
         </CardContent>
       </Card>
 
+      {/* Content Posting Actions */}
+      <Card className="border-slate-200 shadow-md">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Upload className="h-5 w-5 text-amber-600" />
+            Content Actions
+          </CardTitle>
+          <CardDescription>
+            Post content directly to user accounts — describe what, where, and who
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {CONTENT_ACTION_PROMPTS.map((item, idx) => (
+              <Button
+                key={idx}
+                variant="outline"
+                className="h-auto py-3 px-3 flex flex-col items-center gap-2 hover:bg-amber-50 hover:border-amber-300 transition-all"
+                onClick={() => handleSend(item.prompt)}
+                disabled={isLoading}
+              >
+                <item.icon className="h-5 w-5 text-amber-600" />
+                <span className="text-xs font-medium text-slate-700 text-center">{item.label}</span>
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Chat Interface */}
       <Card className="border-slate-200 shadow-lg">
         <CardContent className="p-0">
@@ -633,16 +698,17 @@ export const AdminResearchChatbot = () => {
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                 <Bot className="h-16 w-16 mb-4 text-violet-300" />
-                <h3 className="text-lg font-semibold text-slate-700">AI Research Assistant with Live Data</h3>
+                <h3 className="text-lg font-semibold text-slate-700">AI Research Assistant with Content Posting</h3>
                 <p className="text-sm max-w-md mt-2">
-                  Select research platforms above, then ask questions or generate reports. 
-                  I'll fetch live data and synthesize insights from your selected sources.
+                  Ask questions, generate reports, or <strong>post content directly to user accounts</strong>. 
+                  Try: "Post a market newsletter to all investor users" or "Send an alert about today's earnings."
                 </p>
                 <div className="flex flex-wrap gap-2 mt-4 justify-center">
                   <Badge variant="secondary" className="text-xs">18 Research Platforms</Badge>
-                  <Badge variant="secondary" className="text-xs">Live Data Fetching</Badge>
+                  <Badge variant="secondary" className="text-xs">Content Posting</Badge>
                   <Badge variant="secondary" className="text-xs">AI Synthesis</Badge>
                   <Badge variant="secondary" className="text-xs">PDF Export</Badge>
+                  <Badge variant="secondary" className="text-xs">User Targeting</Badge>
                 </div>
               </div>
             ) : (
@@ -728,7 +794,7 @@ export const AdminResearchChatbot = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about financial markets, request analysis, or generate reports..."
+                placeholder="Ask about markets, generate reports, or post content to users (e.g. 'Post a newsletter about tech stocks to all investor users')..."
                 className="min-h-[60px] resize-none bg-white"
                 disabled={isLoading}
               />
@@ -761,7 +827,7 @@ export const AdminResearchChatbot = () => {
             <BookOpen className="h-5 w-5 text-slate-600" />
             <span className="font-semibold text-slate-700">AI Capabilities</span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
             <div className="flex items-center gap-2 text-slate-600">
               <TrendingUp className="h-4 w-4 text-green-600" />
               <span>Market Analysis</span>
@@ -771,8 +837,12 @@ export const AdminResearchChatbot = () => {
               <span>Sector Research</span>
             </div>
             <div className="flex items-center gap-2 text-slate-600">
-              <Shield className="h-4 w-4 text-orange-600" />
-              <span>Risk Assessment</span>
+              <Upload className="h-4 w-4 text-amber-600" />
+              <span>Content Posting</span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <Bell className="h-4 w-4 text-red-600" />
+              <span>Alert Broadcasting</span>
             </div>
             <div className="flex items-center gap-2 text-slate-600">
               <FileText className="h-4 w-4 text-violet-600" />
@@ -780,7 +850,7 @@ export const AdminResearchChatbot = () => {
             </div>
             <div className="flex items-center gap-2 text-slate-600">
               <Video className="h-4 w-4 text-indigo-600" />
-              <span>Meeting Transcription</span>
+              <span>Meeting Notes</span>
             </div>
           </div>
         </CardContent>
