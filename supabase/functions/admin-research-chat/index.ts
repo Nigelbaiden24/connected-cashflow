@@ -27,9 +27,130 @@ const PLATFORM_RESEARCH_URLS: Record<string, { name: string; urls: string[] }> =
   thestreet: { name: "TheStreet", urls: ["https://www.thestreet.com/markets", "https://www.thestreet.com/investing"] },
 };
 
-const SYSTEM_PROMPT = `You are an Elite Financial Research Analyst AI with deep expertise in:
+const CONTENT_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "post_newsletter",
+      description: "Post/upload a newsletter to user accounts on the platform. Use when admin says to create, post, publish, or send a newsletter.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Newsletter title" },
+          content: { type: "string", description: "Full newsletter content in markdown" },
+          platform: { type: "string", enum: ["finance", "investor", "all"], description: "Target platform" },
+          target_user_id: { type: "string", description: "Specific user ID, or omit for all users" },
+        },
+        required: ["title", "content"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "post_alert",
+      description: "Post an alert/notification to users. Use when admin wants to send alerts, signals, or notifications.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Alert title" },
+          description: { type: "string", description: "Alert description/message" },
+          severity: { type: "string", enum: ["info", "warning", "critical"], description: "Alert severity" },
+          alert_type: { type: "string", enum: ["market_update", "deal_alert", "regulatory", "portfolio_alert", "risk_alert"], description: "Type of alert" },
+          platform: { type: "string", enum: ["finance", "investor", "all"] },
+          target_user_id: { type: "string", description: "Specific user ID, or omit for all users" },
+        },
+        required: ["title", "description"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "post_learning_content",
+      description: "Post educational/learning content to the learning hub. Use when admin wants to upload tutorials, guides, or educational material.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Content title" },
+          description: { type: "string", description: "Brief description" },
+          content: { type: "string", description: "Full content in markdown" },
+          category: { type: "string", enum: ["investing_basics", "market_analysis", "risk_management", "portfolio_management", "tax_planning", "retirement", "crypto", "esg"], description: "Content category" },
+          difficulty_level: { type: "string", enum: ["beginner", "intermediate", "advanced"] },
+          target_user_id: { type: "string", description: "Specific user ID, or omit for all users" },
+        },
+        required: ["title", "content"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "post_market_commentary",
+      description: "Post market commentary/analysis to the platform. Use when admin wants to publish market insights or commentary.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Commentary title" },
+          description: { type: "string", description: "Full commentary text in markdown" },
+          target_user_id: { type: "string", description: "Specific user ID, or omit for all users" },
+        },
+        required: ["title", "description"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "post_market_trend",
+      description: "Post a market trend update. Use when admin wants to publish trend analysis or market signals.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Trend title" },
+          description: { type: "string", description: "Trend description and analysis" },
+          trend_type: { type: "string", enum: ["market_analysis", "sector_rotation", "economic_indicator", "technical_signal"] },
+          impact_level: { type: "string", enum: ["low", "medium", "high", "critical"] },
+        },
+        required: ["title", "description"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_users",
+      description: "List available user accounts to target content to specific users. Use when admin wants to know which users are available or wants to send content to a specific person.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+];
 
-## Core Competencies:
+const SYSTEM_PROMPT = `You are an Elite Financial Research Analyst AI and Platform Admin Assistant for FlowPulse.
+
+## Content Posting Capabilities
+You can directly post content to user accounts on the FlowPulse platform. When the admin asks you to post, upload, create, publish, or send content, use the appropriate tool:
+
+- **post_newsletter** — Create and publish newsletters to finance or investor platform users
+- **post_alert** — Send alerts, signals, or notifications to users (market updates, deal alerts, risk alerts)
+- **post_learning_content** — Upload educational content to the learning hub
+- **post_market_commentary** — Publish market commentary and analysis
+- **post_market_trend** — Post market trend updates and signals
+- **list_users** — Look up available users to target content to specific people
+
+When the admin describes WHAT to post, WHERE to post it, and WHO to post it to, use the right tool immediately. If any detail is unclear, ask for clarification.
+
+For "all users" or "everyone", omit the target_user_id. For specific users, use list_users first to find the user ID.
+
+After posting, confirm what was posted, where, and to whom.
+
+## Research Expertise
+You also have deep expertise in:
 - Investment analysis and portfolio management
 - Equity research and fundamental analysis
 - Fixed income, credit analysis, and bond markets
@@ -38,33 +159,17 @@ const SYSTEM_PROMPT = `You are an Elite Financial Research Analyst AI with deep 
 - ESG investing and sustainable finance
 - Risk management and quantitative analysis
 - Regulatory compliance (FCA, SEC, MiFID II)
-- Financial planning and wealth management
 
-## Research Platform Integration:
-You have access to live research data from 18 major financial platforms:
-MarketBeat, FactSet, Quartr, Koyfin, Spiking, Seeking Alpha, TipRanks, Investing.com, 
-TradingView, MarketWatch, Yahoo Finance, CNBC, Bloomberg, Financial Times, Morningstar, 
-Zacks, Benzinga, and TheStreet.
+## Research Platform Integration
+You have access to live research data from 18 major financial platforms.
+When the user asks for market research, incorporate live research data provided in context.
 
-When the user asks for market research, news, or current data, incorporate the live research 
-data provided in the context. Cite sources when referencing specific information.
-
-## Report Generation Capabilities:
-When asked to create reports, structure them professionally with:
-1. Executive Summary
-2. Key Findings & Recommendations
-3. Detailed Analysis with data points
-4. Risk Assessment
-5. Actionable Conclusions
-
-## Response Guidelines:
+## Response Guidelines
 - Provide data-driven, authoritative analysis
-- Use specific metrics, percentages, and benchmarks
-- Reference relevant regulations and best practices
+- Use markdown formatting for readability
 - Include risk disclaimers where appropriate
-- Structure responses for easy PDF conversion with clear headers and sections
-- Use markdown formatting for better readability
-- When using live research data, cite the source platform
+- When posting content, generate high-quality professional content suitable for the platform
+- Always confirm actions taken with clear summaries
 
 Always maintain a professional, authoritative tone befitting institutional-grade research.`;
 
@@ -186,7 +291,8 @@ Please format this as a professional PDF-ready report with:
           { role: "system", content: SYSTEM_PROMPT },
           ...enhancedMessages,
         ],
-        stream: true,
+        tools: CONTENT_TOOLS,
+        stream: false, // Use non-streaming for tool-calling support
       }),
     });
 
@@ -211,7 +317,117 @@ Please format this as a professional PDF-ready report with:
       });
     }
 
-    return new Response(response.body, {
+    const aiResult = await response.json();
+    const choice = aiResult.choices?.[0];
+    const message = choice?.message;
+
+    // Check if AI wants to call tools
+    if (message?.tool_calls && message.tool_calls.length > 0) {
+      const toolResults = [];
+      
+      for (const toolCall of message.tool_calls) {
+        const fnName = toolCall.function.name;
+        const fnArgs = JSON.parse(toolCall.function.arguments);
+        
+        console.log(`Executing tool: ${fnName}`, fnArgs);
+
+        // Execute the action via the admin-chat-actions function
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        
+        try {
+          const actionResponse = await fetch(`${supabaseUrl}/functions/v1/admin-chat-actions`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": req.headers.get("Authorization") || `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({ action: fnName, params: fnArgs }),
+          });
+
+          const actionResult = await actionResponse.json();
+          toolResults.push({
+            tool_call_id: toolCall.id,
+            role: "tool",
+            content: JSON.stringify(actionResult),
+          });
+        } catch (err) {
+          toolResults.push({
+            tool_call_id: toolCall.id,
+            role: "tool",
+            content: JSON.stringify({ error: err instanceof Error ? err.message : "Action failed" }),
+          });
+        }
+      }
+
+      // Send tool results back to AI for final response
+      const followUpMessages = [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...enhancedMessages,
+        message,
+        ...toolResults,
+      ];
+
+      const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: followUpMessages,
+          stream: true,
+        }),
+      });
+
+      if (!followUpResponse.ok) {
+        const errText = await followUpResponse.text();
+        console.error("Follow-up AI error:", errText);
+        // Return a non-streaming response with tool results summary
+        const summaryParts = toolResults.map(tr => {
+          const parsed = JSON.parse(tr.content);
+          if (parsed.success) {
+            return `✅ Successfully posted **${parsed.type}**: "${parsed.title}"`;
+          }
+          return `❌ Failed: ${parsed.error}`;
+        });
+        
+        return new Response(JSON.stringify({
+          choices: [{
+            message: { content: summaryParts.join("\n\n") },
+            finish_reason: "stop",
+          }],
+          tool_actions: toolResults.map(tr => JSON.parse(tr.content)),
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(followUpResponse.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
+
+    // No tool calls - stream a regular response
+    // Re-do the request with streaming since we got a non-streamed response
+    const streamResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...enhancedMessages,
+        ],
+        stream: true,
+      }),
+    });
+
+    return new Response(streamResponse.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
