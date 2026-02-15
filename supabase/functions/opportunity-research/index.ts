@@ -120,7 +120,24 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
 };
 
-async function scrapeUrl(url: string, apiKey: string): Promise<string> {
+interface SourceRecord {
+  url: string;
+  type: "search" | "scrape";
+  query?: string;
+  scrapedAt: string;
+  status: "success" | "error";
+  contentLength: number;
+  error?: string;
+}
+
+async function scrapeUrl(url: string, apiKey: string): Promise<{ content: string; source: SourceRecord }> {
+  const source: SourceRecord = {
+    url,
+    type: "scrape",
+    scrapedAt: new Date().toISOString(),
+    status: "error",
+    contentLength: 0,
+  };
   try {
     const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
@@ -136,18 +153,34 @@ async function scrapeUrl(url: string, apiKey: string): Promise<string> {
       }),
     });
 
-    if (!response.ok) return "";
+    if (!response.ok) {
+      source.error = `HTTP ${response.status}`;
+      return { content: "", source };
+    }
 
     const data = await response.json();
     const markdown = data.data?.markdown || data.markdown || "";
-    return markdown.slice(0, 6000);
+    const content = markdown.slice(0, 6000);
+    source.status = "success";
+    source.contentLength = content.length;
+    return { content, source };
   } catch (error) {
     console.error(`Scrape error for ${url}:`, error);
-    return "";
+    source.error = error instanceof Error ? error.message : "Unknown error";
+    return { content: "", source };
   }
 }
 
-async function searchWeb(query: string, apiKey: string): Promise<string> {
+async function searchWeb(query: string, apiKey: string): Promise<{ content: string; source: SourceRecord; resultUrls: string[] }> {
+  const source: SourceRecord = {
+    url: "https://api.firecrawl.dev/v1/search",
+    type: "search",
+    query,
+    scrapedAt: new Date().toISOString(),
+    status: "error",
+    contentLength: 0,
+  };
+  const resultUrls: string[] = [];
   try {
     const response = await fetch("https://api.firecrawl.dev/v1/search", {
       method: "POST",
@@ -162,22 +195,32 @@ async function searchWeb(query: string, apiKey: string): Promise<string> {
       }),
     });
 
-    if (!response.ok) return "";
+    if (!response.ok) {
+      source.error = `HTTP ${response.status}`;
+      return { content: "", source, resultUrls };
+    }
 
     const data = await response.json();
     const results = data.data || [];
-    return results
+    const content = results
       .map((r: any) => {
         const title = r.title || "";
         const desc = r.description || "";
         const md = (r.markdown || "").slice(0, 2000);
-        return `### ${title}\n${desc}\n${md}`;
+        const rUrl = r.url || r.sourceURL || "";
+        if (rUrl) resultUrls.push(rUrl);
+        return `### ${title}\n**Source:** ${rUrl}\n${desc}\n${md}`;
       })
       .join("\n\n")
       .slice(0, 8000);
+
+    source.status = "success";
+    source.contentLength = content.length;
+    return { content, source, resultUrls };
   } catch (error) {
     console.error(`Search error for "${query}":`, error);
-    return "";
+    source.error = error instanceof Error ? error.message : "Unknown error";
+    return { content: "", source, resultUrls };
   }
 }
 
@@ -219,11 +262,23 @@ serve(async (req) => {
       Promise.all(urls.slice(0, 3).map((u) => scrapeUrl(u, FIRECRAWL_API_KEY))),
     ]);
 
+    // Collect all source records
+    const allSources: SourceRecord[] = [];
+    const allSearchResultUrls: string[] = [];
+
+    searchResults.forEach((r) => {
+      allSources.push(r.source);
+      allSearchResultUrls.push(...r.resultUrls);
+    });
+    scrapeResults.forEach((r) => {
+      allSources.push(r.source);
+    });
+
     const combinedResearch = [
       "## Web Search Results",
-      ...searchResults.filter(Boolean),
+      ...searchResults.map((r) => r.content).filter(Boolean),
       "## Direct Source Data",
-      ...scrapeResults.filter(Boolean),
+      ...scrapeResults.map((r) => r.content).filter(Boolean),
     ].join("\n\n");
 
     if (!combinedResearch || combinedResearch.length < 200) {
@@ -233,16 +288,24 @@ serve(async (req) => {
           research: "Limited data available for this category. Try a custom search query.",
           summary: null,
           sourcesScraped: 0,
+          sourceLog: allSources,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Phase 2: AI summarisation
+    // Phase 2: AI summarisation (non-streaming) to include source metadata in response
     const categoryLabel = category.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     const subLabel = subCategory || "General";
 
+    const sourceListForAI = allSources
+      .filter((s) => s.status === "success")
+      .map((s) => s.type === "search" ? `Search: "${s.query}"` : `Direct: ${s.url}`)
+      .join("\n");
+
     const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and produce a structured investment opportunity brief that an admin can use to create a new opportunity listing.
+
+IMPORTANT: At the end of your analysis, include a "## Data Sources" section listing all websites and search queries that contributed to this research with their URLs.
 
 You must output a structured analysis in this exact format:
 
@@ -256,9 +319,10 @@ List 3-5 specific investment opportunities found in the research data, each with
 - **Location/Market**: Where
 - **Projected Returns**: If available
 - **Risk Level**: Low/Medium/High
+- **Source**: Website/URL where this data was found
 
 ## Market Data & Numbers
-Key statistics, yields, prices, growth rates from the scraped data.
+Key statistics, yields, prices, growth rates from the scraped data. Cite the source website for each data point.
 
 ## Investment Thesis
 Why this is a compelling area for investment right now.
@@ -274,7 +338,10 @@ Suggest how the admin should fill out the opportunity form:
 - Suggested scores (1-5) for: Quality, Value, Liquidity, Risk, Transparency
 - Key watchpoints
 
-Be specific, data-driven, and cite numbers from the research where possible.`;
+## Data Sources
+List every website URL and search query used to compile this research with the date data was accessed.
+
+Be specific, data-driven, and cite the source URL for every claim and number.`;
 
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -290,7 +357,19 @@ Be specific, data-driven, and cite numbers from the research where possible.`;
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Analyze the following live research data for the investment category: **${categoryLabel} — ${subLabel}**\n\n${combinedResearch.slice(0, 30000)}`,
+              content: `Analyze the following live research data for the investment category: **${categoryLabel} — ${subLabel}**
+
+Research conducted on: ${new Date().toISOString()}
+
+Sources used:
+${sourceListForAI}
+
+Research URLs found:
+${allSearchResultUrls.slice(0, 20).join("\n")}
+
+---
+
+${combinedResearch.slice(0, 30000)}`,
             },
           ],
           stream: true,
@@ -316,8 +395,37 @@ Be specific, data-driven, and cite numbers from the research where possible.`;
       throw new Error("AI analysis failed");
     }
 
-    // Stream the AI response back
-    return new Response(aiResponse.body, {
+    // Create a custom stream that prepends source metadata then pipes AI stream
+    const encoder = new TextEncoder();
+    const sourceMetaEvent = `data: ${JSON.stringify({
+      type: "source_metadata",
+      sources: allSources,
+      searchResultUrls: allSearchResultUrls.slice(0, 30),
+      researchDate: new Date().toISOString(),
+      category: categoryLabel,
+      subCategory: subLabel,
+    })}\n\n`;
+
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+
+    (async () => {
+      // Send source metadata first
+      await writer.write(encoder.encode(sourceMetaEvent));
+      // Then pipe through the AI stream
+      const reader = aiResponse.body!.getReader();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          await writer.write(value);
+        }
+      } finally {
+        await writer.close();
+      }
+    })();
+
+    return new Response(readable, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {

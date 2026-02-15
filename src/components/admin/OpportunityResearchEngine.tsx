@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -24,6 +24,14 @@ import {
   BarChart3,
   Zap,
   FileText,
+  Copy,
+  Check,
+  ExternalLink,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Download,
+  Link2,
 } from "lucide-react";
 
 const categoryConfig: Record<string, { label: string; icon: any; subCategories: string[] }> = {
@@ -81,14 +89,60 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
 
 type ResearchPhase = "idle" | "scraping" | "analyzing" | "complete" | "error";
 
+interface SourceRecord {
+  url: string;
+  type: "search" | "scrape";
+  query?: string;
+  scrapedAt: string;
+  status: "success" | "error";
+  contentLength: number;
+  error?: string;
+}
+
+interface SourceMetadata {
+  sources: SourceRecord[];
+  searchResultUrls: string[];
+  researchDate: string;
+  category: string;
+  subCategory: string;
+}
+
 export function OpportunityResearchEngine() {
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [customQuery, setCustomQuery] = useState("");
   const [phase, setPhase] = useState<ResearchPhase>("idle");
   const [aiOutput, setAiOutput] = useState("");
-  const [activeView, setActiveView] = useState<"research" | "history">("research");
+  const [sourceMetadata, setSourceMetadata] = useState<SourceMetadata | null>(null);
+  const [copied, setCopied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  const handleCopy = useCallback(async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Copied to clipboard — paste into Opportunity Intelligence");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  }, []);
+
+  const handleDownload = useCallback(() => {
+    if (!aiOutput) return;
+    const header = `# FlowPulse Research Brief\n**Category:** ${sourceMetadata?.category || category}\n**Date:** ${sourceMetadata?.researchDate || new Date().toISOString()}\n\n---\n\n`;
+    const sourceSection = sourceMetadata ? `\n\n---\n\n## Source Log\n${sourceMetadata.sources.map(s => `- [${s.status.toUpperCase()}] ${s.type === 'search' ? `Search: "${s.query}"` : s.url} — ${new Date(s.scrapedAt).toLocaleString()} (${s.contentLength} chars)`).join('\n')}\n\n### URLs Found\n${sourceMetadata.searchResultUrls.map(u => `- ${u}`).join('\n')}` : '';
+    const blob = new Blob([header + aiOutput + sourceSection], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `flowpulse-research-${category || 'custom'}-${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Report downloaded!");
+  }, [aiOutput, sourceMetadata, category]);
 
   const handleResearch = async () => {
     if (!category && !customQuery) {
@@ -99,6 +153,7 @@ export function OpportunityResearchEngine() {
     abortRef.current = new AbortController();
     setPhase("scraping");
     setAiOutput("");
+    setSourceMetadata(null);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -106,7 +161,6 @@ export function OpportunityResearchEngine() {
 
       toast.info("Scraping live data from multiple sources...");
 
-      // Small delay to show scraping phase
       await new Promise((r) => setTimeout(r, 1500));
       setPhase("analyzing");
 
@@ -136,7 +190,6 @@ export function OpportunityResearchEngine() {
         throw new Error("No response stream");
       }
 
-      // Parse SSE stream
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -159,6 +212,11 @@ export function OpportunityResearchEngine() {
 
           try {
             const parsed = JSON.parse(jsonStr);
+            // Check for source metadata event
+            if (parsed.type === "source_metadata") {
+              setSourceMetadata(parsed as SourceMetadata);
+              continue;
+            }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               setAiOutput((prev) => prev + content);
@@ -184,6 +242,7 @@ export function OpportunityResearchEngine() {
     abortRef.current?.abort();
     setPhase("idle");
     setAiOutput("");
+    setSourceMetadata(null);
   };
 
   const isRunning = phase === "scraping" || phase === "analyzing";
@@ -201,7 +260,7 @@ export function OpportunityResearchEngine() {
               AI Research Engine
             </h2>
             <p className="text-white/80 mt-1">
-              Deep research across live sources — scrapes, analyses, and generates investment briefs
+              Enterprise-grade deep research — scrapes live sources, provides full source attribution, and generates investment briefs
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -229,7 +288,6 @@ export function OpportunityResearchEngine() {
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
-            {/* Category */}
             <div className="space-y-2">
               <Label>Investment Category</Label>
               <Select
@@ -255,7 +313,6 @@ export function OpportunityResearchEngine() {
               </Select>
             </div>
 
-            {/* Sub-Category */}
             <div className="space-y-2">
               <Label>Sub-Category (Optional)</Label>
               <Select value={subCategory} onValueChange={setSubCategory} disabled={!category}>
@@ -272,7 +329,6 @@ export function OpportunityResearchEngine() {
               </Select>
             </div>
 
-            {/* Custom Query */}
             <div className="space-y-2">
               <Label>Custom Search Query</Label>
               <Input
@@ -283,7 +339,6 @@ export function OpportunityResearchEngine() {
             </div>
           </div>
 
-          {/* Category Chips */}
           {category && (
             <div className="flex flex-wrap gap-2 pt-2">
               <Badge className="bg-purple-100 text-purple-800 border-purple-200">
@@ -301,7 +356,6 @@ export function OpportunityResearchEngine() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
             <Button
               onClick={handleResearch}
@@ -349,7 +403,7 @@ export function OpportunityResearchEngine() {
                 <p className="text-sm text-slate-500">
                   {phase === "scraping"
                     ? "Scraping web search results and financial data sources via Firecrawl..."
-                    : "AI is analyzing scraped data and generating investment brief..."}
+                    : "AI is analyzing scraped data and generating investment brief with source citations..."}
                 </p>
               </div>
               <div className="ml-auto flex gap-2">
@@ -369,30 +423,193 @@ export function OpportunityResearchEngine() {
         </Card>
       )}
 
+      {/* Source Attribution Panel */}
+      {sourceMetadata && (
+        <Card className="border-slate-200 shadow-lg">
+          <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-blue-50 to-transparent">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Link2 className="h-5 w-5 text-blue-600" />
+              Data Sources & Provenance
+              <Badge variant="secondary" className="ml-2">
+                {sourceMetadata.sources.filter(s => s.status === "success").length}/{sourceMetadata.sources.length} successful
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Research conducted on {new Date(sourceMetadata.researchDate).toLocaleString()} — {sourceMetadata.category} {sourceMetadata.subCategory !== "General" ? `→ ${sourceMetadata.subCategory}` : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            {/* Scraped Sources */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Scraped Sources
+              </h4>
+              <div className="grid gap-2">
+                {sourceMetadata.sources.map((source, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center justify-between p-3 rounded-lg border text-sm ${
+                      source.status === "success"
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {source.status === "success" ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-600 shrink-0" />
+                      )}
+                      <div className="min-w-0">
+                        {source.type === "search" ? (
+                          <span className="font-medium">Search: "{source.query}"</span>
+                        ) : (
+                          <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-blue-700 hover:underline truncate block"
+                          >
+                            {source.url}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 ml-4">
+                      <Badge variant="outline" className="text-xs">
+                        {source.type === "search" ? "Search" : "Scrape"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(source.scrapedAt).toLocaleTimeString()}
+                      </span>
+                      {source.status === "success" && (
+                        <span className="text-xs text-muted-foreground">
+                          {(source.contentLength / 1000).toFixed(1)}k chars
+                        </span>
+                      )}
+                      {source.error && (
+                        <span className="text-xs text-red-600">{source.error}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Referenced URLs */}
+            {sourceMetadata.searchResultUrls.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Referenced URLs ({sourceMetadata.searchResultUrls.length})
+                </h4>
+                <div className="grid gap-1 max-h-40 overflow-y-auto">
+                  {sourceMetadata.searchResultUrls.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline truncate block py-0.5"
+                    >
+                      {url}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Results */}
       {aiOutput && (
         <Card className="border-slate-200 shadow-lg">
           <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-green-50 to-transparent">
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-green-600" />
-              AI Research Brief
-              {category && (
-                <Badge variant="secondary" className="ml-2">
-                  {categoryConfig[category]?.label}
-                  {subCategory && ` → ${subCategory}`}
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription>
-              Generated from live scraped data — use this to create a new opportunity listing below
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-green-600" />
+                  AI Research Brief
+                  {category && (
+                    <Badge variant="secondary" className="ml-2">
+                      {categoryConfig[category]?.label}
+                      {subCategory && ` → ${subCategory}`}
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  Generated from live scraped data — copy sections below to create opportunity listings
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopy(aiOutput)}
+                  className="gap-1.5"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-3.5 w-3.5 text-green-600" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy All
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download .md
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="pt-6">
             <ScrollArea className="h-[600px]">
-              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-slate-900 prose-h2:text-lg prose-h2:border-b prose-h2:pb-2 prose-h2:border-slate-200 prose-h3:text-base prose-strong:text-slate-900 prose-li:text-slate-700">
+              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-slate-900 prose-h2:text-lg prose-h2:border-b prose-h2:pb-2 prose-h2:border-slate-200 prose-h3:text-base prose-strong:text-slate-900 prose-li:text-slate-700 prose-a:text-blue-600 prose-a:underline">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiOutput}</ReactMarkdown>
               </div>
             </ScrollArea>
+
+            {/* Quick Copy Sections */}
+            {phase === "complete" && (
+              <>
+                <Separator className="my-4" />
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-slate-700">Quick Copy Sections</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {["Market Overview", "Key Opportunities", "Market Data", "Investment Thesis", "Risk Factors", "Recommended Listing Details", "Data Sources"].map((section) => {
+                      const regex = new RegExp(`## ${section}[\\s\\S]*?(?=\\n## |$)`, "i");
+                      const match = aiOutput.match(regex);
+                      if (!match) return null;
+                      return (
+                        <Button
+                          key={section}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCopy(match[0])}
+                          className="gap-1.5 text-xs"
+                        >
+                          <Copy className="h-3 w-3" />
+                          {section}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
