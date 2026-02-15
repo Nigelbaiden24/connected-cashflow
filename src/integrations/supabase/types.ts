@@ -4133,6 +4133,7 @@ export type Database = {
           risk_score: number | null
           risks: string | null
           short_description: string | null
+          source: string | null
           square_footage: number | null
           status: string | null
           strengths: string | null
@@ -4192,6 +4193,7 @@ export type Database = {
           risk_score?: number | null
           risks?: string | null
           short_description?: string | null
+          source?: string | null
           square_footage?: number | null
           status?: string | null
           strengths?: string | null
@@ -4251,6 +4253,7 @@ export type Database = {
           risk_score?: number | null
           risks?: string | null
           short_description?: string | null
+          source?: string | null
           square_footage?: number | null
           status?: string | null
           strengths?: string | null

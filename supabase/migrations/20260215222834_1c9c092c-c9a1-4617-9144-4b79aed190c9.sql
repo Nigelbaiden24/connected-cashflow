@@ -1,0 +1,1 @@
+ALTER TABLE public.opportunity_products ADD COLUMN source TEXT DEFAULT NULL;

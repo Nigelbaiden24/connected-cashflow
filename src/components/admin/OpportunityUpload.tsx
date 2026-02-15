@@ -143,6 +143,7 @@ interface OpportunityForm {
   // Status
   status: string;
   featured: boolean;
+  source: string;
 }
 
 const initialForm: OpportunityForm = {
@@ -193,7 +194,8 @@ const initialForm: OpportunityForm = {
   authenticity_verified: false,
   estimated_appreciation: "",
   status: "draft",
-  featured: false
+  featured: false,
+  source: ""
 };
 
 export function OpportunityUpload() {
@@ -299,6 +301,7 @@ export function OpportunityUpload() {
         estimated_appreciation: form.category === "collectibles_luxury" && form.estimated_appreciation ? parseFloat(form.estimated_appreciation) : null,
         status: form.status,
         featured: form.featured,
+        source: form.source || null,
         last_analyst_review_date: new Date().toISOString(),
         uploaded_by: user?.id || null
       };
@@ -477,6 +480,28 @@ export function OpportunityUpload() {
                       />
                     )}
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="source">Opportunity Source</Label>
+                  <Select value={form.source} onValueChange={(v) => updateForm("source", v)}>
+                    <SelectTrigger id="source" className="bg-background">
+                      <SelectValue placeholder="Select source of opportunity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="internal_research">Internal Research</SelectItem>
+                      <SelectItem value="ai_research_engine">AI Research Engine</SelectItem>
+                      <SelectItem value="broker_referral">Broker / Referral</SelectItem>
+                      <SelectItem value="client_submission">Client Submission</SelectItem>
+                      <SelectItem value="partner_network">Partner Network</SelectItem>
+                      <SelectItem value="market_scanning">Market Scanning</SelectItem>
+                      <SelectItem value="direct_sourcing">Direct Sourcing</SelectItem>
+                      <SelectItem value="auction">Auction</SelectItem>
+                      <SelectItem value="off_market">Off-Market</SelectItem>
+                      <SelectItem value="public_listing">Public Listing</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>
