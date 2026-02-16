@@ -32,6 +32,11 @@ import {
   XCircle,
   Download,
   Link2,
+  ImageIcon,
+  MapPin,
+  DollarSign,
+  AlertTriangle,
+  Star,
 } from "lucide-react";
 
 const categoryConfig: Record<string, { label: string; icon: any; subCategories: string[] }> = {
@@ -99,13 +104,70 @@ interface SourceRecord {
   error?: string;
 }
 
+interface ScrapedOpportunity {
+  name: string;
+  description: string;
+  source_url: string;
+  source_website: string;
+  image_url: string;
+  scraped_date: string;
+  estimated_value: string;
+  location: string;
+  projected_returns: string;
+  risk_level: string;
+  analyst_rating: string;
+  investment_thesis: string;
+  key_metrics: Record<string, string>;
+}
+
 interface SourceMetadata {
   sources: SourceRecord[];
   searchResultUrls: string[];
+  searchResults: { title: string; url: string; description: string; imageUrl?: string }[];
   researchDate: string;
   category: string;
   subCategory: string;
 }
+
+function parseOpportunities(text: string): ScrapedOpportunity[] {
+  try {
+    const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[1]);
+      if (Array.isArray(parsed)) return parsed;
+    }
+    // Try finding a raw JSON array
+    const rawMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (rawMatch) {
+      const parsed = JSON.parse(rawMatch[0]);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {
+    console.error("Failed to parse opportunities JSON:", e);
+  }
+  return [];
+}
+
+function getMarketContext(text: string): string {
+  const jsonIdx = text.indexOf("```json");
+  if (jsonIdx > 0) return text.slice(0, jsonIdx).trim();
+  const arrIdx = text.indexOf("[");
+  if (arrIdx > 50) return text.slice(0, arrIdx).trim();
+  return "";
+}
+
+const RISK_COLORS: Record<string, string> = {
+  Low: "bg-green-100 text-green-800 border-green-200",
+  Medium: "bg-amber-100 text-amber-800 border-amber-200",
+  High: "bg-red-100 text-red-800 border-red-200",
+};
+
+const RATING_COLORS: Record<string, string> = {
+  "Strong Buy": "bg-emerald-100 text-emerald-800",
+  Buy: "bg-green-100 text-green-800",
+  Hold: "bg-amber-100 text-amber-800",
+  Sell: "bg-red-100 text-red-800",
+};
 
 export function OpportunityResearchEngine() {
   const [category, setCategory] = useState("");
@@ -114,29 +176,49 @@ export function OpportunityResearchEngine() {
   const [phase, setPhase] = useState<ResearchPhase>("idle");
   const [aiOutput, setAiOutput] = useState("");
   const [sourceMetadata, setSourceMetadata] = useState<SourceMetadata | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const handleCopy = useCallback(async (text: string) => {
+  const opportunities = phase === "complete" ? parseOpportunities(aiOutput) : [];
+  const marketContext = phase === "complete" ? getMarketContext(aiOutput) : "";
+
+  const handleCopy = useCallback(async (text: string, id?: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
-      toast.success("Copied to clipboard — paste into Opportunity Intelligence");
-      setTimeout(() => setCopied(false), 2000);
+      if (id) {
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+      toast.success("Copied to clipboard — paste into Opportunity Upload");
     } catch {
       toast.error("Failed to copy");
     }
   }, []);
 
+  const copyOpportunityForUpload = useCallback((opp: ScrapedOpportunity) => {
+    const text = `OPPORTUNITY: ${opp.name}
+Description: ${opp.description}
+Value: ${opp.estimated_value}
+Location: ${opp.location}
+Projected Returns: ${opp.projected_returns}
+Risk Level: ${opp.risk_level}
+Analyst Rating: ${opp.analyst_rating}
+Investment Thesis: ${opp.investment_thesis}
+Source: ${opp.source_website} — ${opp.source_url}
+Scraped: ${opp.scraped_date}
+Image: ${opp.image_url || "N/A"}
+${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
+    handleCopy(text, opp.name);
+  }, [handleCopy]);
+
   const handleDownload = useCallback(() => {
     if (!aiOutput) return;
-    const header = `# FlowPulse Research Brief\n**Category:** ${sourceMetadata?.category || category}\n**Date:** ${sourceMetadata?.researchDate || new Date().toISOString()}\n\n---\n\n`;
-    const sourceSection = sourceMetadata ? `\n\n---\n\n## Source Log\n${sourceMetadata.sources.map(s => `- [${s.status.toUpperCase()}] ${s.type === 'search' ? `Search: "${s.query}"` : s.url} — ${new Date(s.scrapedAt).toLocaleString()} (${s.contentLength} chars)`).join('\n')}\n\n### URLs Found\n${sourceMetadata.searchResultUrls.map(u => `- ${u}`).join('\n')}` : '';
-    const blob = new Blob([header + aiOutput + sourceSection], { type: 'text/markdown' });
+    const header = `# FlowPulse Opportunity Research\n**Category:** ${sourceMetadata?.category || category}\n**Date:** ${sourceMetadata?.researchDate || new Date().toISOString()}\n\n---\n\n`;
+    const blob = new Blob([header + aiOutput], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `flowpulse-research-${category || 'custom'}-${new Date().toISOString().split('T')[0]}.md`;
+    a.download = `flowpulse-opportunities-${category || 'custom'}-${new Date().toISOString().split('T')[0]}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -160,7 +242,6 @@ export function OpportunityResearchEngine() {
       const token = session?.access_token;
 
       toast.info("Scraping live data from multiple sources...");
-
       await new Promise((r) => setTimeout(r, 1500));
       setPhase("analyzing");
 
@@ -186,9 +267,7 @@ export function OpportunityResearchEngine() {
         throw new Error(err.error || `HTTP ${response.status}`);
       }
 
-      if (!response.body) {
-        throw new Error("No response stream");
-      }
+      if (!response.body) throw new Error("No response stream");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -212,7 +291,6 @@ export function OpportunityResearchEngine() {
 
           try {
             const parsed = JSON.parse(jsonStr);
-            // Check for source metadata event
             if (parsed.type === "source_metadata") {
               setSourceMetadata(parsed as SourceMetadata);
               continue;
@@ -229,7 +307,7 @@ export function OpportunityResearchEngine() {
       }
 
       setPhase("complete");
-      toast.success("Research complete!");
+      toast.success("Research complete — individual opportunities found!");
     } catch (error: any) {
       if (error.name === "AbortError") return;
       console.error("Research error:", error);
@@ -257,19 +335,16 @@ export function OpportunityResearchEngine() {
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Brain className="h-7 w-7" />
-              AI Research Engine
+              AI Opportunity Scraper
             </h2>
             <p className="text-white/80 mt-1">
-              Enterprise-grade deep research — scrapes live sources, provides full source attribution, and generates investment briefs
+              Finds individual investment opportunities from across the web with full source attribution and images
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-white/30 text-white bg-white/10">
               <Zap className="h-3 w-3 mr-1" />
               Firecrawl + AI
-            </Badge>
-            <Badge variant="outline" className="border-white/30 text-white bg-white/10">
-              10 Categories
             </Badge>
           </div>
         </div>
@@ -280,10 +355,10 @@ export function OpportunityResearchEngine() {
         <CardHeader className="border-b border-slate-100">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Search className="h-5 w-5 text-purple-600" />
-            Research Configuration
+            Search for Opportunities
           </CardTitle>
           <CardDescription>
-            Select a category to scrape live market data, or enter a custom research query
+            Select a category to scrape individual investment opportunities from multiple web sources
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
@@ -339,23 +414,6 @@ export function OpportunityResearchEngine() {
             </div>
           </div>
 
-          {category && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                <Globe className="h-3 w-3 mr-1" />
-                Web Search × 3 queries
-              </Badge>
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                <FileText className="h-3 w-3 mr-1" />
-                Direct Scrape × {categoryConfig[category]?.subCategories ? "2-3 sources" : "0"}
-              </Badge>
-              <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                <Brain className="h-3 w-3 mr-1" />
-                AI Analysis & Summary
-              </Badge>
-            </div>
-          )}
-
           <div className="flex items-center gap-3 pt-2">
             <Button
               onClick={handleResearch}
@@ -365,12 +423,12 @@ export function OpportunityResearchEngine() {
               {isRunning ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {phase === "scraping" ? "Scraping Sources..." : "AI Analyzing..."}
+                  {phase === "scraping" ? "Scraping Sources..." : "Finding Opportunities..."}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Start Deep Research
+                  Find Opportunities
                 </>
               )}
             </Button>
@@ -379,16 +437,16 @@ export function OpportunityResearchEngine() {
                 Cancel
               </Button>
             )}
-            {phase === "complete" && (
+            {phase === "complete" && opportunities.length > 0 && (
               <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
-                ✓ Research Complete
+                ✓ {opportunities.length} Opportunities Found
               </Badge>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Progress Indicator */}
+      {/* Progress */}
       {isRunning && (
         <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
           <CardContent className="py-6">
@@ -398,25 +456,13 @@ export function OpportunityResearchEngine() {
               </div>
               <div>
                 <h4 className="font-semibold text-slate-900">
-                  {phase === "scraping" ? "Phase 1: Live Data Scraping" : "Phase 2: AI Analysis"}
+                  {phase === "scraping" ? "Phase 1: Scraping Web Sources" : "Phase 2: Extracting Individual Opportunities"}
                 </h4>
                 <p className="text-sm text-slate-500">
                   {phase === "scraping"
-                    ? "Scraping web search results and financial data sources via Firecrawl..."
-                    : "AI is analyzing scraped data and generating investment brief with source citations..."}
+                    ? "Searching and scraping financial data sources via Firecrawl..."
+                    : "AI is identifying specific investment opportunities with source attribution..."}
                 </p>
-              </div>
-              <div className="ml-auto flex gap-2">
-                <div
-                  className={`h-3 w-3 rounded-full ${
-                    phase === "scraping" ? "bg-purple-500 animate-pulse" : "bg-green-500"
-                  }`}
-                />
-                <div
-                  className={`h-3 w-3 rounded-full ${
-                    phase === "analyzing" ? "bg-purple-500 animate-pulse" : "bg-slate-200"
-                  }`}
-                />
               </div>
             </div>
           </CardContent>
@@ -438,178 +484,248 @@ export function OpportunityResearchEngine() {
               Research conducted on {new Date(sourceMetadata.researchDate).toLocaleString()} — {sourceMetadata.category} {sourceMetadata.subCategory !== "General" ? `→ ${sourceMetadata.subCategory}` : ""}
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-4 space-y-4">
-            {/* Scraped Sources */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                Scraped Sources
-              </h4>
-              <div className="grid gap-2">
-                {sourceMetadata.sources.map((source, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center justify-between p-3 rounded-lg border text-sm ${
-                      source.status === "success"
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      {source.status === "success" ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+          <CardContent className="pt-4 space-y-3">
+            <div className="grid gap-2">
+              {sourceMetadata.sources.map((source, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center justify-between p-3 rounded-lg border text-sm ${
+                    source.status === "success"
+                      ? "bg-green-50 border-green-200"
+                      : "bg-red-50 border-red-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {source.status === "success" ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-600 shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      {source.type === "search" ? (
+                        <span className="font-medium">Search: "{source.query}"</span>
                       ) : (
-                        <XCircle className="h-4 w-4 text-red-600 shrink-0" />
-                      )}
-                      <div className="min-w-0">
-                        {source.type === "search" ? (
-                          <span className="font-medium">Search: "{source.query}"</span>
-                        ) : (
-                          <a
-                            href={source.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-blue-700 hover:underline truncate block"
-                          >
-                            {source.url}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0 ml-4">
-                      <Badge variant="outline" className="text-xs">
-                        {source.type === "search" ? "Search" : "Scrape"}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(source.scrapedAt).toLocaleTimeString()}
-                      </span>
-                      {source.status === "success" && (
-                        <span className="text-xs text-muted-foreground">
-                          {(source.contentLength / 1000).toFixed(1)}k chars
-                        </span>
-                      )}
-                      {source.error && (
-                        <span className="text-xs text-red-600">{source.error}</span>
+                        <a href={source.url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-700 hover:underline truncate block">
+                          {source.url}
+                        </a>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Referenced URLs */}
-            {sourceMetadata.searchResultUrls.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  Referenced URLs ({sourceMetadata.searchResultUrls.length})
-                </h4>
-                <div className="grid gap-1 max-h-40 overflow-y-auto">
-                  {sourceMetadata.searchResultUrls.map((url, i) => (
-                    <a
-                      key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline truncate block py-0.5"
-                    >
-                      {url}
-                    </a>
-                  ))}
+                  <div className="flex items-center gap-3 shrink-0 ml-4">
+                    <Badge variant="outline" className="text-xs">{source.type}</Badge>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {new Date(source.scrapedAt).toLocaleTimeString()}
+                    </span>
+                    {source.error && <span className="text-xs text-red-600">{source.error}</span>}
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Results */}
-      {aiOutput && (
-        <Card className="border-slate-200 shadow-lg">
-          <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-green-50 to-transparent">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-green-600" />
-                  AI Research Brief
-                  {category && (
-                    <Badge variant="secondary" className="ml-2">
-                      {categoryConfig[category]?.label}
-                      {subCategory && ` → ${subCategory}`}
-                    </Badge>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  Generated from live scraped data — copy sections below to create opportunity listings
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopy(aiOutput)}
-                  className="gap-1.5"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-green-600" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      Copy All
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownload}
-                  className="gap-1.5"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Download .md
-                </Button>
-              </div>
+      {/* Market Context */}
+      {marketContext && phase === "complete" && (
+        <Card className="border-slate-200">
+          <CardContent className="py-4">
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{marketContext}</ReactMarkdown>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Individual Opportunity Cards */}
+      {opportunities.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              Scraped Opportunities ({opportunities.length})
+            </h3>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleDownload} className="gap-1.5">
+                <Download className="h-3.5 w-3.5" />
+                Download All
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {opportunities.map((opp, i) => (
+              <Card key={i} className="border-slate-200 shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                {/* Image */}
+                {opp.image_url && (
+                  <div className="relative h-40 bg-slate-100 overflow-hidden">
+                    <img
+                      src={opp.image_url}
+                      alt={opp.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute top-2 right-2 flex gap-1">
+                      {opp.risk_level && (
+                        <Badge className={`text-xs ${RISK_COLORS[opp.risk_level] || "bg-slate-100 text-slate-800"}`}>
+                          {opp.risk_level} Risk
+                        </Badge>
+                      )}
+                      {opp.analyst_rating && (
+                        <Badge className={`text-xs ${RATING_COLORS[opp.analyst_rating] || "bg-slate-100 text-slate-800"}`}>
+                          {opp.analyst_rating}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* No image fallback badges */}
+                {!opp.image_url && (
+                  <div className="flex gap-1 px-4 pt-4">
+                    {opp.risk_level && (
+                      <Badge className={`text-xs ${RISK_COLORS[opp.risk_level] || "bg-slate-100 text-slate-800"}`}>
+                        {opp.risk_level} Risk
+                      </Badge>
+                    )}
+                    {opp.analyst_rating && (
+                      <Badge className={`text-xs ${RATING_COLORS[opp.analyst_rating] || "bg-slate-100 text-slate-800"}`}>
+                        {opp.analyst_rating}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                <CardContent className="p-4 space-y-3">
+                  <div>
+                    <h4 className="font-bold text-base text-slate-900 leading-tight">{opp.name}</h4>
+                    <p className="text-sm text-slate-600 mt-1">{opp.description}</p>
+                  </div>
+
+                  {/* Key details */}
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {opp.estimated_value && (
+                      <div className="flex items-center gap-1.5 text-slate-700">
+                        <DollarSign className="h-3.5 w-3.5 text-green-600" />
+                        <span className="truncate">{opp.estimated_value}</span>
+                      </div>
+                    )}
+                    {opp.location && (
+                      <div className="flex items-center gap-1.5 text-slate-700">
+                        <MapPin className="h-3.5 w-3.5 text-blue-600" />
+                        <span className="truncate">{opp.location}</span>
+                      </div>
+                    )}
+                    {opp.projected_returns && (
+                      <div className="flex items-center gap-1.5 text-slate-700">
+                        <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                        <span className="truncate">{opp.projected_returns}</span>
+                      </div>
+                    )}
+                    {opp.scraped_date && (
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="truncate">{opp.scraped_date}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Investment thesis */}
+                  {opp.investment_thesis && (
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-md p-2.5">
+                      <p className="text-xs font-semibold text-indigo-800 mb-0.5 flex items-center gap-1">
+                        <Star className="h-3 w-3" /> Investment Thesis
+                      </p>
+                      <p className="text-xs text-indigo-700">{opp.investment_thesis}</p>
+                    </div>
+                  )}
+
+                  {/* Key metrics */}
+                  {opp.key_metrics && Object.keys(opp.key_metrics).length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(opp.key_metrics).map(([k, v]) => (
+                        <Badge key={k} variant="outline" className="text-[10px] py-0">
+                          {k}: {v}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  {/* Source attribution */}
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                      <Globe className="h-3 w-3" /> Source
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-slate-700">{opp.source_website}</p>
+                        {opp.source_url && (
+                          <a
+                            href={opp.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-blue-600 hover:underline truncate block"
+                          >
+                            {opp.source_url}
+                          </a>
+                        )}
+                      </div>
+                      <a
+                        href={opp.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 ml-2"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5 text-slate-400 hover:text-blue-600" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Copy button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-1.5 text-xs"
+                    onClick={() => copyOpportunityForUpload(opp)}
+                  >
+                    {copiedId === opp.name ? (
+                      <>
+                        <Check className="h-3 w-3 text-green-600" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        Copy for Opportunity Upload
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Raw AI output (fallback if no structured opportunities parsed) */}
+      {aiOutput && phase === "complete" && opportunities.length === 0 && (
+        <Card className="border-slate-200 shadow-lg">
+          <CardHeader className="border-b border-slate-100">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-slate-600" />
+              Raw Research Output
+            </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <ScrollArea className="h-[600px]">
-              <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-slate-900 prose-h2:text-lg prose-h2:border-b prose-h2:pb-2 prose-h2:border-slate-200 prose-h3:text-base prose-strong:text-slate-900 prose-li:text-slate-700 prose-a:text-blue-600 prose-a:underline">
+            <ScrollArea className="h-[500px]">
+              <div className="prose prose-sm max-w-none dark:prose-invert">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiOutput}</ReactMarkdown>
               </div>
             </ScrollArea>
-
-            {/* Quick Copy Sections */}
-            {phase === "complete" && (
-              <>
-                <Separator className="my-4" />
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-slate-700">Quick Copy Sections</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {["Market Overview", "Key Opportunities", "Market Data", "Investment Thesis", "Risk Factors", "Recommended Listing Details", "Data Sources"].map((section) => {
-                      const regex = new RegExp(`## ${section}[\\s\\S]*?(?=\\n## |$)`, "i");
-                      const match = aiOutput.match(regex);
-                      if (!match) return null;
-                      return (
-                        <Button
-                          key={section}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopy(match[0])}
-                          className="gap-1.5 text-xs"
-                        >
-                          <Copy className="h-3 w-3" />
-                          {section}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
           </CardContent>
         </Card>
       )}

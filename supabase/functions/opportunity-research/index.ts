@@ -5,13 +5,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Research sources mapped to investment categories
 const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: string[] }> = {
   uk_property: {
     queries: [
-      "UK property investment market 2025 trends",
-      "UK buy to let rental yields current",
-      "UK real estate investment opportunities HMO commercial",
+      "UK property investment opportunities for sale 2025",
+      "UK buy to let properties available high yield",
+      "UK HMO commercial property investment listings current",
     ],
     urls: [
       "https://www.rightmove.co.uk/news/house-price-index/",
@@ -21,9 +20,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   vehicles: {
     queries: [
-      "classic car investment market 2025 returns",
-      "luxury vehicle investment appreciation trends",
-      "collectible car auction results latest",
+      "classic car investment opportunities for sale auction 2025",
+      "luxury vehicle collectible car auction results latest",
+      "rare cars appreciating value investment grade",
     ],
     urls: [
       "https://www.hagerty.co.uk/price-guide/",
@@ -32,9 +31,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   overseas_property: {
     queries: [
-      "overseas property investment best countries 2025",
-      "international real estate investment returns",
-      "emerging property markets global opportunities",
+      "overseas property investment opportunities for sale 2025",
+      "international real estate high yield listings",
+      "emerging property markets best deals current",
     ],
     urls: [
       "https://www.globalpropertyguide.com/",
@@ -43,9 +42,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   businesses: {
     queries: [
-      "UK SME business acquisition opportunities 2025",
-      "franchise investment returns UK",
-      "startup investment trends venture capital",
+      "UK businesses for sale acquisition opportunities 2025",
+      "franchise investment opportunities UK high return",
+      "profitable SME businesses for sale current listings",
     ],
     urls: [
       "https://www.businessesforsale.com/uk",
@@ -54,9 +53,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   stocks: {
     queries: [
-      "UK equities investment opportunities FTSE analysis",
-      "best stocks to buy UK 2025 analyst picks",
-      "US equities market outlook current",
+      "best stocks to buy now UK analyst strong buy recommendations",
+      "undervalued stocks investment opportunities FTSE",
+      "US equities top picks analysts current",
     ],
     urls: [
       "https://www.hl.co.uk/shares/stock-market-summary/ftse-100",
@@ -65,9 +64,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   crypto: {
     queries: [
-      "cryptocurrency investment opportunities 2025",
-      "DeFi digital assets market trends",
-      "NFT market analysis investment potential",
+      "cryptocurrency investment opportunities best coins 2025",
+      "DeFi tokens high potential undervalued",
+      "NFT digital asset investment opportunities current",
     ],
     urls: [
       "https://www.coindesk.com/markets/",
@@ -76,9 +75,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   private_equity: {
     queries: [
-      "private equity investment opportunities 2025",
-      "venture capital deals UK market",
-      "growth equity buyout market trends",
+      "private equity investment opportunities deals 2025",
+      "venture capital deals seeking investors UK",
+      "growth equity buyout opportunities current",
     ],
     urls: [
       "https://www.bvca.co.uk/Research/Industry-Activity",
@@ -87,9 +86,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   memorabilia: {
     queries: [
-      "sports memorabilia investment market 2025",
-      "collectibles auction results appreciation",
-      "signed items investment returns historical",
+      "sports memorabilia investment lots for sale auction 2025",
+      "collectibles signed items investment grade auction results",
+      "rare memorabilia appreciating value current listings",
     ],
     urls: [
       "https://www.christies.com/results",
@@ -98,9 +97,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   commodities: {
     queries: [
-      "gold silver precious metals investment 2025",
-      "commodities market outlook current prices",
-      "hard assets investment portfolio allocation",
+      "gold silver precious metals investment opportunities buy now",
+      "commodities investment best opportunities current prices",
+      "hard assets investment grade bullion coins",
     ],
     urls: [
       "https://www.gold.org/goldhub",
@@ -109,9 +108,9 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   funds: {
     queries: [
-      "best mutual funds ETFs 2025 performance",
-      "REIT investment opportunities UK",
-      "hedge fund market performance analysis",
+      "best mutual funds ETFs to invest in 2025 top performers",
+      "REIT investment opportunities UK high dividend",
+      "hedge fund opportunities open to investors",
     ],
     urls: [
       "https://www.morningstar.co.uk/uk/screener/fund.aspx",
@@ -128,6 +127,13 @@ interface SourceRecord {
   status: "success" | "error";
   contentLength: number;
   error?: string;
+}
+
+interface SearchResultItem {
+  title: string;
+  url: string;
+  description: string;
+  imageUrl?: string;
 }
 
 async function scrapeUrl(url: string, apiKey: string): Promise<{ content: string; source: SourceRecord }> {
@@ -147,7 +153,7 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ content: string
       },
       body: JSON.stringify({
         url,
-        formats: ["markdown"],
+        formats: ["markdown", "links"],
         onlyMainContent: true,
         waitFor: 3000,
       }),
@@ -171,7 +177,7 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ content: string
   }
 }
 
-async function searchWeb(query: string, apiKey: string): Promise<{ content: string; source: SourceRecord; resultUrls: string[] }> {
+async function searchWeb(query: string, apiKey: string): Promise<{ content: string; source: SourceRecord; results: SearchResultItem[] }> {
   const source: SourceRecord = {
     url: "https://api.firecrawl.dev/v1/search",
     type: "search",
@@ -180,7 +186,7 @@ async function searchWeb(query: string, apiKey: string): Promise<{ content: stri
     status: "error",
     contentLength: 0,
   };
-  const resultUrls: string[] = [];
+  const results: SearchResultItem[] = [];
   try {
     const response = await fetch("https://api.firecrawl.dev/v1/search", {
       method: "POST",
@@ -197,18 +203,21 @@ async function searchWeb(query: string, apiKey: string): Promise<{ content: stri
 
     if (!response.ok) {
       source.error = `HTTP ${response.status}`;
-      return { content: "", source, resultUrls };
+      return { content: "", source, results };
     }
 
     const data = await response.json();
-    const results = data.data || [];
-    const content = results
+    const rawResults = data.data || [];
+    const content = rawResults
       .map((r: any) => {
         const title = r.title || "";
         const desc = r.description || "";
         const md = (r.markdown || "").slice(0, 2000);
         const rUrl = r.url || r.sourceURL || "";
-        if (rUrl) resultUrls.push(rUrl);
+        // Extract any og:image or first image from metadata
+        const imageUrl = r.metadata?.ogImage || r.metadata?.image || r.screenshot || "";
+        
+        results.push({ title, url: rUrl, description: desc, imageUrl });
         return `### ${title}\n**Source:** ${rUrl}\n${desc}\n${md}`;
       })
       .join("\n\n")
@@ -216,11 +225,11 @@ async function searchWeb(query: string, apiKey: string): Promise<{ content: stri
 
     source.status = "success";
     source.contentLength = content.length;
-    return { content, source, resultUrls };
+    return { content, source, results };
   } catch (error) {
     console.error(`Search error for "${query}":`, error);
     source.error = error instanceof Error ? error.message : "Unknown error";
-    return { content: "", source, resultUrls };
+    return { content: "", source, results };
   }
 }
 
@@ -235,26 +244,17 @@ serve(async (req) => {
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-    if (!FIRECRAWL_API_KEY) {
-      throw new Error("FIRECRAWL_API_KEY is not configured");
-    }
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    if (!FIRECRAWL_API_KEY) throw new Error("FIRECRAWL_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const sources = CATEGORY_RESEARCH_SOURCES[category];
-    if (!sources && !customQuery) {
-      throw new Error(`Unknown category: ${category}`);
-    }
+    if (!sources && !customQuery) throw new Error(`Unknown category: ${category}`);
 
     console.log(`Researching: ${category} / ${subCategory || "all"}`);
 
-    // Phase 1: Parallel scraping & searching
     const queries = customQuery
       ? [customQuery]
-      : sources.queries.map((q) =>
-          subCategory ? `${q} ${subCategory}` : q
-        );
+      : sources.queries.map((q) => subCategory ? `${q} ${subCategory}` : q);
     const urls = sources?.urls || [];
 
     const [searchResults, scrapeResults] = await Promise.all([
@@ -262,13 +262,12 @@ serve(async (req) => {
       Promise.all(urls.slice(0, 3).map((u) => scrapeUrl(u, FIRECRAWL_API_KEY))),
     ]);
 
-    // Collect all source records
     const allSources: SourceRecord[] = [];
-    const allSearchResultUrls: string[] = [];
+    const allSearchResults: SearchResultItem[] = [];
 
     searchResults.forEach((r) => {
       allSources.push(r.source);
-      allSearchResultUrls.push(...r.resultUrls);
+      allSearchResults.push(...r.results);
     });
     scrapeResults.forEach((r) => {
       allSources.push(r.source);
@@ -294,7 +293,6 @@ serve(async (req) => {
       );
     }
 
-    // Phase 2: AI summarisation (non-streaming) to include source metadata in response
     const categoryLabel = category.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     const subLabel = subCategory || "General";
 
@@ -303,45 +301,48 @@ serve(async (req) => {
       .map((s) => s.type === "search" ? `Search: "${s.query}"` : `Direct: ${s.url}`)
       .join("\n");
 
-    const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and produce a structured investment opportunity brief that an admin can use to create a new opportunity listing.
+    // Build a reference list of search result URLs with images for the AI
+    const searchResultReference = allSearchResults
+      .filter(r => r.url)
+      .map(r => `- Title: ${r.title} | URL: ${r.url} | Image: ${r.imageUrl || "none"} | Desc: ${r.description?.slice(0, 100)}`)
+      .join("\n");
 
-IMPORTANT: At the end of your analysis, include a "## Data Sources" section listing all websites and search queries that contributed to this research with their URLs.
+    const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and identify INDIVIDUAL, SPECIFIC investment opportunities that an admin can list on the platform.
 
-You must output a structured analysis in this exact format:
+CRITICAL INSTRUCTION: You must output INDIVIDUAL opportunities — each one a distinct, real investment opportunity found in the data. NOT a general market overview.
 
-## Market Overview
-Brief overview of the current market conditions for this asset class.
+After your analysis, you MUST output a JSON block wrapped in \`\`\`json ... \`\`\` containing an array of individual opportunities. Each opportunity must have:
 
-## Key Opportunities Identified
-List 3-5 specific investment opportunities found in the research data, each with:
-- **Opportunity Name**: Clear title
-- **Estimated Value/Price Range**: If available
-- **Location/Market**: Where
-- **Projected Returns**: If available
-- **Risk Level**: Low/Medium/High
-- **Source**: Website/URL where this data was found
+\`\`\`json
+[
+  {
+    "name": "Specific opportunity name/title",
+    "description": "2-3 sentence description of this specific opportunity",
+    "source_url": "The exact URL where this opportunity was found",
+    "source_website": "Name of the website (e.g. Rightmove, Seeking Alpha)",
+    "image_url": "URL of an image related to this opportunity if available, or empty string",
+    "scraped_date": "${new Date().toISOString().split('T')[0]}",
+    "estimated_value": "Price or value range (e.g. £250,000 - £300,000)",
+    "location": "Location or market",
+    "projected_returns": "Expected returns if available",
+    "risk_level": "Low/Medium/High",
+    "analyst_rating": "Strong Buy/Buy/Hold/Sell",
+    "investment_thesis": "1-2 sentence thesis for why this is compelling",
+    "key_metrics": { "any": "relevant metrics like yield, P/E, etc." }
+  }
+]
+\`\`\`
 
-## Market Data & Numbers
-Key statistics, yields, prices, growth rates from the scraped data. Cite the source website for each data point.
+RULES:
+1. Find 5-10 SPECIFIC individual opportunities from the scraped data
+2. Each must have a real source_url — the ACTUAL page where you found this data
+3. Use image URLs from the search results reference where available
+4. Be specific — real names, real prices, real locations from the data
+5. Before the JSON block, write a brief Market Context section (3-4 sentences max)
+6. Cite the source website name for every opportunity
 
-## Investment Thesis
-Why this is a compelling area for investment right now.
-
-## Risk Factors
-Top risks to consider.
-
-## Recommended Listing Details
-Suggest how the admin should fill out the opportunity form:
-- Suggested title
-- Short description (2-3 sentences)
-- Recommended analyst rating (Strong Buy/Buy/Hold/Sell)
-- Suggested scores (1-5) for: Quality, Value, Liquidity, Risk, Transparency
-- Key watchpoints
-
-## Data Sources
-List every website URL and search query used to compile this research with the date data was accessed.
-
-Be specific, data-driven, and cite the source URL for every claim and number.`;
+Here are the search result URLs and images found during scraping — use these as source_urls and image_urls:
+${searchResultReference}`;
 
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -357,15 +358,12 @@ Be specific, data-driven, and cite the source URL for every claim and number.`;
             { role: "system", content: systemPrompt },
             {
               role: "user",
-              content: `Analyze the following live research data for the investment category: **${categoryLabel} — ${subLabel}**
+              content: `Find individual investment opportunities from this scraped data for: **${categoryLabel} — ${subLabel}**
 
 Research conducted on: ${new Date().toISOString()}
 
 Sources used:
 ${sourceListForAI}
-
-Research URLs found:
-${allSearchResultUrls.slice(0, 20).join("\n")}
 
 ---
 
@@ -395,12 +393,12 @@ ${combinedResearch.slice(0, 30000)}`,
       throw new Error("AI analysis failed");
     }
 
-    // Create a custom stream that prepends source metadata then pipes AI stream
     const encoder = new TextEncoder();
     const sourceMetaEvent = `data: ${JSON.stringify({
       type: "source_metadata",
       sources: allSources,
-      searchResultUrls: allSearchResultUrls.slice(0, 30),
+      searchResults: allSearchResults.slice(0, 30),
+      searchResultUrls: allSearchResults.filter(r => r.url).map(r => r.url).slice(0, 30),
       researchDate: new Date().toISOString(),
       category: categoryLabel,
       subCategory: subLabel,
@@ -410,9 +408,7 @@ ${combinedResearch.slice(0, 30000)}`,
     const writer = writable.getWriter();
 
     (async () => {
-      // Send source metadata first
       await writer.write(encoder.encode(sourceMetaEvent));
-      // Then pipe through the AI stream
       const reader = aiResponse.body!.getReader();
       try {
         while (true) {
