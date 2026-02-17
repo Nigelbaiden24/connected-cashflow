@@ -513,6 +513,258 @@ All colors MUST be HSL.
     );
     border-bottom: 1px solid hsl(var(--border) / 0.5);
   }
+
+  /* ============================================
+     CRM ENTERPRISE VISUAL SYSTEM
+     ============================================ */
+
+  /* 3D Card with perspective tilt on hover */
+  .crm-card-3d {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .crm-card-3d:hover {
+    transform: translateY(-4px) rotateX(2deg) rotateY(-1deg);
+    box-shadow: 
+      0 20px 40px -12px hsl(var(--primary) / 0.15),
+      0 8px 16px -8px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 hsl(0 0% 100% / 0.1);
+  }
+
+  /* Glassmorphism stat card */
+  .crm-glass-card {
+    background: linear-gradient(135deg, 
+      hsl(var(--card) / 0.8) 0%, 
+      hsl(var(--card) / 0.6) 100%
+    );
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crm-glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+      hsl(0 0% 100% / 0.08) 0%, 
+      transparent 50%, 
+      hsl(0 0% 0% / 0.03) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Animated gradient border */
+  .crm-gradient-border {
+    position: relative;
+    border-radius: 1rem;
+  }
+
+  .crm-gradient-border::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, 
+      hsl(var(--primary)) 0%, 
+      hsl(199 89% 48%) 33%,
+      hsl(270 75% 55%) 66%,
+      hsl(var(--primary)) 100%
+    );
+    background-size: 300% 300%;
+    animation: crm-border-flow 6s ease infinite;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .crm-gradient-border:hover::after {
+    opacity: 1;
+  }
+
+  @keyframes crm-border-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Stat card icon glow */
+  .crm-icon-glow {
+    position: relative;
+  }
+
+  .crm-icon-glow::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    background: inherit;
+    filter: blur(12px);
+    opacity: 0.4;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+  }
+
+  .crm-icon-glow:hover::after {
+    opacity: 0.6;
+  }
+
+  /* Premium header shimmer */
+  .crm-header-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crm-header-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsl(0 0% 100% / 0.08), 
+      transparent
+    );
+    animation: crm-shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes crm-shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+  }
+
+  /* Floating orb background */
+  .crm-orb-bg {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crm-orb-bg::before,
+  .crm-orb-bg::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.08;
+    pointer-events: none;
+  }
+
+  .crm-orb-bg::before {
+    width: 300px;
+    height: 300px;
+    background: hsl(var(--primary));
+    top: -100px;
+    right: -50px;
+    animation: crm-float 15s ease-in-out infinite;
+  }
+
+  .crm-orb-bg::after {
+    width: 250px;
+    height: 250px;
+    background: hsl(199 89% 48%);
+    bottom: -80px;
+    left: -30px;
+    animation: crm-float 18s ease-in-out infinite reverse;
+  }
+
+  @keyframes crm-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.1); }
+    66% { transform: translate(-20px, 15px) scale(0.95); }
+  }
+
+  /* Table row premium hover */
+  .crm-table-row {
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .crm-table-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: hsl(var(--primary));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .crm-table-row:hover::before {
+    opacity: 1;
+  }
+
+  .crm-table-row:hover {
+    background: hsl(var(--primary) / 0.04);
+  }
+
+  /* Metric counter animation */
+  .crm-metric {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Premium toolbar */
+  .crm-toolbar {
+    background: linear-gradient(135deg, 
+      hsl(var(--card) / 0.9) 0%, 
+      hsl(var(--muted) / 0.4) 100%
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 
+      0 4px 24px -4px hsl(var(--primary) / 0.08),
+      0 1px 2px hsl(0 0% 0% / 0.04);
+  }
+
+  /* Contact card premium */
+  .crm-contact-card {
+    background: linear-gradient(145deg, 
+      hsl(var(--card)) 0%, 
+      hsl(var(--card) / 0.95) 100%
+    );
+    border: 1px solid hsl(var(--border) / 0.5);
+    transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crm-contact-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+      hsl(var(--primary)), 
+      hsl(199 89% 48%), 
+      hsl(270 75% 55%)
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .crm-contact-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 
+      0 20px 40px -12px hsl(var(--primary) / 0.12),
+      0 8px 20px -8px rgba(0, 0, 0, 0.08);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .crm-contact-card:hover::before {
+    opacity: 1;
+  }
 }
 
 /* Markdown prose styles for chat messages */

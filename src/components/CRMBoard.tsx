@@ -848,7 +848,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 crm-orb-bg">
       {/* Next Action AI Panel - Default Tab */}
       <NextActionAI contacts={contacts} selectedContactIds={selectedContacts} />
 
@@ -858,8 +858,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
       )}
 
       {/* Enhanced Toolbar - Enterprise Grade */}
-      <div className="flex items-center justify-between gap-4 flex-wrap p-4 rounded-xl bg-gradient-to-r from-muted/30 via-muted/20 to-transparent border border-border/40 backdrop-blur-sm">
-        <h2 className="text-xl font-bold tracking-tight text-foreground">CRM Board</h2>
+      <div className="flex items-center justify-between gap-4 flex-wrap p-5 rounded-2xl crm-toolbar">
+        <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">CRM Board</h2>
         <div className="flex items-center gap-2 flex-wrap">
           {/* View Toggle */}
           <div className="flex items-center border border-border/50 rounded-lg p-1 bg-background">
@@ -1061,9 +1061,9 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
 
       {/* Contacts View - Collapsible Table or Cards */}
       <Collapsible open={mainBoardOpen} onOpenChange={setMainBoardOpen}>
-        <Card className="border-border/40 shadow-lg shadow-black/[0.03] overflow-hidden rounded-xl">
+        <Card className="crm-glass-card shadow-xl shadow-primary/[0.04] overflow-hidden rounded-2xl border-0">
           <CollapsibleTrigger asChild>
-            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/30 transition-all duration-200 border-b border-border/40 bg-gradient-to-r from-muted/20 to-transparent">
+            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-primary/[0.03] transition-all duration-300 border-b border-border/30 bg-gradient-to-r from-primary/[0.03] via-transparent to-chart-3/[0.02]">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 transition-colors">
                   {mainBoardOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -1087,7 +1087,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className={compactView ? "bg-gradient-to-r from-muted/50 via-muted/30 to-muted/10 border-b border-border/40 h-9" : "bg-gradient-to-r from-muted/50 via-muted/30 to-muted/10 border-b border-border/40"}>
+                      <tr className={compactView ? "bg-gradient-to-r from-primary/[0.04] via-muted/30 to-transparent border-b border-border/30 h-9" : "bg-gradient-to-r from-primary/[0.04] via-muted/30 to-transparent border-b border-border/30"}>
                   <th className="p-0 w-12">
                     <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
@@ -1134,10 +1134,10 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 {paginatedContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
-                    className={compactView 
-                      ? "border-b border-border/30 hover:bg-primary/[0.04] transition-all duration-200 group h-8" 
-                      : "border-b border-border/30 hover:bg-primary/[0.04] hover:shadow-sm transition-all duration-200 group"}
-                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.02)" }}
+                    className={`crm-table-row ${compactView 
+                      ? "border-b border-border/20 transition-all duration-200 group h-8" 
+                      : "border-b border-border/20 transition-all duration-200 group"}`}
+                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.015)" }}
                   >
                     <td className="p-0">
                       <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-14"}>
@@ -1569,20 +1569,24 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </CardContent>
             ) : (
               /* Cards View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-5">
           {paginatedContacts.map((contact) => (
-            <Card 
+            <div
               key={contact.id} 
-              className="border-border/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
+              className="crm-contact-card rounded-2xl cursor-pointer group"
               onClick={() => navigate(isBusiness ? `/business/crm/${contact.id}` : `/finance-crm/${contact.id}`)}
             >
-              <div className={`h-1 bg-gradient-to-r ${getPriorityGradient(contact.priority)}`} />
-              <CardContent className="p-4 space-y-3">
+              <div className={`h-1.5 rounded-t-2xl bg-gradient-to-r ${
+                contact.priority === 'high' ? 'from-destructive via-destructive/80 to-warning' :
+                contact.priority === 'medium' ? 'from-primary via-chart-3 to-primary' :
+                'from-success via-success/80 to-chart-3'
+              }`} />
+              <div className="p-5 space-y-4">
                 <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1">
-                    <h3 className="font-semibold text-lg leading-none">{contact.name}</h3>
+                  <div className="space-y-1.5 flex-1">
+                    <h3 className="font-bold text-lg leading-none tracking-tight group-hover:text-primary transition-colors duration-300">{contact.name}</h3>
                     {contact.position && (
-                      <p className="text-sm text-muted-foreground">{contact.position}</p>
+                      <p className="text-sm text-muted-foreground font-medium">{contact.position}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -1646,14 +1650,14 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center justify-between pt-3 border-t border-border/30">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20 font-semibold">
                       {contact.status || "active"}
                     </Badge>
                     <Badge 
                       variant={contact.priority === "high" ? "destructive" : contact.priority === "medium" ? "default" : "secondary"} 
-                      className="text-xs"
+                      className="text-xs font-semibold"
                     >
                       {contact.priority || "medium"}
                     </Badge>
@@ -1662,11 +1666,11 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 </div>
 
                 {customColumns.length > 0 && (
-                  <div className="pt-2 border-t space-y-1">
+                  <div className="pt-3 border-t border-border/30 space-y-1.5">
                     {customColumns.slice(0, 2).map((col) => (
                       <div key={col.id} className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">{col.column_name}:</span>
-                        <span className="font-medium truncate max-w-[60%]">
+                        <span className="text-muted-foreground font-medium">{col.column_name}:</span>
+                        <span className="font-semibold truncate max-w-[60%]">
                           {customData[contact.id]?.[col.id] || "—"}
                         </span>
                       </div>
@@ -1676,8 +1680,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                     )}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
               </div>
             )}
