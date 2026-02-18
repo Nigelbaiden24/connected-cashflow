@@ -3,10 +3,24 @@ import { DocumentTemplate, AIContent } from "@/types/template";
 export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AIContent, textColors?: Record<string, string>): string {
   const { styles } = template;
   
-  // Create header with gradient for business proposal
-  const isBusinessProposal = template.id === 'proposal';
-  const headerSection = isBusinessProposal ? template.sections.slice(0, 2) : [];
-  const contentSections = isBusinessProposal ? template.sections.slice(2) : template.sections;
+  // Detect hero-header sections and group with subsequent z-10 elements
+  const sections = template.sections;
+  const heroGroups: { heroIndex: number; childIndices: number[] }[] = [];
+  const heroChildIndices = new Set<number>();
+  
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    if (section.id === 'hero-header' || (section.className?.includes('-mt-8') && section.className?.includes('-mx-8'))) {
+      const group = { heroIndex: i, childIndices: [] as number[] };
+      let j = i + 1;
+      while (j < sections.length && sections[j].className?.includes('z-10')) {
+        group.childIndices.push(j);
+        heroChildIndices.add(j);
+        j++;
+      }
+      heroGroups.push(group);
+    }
+  }
   
   // Generate CSS from template styles
   const css = `
@@ -26,17 +40,15 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
         margin: 0 auto;
         background: ${styles.backgroundColor};
       }
-      ${isBusinessProposal ? `
-      .proposal-header {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+      .hero-wrapper {
+        background: linear-gradient(135deg, #1e293b 0%, ${styles.primaryColor} 50%, #1e293b 100%);
         padding: 60px 40px;
-        border-radius: 16px;
+        border-radius: 16px 16px 0 0;
         margin-bottom: 40px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 10px 30px rgba(30, 64, 175, 0.3);
       }
-      .proposal-header::before {
+      .hero-wrapper::before {
         content: '';
         position: absolute;
         top: -30%;
@@ -46,7 +58,7 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
         background: rgba(255,255,255,0.08);
         border-radius: 50%;
       }
-      .proposal-header::after {
+      .hero-wrapper::after {
         content: '';
         position: absolute;
         bottom: -20%;
@@ -56,13 +68,24 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
         background: rgba(255,255,255,0.05);
         border-radius: 50%;
       }
-      .proposal-header h1,
-      .proposal-header h2 {
+      .hero-wrapper h1,
+      .hero-wrapper h2,
+      .hero-wrapper .hero-child {
         position: relative;
         z-index: 1;
         color: white;
       }
-      ` : ''}
+      .hero-wrapper h1 {
+        font-size: 2.5em;
+        font-weight: 800;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+      }
+      .hero-wrapper h2 {
+        font-size: 1.2em;
+        font-weight: 300;
+        opacity: 0.8;
+      }
       .content-wrapper {
         padding: 40px;
       }
@@ -103,26 +126,15 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
     </style>
   `;
   
-  // Render header for business proposal
-  const headerHtml = isBusinessProposal ? `
-    <div class="proposal-header">
-      ${headerSection.map(section => {
-        const content = aiContent[section.id] || section.defaultContent || '';
-        const tag = section.type === 'heading' ? 'h1' : 'h2';
-        return `<${tag} class="${section.className || ''}" data-section-id="${section.id}">${content}</${tag}>`;
-      }).join('\n')}
-    </div>
-  ` : '';
-  
-  // Render content sections
-  const sectionsHtml = contentSections.map(section => {
+  // Render a single section to HTML
+  const renderSectionHtml = (section: typeof sections[0], isHeroChild = false) => {
     if (!section.editable && section.type === 'divider') {
       return `<div class="${section.className || ''}" style="height: 1px; background: #e2e8f0; margin: 32px 0;"></div>`;
     }
     
     const content = aiContent[section.id] || section.defaultContent || section.placeholder.replace(/\{\{|\}\}/g, '');
-    const className = `${section.className || ''} ${section.editable ? 'editable' : ''}`;
-    const color = textColors?.[section.id] || (styles.primaryColor || '#1a202c');
+    const className = `${section.className || ''} ${section.editable ? 'editable' : ''} ${isHeroChild ? 'hero-child' : ''}`;
+    const color = isHeroChild ? 'white' : (textColors?.[section.id] || (styles.primaryColor || '#1a202c'));
     
     switch (section.type) {
       case 'heading':
@@ -152,7 +164,27 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
       default:
         return `<div class="section ${className}" data-section-id="${section.id}" style="color: ${color}">${content}</div>`;
     }
-  }).join('\n');
+  };
+  
+  // Build the HTML by processing sections with hero grouping
+  let sectionsHtml = '';
+  
+  for (let i = 0; i < sections.length; i++) {
+    // Skip sections that are hero children (already rendered inside hero wrapper)
+    if (heroChildIndices.has(i)) continue;
+    
+    const heroGroup = heroGroups.find(g => g.heroIndex === i);
+    if (heroGroup) {
+      // Render hero wrapper with children inside
+      sectionsHtml += `<div class="hero-wrapper">`;
+      for (const childIdx of heroGroup.childIndices) {
+        sectionsHtml += renderSectionHtml(sections[childIdx], true);
+      }
+      sectionsHtml += `</div>`;
+    } else {
+      sectionsHtml += renderSectionHtml(sections[i]);
+    }
+  }
   
   // Combine everything
   return `
@@ -166,7 +198,6 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
     </head>
     <body>
       <div class="template-container">
-        ${headerHtml}
         <div class="content-wrapper">
           ${sectionsHtml}
         </div>
@@ -182,8 +213,8 @@ export function extractContentFromHtml(html: string): AIContent {
   const content: AIContent = {};
   
   // Find all elements with data-section-id attribute
-  const sections = doc.querySelectorAll('[data-section-id]');
-  sections.forEach(section => {
+  const sectionElements = doc.querySelectorAll('[data-section-id]');
+  sectionElements.forEach(section => {
     const id = section.getAttribute('data-section-id');
     if (id) {
       // Extract text content, preserving structure
