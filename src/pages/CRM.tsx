@@ -44,9 +44,9 @@ const CRM = () => {
   const conversionRate = totalContacts > 0 ? ((activeContacts / totalContacts) * 100).toFixed(1) : "0.0";
 
   return (
-    <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 animate-in fade-in duration-500">
+    <div className="flex-1 p-3 md:p-6 lg:p-8 space-y-4 md:space-y-6 animate-in fade-in duration-500">
       {/* Premium Header with gradient accent */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/10 p-4 md:p-8">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-chart-1/10 to-transparent rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
         
@@ -57,9 +57,9 @@ const CRM = () => {
                 <Users className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-                  <TranslatedText>CRM</TranslatedText>
-                </h1>
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
+                   <TranslatedText>CRM</TranslatedText>
+                 </h1>
                 <p className="text-muted-foreground text-sm flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-primary/70" />
                   <TranslatedText>Customer Relationship Management</TranslatedText>
