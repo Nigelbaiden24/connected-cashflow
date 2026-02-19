@@ -117,6 +117,23 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
       "https://www.trustnet.com/",
     ],
   },
+  blockchain: {
+    queries: [
+      "blockchain investment opportunities 2025 tokenized assets",
+      "best DeFi protocols yield farming opportunities current",
+      "web3 blockchain projects investment high potential 2025",
+      "real world asset tokenization RWA blockchain opportunities",
+      "blockchain gaming metaverse investment opportunities current",
+      "layer 2 blockchain scaling solutions investment potential",
+    ],
+    urls: [
+      "https://www.coindesk.com/business/",
+      "https://defillama.com/",
+      "https://dappradar.com/rankings",
+      "https://www.theblock.co/latest",
+      "https://messari.io/research",
+    ],
+  },
 };
 
 interface SourceRecord {
@@ -196,7 +213,7 @@ async function searchWeb(query: string, apiKey: string): Promise<{ content: stri
       },
       body: JSON.stringify({
         query,
-        limit: 5,
+        limit: 10,
         scrapeOptions: { formats: ["markdown"] },
       }),
     });
@@ -259,7 +276,7 @@ serve(async (req) => {
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
-      Promise.all(urls.slice(0, 3).map((u) => scrapeUrl(u, FIRECRAWL_API_KEY))),
+      Promise.all(urls.slice(0, 5).map((u) => scrapeUrl(u, FIRECRAWL_API_KEY))),
     ]);
 
     const allSources: SourceRecord[] = [];
@@ -334,7 +351,7 @@ After your analysis, you MUST output a JSON block wrapped in \`\`\`json ... \`\`
 \`\`\`
 
 RULES:
-1. Find 5-10 SPECIFIC individual opportunities from the scraped data
+1. Find at least 20 SPECIFIC individual opportunities from the scraped data (aim for 20-30)
 2. Each must have a real source_url — the ACTUAL page where you found this data
 3. Use image URLs from the search results reference where available
 4. Be specific — real names, real prices, real locations from the data
