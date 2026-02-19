@@ -949,7 +949,7 @@ ELITE DOCUMENT REQUIREMENTS:
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-280px)] min-h-[600px] bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-xl border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-200px)] md:h-[calc(100vh-280px)] min-h-[400px] md:min-h-[600px] bg-gradient-to-br from-slate-50 via-white to-blue-50 rounded-xl border border-slate-200 overflow-hidden">
       <DocumentEditorToolbar
         templates={documentTemplates}
         selectedTemplate={selectedTemplate}
@@ -1126,14 +1126,13 @@ ELITE DOCUMENT REQUIREMENTS:
         ) : (
           <div
             id="document-preview"
-            className="w-full"
+            className="w-full md:min-w-[900px]"
             style={{
               transform: `scale(${zoom / 100})`,
               transformOrigin: "top left",
               fontFamily: fontFamily,
               fontSize: `${fontSize}px`,
               minHeight: '1200px',
-              minWidth: '900px',
             }}
           >
             <EnhancedDocumentEditor

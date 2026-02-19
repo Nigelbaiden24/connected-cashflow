@@ -938,8 +938,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
       )}
 
       {/* Enhanced Toolbar - Enterprise Grade */}
-      <div className="flex items-center justify-between gap-4 flex-wrap p-5 rounded-2xl crm-toolbar">
-        <h2 className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">CRM Board</h2>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 p-4 md:p-5 rounded-2xl crm-toolbar">
+        <h2 className="text-lg md:text-xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">CRM Board</h2>
         <div className="flex items-center gap-2 flex-wrap">
           {/* View Toggle */}
           <div className="flex items-center border border-border/50 rounded-lg p-1 bg-background">
@@ -947,32 +947,32 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               variant={viewMode === "table" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setViewMode("table")}
-              className="h-7 px-3"
+              className="h-7 px-2 md:px-3"
             >
-              <Table2 className="h-3.5 w-3.5 mr-1.5" />
-              Table
+              <Table2 className="h-3.5 w-3.5 mr-1" />
+              <span className="hidden sm:inline">Table</span>
             </Button>
             <Button
               variant={viewMode === "cards" ? "secondary" : "ghost"}
               size="sm"
               onClick={() => setViewMode("cards")}
-              className="h-7 px-3"
+              className="h-7 px-2 md:px-3"
             >
-              <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
-              Cards
+              <LayoutGrid className="h-3.5 w-3.5 mr-1" />
+              <span className="hidden sm:inline">Cards</span>
             </Button>
           </div>
-          <div className="relative">
+          <div className="relative flex-1 min-w-[120px] max-w-[280px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search contacts..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-64 border-border/50 focus-visible:ring-primary/20"
+              className="pl-9 w-full border-border/50 focus-visible:ring-primary/20"
             />
           </div>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-40 border-border/50">
+            <SelectTrigger className="w-[120px] md:w-40 border-border/50">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
@@ -993,7 +993,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             setSortBy(field);
             setSortOrder(order as "asc" | "desc");
           }}>
-            <SelectTrigger className="w-48 border-border/50">
+            <SelectTrigger className="w-[130px] md:w-48 border-border/50">
               <SelectValue placeholder="Sort by..." />
             </SelectTrigger>
             <SelectContent className="bg-background">
@@ -1022,9 +1022,9 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
           )}
           <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
             <DialogTrigger asChild>
-              <Button className="shadow-sm hover:shadow-md transition-all duration-200">
-                <Plus className="h-4 w-4 mr-2" />
-                New Contact
+              <Button className="shadow-sm hover:shadow-md transition-all duration-200" size="sm">
+                <Plus className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">New Contact</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -1079,32 +1079,35 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             variant="outline" 
             onClick={() => setShowColumnManager(true)}
             className="hover:bg-accent/50 transition-colors"
+            size="sm"
           >
-            <Columns className="h-4 w-4 mr-2" />
-            Add Column
+            <Columns className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Add Column</span>
           </Button>
           <Button 
             variant={showAIPanel ? "default" : "outline"}
             onClick={() => setShowAIPanel(!showAIPanel)}
             className="hover:bg-accent/50 transition-colors"
+            size="sm"
           >
-            <Brain className="h-4 w-4 mr-2" />
-            AI Scoring
+            <Brain className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">AI Scoring</span>
           </Button>
           <Button 
             variant="outline" 
             onClick={() => setCompactView(!compactView)}
             title={compactView ? "Expand view" : "Compact view"}
             className="hover:bg-accent/50 transition-colors"
+            size="sm"
           >
-            {compactView ? <Maximize2 className="h-4 w-4 mr-2" /> : <Minimize2 className="h-4 w-4 mr-2" />}
-            {compactView ? "Expand" : "Compact"}
+            {compactView ? <Maximize2 className="h-4 w-4 md:mr-2" /> : <Minimize2 className="h-4 w-4 md:mr-2" />}
+            <span className="hidden md:inline">{compactView ? "Expand" : "Compact"}</span>
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="hover:bg-accent/50 transition-colors">
-                <Plus className="h-4 w-4 mr-2" />
-                New Table
+              <Button variant="outline" className="hover:bg-accent/50 transition-colors" size="sm">
+                <Plus className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">New Table</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
