@@ -74,23 +74,33 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [rowHeights, setRowHeights] = useState<Record<string, number>>({});
   const resizingCol = useRef<{ col: string; startX: number; startWidth: number } | null>(null);
   const resizingRow = useRef<{ rowId: string; startY: number; startHeight: number } | null>(null);
+  const rafId = useRef<number>(0);
 
-  // Column resize handlers
+  // Column resize — DOM-direct during drag, state commit on mouseup
   const onColResizeStart = useCallback((col: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const startX = e.clientX;
-    const startWidth = columnWidths[col] || 150;
-    resizingCol.current = { col, startX, startWidth };
+    resizingCol.current = { col, startX: e.clientX, startWidth: columnWidths[col] || 150 };
     
     const onMouseMove = (ev: MouseEvent) => {
       if (!resizingCol.current) return;
-      const delta = ev.clientX - resizingCol.current.startX;
-      const newWidth = Math.max(60, resizingCol.current.startWidth + delta);
-      setColumnWidths(prev => ({ ...prev, [resizingCol.current!.col]: newWidth }));
+      cancelAnimationFrame(rafId.current);
+      rafId.current = requestAnimationFrame(() => {
+        if (!resizingCol.current) return;
+        const newW = Math.max(60, resizingCol.current.startWidth + (ev.clientX - resizingCol.current.startX));
+        // Direct DOM update — no React re-render
+        const cells = document.querySelectorAll(`[data-col="${resizingCol.current.col}"]`);
+        cells.forEach(el => (el as HTMLElement).style.width = `${newW}px`);
+      });
     };
-    const onMouseUp = () => {
-      resizingCol.current = null;
+    const onMouseUp = (ev: MouseEvent) => {
+      cancelAnimationFrame(rafId.current);
+      if (resizingCol.current) {
+        const finalW = Math.max(60, resizingCol.current.startWidth + (ev.clientX - resizingCol.current.startX));
+        const col = resizingCol.current.col;
+        resizingCol.current = null;
+        setColumnWidths(prev => ({ ...prev, [col]: finalW }));
+      }
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.body.style.cursor = '';
@@ -102,22 +112,30 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
     document.addEventListener('mouseup', onMouseUp);
   }, [columnWidths]);
 
-  // Row resize handlers
+  // Row resize — DOM-direct during drag, state commit on mouseup
   const onRowResizeStart = useCallback((rowId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const startY = e.clientY;
-    const startHeight = rowHeights[rowId] || (compactView ? 36 : 48);
-    resizingRow.current = { rowId, startY, startHeight };
+    resizingRow.current = { rowId, startY: e.clientY, startHeight: rowHeights[rowId] || (compactView ? 36 : 48) };
     
     const onMouseMove = (ev: MouseEvent) => {
       if (!resizingRow.current) return;
-      const delta = ev.clientY - resizingRow.current.startY;
-      const newHeight = Math.max(28, resizingRow.current.startHeight + delta);
-      setRowHeights(prev => ({ ...prev, [resizingRow.current!.rowId]: newHeight }));
+      cancelAnimationFrame(rafId.current);
+      rafId.current = requestAnimationFrame(() => {
+        if (!resizingRow.current) return;
+        const newH = Math.max(28, resizingRow.current.startHeight + (ev.clientY - resizingRow.current.startY));
+        const row = document.querySelector(`[data-row="${resizingRow.current.rowId}"]`);
+        if (row) (row as HTMLElement).style.height = `${newH}px`;
+      });
     };
-    const onMouseUp = () => {
-      resizingRow.current = null;
+    const onMouseUp = (ev: MouseEvent) => {
+      cancelAnimationFrame(rafId.current);
+      if (resizingRow.current) {
+        const finalH = Math.max(28, resizingRow.current.startHeight + (ev.clientY - resizingRow.current.startY));
+        const id = resizingRow.current.rowId;
+        resizingRow.current = null;
+        setRowHeights(prev => ({ ...prev, [id]: finalH }));
+      }
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.body.style.cursor = '';
@@ -1150,7 +1168,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                    <table className="crm-spreadsheet">
                     <thead>
                       <tr>
-                  <th style={{ width: columnWidths.checkbox }}>
+                  <th data-col="checkbox" style={{ width: columnWidths.checkbox }}>
                     <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
                         checked={
@@ -1162,40 +1180,40 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                       />
                     </div>
                    </th>
-                  <th style={{ width: columnWidths.name }}>
+                  <th data-col="name" style={{ width: columnWidths.name }}>
                     Name
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('name', e)} />
                   </th>
-                  <th style={{ width: columnWidths.email }}>
+                  <th data-col="email" style={{ width: columnWidths.email }}>
                     Email
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('email', e)} />
                   </th>
-                  <th style={{ width: columnWidths.phone }}>
+                  <th data-col="phone" style={{ width: columnWidths.phone }}>
                     Phone
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('phone', e)} />
                   </th>
-                  <th style={{ width: columnWidths.company }}>
+                  <th data-col="company" style={{ width: columnWidths.company }}>
                     Company
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('company', e)} />
                   </th>
-                  <th style={{ width: columnWidths.position }}>
+                  <th data-col="position" style={{ width: columnWidths.position }}>
                     Position
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('position', e)} />
                   </th>
-                  <th style={{ width: columnWidths.status }}>
+                  <th data-col="status" style={{ width: columnWidths.status }}>
                     Status
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('status', e)} />
                   </th>
-                  <th style={{ width: columnWidths.priority }}>
+                  <th data-col="priority" style={{ width: columnWidths.priority }}>
                     Priority
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('priority', e)} />
                   </th>
-                  <th style={{ width: columnWidths.ai_score }}>
+                  <th data-col="ai_score" style={{ width: columnWidths.ai_score }}>
                     AI Score
                     <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('ai_score', e)} />
                   </th>
                   {customColumns.map((col) => (
-                    <th key={col.id} style={{ width: columnWidths[col.id] || 150 }} className="relative group">
+                    <th key={col.id} data-col={col.id} style={{ width: columnWidths[col.id] || 150 }} className="relative group">
                       <div className="flex items-center justify-between">
                         <span className={compactView ? "text-[10px]" : ""}>
                           {col.column_name}
@@ -1214,14 +1232,15 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                       <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart(col.id, e)} />
                     </th>
                   ))}
-                  <th style={{ width: columnWidths.actions }}></th>
+                  <th data-col="actions" style={{ width: columnWidths.actions }}></th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
-                    className="crm-table-row transition-all duration-150 group"
+                    data-row={contact.id}
+                    className="crm-table-row group"
                     style={{ height: rowHeights[contact.id] || (compactView ? 36 : 48) }}
                   >
                     <td className="p-0">
@@ -2092,7 +2111,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                           />
                         </th>
                         {table.columns.map((column) => (
-                          <th key={column} className="relative group" style={{ width: columnWidths[`${table.id}_${column}`] || 160 }}>
+                          <th key={column} data-col={`${table.id}_${column}`} className="relative group" style={{ width: columnWidths[`${table.id}_${column}`] || 160 }}>
                             <div className="flex items-center justify-between">
                               <span>{column}</span>
                               {table.columns.length > 1 && (
@@ -2114,7 +2133,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                     </thead>
                     <tbody>
                     {filteredRows.map((row) => (
-                      <tr key={row.id} className="crm-table-row group" style={{ height: rowHeights[row.id] || (table.compactView ? 36 : 48) }}>
+                      <tr key={row.id} data-row={row.id} className="crm-table-row group" style={{ height: rowHeights[row.id] || (table.compactView ? 36 : 48) }}>
                         <td className="p-2 text-center">
                           <Checkbox
                             checked={selectedRows.includes(row.id)}
