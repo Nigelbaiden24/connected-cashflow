@@ -88,9 +88,11 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
       }
       .content-wrapper {
         padding: 40px;
+        text-align: center;
       }
       .section {
         margin-bottom: 32px;
+        text-align: center;
       }
       h1, h2, h3, h4, h5, h6 {
         line-height: 1.2;
@@ -102,8 +104,11 @@ export function renderTemplateToHtml(template: DocumentTemplate, aiContent: AICo
         line-height: 1.8;
       }
       ul, ol {
-        margin-left: 24px;
+        margin-left: auto;
+        margin-right: auto;
         margin-bottom: 16px;
+        display: inline-block;
+        text-align: left;
       }
       li {
         margin-bottom: 12px;
