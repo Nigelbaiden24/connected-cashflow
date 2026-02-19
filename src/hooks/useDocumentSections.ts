@@ -187,15 +187,26 @@ export function useDocumentSections(templateSections: any[] = []) {
           textColor = styling.accentColor;
         }
 
+        // Smart height based on content type
+        const isHero = styling.isHero;
+        const contentLength = (section.defaultContent || "").length;
+        let autoHeight = section.type === 'heading' ? 50 
+          : section.type === 'subheading' ? 40 
+          : section.type === 'divider' ? 20
+          : section.type === 'bullet-list' ? Math.max(80, Math.ceil(contentLength / 80) * 22)
+          : Math.max(60, Math.ceil(contentLength / 80) * 18);
+        
+        if (isHero) autoHeight = 120;
+
         return {
           id: section.id,
           title: section.id.replace(/-/g, " ").replace(/_/g, " ").split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
           content: section.defaultContent || "",
           order: index,
-          x: 50,
-          y: 50 + (index * 150),
-          width: 600,
-          height: 100,
+          x: isHero ? 0 : 30,
+          y: 0, // will be computed below
+          width: isHero ? 700 : 640,
+          height: autoHeight,
           isCustom: false,
           type: section.type,
           className: section.className,
@@ -213,6 +224,13 @@ export function useDocumentSections(templateSections: any[] = []) {
           styling,
         };
       });
+    
+    // Compute y positions with tight stacking
+    let currentY = 0;
+    for (const section of initialSections) {
+      section.y = currentY;
+      currentY += section.height + 8; // 8px gap between sections
+    }
     
     setSections(initialSections);
   }, [templateSections]);
