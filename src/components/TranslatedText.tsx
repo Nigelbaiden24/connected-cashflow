@@ -1,5 +1,5 @@
+import { memo, useSyncExternalStore } from "react";
 import { useTranslation } from "@/contexts/TranslationContext";
-import { useEffect, useState } from "react";
 
 interface TranslatedTextProps {
   children: string;
@@ -7,25 +7,37 @@ interface TranslatedTextProps {
   as?: keyof JSX.IntrinsicElements;
 }
 
-export function TranslatedText({ children, className, as: Component = "span" }: TranslatedTextProps) {
-  const { t } = useTranslation();
-  const [translated, setTranslated] = useState(children);
+// Global revision counter that increments when translations load or language changes
+let translationRevision = 0;
+const listeners = new Set<() => void>();
 
-  useEffect(() => {
-    setTranslated(t(children));
-
-    const handleTranslationsLoaded = () => {
-      setTranslated(t(children));
-    };
-
-    window.addEventListener("translationsloaded", handleTranslationsLoaded);
-    window.addEventListener("languagechange", handleTranslationsLoaded);
-
-    return () => {
-      window.removeEventListener("translationsloaded", handleTranslationsLoaded);
-      window.removeEventListener("languagechange", handleTranslationsLoaded);
-    };
-  }, [children, t]);
-
-  return <Component className={className}>{translated}</Component>;
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => listeners.delete(cb);
 }
+
+function getSnapshot() {
+  return translationRevision;
+}
+
+// Listen for translation events once globally (not per-instance)
+if (typeof window !== "undefined") {
+  const bump = () => {
+    translationRevision++;
+    listeners.forEach((cb) => cb());
+  };
+  window.addEventListener("translationsloaded", bump);
+  window.addEventListener("languagechange", bump);
+}
+
+export const TranslatedText = memo(function TranslatedText({
+  children,
+  className,
+  as: Component = "span",
+}: TranslatedTextProps) {
+  const { t } = useTranslation();
+  // Subscribe to global revision so we re-render when translations arrive
+  useSyncExternalStore(subscribe, getSnapshot);
+
+  return <Component className={className}>{t(children)}</Component>;
+});

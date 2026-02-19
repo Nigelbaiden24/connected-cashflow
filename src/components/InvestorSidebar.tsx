@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { TranslatedText } from "./TranslatedText";
 import { 
@@ -122,7 +123,7 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
+export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
@@ -342,4 +343,4 @@ export function InvestorSidebar({ userEmail, onLogout }: InvestorSidebarProps) {
       </button>
     </Sidebar>
   );
-}
+});
