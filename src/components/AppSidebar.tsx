@@ -63,12 +63,21 @@ interface AppSidebarProps {
   onLogout: () => void;
 }
 
-const adviserToolsItems = [
+const generalItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "AI Chatbot", url: "/theodore", icon: MessageSquare },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "Document Generator", url: "/finance-ai-generator", icon: Sparkles },
   { title: "CRM", url: "/finance-crm", icon: Users },
+  { title: "Market Data", url: "/market", icon: TrendingUp },
+  { title: "News", url: "/finance/news", icon: Mail },
+  { title: "Payroll", url: "/finance-payroll", icon: Calculator },
+  { title: "Security", url: "/security", icon: Shield },
+  { title: "Automation Center", url: "/automation-center", icon: Activity },
+  { title: "Languages", url: "/finance/languages", icon: Globe },
+];
+
+const adviserToolsItems = [
   { title: "Client Management", url: "/clients", icon: Users },
   { title: "Client Onboarding", url: "/onboarding", icon: UserPlus },
   { title: "Financial Planning", url: "/financial-planning", icon: Calculator },
@@ -77,10 +86,12 @@ const adviserToolsItems = [
   { title: "Investment Analysis", url: "/investments", icon: BarChart3 },
   { title: "Risk Assessment", url: "/risk", icon: AlertTriangle },
   { title: "Scenario Analysis", url: "/scenario", icon: Activity },
+  { title: "Fund & ETF Database", url: "/finance/fund-database", icon: BarChart3 },
+  { title: "Practice Management", url: "/practice", icon: Briefcase },
+  { title: "Compliance", url: "/compliance", icon: Shield },
 ];
 
 const researchAnalysisItems = [
-  { title: "Market Data", url: "/market", icon: TrendingUp },
   { title: "Featured Picks", url: "/finance/featured-picks", icon: Sparkles },
   { title: "Market Commentary", url: "/finance/commentary", icon: TrendingUp },
   { title: "Model Portfolios", url: "/finance/portfolios", icon: Briefcase },
@@ -88,20 +99,9 @@ const researchAnalysisItems = [
   { title: "AI Analyst", url: "/finance/ai-analyst", icon: Bot },
   { title: "Watchlists", url: "/finance/watchlists", icon: FolderKanban },
   { title: "Screeners & Discovery", url: "/finance/screeners", icon: Zap },
-  { title: "Fund & ETF Database", url: "/finance/fund-database", icon: BarChart3 },
   { title: "Stocks & Crypto", url: "/finance/stocks-crypto", icon: TrendingUp },
-  { title: "News", url: "/finance/news", icon: Mail },
-  { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb },
-];
-
-const generalItems = [
-  { title: "Practice Management", url: "/practice", icon: Briefcase },
-  { title: "Payroll", url: "/finance-payroll", icon: Calculator },
-  { title: "Compliance", url: "/compliance", icon: Shield },
   { title: "Reports", url: "/finance/reports", icon: FileText },
-  { title: "Security", url: "/security", icon: Shield },
-  { title: "Automation Center", url: "/automation-center", icon: Activity },
-  { title: "Languages", url: "/finance/languages", icon: Globe },
+  { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb },
 ];
 
 
@@ -169,6 +169,45 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
           <SidebarGroup className="mt-4">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
+                <TranslatedText>General</TranslatedText>
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1">
+                {generalItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    {isCollapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
+                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
+                              <item.icon className="h-5 w-5 flex-shrink-0" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
+                          <TranslatedText as="p">{item.title}</TranslatedText>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <SidebarMenuButton asChild className="h-10">
+                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}>
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
+                          </div>
+                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup className="mt-6">
+            {!isCollapsed && (
+              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
                 <TranslatedText>Adviser Tools</TranslatedText>
               </SidebarGroupLabel>
             )}
@@ -208,51 +247,12 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
           <SidebarGroup className="mt-6">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-                <TranslatedText>Research Analysis</TranslatedText>
+                <TranslatedText>Research & Analysis</TranslatedText>
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {researchAnalysisItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {isCollapsed ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
-                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
-                          <TranslatedText as="p">{item.title}</TranslatedText>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton asChild className="h-10">
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}>
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
-                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
-                          </div>
-                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-
-          <SidebarGroup className="mt-6">
-            {!isCollapsed && (
-              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-                <TranslatedText>General</TranslatedText>
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {generalItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
