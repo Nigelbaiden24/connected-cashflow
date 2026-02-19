@@ -225,11 +225,21 @@ export function useDocumentSections(templateSections: any[] = []) {
         };
       });
     
-    // Compute y positions with tight stacking
+    // Compute y positions with proper spacing by section type
     let currentY = 0;
-    for (const section of initialSections) {
+    for (let i = 0; i < initialSections.length; i++) {
+      const section = initialSections[i];
       section.y = currentY;
-      currentY += section.height + 8; // 8px gap between sections
+      
+      // Determine gap after this section
+      let gap = 24; // default paragraph gap
+      if (section.styling?.isHero) gap = 32;
+      else if (section.type === 'heading') gap = 16; // tighter after headings (content follows)
+      else if (section.type === 'subheading') gap = 12;
+      else if (section.type === 'divider') gap = 28;
+      else if (section.type === 'body' || section.type === 'bullet-list') gap = 28;
+      
+      currentY += section.height + gap;
     }
     
     setSections(initialSections);
