@@ -187,7 +187,7 @@ export function TemplateRenderer({
         backgroundColor: template.styles.backgroundColor
       }}
     >
-      <div className="space-y-2">
+      <div className="space-y-2 text-center">
         {sectionGroups.map((group, index) => renderGroup(group, index))}
       </div>
     </Card>
