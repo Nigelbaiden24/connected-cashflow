@@ -1087,7 +1087,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead>
-                      <tr className={compactView ? "bg-gradient-to-r from-primary/[0.04] via-muted/30 to-transparent border-b border-border/30 h-9" : "bg-gradient-to-r from-primary/[0.04] via-muted/30 to-transparent border-b border-border/30"}>
+                      <tr className="crm-table-header">
                   <th className="p-0 w-12">
                     <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
@@ -1130,14 +1130,14 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                   <th className="w-12"></th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="crm-table-body">
                 {paginatedContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
                     className={`crm-table-row ${compactView 
-                      ? "border-b border-border/20 transition-all duration-200 group h-8" 
-                      : "border-b border-border/20 transition-all duration-200 group"}`}
-                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.015)" }}
+                      ? "transition-all duration-200 group h-8" 
+                      : "transition-all duration-200 group"}`}
+                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.04)" }}
                   >
                     <td className="p-0">
                       <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-14"}>
@@ -1281,7 +1281,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         value={contact.status}
                         onValueChange={(value) => updateContactField(contact.id, "status", value)}
                       >
-                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent hover:bg-accent/50 transition-colors" : "h-8 border-0 bg-transparent hover:bg-accent/50 transition-colors"}>
+                        <SelectTrigger className={compactView ? "crm-cell-input h-6 bg-transparent" : "crm-cell-input h-8 bg-transparent"}>
                           <Badge variant="outline" className={compactView ? `${getStatusColor(contact.status)} text-[10px] h-5 px-2 font-medium` : `${getStatusColor(contact.status)} font-medium`}>
                             {contact.status}
                           </Badge>
@@ -1303,7 +1303,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         value={contact.priority}
                         onValueChange={(value) => updateContactField(contact.id, "priority", value)}
                       >
-                        <SelectTrigger className={compactView ? "h-6 border-0 bg-transparent hover:bg-accent/50 transition-colors" : "h-8 border-0 bg-transparent hover:bg-accent/50 transition-colors"}>
+                        <SelectTrigger className={compactView ? "crm-cell-input h-6 bg-transparent" : "crm-cell-input h-8 bg-transparent"}>
                           <Badge 
                             variant="outline" 
                             className={compactView ? "capitalize text-[10px] h-5 px-2 font-medium" : "capitalize font-medium"}
@@ -2047,7 +2047,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                     onChange={(e) =>
                                       updateCell(table.id, row.id, column, e.target.value)
                                     }
-                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                   />
                                 );
                               }
@@ -2060,7 +2060,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                       updateCell(table.id, row.id, column, val)
                                     }
                                   >
-                                    <SelectTrigger className={table.compactView ? "h-6 border-0 text-xs" : "h-8 border-0"}>
+                                    <SelectTrigger className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}>
                                       <SelectValue placeholder="Select..." />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -2096,7 +2096,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                     onChange={(e) =>
                                       updateCell(table.id, row.id, column, e.target.value)
                                     }
-                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                     placeholder={config.type === "currency" ? "£0.00" : config.type === "percentage" ? "0%" : "0"}
                                   />
                                 );
@@ -2110,7 +2110,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                     onChange={(e) =>
                                       updateCell(table.id, row.id, column, e.target.value)
                                     }
-                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                   />
                                 );
                               }
@@ -2123,7 +2123,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                     onChange={(e) =>
                                       updateCell(table.id, row.id, column, e.target.value)
                                     }
-                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                     placeholder="email@example.com"
                                   />
                                 );
@@ -2137,7 +2137,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                     onChange={(e) =>
                                       updateCell(table.id, row.id, column, e.target.value)
                                     }
-                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                     placeholder="+44"
                                   />
                                 );
@@ -2151,7 +2151,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                     onChange={(e) =>
                                       updateCell(table.id, row.id, column, e.target.value)
                                     }
-                                    className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                    className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                     placeholder="https://"
                                   />
                                 );
@@ -2163,7 +2163,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                   onChange={(e) =>
                                     updateCell(table.id, row.id, column, e.target.value)
                                   }
-                                  className={table.compactView ? "border-0 focus-visible:ring-1 h-6 text-xs" : "border-0 focus-visible:ring-1"}
+                                  className={table.compactView ? "crm-cell-input h-6 text-xs" : "crm-cell-input h-8"}
                                 />
                               );
                             })()}
