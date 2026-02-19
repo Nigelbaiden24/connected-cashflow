@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { memo } from "react";
 import { TranslatedText } from "./TranslatedText";
 import {
   Sidebar,
@@ -132,7 +132,7 @@ const operationsItems = [
 ];
 
 
-export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
+export const BusinessSidebar = memo(function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
@@ -333,4 +333,4 @@ export function BusinessSidebar({ userEmail, onLogout }: BusinessSidebarProps) {
       </SidebarFooter>
     </Sidebar>
   );
-}
+});

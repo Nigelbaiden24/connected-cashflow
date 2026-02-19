@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { memo } from "react";
 import { TranslatedText } from "./TranslatedText";
 import {
   Sidebar,
@@ -231,7 +231,7 @@ const practiceManagementItems = [
 ];
 
 
-export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
+export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
@@ -247,7 +247,7 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const getNavClassName = (path: string) => {
     return isActive(path)
       ? "bg-white/20 text-white font-medium shadow-lg backdrop-blur-sm border border-white/20"
-      : "text-white/80 hover:bg-white/10 hover:text-white transition-all duration-300";
+      : "text-white/80 hover:bg-white/10 hover:text-white";
   };
 
   const getUserInitials = (email: string) => {
@@ -268,12 +268,9 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
         background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
       }}
     >
-      {/* Animated background effects */}
+      {/* Static background overlay */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 via-transparent to-transparent" />
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-1/2 -left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
-        <div className="absolute -bottom-10 right-0 w-48 h-48 bg-white/3 rounded-full blur-3xl" />
       </div>
 
       <SidebarHeader className="border-b border-white/10 relative z-10">
@@ -524,4 +521,4 @@ export function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
       </SidebarFooter>
     </Sidebar>
   );
-}
+});
