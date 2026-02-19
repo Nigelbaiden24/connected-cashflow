@@ -90,6 +90,11 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
     icon: Building2,
     subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs"],
   },
+  blockchain: {
+    label: "Blockchain & Web3",
+    icon: Zap,
+    subCategories: ["DeFi Protocols", "Layer 2 Solutions", "Tokenized Assets (RWA)", "Blockchain Gaming", "DAOs", "Infrastructure"],
+  },
 };
 
 type ResearchPhase = "idle" | "scraping" | "analyzing" | "complete" | "error";
