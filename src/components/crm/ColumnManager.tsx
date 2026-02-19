@@ -69,6 +69,9 @@ export function ColumnManager({ open, onOpenChange, onColumnAdded, existingColum
     }
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       // Insert the new column
       const { data: newColumn, error: columnError } = await supabase
         .from("crm_custom_columns")
@@ -78,6 +81,7 @@ export function ColumnManager({ open, onOpenChange, onColumnAdded, existingColum
           column_options: needsOptions ? options : [],
           is_required: isRequired,
           column_order: existingColumns.length,
+          user_id: user.id,
         })
         .select()
         .single();
