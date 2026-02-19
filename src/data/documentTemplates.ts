@@ -512,7 +512,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "overview",
         type: "body",
         placeholder: "{{overview}}",
-        defaultContent: "We present a comprehensive investment opportunity...",
+        defaultContent: "We are pleased to present this comprehensive investment proposal, developed after thorough analysis of your current financial position, risk tolerance, and long-term objectives. Our advisory team has conducted extensive due diligence across multiple asset classes and market segments to identify strategies that align with your wealth accumulation goals. This proposal encompasses a diversified approach combining traditional equity positions with alternative investments, structured to optimise risk-adjusted returns whilst maintaining capital preservation as a primary consideration. We believe the strategies outlined herein represent a compelling opportunity to enhance portfolio performance over the medium to long term.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-amber-500/8 to-orange-500/5 p-8 rounded-2xl border-l-4 border-amber-500",
         editable: true
       },
@@ -552,7 +552,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "investment",
         type: "body",
         placeholder: "{{investment}}",
-        defaultContent: "The proposed fee structure is designed to align our success with yours...",
+        defaultContent: "The proposed fee structure has been carefully designed to align our interests directly with your investment success. Our tiered management fee begins at 0.85% per annum on the first £500,000 of assets under management, reducing to 0.65% on assets between £500,000 and £1,000,000, and further reducing to 0.50% on assets exceeding £1,000,000. This competitive structure ensures that as your portfolio grows, the relative cost of our services decreases proportionally. Performance fees of 10% above the agreed benchmark are applied only when returns exceed the FTSE All-Share Total Return Index, ensuring you only pay for genuine outperformance. All fees are charged quarterly in arrears and fully transparent.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-white rounded-2xl border border-border shadow-lg before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-amber-500 before:to-orange-500 before:rounded-t-2xl overflow-hidden",
         editable: true
       }
@@ -599,7 +599,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "opening",
         type: "body",
         placeholder: "{{opening}}",
-        defaultContent: "We are writing to provide you with an important update regarding your investment portfolio...",
+        defaultContent: "We are writing to provide you with an important update regarding your investment portfolio and to share our perspective on recent market developments that may impact your financial strategy. As your dedicated advisory team, we remain committed to ensuring full transparency in all matters pertaining to your wealth management arrangements, and we believe it is essential to keep you informed of both the opportunities and challenges that have emerged during this reporting period.",
         className: "text-base leading-[1.9] mb-8 text-muted-foreground",
         editable: true
       },
@@ -615,7 +615,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "main-content",
         type: "body",
         placeholder: "{{main_content}}",
-        defaultContent: "Your portfolio has performed well during the recent quarter...",
+        defaultContent: "Your portfolio has delivered strong performance during the recent quarter, generating a total return of 8.3% against a benchmark return of 6.1%. This outperformance of 2.2 percentage points was primarily driven by our overweight position in technology and healthcare equities, which benefited from robust earnings growth and favourable sector rotation. Our fixed income allocation also contributed positively, as duration positioning proved advantageous amid the recent shift in interest rate expectations. We have maintained disciplined risk management throughout the period, with portfolio volatility remaining well within the agreed parameters established during our last review meeting.",
         className: "text-base leading-[1.9] mb-8 text-muted-foreground bg-gradient-to-br from-sky-500/5 to-blue-500/5 p-6 rounded-xl border-l-4 border-sky-500",
         editable: true
       },
@@ -639,7 +639,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "closing",
         type: "body",
         placeholder: "{{closing}}",
-        defaultContent: "We appreciate your continued trust and look forward to discussing these developments with you...",
+        defaultContent: "We sincerely appreciate your continued trust and confidence in our advisory services, and we look forward to discussing these developments in greater detail during our upcoming quarterly review. Should you have any immediate questions or concerns regarding your portfolio, please do not hesitate to contact your dedicated relationship manager. We remain fully committed to achieving your long-term financial objectives and ensuring that your investment strategy continues to evolve in response to changing market conditions.",
         className: "text-base leading-[1.9] mb-8 text-muted-foreground",
         editable: true
       },
@@ -710,7 +710,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "overview",
         type: "body",
         placeholder: "{{overview}}",
-        defaultContent: "Your portfolio delivered strong performance during this period...",
+        defaultContent: "Your portfolio delivered strong performance during this reporting period, achieving a total return of 14.2% compared to the composite benchmark return of 11.4%. This represents an outperformance of 2.8 percentage points, largely attributable to our tactical asset allocation decisions and rigorous security selection process. The equity component of your portfolio returned 18.7%, driven by strong earnings growth in our core holdings across the technology, healthcare, and consumer discretionary sectors. Fixed income allocations provided stable income generation and portfolio diversification benefits, returning 4.8% for the period.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-violet-500/8 to-purple-500/5 p-8 rounded-2xl border-l-4 border-violet-500",
         editable: true
       },
@@ -742,7 +742,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "recommendations",
         type: "body",
         placeholder: "{{recommendations}}",
-        defaultContent: "Based on current market conditions, we recommend maintaining your current allocation...",
+        defaultContent: "Based on current market conditions and our forward-looking analysis, we recommend maintaining your current strategic asset allocation with minor tactical adjustments. Specifically, we suggest increasing your exposure to international developed markets by 3% to capitalise on valuation differentials, whilst reducing your UK large-cap allocation by a corresponding amount. Additionally, we recommend establishing a 5% position in infrastructure-linked investments to enhance portfolio diversification and provide inflation-protected income streams. These adjustments are consistent with your stated risk tolerance and are expected to improve the portfolio's risk-adjusted return profile over the coming twelve months.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-white rounded-2xl border border-border shadow-lg before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-violet-500 before:to-indigo-500 before:rounded-t-2xl overflow-hidden",
         editable: true
       }
@@ -932,7 +932,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "conclusion",
         type: "body",
         placeholder: "{{conclusion}}",
-        defaultContent: "Overall compliance status remains satisfactory with minor improvements recommended...",
+        defaultContent: "Overall compliance status across all assessed areas remains satisfactory, with the firm demonstrating a robust culture of regulatory adherence and risk awareness. Our review identified several opportunities for enhancement in client communication record-keeping and transaction monitoring workflows, which have been documented in the corrective actions section above. We recommend implementing the proposed improvements within the next 90 days and scheduling a follow-up review to assess progress. The compliance team has shown commendable diligence in maintaining up-to-date policies and procedures in line with evolving FCA regulatory requirements.",
         className: "text-base leading-relaxed mb-6 text-muted-foreground relative p-6 bg-white rounded-2xl border border-border shadow-lg before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-emerald-500 before:to-green-500 before:rounded-t-2xl overflow-hidden",
         editable: true
       }
@@ -987,7 +987,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "abstract",
         type: "body",
         placeholder: "{{abstract}}",
-        defaultContent: "This whitepaper examines emerging trends in sustainable investment practices...",
+        defaultContent: "This whitepaper examines the rapidly evolving landscape of sustainable investment practices, analysing key trends, regulatory developments, and performance outcomes that are reshaping the global asset management industry. Drawing on proprietary research, institutional survey data, and comprehensive market analysis, we present evidence-based insights into how Environmental, Social, and Governance (ESG) factors are increasingly integral to investment decision-making processes. Our findings suggest that sustainable investing has moved decisively from the periphery to the mainstream, with significant implications for portfolio construction, risk management, and long-term value creation.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground bg-gradient-to-br from-blue-500/8 to-sky-500/5 p-8 rounded-2xl italic border-l-4 border-blue-600",
         editable: true
       },
@@ -1011,7 +1011,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "introduction",
         type: "body",
         placeholder: "{{introduction}}",
-        defaultContent: "Environmental, Social, and Governance (ESG) investing has evolved significantly...",
+        defaultContent: "Environmental, Social, and Governance (ESG) investing has evolved significantly over the past decade, transitioning from a niche approach favoured by mission-driven investors to a mainstream strategy embraced by the world's largest asset managers. This transformation has been catalysed by converging forces: mounting evidence that ESG integration enhances risk-adjusted returns, increasing regulatory mandates across jurisdictions, and growing demand from institutional and retail investors alike for investment approaches that align financial objectives with broader societal outcomes. The global ESG assets under management now exceed $40 trillion and are projected to surpass $50 trillion by 2025, representing more than one-third of total global assets.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground",
         editable: true
       },
@@ -1043,7 +1043,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "conclusion",
         type: "body",
         placeholder: "{{conclusion}}",
-        defaultContent: "Sustainable investing represents not just an ethical imperative but a strategic opportunity...",
+        defaultContent: "Sustainable investing represents not merely an ethical imperative but a compelling strategic opportunity for investors seeking superior long-term returns. Our research demonstrates that companies with strong ESG profiles exhibit lower cost of capital, reduced regulatory risk, and enhanced operational resilience during market downturns. As regulatory frameworks continue to strengthen and data quality improves, we anticipate further acceleration in ESG adoption across all investor segments. Investment managers who fail to integrate sustainability considerations into their processes risk both underperformance and increasing client attrition in the years ahead.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-gradient-to-br from-blue-600/8 to-emerald-500/5 rounded-2xl border border-blue-600/15",
         editable: true
       }
@@ -1098,7 +1098,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "market-overview",
         type: "body",
         placeholder: "{{market_overview}}",
-        defaultContent: "Global markets showed mixed performance this week as investors digested economic data...",
+        defaultContent: "Global markets exhibited mixed performance during the week as investors digested a complex array of macroeconomic data releases, central bank communications, and corporate earnings reports. The S&P 500 gained 1.2% on the back of strong technology earnings, whilst European indices remained largely flat amid renewed concerns about energy security. UK markets outperformed modestly, with the FTSE 100 rising 0.8% supported by a weaker sterling benefiting internationally-exposed constituents. Bond markets experienced notable volatility following unexpectedly hawkish commentary from Federal Reserve officials, with the US 10-year yield climbing 12 basis points to 4.35%.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-fuchsia-500/8 to-pink-500/5 p-8 rounded-2xl border-l-4 border-fuchsia-500",
         editable: true
       },
@@ -1138,7 +1138,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "outlook",
         type: "body",
         placeholder: "{{outlook}}",
-        defaultContent: "Looking ahead, we maintain a cautiously optimistic stance on risk assets...",
+        defaultContent: "Looking ahead, we maintain a cautiously optimistic stance on risk assets, supported by resilient corporate earnings, improving consumer confidence, and the anticipated commencement of monetary easing cycles across major economies. However, we remain vigilant regarding geopolitical risks, persistent inflationary pressures in certain sectors, and the potential for policy missteps. Our recommended positioning favours quality equities with strong balance sheets, selective exposure to emerging markets, and a modest overweight in investment-grade credit. We continue to advocate for disciplined portfolio rebalancing and the maintenance of adequate diversification across asset classes and geographies.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-white rounded-2xl border border-border shadow-lg before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-fuchsia-500 before:to-rose-500 before:rounded-t-2xl overflow-hidden",
         editable: true
       }
@@ -1225,7 +1225,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "objectives",
         type: "body",
         placeholder: "{{objectives}}",
-        defaultContent: "Review quarterly performance against benchmarks and discuss strategic adjustments...",
+        defaultContent: "The primary objective of this meeting is to conduct a thorough review of quarterly portfolio performance against agreed benchmarks, discuss any strategic adjustments necessitated by changing market conditions, and ensure alignment between the client's evolving personal circumstances and the current investment strategy. We will also address any outstanding action items from our previous meeting and establish clear next steps for the coming quarter, including target dates for implementation of any agreed changes.",
         className: "text-base leading-relaxed mb-8 text-muted-foreground pl-6 border-l-4 border-amber-500 bg-amber-500/5 p-6 rounded-r-xl",
         editable: true
       },
@@ -1296,7 +1296,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "base-case",
         type: "body",
         placeholder: "{{base_case}}",
-        defaultContent: "Under normal market conditions with moderate economic growth of 2-3%...",
+        defaultContent: "Under the base case scenario, we assume a continuation of moderate economic growth in the range of 2-3% GDP expansion, gradual normalisation of monetary policy with interest rates stabilising at 3.5-4.0%, and inflation returning to central bank target ranges by mid-2026. In this environment, we project the portfolio to deliver a total return of 8-10% per annum, with equity allocations contributing the majority of growth whilst fixed income provides stable income generation and portfolio ballast. Risk metrics remain within acceptable parameters, with expected portfolio volatility of 10-12% and maximum drawdown limited to approximately 12%.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-emerald-500/10 to-green-500/5 p-8 rounded-2xl border-l-4 border-emerald-500",
         editable: true
       },
@@ -1320,7 +1320,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "bull-case",
         type: "body",
         placeholder: "{{bull_case}}",
-        defaultContent: "In an optimistic scenario with strong economic expansion and market confidence...",
+        defaultContent: "In the bull case scenario, characterised by accelerating economic expansion above 3.5% GDP growth, benign inflation dynamics, and strong corporate earnings momentum, the portfolio is projected to deliver total returns of 15-20% per annum. This scenario assumes successful resolution of current geopolitical tensions, continued innovation-driven productivity gains, and a supportive regulatory environment for capital markets. Equity allocations would benefit most significantly, with growth-oriented sectors such as technology and healthcare potentially delivering outsized returns. We would recommend increasing risk exposure incrementally should early indicators of this scenario materialise.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-sky-500/10 to-blue-500/5 p-8 rounded-2xl border-l-4 border-sky-500",
         editable: true
       },
@@ -1336,7 +1336,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "bear-case",
         type: "body",
         placeholder: "{{bear_case}}",
-        defaultContent: "Under adverse conditions with economic contraction and market stress...",
+        defaultContent: "Under the bear case scenario, we model a significant economic contraction of -1.5% to -3.0% GDP, triggered by a combination of escalating geopolitical conflict, persistent inflation above 5%, and aggressive monetary tightening. In this environment, the portfolio could experience drawdowns of 20-30% from peak values, with equity allocations bearing the brunt of losses. However, our defensive positioning—including allocation to government bonds, gold, and cash equivalents—would provide meaningful portfolio protection. Stress testing indicates that even in this adverse scenario, the portfolio would recover to pre-drawdown levels within 18-24 months, assuming no fundamental changes to the long-term economic trajectory.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-red-500/10 to-rose-500/5 p-8 rounded-2xl border-l-4 border-red-500",
         editable: true
       },
@@ -1414,7 +1414,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "executive-summary",
         type: "body",
         placeholder: "{{executive_summary}}",
-        defaultContent: "This comprehensive report provides an in-depth analysis of portfolio performance...",
+        defaultContent: "This comprehensive annual report provides an in-depth analysis of portfolio performance, market conditions, and strategic positioning throughout the 2025 fiscal year. Despite a challenging macroeconomic environment characterised by heightened volatility and shifting monetary policy expectations, our disciplined investment approach delivered consistent outperformance against key benchmarks. The report details our asset allocation decisions, security selection outcomes, risk management protocols, and forward-looking strategic recommendations designed to position the portfolio for continued success in the year ahead.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground bg-gradient-to-br from-indigo-500/8 to-blue-500/5 p-8 rounded-2xl border-l-4 border-indigo-500",
         editable: true
       },
@@ -1430,7 +1430,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "market-analysis",
         type: "body",
         placeholder: "{{market_analysis}}",
-        defaultContent: "Global markets experienced significant volatility throughout 2025...",
+        defaultContent: "Global markets experienced significant volatility throughout 2025, driven by evolving central bank policies, geopolitical uncertainties, and shifting economic growth expectations. The first half of the year saw equity markets rally strongly on expectations of interest rate cuts, whilst the third quarter brought a correction as inflation data proved stickier than anticipated. The final quarter witnessed a robust recovery, supported by improving corporate earnings and renewed optimism regarding the economic outlook. Across the full year, developed market equities returned 16.8%, emerging markets delivered 12.3%, and global bonds provided a modest but positive 3.9% return.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground",
         editable: true
       },
@@ -1454,7 +1454,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "performance",
         type: "body",
         placeholder: "{{performance}}",
-        defaultContent: "Your portfolio achieved a total return of 14.2% for the year...",
+        defaultContent: "Your portfolio achieved a total return of 14.2% for the year, outperforming the composite benchmark by 2.8 percentage points. This outperformance was driven by successful tactical asset allocation, with our timely increase in equity exposure during the Q3 correction proving particularly beneficial. Security selection within the equity component added an additional 1.4% of alpha, with notable contributions from our positions in artificial intelligence infrastructure companies, premium consumer brands, and renewable energy developers. The fixed income allocation delivered 4.2%, benefiting from our duration positioning ahead of the rate-cutting cycle.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground",
         editable: true
       },
@@ -1486,7 +1486,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "outlook",
         type: "body",
         placeholder: "{{outlook}}",
-        defaultContent: "Looking ahead to 2026, we anticipate continued market opportunities...",
+        defaultContent: "Looking ahead to 2026, we anticipate a constructive but more nuanced investment environment. The global economy is expected to grow at approximately 2.8%, with the US and Asia leading whilst Europe faces structural headwinds. We believe the current monetary easing cycle will support risk assets, but valuations in certain sectors—particularly large-cap technology—warrant caution. Our strategic positioning favours international diversification, quality factor exposure, and selective allocation to alternative assets including infrastructure and private credit. We recommend maintaining a balanced approach, with sufficient flexibility to capitalise on opportunities as they arise during the year.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-gradient-to-br from-indigo-500/8 to-emerald-500/5 rounded-2xl border border-indigo-500/15",
         editable: true
       }
@@ -1548,7 +1548,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "problem",
         type: "body",
         placeholder: "{{problem}}",
-        defaultContent: "Traditional investment approaches fail to address modern challenges...",
+        defaultContent: "Traditional investment management approaches were designed for a world that no longer exists. Legacy advisory firms rely on outdated portfolio construction methodologies, lack real-time risk monitoring capabilities, and charge excessive fees that erode client returns over time. The average investor loses 1.5-2.5% annually to hidden costs, opaque fee structures, and suboptimal asset allocation—amounting to hundreds of thousands of pounds over a typical investment horizon. Meanwhile, the demand for sophisticated, technology-enabled financial advice has never been greater, with over 60% of high-net-worth individuals expressing dissatisfaction with their current advisory relationships.",
         className: "text-2xl leading-relaxed mb-12 text-muted-foreground",
         editable: true
       },
@@ -1564,7 +1564,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "solution",
         type: "body",
         placeholder: "{{solution}}",
-        defaultContent: "We leverage cutting-edge technology and data-driven insights...",
+        defaultContent: "We have developed a proprietary technology platform that combines institutional-grade portfolio analytics with intuitive client-facing interfaces, delivering a wealth management experience that is both more sophisticated and more accessible than anything currently available in the market. Our AI-powered risk engine processes over 50,000 data points daily to dynamically optimise portfolio positioning, whilst our automated rebalancing system ensures that client portfolios remain aligned with their strategic objectives at all times. This technology-first approach enables us to deliver superior investment outcomes at a fraction of the cost of traditional advisory firms.",
         className: "text-2xl leading-relaxed mb-12 text-muted-foreground",
         editable: true
       },
@@ -1620,7 +1620,7 @@ export const documentTemplates: DocumentTemplate[] = [
         id: "ask",
         type: "body",
         placeholder: "{{ask}}",
-        defaultContent: "We're raising £5M to accelerate growth and expand our technology platform...",
+        defaultContent: "We are seeking £5M in Series A funding to accelerate our growth trajectory and expand our technology platform into new market segments. The capital will be deployed across three strategic priorities: 40% towards technology development including AI model enhancement and mobile platform expansion, 35% towards client acquisition and marketing to drive AUM growth, and 25% towards talent acquisition to build out our investment research and client services teams. At our current growth rate, we project reaching £500M in AUM within 24 months, delivering a clear path to profitability and positioning the firm for a potential Series B or strategic partnership opportunity.",
         className: "text-2xl leading-relaxed mb-12 text-muted-foreground relative p-10 bg-gradient-to-br from-violet-500/10 to-purple-500/5 rounded-3xl border-2 border-violet-500/20",
         editable: true
       }

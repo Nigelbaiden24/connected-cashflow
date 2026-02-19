@@ -44,7 +44,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "parties",
         type: "body",
         placeholder: "{{parties}}",
-        defaultContent: "This Agreement is entered into on [Date] between:\n\nParty A: [Company Name]\nAddress: [Address]\n\nAND\n\nParty B: [Client Name]\nAddress: [Address]",
+        defaultContent: "This Agreement is entered into on 15 January 2025 between:\n\nParty A: Meridian Advisory Group Ltd\nRegistered Address: 42 Threadneedle Street, London, EC2R 8AY\nCompany Registration No: 12345678\n\nAND\n\nParty B: Harrington Wealth Holdings Plc\nRegistered Address: 18 Cathedral Square, Manchester, M3 7BW\nCompany Registration No: 87654321\n\nBoth parties hereby acknowledge and agree to the terms and conditions set forth in this agreement, which shall be governed by the laws of England and Wales.",
         className: "text-base leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-emerald-500/8 to-teal-500/5 p-8 rounded-2xl border-l-4 border-emerald-500",
         editable: true
       },
@@ -320,7 +320,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "executive_overview",
         type: "body",
         placeholder: "{{executive_overview}}",
-        defaultContent: "This proposal outlines our comprehensive approach to delivering exceptional value and achieving your strategic objectives...",
+        defaultContent: "We are pleased to present this comprehensive proposal outlining our approach to delivering transformative value across your organisation. Our methodology combines deep industry expertise with cutting-edge technology solutions to drive measurable outcomes. Having conducted preliminary analysis of your current operations, we have identified significant opportunities for improvement across operational efficiency, customer experience, and revenue generation. This proposal details our recommended approach, timeline, and investment requirements to achieve these objectives.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-sky-500/8 to-blue-500/5 p-8 rounded-2xl border-l-4 border-sky-500",
         editable: true
       },
@@ -344,7 +344,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "benefit1_text",
         type: "body",
         placeholder: "{{benefit1_text}}",
-        defaultContent: "Streamlined processes that reduce operational costs by up to 40% while maintaining quality standards.",
+        defaultContent: "Our proprietary process automation framework has consistently delivered operational cost reductions of 35-45% across similar engagements. By eliminating manual bottlenecks, standardising workflows, and implementing intelligent routing systems, we enable your team to focus on high-value strategic activities rather than administrative overhead. Previous clients have reported average time savings of 120 hours per month within the first quarter of implementation.",
         className: "text-base mb-6 pl-6 border-l-4 border-sky-500 text-muted-foreground bg-sky-500/5 p-4 rounded-r-xl",
         editable: true
       },
@@ -360,7 +360,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "benefit2_text",
         type: "body",
         placeholder: "{{benefit2_text}}",
-        defaultContent: "Flexible architecture designed to grow with your business needs and adapt to market changes.",
+        defaultContent: "Our modular architecture is designed from the ground up to accommodate rapid scaling without performance degradation. Whether your user base grows tenfold or your data volumes increase exponentially, the platform adapts seamlessly through automated provisioning and intelligent load distribution. This future-proof approach ensures that your technology investment continues to deliver value as your business evolves and market conditions change.",
         className: "text-base mb-6 pl-6 border-l-4 border-blue-500 text-muted-foreground bg-blue-500/5 p-4 rounded-r-xl",
         editable: true
       },
@@ -384,7 +384,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "phase1_content",
         type: "body",
         placeholder: "{{phase1_content}}",
-        defaultContent: "Comprehensive analysis of requirements, stakeholder interviews, and detailed project roadmap development.",
+        defaultContent: "During the discovery phase, our team conducts comprehensive stakeholder interviews, process mapping workshops, and technical architecture assessments to develop a thorough understanding of your current state and desired outcomes. We produce a detailed requirements specification document, prioritised project roadmap, and risk mitigation plan. This phase typically spans 4-6 weeks and concludes with a formal presentation to the steering committee for sign-off before proceeding to implementation.",
         className: "text-base mb-6 text-muted-foreground ml-6 pl-6 border-l-2 border-sky-500/30",
         editable: true
       },
@@ -400,7 +400,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "phase2_content",
         type: "body",
         placeholder: "{{phase2_content}}",
-        defaultContent: "Agile development sprints with continuous testing, quality assurance, and stakeholder feedback integration.",
+        defaultContent: "Implementation follows an agile methodology with two-week sprint cycles, ensuring continuous delivery of functional components and regular stakeholder validation. Each sprint includes comprehensive testing—unit, integration, and user acceptance—to maintain the highest quality standards. Daily stand-ups and weekly progress reports keep all parties aligned, whilst our dedicated project manager serves as a single point of contact for any queries or escalations throughout the build phase.",
         className: "text-base mb-6 text-muted-foreground ml-6 pl-6 border-l-2 border-blue-500/30",
         editable: true
       },
@@ -416,7 +416,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "phase3_content",
         type: "body",
         placeholder: "{{phase3_content}}",
-        defaultContent: "Seamless deployment, comprehensive training, and ongoing support to ensure long-term success.",
+        defaultContent: "Our launch phase encompasses a structured deployment process including environment provisioning, data migration, user training, and go-live support. We provide comprehensive training programmes tailored to different user roles, ensuring rapid adoption and maximum value realisation from day one. Post-launch, our dedicated support team provides 90 days of enhanced monitoring and assistance, followed by ongoing maintenance and optimisation under a separate support agreement.",
         className: "text-base mb-8 text-muted-foreground ml-6 pl-6 border-l-2 border-indigo-500/30",
         editable: true
       },
@@ -432,7 +432,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "financial_overview",
         type: "body",
         placeholder: "{{financial_overview}}",
-        defaultContent: "Our pricing structure is designed to deliver exceptional value while ensuring sustainable returns on your investment...",
+        defaultContent: "Our pricing model is structured to deliver exceptional value whilst ensuring a clear and demonstrable return on investment. The total project investment of £185,000 covers all three implementation phases, including discovery, development, and deployment. Based on our analysis of your current operational costs, we project annual savings of £420,000 from process automation alone, delivering a payback period of under six months. Additional revenue uplift from enhanced customer experience is estimated at £280,000 annually, bringing the total first-year ROI to approximately 275%.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-white rounded-2xl border border-border shadow-lg before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-sky-500 before:to-indigo-500 before:rounded-t-2xl overflow-hidden",
         editable: true
       },
@@ -487,7 +487,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "opening",
         type: "body",
         placeholder: "{{opening}}",
-        defaultContent: "We are pleased to inform you about exciting developments...",
+        defaultContent: "We are delighted to write to you with an important update regarding our ongoing partnership and the exciting developments taking shape across our joint initiatives. As we approach the close of another productive quarter, we wanted to take this opportunity to reflect on our shared achievements and outline the strategic opportunities that lie ahead for both organisations in the coming months.",
         className: "text-base leading-[1.9] mb-8 text-muted-foreground",
         editable: true
       },
@@ -503,7 +503,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "main-content",
         type: "body",
         placeholder: "{{main_content}}",
-        defaultContent: "Our partnership continues to strengthen with new initiatives...",
+        defaultContent: "Our strategic partnership continues to deliver exceptional results, with key performance indicators exceeding targets across all major categories. The integration of our respective service platforms has been completed ahead of schedule, enabling seamless cross-referral workflows and enhanced client service delivery. Customer satisfaction scores have risen to 94%, representing a 12-point improvement since the inception of our collaboration. We have also made significant progress on our joint market expansion initiative, having successfully onboarded 47 new enterprise clients during this quarter alone.",
         className: "text-base leading-[1.9] mb-8 text-muted-foreground bg-gradient-to-br from-amber-500/5 to-orange-500/5 p-6 rounded-xl border-l-4 border-amber-500",
         editable: true
       },
@@ -519,7 +519,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "closing",
         type: "body",
         placeholder: "{{closing}}",
-        defaultContent: "We look forward to continued collaboration and mutual success...",
+        defaultContent: "We are genuinely enthusiastic about the trajectory of our partnership and the mutual value we continue to create. As we look towards the next quarter, we are confident that the strategic foundations we have built together will support continued growth and innovation. We would welcome the opportunity to discuss these developments further at your earliest convenience and remain committed to delivering excellence in everything we do together.",
         className: "text-base leading-[1.9] mb-8 text-muted-foreground",
         editable: true
       },
@@ -590,7 +590,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "about",
         type: "body",
         placeholder: "{{about}}",
-        defaultContent: "We are a leading provider of innovative business solutions...",
+        defaultContent: "Established in 2015, we are a leading provider of innovative business solutions specialising in digital transformation, strategic consulting, and enterprise technology integration. With offices across London, Manchester, and Edinburgh, our team of 150+ professionals serves over 200 enterprise clients spanning financial services, healthcare, technology, and retail sectors. Our mission is to empower organisations with the tools, insights, and strategies they need to thrive in an increasingly competitive and digitally-driven marketplace.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground bg-gradient-to-br from-pink-500/8 to-fuchsia-500/5 p-8 rounded-2xl border-l-4 border-pink-500",
         editable: true
       },
@@ -677,7 +677,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "company-info",
         type: "body",
         placeholder: "{{company_info}}",
-        defaultContent: "Please provide your complete company details including registration number...",
+        defaultContent: "Company Name: Harrington Wealth Holdings Plc\nRegistration Number: 12345678\nRegistered Address: 18 Cathedral Square, Manchester, M3 7BW\nDate of Incorporation: 15 March 2012\nPrimary Contact: Jonathan Harrington, Managing Director\nEmail: j.harrington@hwh.co.uk\nTelephone: +44 161 234 5678\nCompany Type: Public Limited Company\nVAT Registration Number: GB 123 4567 89",
         className: "text-base leading-relaxed mb-8 text-muted-foreground pl-6 border-l-4 border-teal-500 bg-teal-500/5 p-6 rounded-r-xl",
         editable: true
       },
@@ -772,7 +772,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "summary",
         type: "body",
         placeholder: "{{summary}}",
-        defaultContent: "This report outlines our compliance status across all key areas...",
+        defaultContent: "This quarterly compliance report provides a comprehensive assessment of the organisation's adherence to all applicable regulatory requirements, internal policies, and industry best practices. During the reporting period, we conducted 24 compliance audits across all business units, reviewed 1,847 client interactions for regulatory adherence, and assessed the effectiveness of our risk management controls. The overall compliance rating for Q4 2025 is 'Satisfactory' with a score of 92/100, representing a 4-point improvement from the previous quarter.",
         className: "text-base leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-emerald-500/10 to-green-500/5 p-6 rounded-2xl border-l-4 border-emerald-500",
         editable: true
       },
@@ -867,7 +867,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "abstract",
         type: "body",
         placeholder: "{{abstract}}",
-        defaultContent: "This whitepaper explores the latest trends in digital transformation...",
+        defaultContent: "This whitepaper explores the transformative impact of digital technologies on modern business operations, drawing on extensive research across 500 enterprises and in-depth case studies from leading organisations that have successfully navigated their digital transformation journeys. Our analysis reveals that whilst 85% of businesses have initiated digital transformation programmes, only 30% have achieved meaningful, measurable outcomes. This paper identifies the critical success factors that differentiate winners from laggards and provides a practical framework for organisations at every stage of their digital maturity journey.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground bg-gradient-to-br from-indigo-500/8 to-blue-500/5 p-8 rounded-2xl italic border-l-4 border-indigo-500",
         editable: true
       },
@@ -923,7 +923,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "conclusion",
         type: "body",
         placeholder: "{{conclusion}}",
-        defaultContent: "Successful digital transformation requires strategic vision and execution...",
+        defaultContent: "Successful digital transformation requires a holistic approach that extends far beyond technology implementation. Our research demonstrates that organisations achieving the greatest returns from their digital initiatives are those that invest equally in cultural change, process re-engineering, and capability development alongside their technology investments. The evidence presented in this whitepaper makes a compelling case for integrated transformation strategies that address the human, process, and technology dimensions simultaneously, with leadership commitment and clear governance as essential prerequisites for success.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground relative p-8 bg-gradient-to-br from-indigo-500/8 to-cyan-500/5 rounded-2xl border border-indigo-500/15",
         editable: true
       }
@@ -978,7 +978,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "overview",
         type: "body",
         placeholder: "{{overview}}",
-        defaultContent: "The industry continues to show strong growth momentum...",
+        defaultContent: "The industry continues to demonstrate robust growth momentum heading into the final quarter of 2025, with key indicators pointing to sustained expansion across most major segments. Revenue growth across the sector has averaged 8.2% year-on-year, driven primarily by digital adoption acceleration and increasing demand for technology-enabled solutions. However, competitive dynamics are shifting rapidly as new market entrants leverage innovative business models to challenge established players. Supply chain normalisation and easing input cost pressures have contributed to margin expansion, with average EBITDA margins improving by 180 basis points compared to the prior year period.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-cyan-500/8 to-sky-500/5 p-8 rounded-2xl border-l-4 border-cyan-500",
         editable: true
       },
@@ -1018,7 +1018,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "outlook",
         type: "body",
         placeholder: "{{outlook}}",
-        defaultContent: "We anticipate continued growth with emerging opportunities...",
+        defaultContent: "We anticipate continued growth through the first half of 2026, supported by favourable macroeconomic conditions, increasing enterprise technology budgets, and expanding addressable markets. Our analysis suggests that companies with strong digital capabilities and customer-centric operating models are best positioned to capitalise on emerging opportunities, whilst those reliant on legacy systems and traditional distribution channels face increasing pressure from nimbler competitors. We recommend monitoring key leading indicators including enterprise software spending, digital advertising growth rates, and consumer confidence indices for early signals of any shift in the current growth trajectory.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-white rounded-2xl border border-border shadow-lg before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-r before:from-cyan-500 before:to-blue-500 before:rounded-t-2xl overflow-hidden",
         editable: true
       }
@@ -1105,7 +1105,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "objectives",
         type: "body",
         placeholder: "{{objectives}}",
-        defaultContent: "Review quarterly results and align on strategic priorities for the upcoming year...",
+        defaultContent: "The primary objective of this quarterly business review is to conduct a thorough assessment of Q4 performance against our strategic plan targets, review progress on key initiatives, and align on priorities for the upcoming fiscal year. We will also evaluate current risk exposures, assess resource allocation effectiveness, and ensure that departmental objectives remain aligned with the overarching corporate strategy. All participants are expected to come prepared with updated metrics and actionable recommendations for their respective areas of responsibility.",
         className: "text-base leading-relaxed mb-8 text-muted-foreground pl-6 border-l-4 border-green-500 bg-green-500/5 p-6 rounded-r-xl",
         editable: true
       },
@@ -1176,7 +1176,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "baseline",
         type: "body",
         placeholder: "{{baseline}}",
-        defaultContent: "Under current market conditions with steady growth trajectory...",
+        defaultContent: "Under the baseline scenario, we project continued steady-state growth of 6-8% per annum over the three-year planning horizon. This assumes stable market conditions, consistent customer retention rates above 90%, and successful execution of our current product roadmap. Revenue is expected to reach £185M by FY2028, with operating margins improving from 15% to 18% through operational efficiency gains and scale economies. Headcount grows moderately to 580 employees, with the majority of new hires concentrated in technology development and client-facing roles. This scenario requires no additional capital investment beyond our existing facilities and technology budget allocations.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-emerald-500/10 to-green-500/5 p-8 rounded-2xl border-l-4 border-emerald-500",
         editable: true
       },
@@ -1200,7 +1200,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "growth",
         type: "body",
         placeholder: "{{growth}}",
-        defaultContent: "With successful market expansion and product launches...",
+        defaultContent: "The growth scenario envisions accelerated market expansion through a combination of organic growth, strategic acquisitions, and international market entry. In this scenario, revenue grows at 18-22% annually, reaching £280M by FY2028 with operating margins of 20-22%. Key assumptions include successful launch of our Asia-Pacific operations in Q2 2026, completion of at least two strategic acquisitions valued at £25-40M each, and the introduction of three new product lines targeting previously unserved market segments. This scenario requires an additional £50M in growth capital, to be funded through a combination of debt facilities and a potential equity raise.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-sky-500/10 to-blue-500/5 p-8 rounded-2xl border-l-4 border-sky-500",
         editable: true
       },
@@ -1216,7 +1216,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "risk",
         type: "body",
         placeholder: "{{risk}}",
-        defaultContent: "In challenging market conditions with increased competition...",
+        defaultContent: "Under the risk scenario, we model the impact of a significant economic downturn combined with intensified competitive pressure and potential regulatory changes. Revenue growth decelerates to 1-3% annually, with potential for a single-quarter contraction of up to 5% in the event of a severe recession. Operating margins compress to 10-12% as pricing pressure increases and customer acquisition costs rise. Key risk factors include loss of two or more major enterprise clients, regulatory restrictions on our core product offerings, and a sustained decline in market confidence affecting new business pipeline conversion rates. Cash reserves of £15M provide approximately 8 months of operational runway in a zero-growth scenario.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground bg-gradient-to-br from-red-500/10 to-rose-500/5 p-8 rounded-2xl border-l-4 border-red-500",
         editable: true
       },
@@ -1294,7 +1294,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "ceo-message",
         type: "body",
         placeholder: "{{ceo_message}}",
-        defaultContent: "It gives me great pleasure to present our achievements for the year...",
+        defaultContent: "It gives me great pleasure to present our Annual Report for 2025, a year that has been truly transformative for our organisation. We entered the year with ambitious targets and a clear strategic vision, and I am proud to report that our team has delivered exceptional results across every measure of success. Revenue surpassed £150M for the first time in our company's history, representing 25% year-over-year growth, whilst our commitment to operational excellence drove profit margins to an all-time high of 18.5%. None of this would have been possible without the extraordinary dedication of our 500-strong team and the continued trust of our valued clients and partners.",
         className: "text-lg leading-relaxed mb-10 text-muted-foreground bg-gradient-to-br from-emerald-500/8 to-teal-500/5 p-8 rounded-2xl border-l-4 border-emerald-500",
         editable: true
       },
@@ -1310,7 +1310,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "performance",
         type: "body",
         placeholder: "{{performance}}",
-        defaultContent: "We achieved record financial results with strong growth across all divisions...",
+        defaultContent: "We achieved record financial results in 2025, with total revenue reaching £152.3M, up from £121.8M in the prior year. This growth was driven by strong performance across all three business divisions: Enterprise Solutions contributed £68.5M (+28%), Professional Services delivered £52.1M (+22%), and our newly launched Digital Products division generated £31.7M in its first full year of operation. Gross profit margin improved to 62.4% from 58.9%, reflecting the increasing contribution of higher-margin recurring revenue streams which now represent 45% of total revenue. Operating cash flow was robust at £27.4M, enabling continued investment in growth initiatives whilst maintaining a healthy balance sheet.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground",
         editable: true
       },
@@ -1334,7 +1334,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "operations",
         type: "body",
         placeholder: "{{operations}}",
-        defaultContent: "Our operational efficiency improved significantly through digital transformation...",
+        defaultContent: "Our operational efficiency improved significantly through a comprehensive digital transformation programme initiated in early 2025. The implementation of our new enterprise resource planning system reduced administrative overhead by 30%, whilst automated workflow systems decreased average project delivery timelines by 18%. We expanded our office footprint with the opening of a state-of-the-art technology centre in Edinburgh, adding 15,000 square feet of collaborative workspace. Employee headcount grew to 500 across all locations, with particular investment in our technology engineering and client success teams to support our growing customer base.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground",
         editable: true
       },
@@ -1366,7 +1366,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "outlook",
         type: "body",
         placeholder: "{{outlook}}",
-        defaultContent: "We enter 2026 with strong momentum and exciting growth opportunities...",
+        defaultContent: "We enter 2026 with exceptional momentum and a clear strategic roadmap for continued growth and innovation. Our three-year plan targets revenue of £250M by 2028, driven by international expansion into European and Asia-Pacific markets, strategic acquisitions to enhance our technology capabilities, and continued organic growth within our established client base. We are investing heavily in artificial intelligence and machine learning capabilities to enhance our product offerings and create new revenue streams. The board and executive team are fully aligned on our ambitious but achievable growth trajectory, and we remain deeply committed to delivering value for all our stakeholders.",
         className: "text-lg leading-relaxed mb-8 text-muted-foreground relative p-8 bg-gradient-to-br from-emerald-500/8 to-teal-500/5 rounded-2xl border border-emerald-500/15",
         editable: true
       }
@@ -1428,7 +1428,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "problem",
         type: "body",
         placeholder: "{{problem}}",
-        defaultContent: "Current solutions fail to address critical business challenges...",
+        defaultContent: "Today's businesses face unprecedented challenges in a rapidly evolving digital landscape. Legacy operational systems are unable to keep pace with changing customer expectations, regulatory requirements continue to grow in complexity, and the cost of maintaining outdated infrastructure consumes resources that should be directed toward innovation and growth. Research indicates that 67% of mid-market companies report significant operational inefficiencies costing them an average of £2.3M annually in lost productivity, whilst 72% of enterprise leaders cite digital transformation as their top strategic priority but lack the internal expertise to execute effectively.",
         className: "text-2xl leading-relaxed mb-12 text-muted-foreground",
         editable: true
       },
@@ -1444,7 +1444,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "solution",
         type: "body",
         placeholder: "{{solution}}",
-        defaultContent: "We provide innovative, scalable solutions that transform businesses...",
+        defaultContent: "Our integrated platform combines proprietary AI-driven analytics, modular workflow automation, and intuitive client management tools to deliver a comprehensive solution that addresses the full spectrum of modern business challenges. Unlike piecemeal point solutions that create data silos and integration headaches, our unified architecture provides a single source of truth across all business functions. Early adopters have reported average efficiency gains of 40%, revenue increases of 25%, and customer satisfaction improvements exceeding 30 percentage points—all within the first twelve months of deployment.",
         className: "text-2xl leading-relaxed mb-12 text-muted-foreground",
         editable: true
       },
@@ -1500,7 +1500,7 @@ export const businessTemplates: DocumentTemplate[] = [
         id: "ask",
         type: "body",
         placeholder: "{{ask}}",
-        defaultContent: "Seeking £10M Series A to scale operations and expand market reach...",
+        defaultContent: "We are seeking £10M in Series A funding to scale our operations and accelerate market penetration across the UK and European markets. The capital will be deployed strategically: 45% towards product development and AI capability enhancement, 30% towards sales and marketing to drive enterprise client acquisition, and 25% towards operational scaling including team expansion and infrastructure. At our current trajectory, we project reaching £25M ARR within 18 months of funding, with a clear path to profitability by Q4 2027. We are offering equity participation on highly favourable terms and welcome the opportunity to discuss this investment in greater detail.",
         className: "text-2xl leading-relaxed mb-12 text-muted-foreground relative p-10 bg-gradient-to-br from-orange-500/10 to-red-500/5 rounded-3xl border-2 border-orange-500/20",
         editable: true
       }
