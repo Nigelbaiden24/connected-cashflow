@@ -53,7 +53,16 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
   overseas_property: {
     label: "Overseas Property & Land",
     icon: Building2,
-    subCategories: ["Residential Overseas", "Commercial Overseas", "Land Overseas", "Development Projects"],
+    subCategories: [
+      "Africa (Kenya, Ghana, Nigeria, Tanzania)",
+      "South America (Colombia, Brazil, Peru)",
+      "Southeast Asia (Philippines, Cambodia, Vietnam)",
+      "Eastern Europe (Romania, Bulgaria, Georgia, Turkey)",
+      "Southern Europe (Portugal, Spain, Greece)",
+      "Caribbean & Central America",
+      "Land Plots & Agricultural",
+      "Development Projects",
+    ],
   },
   businesses: {
     label: "Businesses",

@@ -31,13 +31,23 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   overseas_property: {
     queries: [
-      "overseas property investment opportunities for sale 2025",
-      "international real estate high yield listings",
-      "emerging property markets best deals current",
+      "Africa property investment opportunities land for sale 2025 Kenya Ghana Nigeria Tanzania",
+      "South America real estate investment cheap land Colombia Brazil Peru Ecuador",
+      "Southeast Asia property investment Philippines Cambodia Vietnam Thailand land plots",
+      "Eastern Europe property investment Romania Bulgaria Georgia Turkey affordable",
+      "Portugal Spain Greece property investment golden visa affordable 2025",
+      "Caribbean property land investment Belize Costa Rica Panama opportunities",
+      "emerging markets real estate investment high growth developing countries",
+      "cheap land for sale Africa Asia South America investment grade plots",
+      "overseas property investment risks developing countries economy analysis",
+      "global real estate market emerging economies property forecast 2025",
     ],
     urls: [
       "https://www.globalpropertyguide.com/",
       "https://www.knightfrank.com/research",
+      "https://www.numbeo.com/property-investment/",
+      "https://www.worldbank.org/en/topic/realestate",
+      "https://www.imf.org/en/Publications/WEO",
     ],
   },
   businesses: {
@@ -324,28 +334,50 @@ serve(async (req) => {
       .map(r => `- Title: ${r.title} | URL: ${r.url} | Image: ${r.imageUrl || "none"} | Desc: ${r.description?.slice(0, 100)}`)
       .join("\n");
 
+    const isOverseasProperty = category === "overseas_property";
+
+    const economicAnalysisInstructions = isOverseasProperty ? `
+
+CRITICAL ADDITIONAL INSTRUCTIONS FOR OVERSEAS PROPERTY & LAND:
+You MUST perform a thorough economic and risk analysis for EACH opportunity's country. For every opportunity, include in the description and key_metrics:
+
+1. **Country Economic Assessment**: GDP growth rate, inflation rate, currency stability, political stability index
+2. **Property Market Analysis**: Average property price trends (rising/falling/stable), rental yield averages, foreign ownership laws and restrictions
+3. **Risk Factors**: Currency devaluation risk, political instability, corruption index, rule of law strength, land ownership rights for foreigners
+4. **Growth Catalysts**: Infrastructure development plans, tourism growth, urbanisation rate, foreign direct investment trends
+5. **Realistic ROI Calculation**: Factor in local taxes, maintenance costs, management fees, currency exchange risk, and realistic rental income
+6. **News & Evidence**: Reference recent news articles, economic reports, or data that support or challenge the investment case
+
+In the "investment_thesis" field, provide a BALANCED view — both the bull case AND the bear case.
+In "key_metrics", ALWAYS include: "gdp_growth", "inflation_rate", "currency_risk" (Low/Medium/High), "political_stability" (score or rating), "foreign_ownership" (Allowed/Restricted/Prohibited), "rental_yield_avg", "price_trend" (Rising/Stable/Falling), "economic_outlook" (Positive/Neutral/Negative).
+
+Focus on developing nations in Africa (Kenya, Ghana, Nigeria, Tanzania, Rwanda, South Africa), Asia (Philippines, Cambodia, Vietnam, Thailand, Indonesia, Sri Lanka), South America (Colombia, Brazil, Peru, Ecuador, Mexico), Eastern Europe (Romania, Bulgaria, Georgia, Turkey, Montenegro), and affordable Southern Europe (Portugal, Spain, Greece).
+
+Be HONEST about risks — many developing markets have serious risks. Flag any red flags clearly.
+` : "";
+
     const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and identify INDIVIDUAL, SPECIFIC investment opportunities that an admin can list on the platform.
 
 CRITICAL INSTRUCTION: You must output INDIVIDUAL opportunities — each one a distinct, real investment opportunity found in the data. NOT a general market overview.
-
+${economicAnalysisInstructions}
 After your analysis, you MUST output a JSON block wrapped in \`\`\`json ... \`\`\` containing an array of individual opportunities. Each opportunity must have:
 
 \`\`\`json
 [
   {
     "name": "Specific opportunity name/title",
-    "description": "2-3 sentence description of this specific opportunity",
+    "description": "2-3 sentence description of this specific opportunity${isOverseasProperty ? ' including country economic context and recent supporting news' : ''}",
     "source_url": "The exact URL where this opportunity was found",
     "source_website": "Name of the website (e.g. Rightmove, Seeking Alpha)",
     "image_url": "URL of an image related to this opportunity if available, or empty string",
     "scraped_date": "${new Date().toISOString().split('T')[0]}",
     "estimated_value": "Price or value range (e.g. £250,000 - £300,000)",
-    "location": "Location or market",
-    "projected_returns": "Expected returns if available",
+    "location": "Country and specific location${isOverseasProperty ? ' (MUST include country name)' : ''}",
+    "projected_returns": "Expected returns${isOverseasProperty ? ' factoring in currency risk and local costs' : ''}",
     "risk_level": "Low/Medium/High",
     "analyst_rating": "Strong Buy/Buy/Hold/Sell",
-    "investment_thesis": "1-2 sentence thesis for why this is compelling",
-    "key_metrics": { "any": "relevant metrics like yield, P/E, etc." }
+    "investment_thesis": "${isOverseasProperty ? 'Bull case AND bear case with economic reasoning' : '1-2 sentence thesis for why this is compelling'}",
+    "key_metrics": { ${isOverseasProperty ? '"gdp_growth": "X%", "inflation_rate": "X%", "currency_risk": "Low/Medium/High", "political_stability": "rating", "foreign_ownership": "status", "rental_yield_avg": "X%", "price_trend": "Rising/Stable/Falling", "economic_outlook": "Positive/Neutral/Negative"' : '"any": "relevant metrics like yield, P/E, etc."'} }
   }
 ]
 \`\`\`
