@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,68 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const [goToPageInput, setGoToPageInput] = useState("");
   const [mainBoardOpen, setMainBoardOpen] = useState(true);
   const [customTableOpenState, setCustomTableOpenState] = useState<Record<string, boolean>>({});
+  
+  // Excel-like column widths & row heights for contacts table
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({
+    checkbox: 48, name: 180, email: 200, phone: 140, company: 160, position: 150, status: 120, priority: 110, ai_score: 100, actions: 48
+  });
+  const [rowHeights, setRowHeights] = useState<Record<string, number>>({});
+  const resizingCol = useRef<{ col: string; startX: number; startWidth: number } | null>(null);
+  const resizingRow = useRef<{ rowId: string; startY: number; startHeight: number } | null>(null);
+
+  // Column resize handlers
+  const onColResizeStart = useCallback((col: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = columnWidths[col] || 150;
+    resizingCol.current = { col, startX, startWidth };
+    
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!resizingCol.current) return;
+      const delta = ev.clientX - resizingCol.current.startX;
+      const newWidth = Math.max(60, resizingCol.current.startWidth + delta);
+      setColumnWidths(prev => ({ ...prev, [resizingCol.current!.col]: newWidth }));
+    };
+    const onMouseUp = () => {
+      resizingCol.current = null;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [columnWidths]);
+
+  // Row resize handlers
+  const onRowResizeStart = useCallback((rowId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startY = e.clientY;
+    const startHeight = rowHeights[rowId] || (compactView ? 36 : 48);
+    resizingRow.current = { rowId, startY, startHeight };
+    
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!resizingRow.current) return;
+      const delta = ev.clientY - resizingRow.current.startY;
+      const newHeight = Math.max(28, resizingRow.current.startHeight + delta);
+      setRowHeights(prev => ({ ...prev, [resizingRow.current!.rowId]: newHeight }));
+    };
+    const onMouseUp = () => {
+      resizingRow.current = null;
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [rowHeights, compactView]);
   const [newContact, setNewContact] = useState({
     name: "",
     email: "",
@@ -1085,10 +1147,10 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             {viewMode === "table" ? (
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
+                   <table className="crm-spreadsheet">
                     <thead>
-                      <tr className="crm-table-header">
-                  <th className="p-0 w-12">
+                      <tr>
+                  <th style={{ width: columnWidths.checkbox }}>
                     <div className={compactView ? "flex items-center justify-center h-9" : "flex items-center justify-center h-12"}>
                       <Checkbox
                         checked={
@@ -1099,17 +1161,41 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         className={compactView ? "h-3 w-3" : ""}
                       />
                     </div>
+                   </th>
+                  <th style={{ width: columnWidths.name }}>
+                    Name
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('name', e)} />
                   </th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Name</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Email</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Phone</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Company</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider"}>Position</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-32"}>Status</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-32"}>Priority</th>
-                  <th className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider w-24" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider w-28"}>AI Score</th>
+                  <th style={{ width: columnWidths.email }}>
+                    Email
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('email', e)} />
+                  </th>
+                  <th style={{ width: columnWidths.phone }}>
+                    Phone
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('phone', e)} />
+                  </th>
+                  <th style={{ width: columnWidths.company }}>
+                    Company
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('company', e)} />
+                  </th>
+                  <th style={{ width: columnWidths.position }}>
+                    Position
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('position', e)} />
+                  </th>
+                  <th style={{ width: columnWidths.status }}>
+                    Status
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('status', e)} />
+                  </th>
+                  <th style={{ width: columnWidths.priority }}>
+                    Priority
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('priority', e)} />
+                  </th>
+                  <th style={{ width: columnWidths.ai_score }}>
+                    AI Score
+                    <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart('ai_score', e)} />
+                  </th>
                   {customColumns.map((col) => (
-                    <th key={col.id} className={compactView ? "text-left p-2 font-semibold text-xs text-muted-foreground uppercase tracking-wider relative group" : "text-left p-4 font-semibold text-sm text-muted-foreground uppercase tracking-wider relative group"}>
+                    <th key={col.id} style={{ width: columnWidths[col.id] || 150 }} className="relative group">
                       <div className="flex items-center justify-between">
                         <span className={compactView ? "text-[10px]" : ""}>
                           {col.column_name}
@@ -1125,19 +1211,18 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                           <Trash2 className={compactView ? "h-2.5 w-2.5" : "h-3 w-3"} />
                         </Button>
                       </div>
+                      <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart(col.id, e)} />
                     </th>
                   ))}
-                  <th className="w-12"></th>
+                  <th style={{ width: columnWidths.actions }}></th>
                 </tr>
               </thead>
-              <tbody className="crm-table-body">
+              <tbody>
                 {paginatedContacts.map((contact, index) => (
                   <tr
                     key={contact.id}
-                    className={`crm-table-row ${compactView 
-                      ? "transition-all duration-200 group h-8" 
-                      : "transition-all duration-200 group"}`}
-                    style={{ backgroundColor: index % 2 === 0 ? "transparent" : "hsl(var(--muted) / 0.04)" }}
+                    className="crm-table-row transition-all duration-150 group"
+                    style={{ height: rowHeights[contact.id] || (compactView ? 36 : 48) }}
                   >
                     <td className="p-0">
                       <div className={compactView ? "flex items-center justify-center h-8" : "flex items-center justify-center h-14"}>
@@ -1388,15 +1473,15 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         )}
                       </td>
                     ))}
-                    <td className={compactView ? "p-2" : "p-4"}>
+                    <td className="p-1 relative">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className={compactView ? "h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-accent" : "h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-accent"}
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-accent"
                           >
-                            <MoreVertical className={compactView ? "h-3 w-3" : "h-4 w-4"} />
+                            <MoreVertical className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
@@ -1414,6 +1499,8 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      {/* Row resize handle */}
+                      <div className="crm-row-resize" onMouseDown={(e) => onRowResizeStart(contact.id, e)} />
                     </td>
                   </tr>
                 ))}
@@ -1993,49 +2080,50 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             <CardContent>
               {(table.viewMode || "table") === "table" ? (
                 /* Table View */
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className={table.compactView ? "h-8" : ""}>
-                        <TableHead className={table.compactView ? "w-12 p-2" : "w-12 p-4"}>
+                <div className="overflow-x-auto">
+                  <table className="crm-spreadsheet">
+                    <thead>
+                      <tr>
+                        <th style={{ width: 48 }}>
                           <Checkbox
                             checked={selectedRows.length === filteredRows.length && filteredRows.length > 0}
                             onCheckedChange={() => toggleAllRowsSelection(table.id)}
                             className={table.compactView ? "h-3 w-3" : ""}
                           />
-                        </TableHead>
+                        </th>
                         {table.columns.map((column) => (
-                          <TableHead key={column} className={table.compactView ? "relative group p-2 text-xs" : "relative group p-4"}>
+                          <th key={column} className="relative group" style={{ width: columnWidths[`${table.id}_${column}`] || 160 }}>
                             <div className="flex items-center justify-between">
                               <span>{column}</span>
                               {table.columns.length > 1 && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className={table.compactView ? "h-5 w-5 p-0 opacity-0 group-hover:opacity-100" : "h-6 w-6 p-0 opacity-0 group-hover:opacity-100"}
+                                  className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100"
                                   onClick={() => deleteColumn(table.id, column)}
                                 >
-                                  <Trash2 className={table.compactView ? "h-2.5 w-2.5" : "h-3 w-3"} />
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               )}
                             </div>
-                          </TableHead>
+                            <div className="crm-col-resize" onMouseDown={(e) => onColResizeStart(`${table.id}_${column}`, e)} />
+                          </th>
                         ))}
-                        <TableHead className="w-12"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                        <th style={{ width: 48 }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
                     {filteredRows.map((row) => (
-                      <TableRow key={row.id} className={table.compactView ? "group h-8" : "group"}>
-                        <TableCell className={table.compactView ? "p-2" : "p-4"}>
+                      <tr key={row.id} className="crm-table-row group" style={{ height: rowHeights[row.id] || (table.compactView ? 36 : 48) }}>
+                        <td className="p-2 text-center">
                           <Checkbox
                             checked={selectedRows.includes(row.id)}
                             onCheckedChange={() => toggleRowSelection(table.id, row.id)}
                             className={table.compactView ? "h-3 w-3" : ""}
                           />
-                        </TableCell>
+                        </td>
                         {table.columns.map((column) => (
-                          <TableCell key={column} className={table.compactView ? "p-2" : "p-4"}>
+                          <td key={column} className="p-2">
                             {(() => {
                               const config = table.columnConfigs?.[column];
                               const value = row[column] || "";
@@ -2167,22 +2255,23 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                                 />
                               );
                             })()}
-                          </TableCell>
+                          </td>
                         ))}
-                        <TableCell className={table.compactView ? "p-2" : "p-4"}>
+                        <td className="p-1 relative">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className={table.compactView ? "h-6 w-6 p-0 opacity-0 group-hover:opacity-100" : "h-8 w-8 p-0 opacity-0 group-hover:opacity-100"}
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
                             onClick={() => deleteRow(table.id, row.id)}
                           >
-                            <Trash2 className={table.compactView ? "h-3 w-3" : "h-4 w-4"} />
+                            <Trash2 className="h-3 w-3" />
                           </Button>
-                        </TableCell>
-                      </TableRow>
+                          <div className="crm-row-resize" onMouseDown={(e) => onRowResizeStart(row.id, e)} />
+                        </td>
+                      </tr>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
               ) : (
                 /* Cards View */
