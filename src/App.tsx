@@ -20,7 +20,7 @@ const PageLoader = () => (
 );
 
 // ============ Lazy-loaded pages ============
-const Index = lazy(() => import("./pages/Index"));
+import Index from "./pages/Index";
 const Login = lazy(() => import("./pages/Login"));
 const LoginBusiness = lazy(() => import("./pages/LoginBusiness"));
 const LoginInvestor = lazy(() => import("./pages/LoginInvestor"));
