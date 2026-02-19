@@ -205,7 +205,7 @@ export function useDocumentSections(templateSections: any[] = []) {
           title: section.id.replace(/-/g, " ").replace(/_/g, " ").split(" ").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
           content: section.defaultContent || "",
           order: index,
-          x: isHero ? 0 : 30,
+          x: isHero ? 0 : Math.max(0, (700 - 640) / 2),
           y: 0, // will be computed below
           width: isHero ? 700 : 640,
           height: autoHeight,
