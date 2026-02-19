@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Edit2, Trash2, Wand2, GripVertical, Palette, Type } from "lucide-react";
+import { SectionStyling } from "@/hooks/useDocumentSections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,6 +39,7 @@ interface DraggableSectionProps {
   textColor?: string;
   fontFamily?: string;
   fontSize?: number;
+  styling?: SectionStyling;
   onPositionChange: (id: string, x: number, y: number) => void;
   onSizeChange: (id: string, width: number, height: number) => void;
   onEdit: () => void;
@@ -71,6 +73,7 @@ export function DraggableSection({
   textColor = "#000000",
   fontFamily = "Inter",
   fontSize = 14,
+  styling,
   onPositionChange,
   onSizeChange,
   onEdit,
@@ -598,7 +601,21 @@ export function DraggableSection({
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
     >
-    <div className="relative w-full h-full p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all bg-background/50">
+    <div className="relative w-full h-full p-4 rounded-lg border-2 border-transparent hover:border-primary/20 transition-all"
+        style={{
+          backgroundColor: styling?.backgroundColor || 'rgba(255,255,255,0.5)',
+          borderLeftWidth: styling?.borderLeftWidth || undefined,
+          borderLeftColor: styling?.borderLeftColor || undefined,
+          borderLeftStyle: styling?.borderLeftWidth ? 'solid' as const : undefined,
+          borderRadius: styling?.borderRadius || '8px',
+          padding: styling?.padding || '16px',
+          ...(styling?.isHero ? {
+            background: `linear-gradient(135deg, ${styling.gradientFrom || '#1e293b'} 0%, ${styling.gradientTo || '#0f172a'} 100%)`,
+            borderRadius: '12px',
+            padding: '32px 24px',
+          } : {}),
+        }}
+      >
         {/* Drag Handle - always visible on mobile */}
         {(isHovered || isDragging) && !isResizing && (
           <div className="absolute -left-2 top-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">

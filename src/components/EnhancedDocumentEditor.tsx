@@ -228,6 +228,7 @@ export function EnhancedDocumentEditor({
           textColor={section.textColor || textColor}
           fontFamily={section.fontFamily || "Inter"}
           fontSize={section.fontSize || 14}
+          styling={section.styling}
           onPositionChange={handleSectionPositionChange}
           onSizeChange={handleSectionSizeChange}
           onEdit={() => handleEditSection(section)}
