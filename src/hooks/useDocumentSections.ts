@@ -190,13 +190,15 @@ export function useDocumentSections(templateSections: any[] = []) {
         // Smart height based on content type
         const isHero = styling.isHero;
         const contentLength = (section.defaultContent || "").length;
-        let autoHeight = section.type === 'heading' ? 50 
-          : section.type === 'subheading' ? 40 
-          : section.type === 'divider' ? 20
-          : section.type === 'bullet-list' ? Math.max(80, Math.ceil(contentLength / 80) * 22)
-          : Math.max(60, Math.ceil(contentLength / 80) * 18);
+        // Use ~50 chars per line at typical font sizes, and ~20px per line
+        const lineCount = Math.ceil(contentLength / 50);
+        let autoHeight = section.type === 'heading' ? 55 
+          : section.type === 'subheading' ? 45 
+          : section.type === 'divider' ? 24
+          : section.type === 'bullet-list' ? Math.max(100, lineCount * 24)
+          : Math.max(80, lineCount * 22);
         
-        if (isHero) autoHeight = 120;
+        if (isHero) autoHeight = 130;
 
         return {
           id: section.id,
