@@ -557,23 +557,23 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-500/10 text-green-700 border-green-200";
+        return "text-green-700";
       case "inactive":
-        return "bg-gray-500/10 text-gray-700 border-gray-200";
+        return "text-gray-500";
       case "prospect":
-        return "bg-blue-500/10 text-blue-700 border-blue-200";
+        return "text-blue-700";
       case "qualified lead":
-        return "bg-purple-500/10 text-purple-700 border-purple-200";
+        return "text-purple-700";
       case "proposal":
-        return "bg-yellow-500/10 text-yellow-700 border-yellow-200";
+        return "text-yellow-700";
       case "negotiation":
-        return "bg-orange-500/10 text-orange-700 border-orange-200";
+        return "text-orange-700";
       case "contract sent":
-        return "bg-indigo-500/10 text-indigo-700 border-indigo-200";
+        return "text-indigo-700";
       case "closed":
-        return "bg-emerald-500/10 text-emerald-700 border-emerald-200";
+        return "text-emerald-700";
       default:
-        return "bg-gray-500/10 text-gray-700 border-gray-200";
+        return "text-gray-500";
     }
   };
 
@@ -1385,10 +1385,10 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                         value={contact.status}
                         onValueChange={(value) => updateContactField(contact.id, "status", value)}
                       >
-                        <SelectTrigger className={compactView ? "crm-cell-input h-6 bg-transparent" : "crm-cell-input h-8 bg-transparent"}>
-                          <Badge variant="outline" className={compactView ? `${getStatusColor(contact.status)} text-[10px] h-5 px-2 font-medium` : `${getStatusColor(contact.status)} font-medium`}>
+                        <SelectTrigger className={`border-0 shadow-none bg-transparent px-0 ${compactView ? "h-6" : "h-8"}`}>
+                          <span className={`${getStatusColor(contact.status)} ${compactView ? "text-[10px]" : "text-sm"} font-medium capitalize`}>
                             {contact.status}
-                          </Badge>
+                          </span>
                         </SelectTrigger>
                         <SelectContent className="bg-background">
                           <SelectItem value="active">Active</SelectItem>
