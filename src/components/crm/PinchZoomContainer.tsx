@@ -185,8 +185,8 @@ export function PinchZoomContainer({
 
   const isZoomed = displayScale !== 100;
   // At normal scale: allow native scroll (swipe left/right for table columns)
-  // Only block native touch when zoomed IN or actively pinching
-  const needsCustomTouch = (displayScale > 100) || isGesturing;
+  // Only block native touch when zoomed (in or out) or actively pinching
+  const needsCustomTouch = isZoomed || isGesturing;
 
   return (
     <div
