@@ -1111,9 +1111,8 @@ ELITE DOCUMENT REQUIREMENTS:
       />
 
       <div 
-        className="flex-1"
+        className="flex-1 overflow-auto"
         style={{
-          overflow: 'auto',
           WebkitOverflowScrolling: 'touch',
         }}
       >
@@ -1126,13 +1125,14 @@ ELITE DOCUMENT REQUIREMENTS:
         ) : (
           <div
             id="document-preview"
-            className="w-full md:min-w-[900px]"
+            className="min-w-[900px]"
             style={{
               transform: `scale(${zoom / 100})`,
               transformOrigin: "top left",
               fontFamily: fontFamily,
               fontSize: `${fontSize}px`,
               minHeight: '1200px',
+              width: `${100 / (zoom / 100)}%`,
             }}
           >
             <EnhancedDocumentEditor
