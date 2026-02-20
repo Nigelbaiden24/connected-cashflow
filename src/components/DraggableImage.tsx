@@ -127,6 +127,7 @@ export function DraggableImage({
 
   return (
     <div
+      data-draggable="true"
       ref={imageRef}
       className={`absolute group select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
       style={{

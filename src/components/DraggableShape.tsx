@@ -433,6 +433,7 @@ export function DraggableShape({
 
   return (
     <div
+      data-draggable="true"
       ref={shapeRef}
       className="absolute cursor-move group select-none"
       style={{
