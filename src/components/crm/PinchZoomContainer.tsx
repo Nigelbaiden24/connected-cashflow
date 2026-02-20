@@ -23,6 +23,7 @@ export function PinchZoomContainer({
   // React state only for UI indicator; actual transform is DOM-driven
   const [displayScale, setDisplayScale] = useState(100);
   const [isGesturing, setIsGesturing] = useState(false);
+  const isGesturingRef = useRef(false);
 
   // Live transform values (not React state — no re-renders during gestures)
   const transformRef = useRef({ scale: 1, x: 0, y: 0 });
@@ -67,20 +68,28 @@ export function PinchZoomContainer({
     const container = containerRef.current;
     if (!container) return;
 
+    const setGesturing = (val: boolean) => {
+      isGesturingRef.current = val;
+      setIsGesturing(val);
+      // Immediately update touchAction on the container to prevent native gesture race
+      if (containerRef.current) {
+        containerRef.current.style.touchAction = val ? "none" : 
+          (transformRef.current.scale !== 1 ? "none" : "manipulation");
+      }
+    };
+
     const onTouchStart = (e: TouchEvent) => {
       const g = gestureRef.current;
 
       if (e.touches.length === 2) {
         e.preventDefault();
         e.stopPropagation();
-        setIsGesturing(true);
+        setGesturing(true);
         g.initialDistance = getDistance(e.touches[0], e.touches[1]);
         g.initialScale = transformRef.current.scale;
         g.isPinching = true;
         g.isPanning = false;
       } else if (e.touches.length === 1 && transformRef.current.scale > 1) {
-        // Only enable panning when zoomed IN (scale > 1)
-        // When zoomed out (scale < 1), let native scroll handle swiping
         g.startX = e.touches[0].clientX;
         g.startY = e.touches[0].clientY;
         g.lastX = transformRef.current.x;
@@ -99,7 +108,6 @@ export function PinchZoomContainer({
         const currentDistance = getDistance(e.touches[0], e.touches[1]);
         const ratio = currentDistance / g.initialDistance;
         const newScale = Math.min(maxScale, Math.max(minScale, g.initialScale * ratio));
-        // When zooming out, reset translate so board stays in place
         const tx = newScale <= 1 ? 0 : transformRef.current.x;
         const ty = newScale <= 1 ? 0 : transformRef.current.y;
         applyTransform(newScale, tx, ty);
@@ -109,7 +117,6 @@ export function PinchZoomContainer({
         const dy = e.touches[0].clientY - g.startY;
         g.movedDistance = Math.sqrt(dx * dx + dy * dy);
 
-        // Only start panning after 8px threshold — below that, let it be a tap
         if (g.movedDistance > 8) {
           if (!g.isPanning) {
             g.isPanning = true;
@@ -136,15 +143,14 @@ export function PinchZoomContainer({
       g.isPanning = false;
       g.movedDistance = 0;
 
-      // Snap back to 1 if very close
       const t = transformRef.current;
       if (Math.abs(t.scale - 1) < 0.08) {
         applyTransform(1, 0, 0, true);
         setDisplayScale(100);
-        setIsGesturing(false);
+        setGesturing(false);
       } else {
         setDisplayScale(Math.round(t.scale * 100));
-        setIsGesturing(false);
+        setGesturing(false);
       }
     };
 
@@ -192,7 +198,7 @@ export function PinchZoomContainer({
     <div
       ref={containerRef}
       className="relative w-full"
-      style={{ touchAction: needsCustomTouch ? "none" : "pan-x pan-y", overflow: "visible" }}
+      style={{ touchAction: needsCustomTouch ? "none" : "manipulation", overflow: "visible" }}
     >
       {isZoomed && (
         <div className="sticky top-0 z-50 flex items-center justify-between px-3 py-1.5 bg-primary/90 text-primary-foreground text-xs font-medium rounded-b-lg mx-2 backdrop-blur-sm">
