@@ -110,6 +110,31 @@ export const VERIFIED_FUND_ISINS = new Set([
   
   // BlackRock
   'GB00B6ZBFJ71', // BlackRock Corporate Bond Fund
+  
+  // Additional verified funds
+  'GB00BLDYK618', // Scottish Mortgage Investment Trust
+  'GB00BJS8SJ34', // Fidelity Index World Fund
+  'IE0032077012',  // Invesco EQQQ NASDAQ-100 UCITS ETF
+  'GB00B3TYHH97', // Vanguard LifeStrategy 60% Equity Fund
+  'GB00B4PQW151', // Vanguard LifeStrategy 80% Equity Fund
+  'GB00BG0QPJ30', // L&G UK Index Trust
+  'GB00BMJJJF91', // HSBC FTSE All-World Index Fund
+  'GB00B7FQLN12', // Rathbone Global Opportunities Fund
+  'IE00BJ0KDQ92', // Xtrackers MSCI World UCITS ETF
+  'IE00B6YX5C33', // SPDR S&P 500 UCITS ETF
+  'GB00BN71XN63', // Jupiter Strategic Bond Fund
+  'IE0005042456', // iShares Core FTSE 100 UCITS ETF
+  'IE00BK5BQT80', // Vanguard FTSE All-World UCITS ETF (Acc)
+  'IE00B52MJY50', // iShares Core S&P 500 UCITS ETF
+  'IE00B6R52259', // iShares MSCI ACWI UCITS ETF
+  'IE00BP3QZB59', // iShares Edge MSCI World Value Factor
+  'IE00B8GKDB10', // Vanguard FTSE All-World High Dividend Yield
+  'IE00BF4RFH31', // iShares MSCI World Small Cap
+  'IE00BYX2JD69', // iShares MSCI World SRI
+  'IE00B1FZS350', // iShares Developed Markets Property Yield
+  'IE00B4ND3602', // iShares Physical Gold ETC
+  'IE00B4L5YV07', // iShares Core MSCI Japan IMI
+  'GB00BN65R198', // Lindsell Train UK Equity Fund
 ]);
 
 // Check if a fund ISIN is verified as real
