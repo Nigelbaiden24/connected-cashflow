@@ -8,8 +8,9 @@ interface PinchZoomContainerProps {
 
 /**
  * Wraps CRM table content with pinch-zoom on mobile only.
- * Allows zooming out below 100% to see the full table.
- * Stops touch events from propagating to prevent accidental navigation.
+ * Uses direct DOM transforms during gestures for smooth performance,
+ * then syncs React state on gesture end.
+ * Single-tap clicks pass through to children even when zoomed.
  */
 export function PinchZoomContainer({
   children,
@@ -17,17 +18,13 @@ export function PinchZoomContainer({
   maxScale = 3,
 }: PinchZoomContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const contentRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  // React state only for UI indicator; actual transform is DOM-driven
+  const [displayScale, setDisplayScale] = useState(1);
 
-  // Detect mobile
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  // Live transform values (not React state — no re-renders during gestures)
+  const transformRef = useRef({ scale: 1, x: 0, y: 0 });
 
   const gestureRef = useRef({
     initialDistance: 0,
@@ -35,130 +32,160 @@ export function PinchZoomContainer({
     isPinching: false,
     startX: 0,
     startY: 0,
+    lastX: 0,
+    lastY: 0,
     isPanning: false,
+    movedDistance: 0, // track movement to distinguish tap vs pan
   });
 
-  const getDistance = (t1: { clientX: number; clientY: number }, t2: { clientX: number; clientY: number }) => {
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const getDistance = (t1: Touch, t2: Touch) => {
     const dx = t1.clientX - t2.clientX;
     const dy = t1.clientY - t2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    try {
-      if (!isMobile) return;
+  const applyTransform = useCallback((s: number, x: number, y: number, animate = false) => {
+    const el = contentRef.current;
+    if (!el) return;
+    el.style.transition = animate ? "transform 0.2s ease-out" : "none";
+    el.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+    el.style.width = s < 1 ? `${100 / s}%` : "";
+    transformRef.current = { scale: s, x, y };
+  }, []);
+
+  // Use native event listeners for non-passive touch handling
+  useEffect(() => {
+    if (!isMobile) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      const g = gestureRef.current;
+
       if (e.touches.length === 2) {
         e.preventDefault();
         e.stopPropagation();
-        const g = gestureRef.current;
         g.initialDistance = getDistance(e.touches[0], e.touches[1]);
-        g.initialScale = scale;
+        g.initialScale = transformRef.current.scale;
         g.isPinching = true;
         g.isPanning = false;
-      } else if (e.touches.length === 1 && scale !== 1) {
-        const g = gestureRef.current;
-        g.startX = e.touches[0].clientX - translate.x;
-        g.startY = e.touches[0].clientY - translate.y;
-        g.isPanning = true;
-        e.stopPropagation();
+      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
+        // Don't preventDefault or stopPropagation yet — wait to see if it's a tap or pan
+        g.startX = e.touches[0].clientX;
+        g.startY = e.touches[0].clientY;
+        g.lastX = transformRef.current.x;
+        g.lastY = transformRef.current.y;
+        g.isPanning = false; // will become true after threshold
+        g.movedDistance = 0;
       }
-    } catch (err) {
-      console.error("PinchZoom touchStart error:", err);
-    }
-  }, [isMobile, scale, translate]);
+    };
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    try {
-      if (!isMobile) return;
+    const onTouchMove = (e: TouchEvent) => {
       const g = gestureRef.current;
+
       if (g.isPinching && e.touches.length === 2) {
         e.preventDefault();
         e.stopPropagation();
         const currentDistance = getDistance(e.touches[0], e.touches[1]);
         const ratio = currentDistance / g.initialDistance;
         const newScale = Math.min(maxScale, Math.max(minScale, g.initialScale * ratio));
-        setScale(newScale);
-      } else if (g.isPanning && e.touches.length === 1 && scale !== 1) {
-        e.preventDefault();
-        e.stopPropagation();
-        const newX = e.touches[0].clientX - g.startX;
-        const newY = e.touches[0].clientY - g.startY;
-        setTranslate({ x: newX, y: newY });
-      }
-    } catch (err) {
-      console.error("PinchZoom touchMove error:", err);
-    }
-  }, [isMobile, scale, minScale, maxScale]);
+        applyTransform(newScale, transformRef.current.x, transformRef.current.y);
+        setDisplayScale(Math.round(newScale * 100));
+      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
+        const dx = e.touches[0].clientX - g.startX;
+        const dy = e.touches[0].clientY - g.startY;
+        g.movedDistance = Math.sqrt(dx * dx + dy * dy);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    try {
-      if (!isMobile) return;
+        // Only start panning after 8px threshold — below that, let it be a tap
+        if (g.movedDistance > 8) {
+          if (!g.isPanning) {
+            g.isPanning = true;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          const newX = g.lastX + dx;
+          const newY = g.lastY + dy;
+          applyTransform(transformRef.current.scale, newX, newY);
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
       const g = gestureRef.current;
-      if (g.isPinching || g.isPanning) {
-        e.preventDefault();
+      const wasPinching = g.isPinching;
+      const wasPanning = g.isPanning;
+
+      if (wasPinching || wasPanning) {
         e.stopPropagation();
       }
+
       g.isPinching = false;
       g.isPanning = false;
-      if (Math.abs(scale - 1) < 0.05) {
-        setScale(1);
-        setTranslate({ x: 0, y: 0 });
+      g.movedDistance = 0;
+
+      // Snap back to 1 if very close
+      const t = transformRef.current;
+      if (Math.abs(t.scale - 1) < 0.08) {
+        applyTransform(1, 0, 0, true);
+        setDisplayScale(100);
+      } else {
+        setDisplayScale(Math.round(t.scale * 100));
       }
-    } catch (err) {
-      console.error("PinchZoom touchEnd error:", err);
-    }
-  }, [isMobile, scale]);
+    };
 
-  const resetZoom = useCallback(() => {
-    setScale(1);
-    setTranslate({ x: 0, y: 0 });
-  }, []);
-
-  // Prevent native gestures on the container (mobile only)
-  useEffect(() => {
-    if (!isMobile) return;
-    const el = containerRef.current;
-    if (!el) return;
-    const prevent = (e: Event) => {
+    // Prevent Safari gesture events
+    const preventGesture = (e: Event) => {
       if (gestureRef.current.isPinching) e.preventDefault();
     };
-    const preventTouchMove = (e: TouchEvent) => {
+    const preventDoubleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 2) e.preventDefault();
     };
-    el.addEventListener("gesturestart", prevent, { passive: false });
-    el.addEventListener("gesturechange", prevent, { passive: false });
-    el.addEventListener("touchmove", preventTouchMove, { passive: false });
+
+    container.addEventListener("touchstart", onTouchStart, { passive: false });
+    container.addEventListener("touchmove", onTouchMove, { passive: false });
+    container.addEventListener("touchend", onTouchEnd, { passive: false });
+    container.addEventListener("gesturestart", preventGesture, { passive: false });
+    container.addEventListener("gesturechange", preventGesture, { passive: false });
+    container.addEventListener("touchmove", preventDoubleTouchMove, { passive: false });
+
     return () => {
-      el.removeEventListener("gesturestart", prevent);
-      el.removeEventListener("gesturechange", prevent);
-      el.removeEventListener("touchmove", preventTouchMove);
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchmove", onTouchMove);
+      container.removeEventListener("touchend", onTouchEnd);
+      container.removeEventListener("gesturestart", preventGesture);
+      container.removeEventListener("gesturechange", preventGesture);
+      container.removeEventListener("touchmove", preventDoubleTouchMove);
     };
-  }, [isMobile]);
+  }, [isMobile, minScale, maxScale, applyTransform]);
+
+  const resetZoom = useCallback(() => {
+    applyTransform(1, 0, 0, true);
+    setDisplayScale(100);
+  }, [applyTransform]);
 
   // On desktop, just render children directly
   if (!isMobile) {
     return <>{children}</>;
   }
 
-  const isZoomed = scale !== 1;
-  const scalePercent = Math.round(scale * 100);
-  const isZoomedOut = scale < 1;
+  const isZoomed = displayScale !== 100;
 
   return (
     <div
       ref={containerRef}
       className="relative w-full"
-      style={{
-        touchAction: "none",
-        overflow: isZoomedOut ? "visible" : "hidden",
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      style={{ touchAction: "none", overflow: "visible" }}
     >
       {isZoomed && (
         <div className="sticky top-0 z-50 flex items-center justify-between px-3 py-1.5 bg-primary/90 text-primary-foreground text-xs font-medium rounded-b-lg mx-2 backdrop-blur-sm">
-          <span>Zoom: {scalePercent}%</span>
+          <span>Zoom: {displayScale}%</span>
           <button
             onClick={resetZoom}
             className="px-2 py-0.5 rounded bg-primary-foreground/20 hover:bg-primary-foreground/30 transition-colors"
@@ -168,12 +195,8 @@ export function PinchZoomContainer({
         </div>
       )}
       <div
-        style={{
-          transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-          transformOrigin: "top left",
-          transition: gestureRef.current.isPinching ? "none" : "transform 0.15s ease-out",
-          width: isZoomedOut ? `${100 / scale}%` : undefined,
-        }}
+        ref={contentRef}
+        style={{ transformOrigin: "top left" }}
       >
         {children}
       </div>
