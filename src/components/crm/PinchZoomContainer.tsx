@@ -78,13 +78,14 @@ export function PinchZoomContainer({
         g.initialScale = transformRef.current.scale;
         g.isPinching = true;
         g.isPanning = false;
-      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
-        // Don't preventDefault or stopPropagation yet — wait to see if it's a tap or pan
+      } else if (e.touches.length === 1 && transformRef.current.scale > 1) {
+        // Only enable panning when zoomed IN (scale > 1)
+        // When zoomed out (scale < 1), let native scroll handle swiping
         g.startX = e.touches[0].clientX;
         g.startY = e.touches[0].clientY;
         g.lastX = transformRef.current.x;
         g.lastY = transformRef.current.y;
-        g.isPanning = false; // will become true after threshold
+        g.isPanning = false;
         g.movedDistance = 0;
       }
     };
@@ -98,9 +99,12 @@ export function PinchZoomContainer({
         const currentDistance = getDistance(e.touches[0], e.touches[1]);
         const ratio = currentDistance / g.initialDistance;
         const newScale = Math.min(maxScale, Math.max(minScale, g.initialScale * ratio));
-        applyTransform(newScale, transformRef.current.x, transformRef.current.y);
+        // When zooming out, reset translate so board stays in place
+        const tx = newScale <= 1 ? 0 : transformRef.current.x;
+        const ty = newScale <= 1 ? 0 : transformRef.current.y;
+        applyTransform(newScale, tx, ty);
         setDisplayScale(Math.round(newScale * 100));
-      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
+      } else if (e.touches.length === 1 && transformRef.current.scale > 1) {
         const dx = e.touches[0].clientX - g.startX;
         const dy = e.touches[0].clientY - g.startY;
         g.movedDistance = Math.sqrt(dx * dx + dy * dy);
@@ -181,8 +185,8 @@ export function PinchZoomContainer({
 
   const isZoomed = displayScale !== 100;
   // At normal scale: allow native scroll (swipe left/right for table columns)
-  // When zoomed or pinching: disable native touch to allow custom pan/zoom
-  const needsCustomTouch = isZoomed || isGesturing;
+  // Only block native touch when zoomed IN or actively pinching
+  const needsCustomTouch = (displayScale > 100) || isGesturing;
 
   return (
     <div
