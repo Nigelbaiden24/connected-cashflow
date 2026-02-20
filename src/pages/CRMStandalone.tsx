@@ -181,7 +181,9 @@ const CRMStandalone = ({ userEmail, onLogout }: CRMStandaloneProps) => {
           </Card>
         </div>
 
-        <CRMBoard key={refreshTrigger} />
+        <div className="crm-zoom-container">
+          <CRMBoard key={refreshTrigger} />
+        </div>
 
         <BulkImportDialog
           open={importDialogOpen}

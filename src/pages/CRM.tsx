@@ -179,7 +179,9 @@ const CRM = () => {
             </Card>
           </div>
 
-          <CRMBoard key={refreshTrigger} initialStage={stageFilter} />
+          <div className="crm-zoom-container">
+            <CRMBoard key={refreshTrigger} initialStage={stageFilter} />
+          </div>
         </TabsContent>
 
         <TabsContent value="scraper">

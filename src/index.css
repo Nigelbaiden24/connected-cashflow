@@ -811,6 +811,17 @@ All colors MUST be HSL.
     z-index: 2;
   }
 
+  /* Mobile pinch-zoom support for CRM */
+  @media (max-width: 768px) {
+    .crm-zoom-container {
+      touch-action: pan-x pan-y pinch-zoom;
+      -webkit-overflow-scrolling: touch;
+    }
+    .crm-zoom-container .overflow-x-auto {
+      touch-action: pan-x pan-y pinch-zoom;
+    }
+  }
+
   /* Metric counter animation */
   .crm-metric {
     font-variant-numeric: tabular-nums;
