@@ -21,6 +21,7 @@ import { AILeadScoringBadge } from "./crm/AILeadScoringBadge";
 import { BulkAIScoring } from "./crm/BulkAIScoring";
 import { NextActionAI } from "./crm/NextActionAI";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { PinchZoomContainer } from "./crm/PinchZoomContainer";
 
 interface CRMTable {
   id: string;
@@ -1167,6 +1168,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
           <CollapsibleContent>
             {viewMode === "table" ? (
               <CardContent className="p-0">
+                <PinchZoomContainer minScale={0.25} maxScale={3}>
                 <div className="overflow-x-auto">
                    <table className="crm-spreadsheet">
                     <thead>
@@ -1529,6 +1531,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
               </tbody>
             </table>
           </div>
+                </PinchZoomContainer>
           <div className="border-t bg-muted/10 p-4">
             <Button 
               variant="ghost" 
@@ -2102,6 +2105,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             <CardContent>
               {(table.viewMode || "table") === "table" ? (
                 /* Table View */
+                <PinchZoomContainer minScale={0.25} maxScale={3}>
                 <div className="overflow-x-auto">
                   <table className="crm-spreadsheet">
                     <thead>
@@ -2295,6 +2299,7 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
                   </tbody>
                 </table>
               </div>
+                </PinchZoomContainer>
               ) : (
                 /* Cards View */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
