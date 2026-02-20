@@ -8,6 +8,7 @@ import { DocumentEditorToolbar } from "@/components/DocumentEditorToolbar";
 import { ChartConfig } from "@/components/ChartInsertDialog";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { PinchZoomContainer } from "@/components/crm/PinchZoomContainer";
 
 interface UploadedImage {
   id: string;
@@ -1116,6 +1117,7 @@ ELITE DOCUMENT REQUIREMENTS:
           WebkitOverflowScrolling: 'touch',
         }}
       >
+       <PinchZoomContainer minScale={0.25} maxScale={3}>
         {!selectedTemplate ? (
           <div className="flex items-center justify-center h-full pointer-events-none">
             <div className="text-center text-muted-foreground pointer-events-auto">
@@ -1195,6 +1197,7 @@ ELITE DOCUMENT REQUIREMENTS:
             />
           </div>
         )}
+       </PinchZoomContainer>
       </div>
     </div>
   );
