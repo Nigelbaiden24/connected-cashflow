@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useZoomScaleRef } from "@/contexts/ZoomScaleContext";
 import { Trash2, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,7 @@ export function DraggableShape({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const initialPosRef = useRef({ x: 0, y: 0 });
   const initialSizeRef = useRef({ width: 0, height: 0 });
+  const zoomScaleRef = useZoomScaleRef();
 
   useEffect(() => {
     setLocalColor(color);
@@ -85,28 +87,39 @@ export function DraggableShape({
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, [width, height]);
 
-  // Handle pointer move - full XY axis movement
+  const getEffectiveScale = useCallback(() => {
+    const el = shapeRef.current?.closest('[id="document-preview"]') as HTMLElement | null;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const logicalWidth = el.offsetWidth;
+      if (logicalWidth > 0) return rect.width / logicalWidth;
+    }
+    return zoomScaleRef.current || 1;
+  }, [zoomScaleRef]);
+
+  // Handle pointer move - adjusted for zoom scale
   const handlePointerMove = useCallback((e: PointerEvent) => {
     e.preventDefault();
+    const scale = getEffectiveScale();
     
     if (isDragging) {
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
+      const deltaX = (e.clientX - dragStartRef.current.x) / scale;
+      const deltaY = (e.clientY - dragStartRef.current.y) / scale;
       
       const newX = initialPosRef.current.x + deltaX;
       const newY = initialPosRef.current.y + deltaY;
       
       onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
     } else if (isResizing) {
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
+      const deltaX = (e.clientX - dragStartRef.current.x) / scale;
+      const deltaY = (e.clientY - dragStartRef.current.y) / scale;
       
       const newWidth = Math.max(50, initialSizeRef.current.width + deltaX);
       const newHeight = Math.max(50, initialSizeRef.current.height + deltaY);
       
       onSizeChange(id, newWidth, newHeight);
     }
-  }, [isDragging, isResizing, id, onPositionChange, onSizeChange]);
+  }, [isDragging, isResizing, id, onPositionChange, onSizeChange, getEffectiveScale]);
 
   const handlePointerUp = useCallback(() => {
     setIsDragging(false);
