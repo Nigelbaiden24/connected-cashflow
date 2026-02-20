@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowLeft, Users, Building2, TrendingUp, Shield, CreditCard } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +14,8 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
+  const [crmAnnual, setCrmAnnual] = useState(false);
+  const [jenrateAnnual, setJenrateAnnual] = useState(false);
 
   const handleCheckout = async (
     priceId: string,
@@ -545,71 +549,107 @@ const Pricing = () => {
               <p className="text-muted-foreground">
                 Powerful client relationship management for financial professionals
               </p>
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <Label htmlFor="crm-billing" className={`text-sm font-medium ${!crmAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</Label>
+                <Switch id="crm-billing" checked={crmAnnual} onCheckedChange={setCrmAnnual} />
+                <Label htmlFor="crm-billing" className={`text-sm font-medium ${crmAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Annual
+                </Label>
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-xs">
+                  Save 15%
+                </Badge>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {crmTiers.map((tier) => (
-                <Card
-                  key={tier.name}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
-                    tier.popular ? 'border-primary border-2 shadow-lg' : ''
-                  }`}
-                >
-                  {tier.popular && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${tier.gradient}`} />
+              {crmTiers.map((tier) => {
+                const displayPrice = crmAnnual
+                  ? Math.round(tier.monthlyPrice * 12 * 0.85)
+                  : tier.monthlyPrice;
+                const perMonthEquiv = crmAnnual
+                  ? (tier.monthlyPrice * 12 * 0.85 / 12).toFixed(2)
+                  : null;
 
-                  <CardHeader className="pt-8">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${tier.gradient} flex items-center justify-center mb-4`}>
-                      <tier.icon className="h-8 w-8 text-white" />
-                    </div>
-                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    <CardDescription className="text-base">{tier.description}</CardDescription>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="mb-6">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">£{tier.monthlyPrice}</span>
-                        <span className="text-muted-foreground">/user/month</span>
+                return (
+                  <Card
+                    key={tier.name}
+                    className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                      tier.popular ? 'border-primary border-2 shadow-lg' : ''
+                    }`}
+                  >
+                    {tier.popular && (
+                      <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
+                        Most Popular
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Billed monthly per user
-                      </p>
-                    </div>
+                    )}
+                    <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${tier.gradient}`} />
 
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-start gap-3">
-                          <div className={`rounded-full p-1 bg-gradient-to-r ${tier.gradient} flex-shrink-0 mt-0.5`}>
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
+                    <CardHeader className="pt-8">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${tier.gradient} flex items-center justify-center mb-4`}>
+                        <tier.icon className="h-8 w-8 text-white" />
+                      </div>
+                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                      <CardDescription className="text-base">{tier.description}</CardDescription>
+                    </CardHeader>
 
-                  <CardFooter>
-                    <Button
-                      className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
-                      size="lg"
-                      onClick={() => handleCheckout(
-                        tier.stripePriceId,
-                        'subscription',
-                        `CRM ${tier.name}`,
-                        'finance'
-                      )}
-                      disabled={loading === `finance-CRM ${tier.name}`}
-                    >
-                      {loading === `finance-CRM ${tier.name}` ? 'Loading...' : 'Get Started'}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                    <CardContent>
+                      <div className="mb-6">
+                        {crmAnnual ? (
+                          <>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl font-bold">£{displayPrice}</span>
+                              <span className="text-muted-foreground">/user/year</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              That's just £{perMonthEquiv}/user/month
+                            </p>
+                            <p className="text-sm text-green-600 font-medium mt-1">
+                              You save £{Math.round(tier.monthlyPrice * 12 - tier.monthlyPrice * 12 * 0.85)}/user/year
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl font-bold">£{displayPrice}</span>
+                              <span className="text-muted-foreground">/user/month</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Billed monthly per user
+                            </p>
+                          </>
+                        )}
+                      </div>
+
+                      <ul className="space-y-3">
+                        {tier.features.map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-start gap-3">
+                            <div className={`rounded-full p-1 bg-gradient-to-r ${tier.gradient} flex-shrink-0 mt-0.5`}>
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+
+                    <CardFooter>
+                      <Button
+                        className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
+                        size="lg"
+                        onClick={() => handleCheckout(
+                          tier.stripePriceId,
+                          'subscription',
+                          `CRM ${tier.name}`,
+                          'finance'
+                        )}
+                        disabled={loading === `finance-CRM ${tier.name}`}
+                      >
+                        {loading === `finance-CRM ${tier.name}` ? 'Loading...' : 'Get Started'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -622,88 +662,129 @@ const Pricing = () => {
               <p className="text-muted-foreground">
                 AI-powered document generation & builder
               </p>
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <Label htmlFor="jenrate-billing" className={`text-sm font-medium ${!jenrateAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</Label>
+                <Switch id="jenrate-billing" checked={jenrateAnnual} onCheckedChange={setJenrateAnnual} />
+                <Label htmlFor="jenrate-billing" className={`text-sm font-medium ${jenrateAnnual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  Annual
+                </Label>
+                <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-xs">
+                  Save 15%
+                </Badge>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {jenrateTiers.map((tier) => (
-                <Card
-                  key={tier.name}
-                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
-                    tier.popular ? 'border-primary border-2 shadow-lg' : ''
-                  }`}
-                >
-                  {tier.popular && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
-                      Most Popular
-                    </div>
-                  )}
-                  {tier.isFree && (
-                    <Badge className="absolute top-12 right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0">
-                      Free
-                    </Badge>
-                  )}
-                  <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${tier.gradient}`} />
+              {jenrateTiers.map((tier) => {
+                const isFree = tier.isFree || tier.monthlyPrice === 0;
+                const displayPrice = isFree
+                  ? 0
+                  : jenrateAnnual
+                    ? Math.round(tier.monthlyPrice * 12 * 0.85)
+                    : tier.monthlyPrice;
+                const perMonthEquiv = !isFree && jenrateAnnual
+                  ? (tier.monthlyPrice * 12 * 0.85 / 12).toFixed(2)
+                  : null;
 
-                  <CardHeader className="pt-8">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${tier.gradient} flex items-center justify-center mb-4`}>
-                      <tier.icon className="h-8 w-8 text-white" />
-                    </div>
-                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    <CardDescription className="text-base">{tier.description}</CardDescription>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="mb-6">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold">{tier.monthlyPrice === 0 ? 'Free' : `£${tier.monthlyPrice}`}</span>
-                        {tier.monthlyPrice > 0 && <span className="text-muted-foreground">/user/month</span>}
+                return (
+                  <Card
+                    key={tier.name}
+                    className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                      tier.popular ? 'border-primary border-2 shadow-lg' : ''
+                    }`}
+                  >
+                    {tier.popular && (
+                      <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
+                        Most Popular
                       </div>
-                      {tier.monthlyPrice > 0 && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Billed monthly per user
-                        </p>
-                      )}
-                    </div>
+                    )}
+                    {isFree && (
+                      <Badge className="absolute top-12 right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0">
+                        Free
+                      </Badge>
+                    )}
+                    <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${tier.gradient}`} />
 
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-start gap-3">
-                          <div className={`rounded-full p-1 bg-gradient-to-r ${tier.gradient} flex-shrink-0 mt-0.5`}>
-                            <Check className="h-3 w-3 text-white" />
+                    <CardHeader className="pt-8">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${tier.gradient} flex items-center justify-center mb-4`}>
+                        <tier.icon className="h-8 w-8 text-white" />
+                      </div>
+                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                      <CardDescription className="text-base">{tier.description}</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                      <div className="mb-6">
+                        {isFree ? (
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-4xl font-bold">Free</span>
                           </div>
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-
-                  <CardFooter>
-                    {tier.isFree ? (
-                      <Button
-                        className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
-                        size="lg"
-                        onClick={() => navigate('/jenrate')}
-                      >
-                        Get Started Free
-                      </Button>
-                    ) : (
-                      <Button
-                        className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
-                        size="lg"
-                        onClick={() => handleCheckout(
-                          tier.stripePriceId!,
-                          'subscription',
-                          `Jenrate ${tier.name}`,
-                          'finance'
+                        ) : jenrateAnnual ? (
+                          <>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl font-bold">£{displayPrice}</span>
+                              <span className="text-muted-foreground">/user/year</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              That's just £{perMonthEquiv}/user/month
+                            </p>
+                            <p className="text-sm text-green-600 font-medium mt-1">
+                              You save £{Math.round(tier.monthlyPrice * 12 - tier.monthlyPrice * 12 * 0.85)}/user/year
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl font-bold">£{displayPrice}</span>
+                              <span className="text-muted-foreground">/user/month</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Billed monthly per user
+                            </p>
+                          </>
                         )}
-                        disabled={loading === `finance-Jenrate ${tier.name}`}
-                      >
-                        {loading === `finance-Jenrate ${tier.name}` ? 'Loading...' : 'Get Started'}
-                      </Button>
+                      </div>
+
+                      <ul className="space-y-3">
+                        {tier.features.map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-start gap-3">
+                            <div className={`rounded-full p-1 bg-gradient-to-r ${tier.gradient} flex-shrink-0 mt-0.5`}>
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+
+                    <CardFooter>
+                      {isFree ? (
+                        <Button
+                          className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
+                          size="lg"
+                          onClick={() => navigate('/jenrate')}
+                        >
+                          Get Started Free
+                        </Button>
+                      ) : (
+                        <Button
+                          className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
+                          size="lg"
+                          onClick={() => handleCheckout(
+                            tier.stripePriceId!,
+                            'subscription',
+                            `Jenrate ${tier.name}`,
+                            'finance'
+                          )}
+                          disabled={loading === `finance-Jenrate ${tier.name}`}
+                        >
+                          {loading === `finance-Jenrate ${tier.name}` ? 'Loading...' : 'Get Started'}
+                        </Button>
                     )}
                   </CardFooter>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>
