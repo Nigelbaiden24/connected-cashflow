@@ -92,7 +92,7 @@ export function PinchZoomContainer({
         g.initialScale = transformRef.current.scale;
         g.isPinching = true;
         g.isPanning = false;
-      } else if (e.touches.length === 1 && transformRef.current.scale > 1) {
+      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
         g.startX = e.touches[0].clientX;
         g.startY = e.touches[0].clientY;
         g.lastX = transformRef.current.x;
@@ -115,7 +115,7 @@ export function PinchZoomContainer({
         const ty = newScale <= 1 ? 0 : transformRef.current.y;
         applyTransform(newScale, tx, ty);
         setDisplayScale(Math.round(newScale * 100));
-      } else if (e.touches.length === 1 && transformRef.current.scale > 1) {
+      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
         const dx = e.touches[0].clientX - g.startX;
         const dy = e.touches[0].clientY - g.startY;
         g.movedDistance = Math.sqrt(dx * dx + dy * dy);
