@@ -131,11 +131,16 @@ export function PinchZoomContainer({
   const isZoomed = scale !== 1;
   const scalePercent = Math.round(scale * 100);
 
+  const isZoomedOut = scale < 1;
+
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-hidden"
-      style={{ touchAction: "none" }}
+      className="relative w-full"
+      style={{
+        touchAction: "none",
+        overflow: isZoomedOut ? "visible" : "hidden",
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -156,6 +161,7 @@ export function PinchZoomContainer({
           transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
           transformOrigin: "top left",
           transition: gestureRef.current.isPinching ? "none" : "transform 0.15s ease-out",
+          width: isZoomedOut ? `${100 / scale}%` : undefined,
         }}
       >
         {children}
