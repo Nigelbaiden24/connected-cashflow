@@ -21,7 +21,8 @@ export function PinchZoomContainer({
   const contentRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   // React state only for UI indicator; actual transform is DOM-driven
-  const [displayScale, setDisplayScale] = useState(1);
+  const [displayScale, setDisplayScale] = useState(100);
+  const [isGesturing, setIsGesturing] = useState(false);
 
   // Live transform values (not React state — no re-renders during gestures)
   const transformRef = useRef({ scale: 1, x: 0, y: 0 });
@@ -72,6 +73,7 @@ export function PinchZoomContainer({
       if (e.touches.length === 2) {
         e.preventDefault();
         e.stopPropagation();
+        setIsGesturing(true);
         g.initialDistance = getDistance(e.touches[0], e.touches[1]);
         g.initialScale = transformRef.current.scale;
         g.isPinching = true;
@@ -135,8 +137,10 @@ export function PinchZoomContainer({
       if (Math.abs(t.scale - 1) < 0.08) {
         applyTransform(1, 0, 0, true);
         setDisplayScale(100);
+        setIsGesturing(false);
       } else {
         setDisplayScale(Math.round(t.scale * 100));
+        setIsGesturing(false);
       }
     };
 
@@ -176,12 +180,15 @@ export function PinchZoomContainer({
   }
 
   const isZoomed = displayScale !== 100;
+  // At normal scale: allow native scroll (swipe left/right for table columns)
+  // When zoomed or pinching: disable native touch to allow custom pan/zoom
+  const needsCustomTouch = isZoomed || isGesturing;
 
   return (
     <div
       ref={containerRef}
       className="relative w-full"
-      style={{ touchAction: "none", overflow: "visible" }}
+      style={{ touchAction: needsCustomTouch ? "none" : "pan-x pan-y", overflow: "visible" }}
     >
       {isZoomed && (
         <div className="sticky top-0 z-50 flex items-center justify-between px-3 py-1.5 bg-primary/90 text-primary-foreground text-xs font-medium rounded-b-lg mx-2 backdrop-blur-sm">
