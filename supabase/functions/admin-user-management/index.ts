@@ -354,7 +354,7 @@ async function inviteUser(supabase: any, body: InviteRequest, invitedBy: string)
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #78350f;">Password:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600; font-family: monospace;">${tempPassword}</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-weight: 600;"><code style="background: #fff; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 15px; letter-spacing: 1px; user-select: all;">${escapeHtml(tempPassword)}</code></td>
                 </tr>
               </table>
               <p style="margin: 15px 0 0 0; font-size: 14px; color: #92400e;">
@@ -520,7 +520,8 @@ async function updatePlatformAccess(supabase: any, userId: string, platform: str
 
 function generateSecurePassword(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  const specialChars = "!@#$%^&*";
+  // Avoid & < > " which get HTML-encoded in emails
+  const specialChars = "!@#$%_-+=";
   let password = "";
   
   // Ensure at least one of each type
@@ -536,4 +537,12 @@ function generateSecurePassword(): string {
   
   // Shuffle
   return password.split("").sort(() => Math.random() - 0.5).join("");
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
