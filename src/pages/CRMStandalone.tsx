@@ -57,7 +57,7 @@ const CRMStandalone = ({ userEmail, onLogout }: CRMStandaloneProps) => {
         }}
       >
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={(e) => { if (e.detail === 0) return; navigate('/'); }}>
             <div className="relative">
               <img src={flowpulseLogo} alt="FlowPulse CRM" className="h-10 transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute -inset-1 bg-white/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

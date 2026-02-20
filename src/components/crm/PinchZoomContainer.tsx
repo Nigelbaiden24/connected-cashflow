@@ -45,55 +45,67 @@ export function PinchZoomContainer({
   };
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (!isMobile) return;
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      e.stopPropagation();
-      const g = gestureRef.current;
-      g.initialDistance = getDistance(e.touches[0], e.touches[1]);
-      g.initialScale = scale;
-      g.isPinching = true;
-      g.isPanning = false;
-    } else if (e.touches.length === 1 && scale !== 1) {
-      const g = gestureRef.current;
-      g.startX = e.touches[0].clientX - translate.x;
-      g.startY = e.touches[0].clientY - translate.y;
-      g.isPanning = true;
-      e.stopPropagation();
+    try {
+      if (!isMobile) return;
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        e.stopPropagation();
+        const g = gestureRef.current;
+        g.initialDistance = getDistance(e.touches[0], e.touches[1]);
+        g.initialScale = scale;
+        g.isPinching = true;
+        g.isPanning = false;
+      } else if (e.touches.length === 1 && scale !== 1) {
+        const g = gestureRef.current;
+        g.startX = e.touches[0].clientX - translate.x;
+        g.startY = e.touches[0].clientY - translate.y;
+        g.isPanning = true;
+        e.stopPropagation();
+      }
+    } catch (err) {
+      console.error("PinchZoom touchStart error:", err);
     }
   }, [isMobile, scale, translate]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isMobile) return;
-    const g = gestureRef.current;
-    if (g.isPinching && e.touches.length === 2) {
-      e.preventDefault();
-      e.stopPropagation();
-      const currentDistance = getDistance(e.touches[0], e.touches[1]);
-      const ratio = currentDistance / g.initialDistance;
-      const newScale = Math.min(maxScale, Math.max(minScale, g.initialScale * ratio));
-      setScale(newScale);
-    } else if (g.isPanning && e.touches.length === 1 && scale !== 1) {
-      e.preventDefault();
-      e.stopPropagation();
-      const newX = e.touches[0].clientX - g.startX;
-      const newY = e.touches[0].clientY - g.startY;
-      setTranslate({ x: newX, y: newY });
+    try {
+      if (!isMobile) return;
+      const g = gestureRef.current;
+      if (g.isPinching && e.touches.length === 2) {
+        e.preventDefault();
+        e.stopPropagation();
+        const currentDistance = getDistance(e.touches[0], e.touches[1]);
+        const ratio = currentDistance / g.initialDistance;
+        const newScale = Math.min(maxScale, Math.max(minScale, g.initialScale * ratio));
+        setScale(newScale);
+      } else if (g.isPanning && e.touches.length === 1 && scale !== 1) {
+        e.preventDefault();
+        e.stopPropagation();
+        const newX = e.touches[0].clientX - g.startX;
+        const newY = e.touches[0].clientY - g.startY;
+        setTranslate({ x: newX, y: newY });
+      }
+    } catch (err) {
+      console.error("PinchZoom touchMove error:", err);
     }
   }, [isMobile, scale, minScale, maxScale]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!isMobile) return;
-    const g = gestureRef.current;
-    if (g.isPinching || g.isPanning) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    g.isPinching = false;
-    g.isPanning = false;
-    if (Math.abs(scale - 1) < 0.05) {
-      setScale(1);
-      setTranslate({ x: 0, y: 0 });
+    try {
+      if (!isMobile) return;
+      const g = gestureRef.current;
+      if (g.isPinching || g.isPanning) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      g.isPinching = false;
+      g.isPanning = false;
+      if (Math.abs(scale - 1) < 0.05) {
+        setScale(1);
+        setTranslate({ x: 0, y: 0 });
+      }
+    } catch (err) {
+      console.error("PinchZoom touchEnd error:", err);
     }
   }, [isMobile, scale]);
 
@@ -130,7 +142,6 @@ export function PinchZoomContainer({
 
   const isZoomed = scale !== 1;
   const scalePercent = Math.round(scale * 100);
-
   const isZoomedOut = scale < 1;
 
   return (
