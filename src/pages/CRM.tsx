@@ -9,7 +9,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
 import { TranslatedText } from "@/components/TranslatedText";
 import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
-import { PinchZoomContainer } from "@/components/crm/PinchZoomContainer";
 
 const CRM = () => {
   const navigate = useNavigate();
@@ -180,9 +179,7 @@ const CRM = () => {
             </Card>
           </div>
 
-          <PinchZoomContainer minScale={0.25} maxScale={3}>
-            <CRMBoard key={refreshTrigger} initialStage={stageFilter} />
-          </PinchZoomContainer>
+          <CRMBoard key={refreshTrigger} initialStage={stageFilter} />
         </TabsContent>
 
         <TabsContent value="scraper">

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, TrendingUp, DollarSign, Upload, LayoutGrid, LogOut, Sparkles, Activity, Zap } from "lucide-react";
-import { PinchZoomContainer } from "@/components/crm/PinchZoomContainer";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 import { useNavigate } from "react-router-dom";
@@ -58,7 +57,7 @@ const CRMStandalone = ({ userEmail, onLogout }: CRMStandaloneProps) => {
         }}
       >
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={(e) => { if (e.detail === 0) return; navigate('/'); }}>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
             <div className="relative">
               <img src={flowpulseLogo} alt="FlowPulse CRM" className="h-10 transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute -inset-1 bg-white/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -182,9 +181,7 @@ const CRMStandalone = ({ userEmail, onLogout }: CRMStandaloneProps) => {
           </Card>
         </div>
 
-        <PinchZoomContainer minScale={0.25} maxScale={3}>
-          <CRMBoard key={refreshTrigger} />
-        </PinchZoomContainer>
+        <CRMBoard key={refreshTrigger} />
 
         <BulkImportDialog
           open={importDialogOpen}
