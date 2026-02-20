@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useZoomScaleRef } from "@/contexts/ZoomScaleContext";
 import { X, Move } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +33,7 @@ export function DraggableImage({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const initialPosRef = useRef({ x: 0, y: 0 });
   const initialSizeRef = useRef({ width: 0, height: 0 });
+  const zoomScaleRef = useZoomScaleRef();
 
   // Unified pointer handler for mouse and touch - full XY movement
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -60,48 +62,39 @@ export function DraggableImage({
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, [width, height]);
 
-  // Handle pointer move - full XY axis movement
+  const getEffectiveScale = useCallback(() => {
+    const el = imageRef.current?.closest('[id="document-preview"]') as HTMLElement | null;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const logicalWidth = el.offsetWidth;
+      if (logicalWidth > 0) return rect.width / logicalWidth;
+    }
+    return zoomScaleRef.current || 1;
+  }, [zoomScaleRef]);
+
+  // Handle pointer move - adjusted for zoom scale
   const handlePointerMove = useCallback((e: PointerEvent) => {
     e.preventDefault();
+    const scale = getEffectiveScale();
     
     if (isDragging) {
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
+      const deltaX = (e.clientX - dragStartRef.current.x) / scale;
+      const deltaY = (e.clientY - dragStartRef.current.y) / scale;
       
       const newX = initialPosRef.current.x + deltaX;
       const newY = initialPosRef.current.y + deltaY;
       
-      // Get parent bounds for constraining
-      const rect = imageRef.current?.parentElement?.getBoundingClientRect();
-      if (rect) {
-        const rawMaxX = rect.width - width;
-        const rawMaxY = rect.height - height;
-
-        // If the element is larger than the viewport (common on mobile), allow negative
-        // coordinates so it can still be moved left↔right / up↕down.
-        const minX = Math.min(0, rawMaxX);
-        const maxX = Math.max(0, rawMaxX);
-        const minY = Math.min(0, rawMaxY);
-        const maxY = Math.max(0, rawMaxY);
-
-        onPositionChange(
-          id,
-          Math.max(minX, Math.min(maxX, newX)),
-          Math.max(minY, Math.min(maxY, newY))
-        );
-      } else {
-        onPositionChange(id, newX, newY);
-      }
+      onPositionChange(id, Math.max(0, newX), Math.max(0, newY));
     } else if (isResizing) {
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
+      const deltaX = (e.clientX - dragStartRef.current.x) / scale;
+      const deltaY = (e.clientY - dragStartRef.current.y) / scale;
       
       const newWidth = Math.max(50, initialSizeRef.current.width + deltaX);
       const newHeight = Math.max(50, initialSizeRef.current.height + deltaY);
       
       onSizeChange(id, newWidth, newHeight);
     }
-  }, [isDragging, isResizing, id, width, height, onPositionChange, onSizeChange]);
+  }, [isDragging, isResizing, id, width, height, onPositionChange, onSizeChange, getEffectiveScale]);
 
   const handlePointerUp = useCallback(() => {
     setIsDragging(false);

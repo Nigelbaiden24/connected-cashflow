@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect, ReactNode } from "react";
+import { ZoomScaleProvider } from "@/contexts/ZoomScaleContext";
 
 interface PinchZoomContainerProps {
   children: ReactNode;
@@ -27,6 +28,7 @@ export function PinchZoomContainer({
 
   // Live transform values (not React state — no re-renders during gestures)
   const transformRef = useRef({ scale: 1, x: 0, y: 0 });
+  const exposedScaleRef = useRef(1);
 
   const gestureRef = useRef({
     initialDistance: 0,
@@ -60,6 +62,7 @@ export function PinchZoomContainer({
     el.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
     el.style.width = s < 1 ? `${100 / s}%` : "";
     transformRef.current = { scale: s, x, y };
+    exposedScaleRef.current = s;
   }, []);
 
   // Use native event listeners for non-passive touch handling
@@ -186,7 +189,7 @@ export function PinchZoomContainer({
 
   // On desktop, just render children directly
   if (!isMobile) {
-    return <>{children}</>;
+    return <ZoomScaleProvider scaleRef={exposedScaleRef}>{children}</ZoomScaleProvider>;
   }
 
   const isZoomed = displayScale !== 100;
@@ -211,12 +214,14 @@ export function PinchZoomContainer({
           </button>
         </div>
       )}
-      <div
-        ref={contentRef}
-        style={{ transformOrigin: "top left" }}
-      >
-        {children}
-      </div>
+      <ZoomScaleProvider scaleRef={exposedScaleRef}>
+        <div
+          ref={contentRef}
+          style={{ transformOrigin: "top left" }}
+        >
+          {children}
+        </div>
+      </ZoomScaleProvider>
     </div>
   );
 }
