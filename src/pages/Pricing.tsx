@@ -79,6 +79,119 @@ const Pricing = () => {
     icon: TrendingUp,
   };
 
+  // FlowPulse CRM - Tiered plans
+  const crmTiers = [
+    {
+      name: "Basic",
+      description: "Essential CRM tools for small teams",
+      monthlyPrice: 12,
+      stripePriceId: "price_crm_basic",
+      features: [
+        "Contact management",
+        "Basic pipeline tracking",
+        "Email integration",
+        "Task management",
+        "Up to 500 contacts",
+        "Standard reporting",
+      ],
+      gradient: "from-rose-600 to-pink-600",
+      icon: Users,
+    },
+    {
+      name: "Pro",
+      description: "Advanced CRM for growing practices",
+      monthlyPrice: 22,
+      stripePriceId: "price_crm_pro",
+      features: [
+        "Everything in Basic",
+        "Unlimited contacts",
+        "Advanced pipeline analytics",
+        "Custom fields & tags",
+        "Automated workflows",
+        "Client portal access",
+        "Document management",
+        "Priority support",
+      ],
+      gradient: "from-rose-500 to-fuchsia-600",
+      icon: Building2,
+      popular: true,
+    },
+    {
+      name: "Enterprise",
+      description: "Full-featured CRM for large organizations",
+      monthlyPrice: 34,
+      stripePriceId: "price_crm_enterprise",
+      features: [
+        "Everything in Pro",
+        "API access & integrations",
+        "Custom reporting & dashboards",
+        "Role-based permissions",
+        "Dedicated account manager",
+        "SLA guarantees",
+        "Custom onboarding & training",
+        "White-label options",
+      ],
+      gradient: "from-fuchsia-600 to-purple-600",
+      icon: Shield,
+    },
+  ];
+
+  // Jenrate / Document Generator - Tiered plans
+  const jenrateTiers = [
+    {
+      name: "Basic",
+      description: "Get started with document generation for free",
+      monthlyPrice: 0,
+      stripePriceId: null,
+      isFree: true,
+      features: [
+        "Up to 5 documents/month",
+        "Basic templates",
+        "PDF export",
+        "Standard formatting",
+      ],
+      gradient: "from-amber-500 to-orange-500",
+      icon: TrendingUp,
+    },
+    {
+      name: "Pro",
+      description: "Professional document generation at scale",
+      monthlyPrice: 9,
+      stripePriceId: "price_jenrate_pro",
+      features: [
+        "Everything in Basic",
+        "Unlimited documents",
+        "Custom templates & branding",
+        "Drag & drop builder",
+        "Image & shape tools",
+        "Multi-page documents",
+        "Priority rendering",
+        "Priority support",
+      ],
+      gradient: "from-orange-500 to-red-500",
+      icon: Building2,
+      popular: true,
+    },
+    {
+      name: "Enterprise",
+      description: "Advanced document automation for teams",
+      monthlyPrice: 17,
+      stripePriceId: "price_jenrate_enterprise",
+      features: [
+        "Everything in Pro",
+        "API access for automation",
+        "Batch document generation",
+        "Team collaboration",
+        "Custom integrations",
+        "Dedicated support",
+        "SLA guarantees",
+        "Audit trail & compliance",
+      ],
+      gradient: "from-red-500 to-rose-600",
+      icon: Shield,
+    },
+  ];
+
   // FlowPulse Finance - Team pricing tiers
   const financeTiers = [
     {
@@ -194,12 +307,18 @@ const Pricing = () => {
         </div>
 
         <Tabs defaultValue="investor" className="mb-12">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 mb-8 h-auto">
-            <TabsTrigger value="investor" className="text-base md:text-lg py-3 px-4">
+          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 md:grid-cols-4 mb-8 h-auto">
+            <TabsTrigger value="investor" className="text-sm md:text-base py-3 px-3">
               FlowPulse Investor
             </TabsTrigger>
-            <TabsTrigger value="finance" className="text-base md:text-lg py-3 px-4">
+            <TabsTrigger value="finance" className="text-sm md:text-base py-3 px-3">
               FlowPulse Finance
+            </TabsTrigger>
+            <TabsTrigger value="crm" className="text-sm md:text-base py-3 px-3">
+              FlowPulse CRM
+            </TabsTrigger>
+            <TabsTrigger value="jenrate" className="text-sm md:text-base py-3 px-3">
+              Jenrate
             </TabsTrigger>
           </TabsList>
 
@@ -414,6 +533,177 @@ const Pricing = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          {/* FlowPulse CRM Tab */}
+          <TabsContent value="crm">
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(340, 70%, 50%)' }}>
+                FlowPulse CRM
+              </h2>
+              <p className="text-muted-foreground">
+                Powerful client relationship management for financial professionals
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {crmTiers.map((tier) => (
+                <Card
+                  key={tier.name}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                    tier.popular ? 'border-primary border-2 shadow-lg' : ''
+                  }`}
+                >
+                  {tier.popular && (
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
+                      Most Popular
+                    </div>
+                  )}
+                  <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${tier.gradient}`} />
+
+                  <CardHeader className="pt-8">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${tier.gradient} flex items-center justify-center mb-4`}>
+                      <tier.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                    <CardDescription className="text-base">{tier.description}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="mb-6">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold">£{tier.monthlyPrice}</span>
+                        <span className="text-muted-foreground">/user/month</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Billed monthly per user
+                      </p>
+                    </div>
+
+                    <ul className="space-y-3">
+                      {tier.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start gap-3">
+                          <div className={`rounded-full p-1 bg-gradient-to-r ${tier.gradient} flex-shrink-0 mt-0.5`}>
+                            <Check className="h-3 w-3 text-white" />
+                          </div>
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter>
+                    <Button
+                      className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
+                      size="lg"
+                      onClick={() => handleCheckout(
+                        tier.stripePriceId,
+                        'subscription',
+                        `CRM ${tier.name}`,
+                        'finance'
+                      )}
+                      disabled={loading === `finance-CRM ${tier.name}`}
+                    >
+                      {loading === `finance-CRM ${tier.name}` ? 'Loading...' : 'Get Started'}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Jenrate Tab */}
+          <TabsContent value="jenrate">
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(25, 90%, 50%)' }}>
+                Jenrate
+              </h2>
+              <p className="text-muted-foreground">
+                AI-powered document generation & builder
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {jenrateTiers.map((tier) => (
+                <Card
+                  key={tier.name}
+                  className={`relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+                    tier.popular ? 'border-primary border-2 shadow-lg' : ''
+                  }`}
+                >
+                  {tier.popular && (
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-secondary text-white px-4 py-1 text-sm font-semibold rounded-bl-lg">
+                      Most Popular
+                    </div>
+                  )}
+                  {tier.isFree && (
+                    <Badge className="absolute top-12 right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0">
+                      Free
+                    </Badge>
+                  )}
+                  <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${tier.gradient}`} />
+
+                  <CardHeader className="pt-8">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${tier.gradient} flex items-center justify-center mb-4`}>
+                      <tier.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                    <CardDescription className="text-base">{tier.description}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent>
+                    <div className="mb-6">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold">{tier.monthlyPrice === 0 ? 'Free' : `£${tier.monthlyPrice}`}</span>
+                        {tier.monthlyPrice > 0 && <span className="text-muted-foreground">/user/month</span>}
+                      </div>
+                      {tier.monthlyPrice > 0 && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Billed monthly per user
+                        </p>
+                      )}
+                    </div>
+
+                    <ul className="space-y-3">
+                      {tier.features.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start gap-3">
+                          <div className={`rounded-full p-1 bg-gradient-to-r ${tier.gradient} flex-shrink-0 mt-0.5`}>
+                            <Check className="h-3 w-3 text-white" />
+                          </div>
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter>
+                    {tier.isFree ? (
+                      <Button
+                        className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
+                        size="lg"
+                        onClick={() => navigate('/jenrate')}
+                      >
+                        Get Started Free
+                      </Button>
+                    ) : (
+                      <Button
+                        className={`w-full bg-gradient-to-r ${tier.gradient} hover:opacity-90 text-white border-0`}
+                        size="lg"
+                        onClick={() => handleCheckout(
+                          tier.stripePriceId!,
+                          'subscription',
+                          `Jenrate ${tier.name}`,
+                          'finance'
+                        )}
+                        disabled={loading === `finance-Jenrate ${tier.name}`}
+                      >
+                        {loading === `finance-Jenrate ${tier.name}` ? 'Loading...' : 'Get Started'}
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>
