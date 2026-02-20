@@ -539,7 +539,7 @@ export function DraggableSection({
       };
 
       return (
-        <div 
+    <div
           className="w-full h-full pointer-events-auto" 
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
@@ -577,6 +577,7 @@ export function DraggableSection({
   return (
     <div
       ref={sectionRef}
+      data-draggable="true"
       data-section-id={id}
       className={`absolute group select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isResizing ? 'cursor-nwse-resize' : ''}`}
       style={{

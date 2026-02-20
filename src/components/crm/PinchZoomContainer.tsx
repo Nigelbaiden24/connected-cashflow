@@ -81,6 +81,12 @@ export function PinchZoomContainer({
       }
     };
 
+    const isDraggableTarget = (target: EventTarget | null): boolean => {
+      const el = target as HTMLElement;
+      if (!el?.closest) return false;
+      return !!el.closest('[data-draggable="true"]');
+    };
+
     const onTouchStart = (e: TouchEvent) => {
       const g = gestureRef.current;
 
@@ -93,6 +99,8 @@ export function PinchZoomContainer({
         g.isPinching = true;
         g.isPanning = false;
       } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
+        // Skip if touching a draggable element — let it handle its own drag
+        if (isDraggableTarget(e.target)) return;
         g.startX = e.touches[0].clientX;
         g.startY = e.touches[0].clientY;
         g.lastX = transformRef.current.x;
@@ -115,7 +123,7 @@ export function PinchZoomContainer({
         const ty = newScale <= 1 ? 0 : transformRef.current.y;
         applyTransform(newScale, tx, ty);
         setDisplayScale(Math.round(newScale * 100));
-      } else if (e.touches.length === 1 && transformRef.current.scale !== 1) {
+      } else if (e.touches.length === 1 && transformRef.current.scale !== 1 && !isDraggableTarget(e.target)) {
         const dx = e.touches[0].clientX - g.startX;
         const dy = e.touches[0].clientY - g.startY;
         g.movedDistance = Math.sqrt(dx * dx + dy * dy);
