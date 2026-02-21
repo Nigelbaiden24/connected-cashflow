@@ -11,11 +11,25 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
       "UK property investment opportunities for sale 2025",
       "UK buy to let properties available high yield",
       "UK HMO commercial property investment listings current",
+      "UK land for sale plots development investment 2025",
+      "UK land auction lots agricultural woodland building plots",
+      "cheap land for sale UK smallholding farm woodland investment",
+      "UK parking spaces garage investment opportunities for sale",
+      "UK commercial property land development sites for sale",
     ],
     urls: [
       "https://www.rightmove.co.uk/news/house-price-index/",
       "https://www.propertyinvestortoday.co.uk/",
       "https://www.gov.uk/government/collections/uk-house-price-index-reports",
+      "https://www.landsale.co.uk/",
+      "https://www.plotfinder.net/",
+      "https://www.uklandandfarms.co.uk/",
+      "https://www.landfor.sale/",
+      "https://www.propertyauctionaction.co.uk/",
+      "https://www.sdlauctions.co.uk/",
+      "https://www.eigpropertyauctions.co.uk/",
+      "https://www.zoopla.co.uk/for-sale/land/",
+      "https://www.onthemarket.com/land-for-sale/",
     ],
   },
   vehicles: {
@@ -301,7 +315,7 @@ serve(async (req) => {
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
-      Promise.all(urls.slice(0, 5).map((u) => scrapeUrl(u, FIRECRAWL_API_KEY))),
+      Promise.all(urls.slice(0, 8).map((u) => scrapeUrl(u, FIRECRAWL_API_KEY))),
     ]);
 
     const allSources: SourceRecord[] = [];
