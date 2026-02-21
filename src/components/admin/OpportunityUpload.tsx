@@ -41,9 +41,9 @@ const categoryConfig = {
     subCategories: ["Residential Overseas", "Commercial Overseas", "Land Overseas", "Development Projects"]
   },
   businesses: {
-    label: "Businesses",
+    label: "Businesses/M&A",
     icon: Briefcase,
-    subCategories: ["SMEs", "Startups", "Franchises", "Established Businesses"]
+    subCategories: ["Startups", "Funding Rounds", "M&A Targets", "SMEs", "Franchises", "Established Businesses"]
   },
   stocks: {
     label: "Stocks",

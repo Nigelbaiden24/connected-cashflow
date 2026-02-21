@@ -52,13 +52,28 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
   },
   businesses: {
     queries: [
-      "UK businesses for sale acquisition opportunities 2025",
+      "startup funding rounds 2025 series A series B investment opportunities",
+      "UK businesses for sale acquisition M&A opportunities 2025",
+      "venture capital deals startups raising funding now",
+      "M&A targets mid-market acquisitions UK Europe 2025",
+      "startup accelerator demo day companies seeking investment",
       "franchise investment opportunities UK high return",
       "profitable SME businesses for sale current listings",
+      "angel investor deals seed funding startups 2025",
+      "tech startup funding rounds open for investment",
+      "private company acquisitions buyout opportunities current",
     ],
     urls: [
+      "https://www.crunchbase.com/discover/funding_rounds",
+      "https://techcrunch.com/category/venture/",
+      "https://www.eu-startups.com/",
+      "https://www.uktech.news/",
+      "https://sifted.eu/",
       "https://www.businessesforsale.com/uk",
       "https://www.daltonsbusiness.com/",
+      "https://pitchbook.com/news/reports",
+      "https://news.crunchbase.com/venture/",
+      "https://www.seedrs.com/invest",
     ],
   },
   stocks: {
@@ -335,6 +350,7 @@ serve(async (req) => {
       .join("\n");
 
     const isOverseasProperty = category === "overseas_property";
+    const isBusinessMA = category === "businesses";
 
     const economicAnalysisInstructions = isOverseasProperty ? `
 
@@ -354,6 +370,26 @@ In "key_metrics", ALWAYS include: "gdp_growth", "inflation_rate", "currency_risk
 Focus on developing nations in Africa (Kenya, Ghana, Nigeria, Tanzania, Rwanda, South Africa), Asia (Philippines, Cambodia, Vietnam, Thailand, Indonesia, Sri Lanka), South America (Colombia, Brazil, Peru, Ecuador, Mexico), Eastern Europe (Romania, Bulgaria, Georgia, Turkey, Montenegro), and affordable Southern Europe (Portugal, Spain, Greece).
 
 Be HONEST about risks — many developing markets have serious risks. Flag any red flags clearly.
+` : isBusinessMA ? `
+
+CRITICAL ADDITIONAL INSTRUCTIONS FOR BUSINESSES/M&A:
+You are an enterprise-grade M&A and startup intelligence analyst. You MUST find REAL, ACTIVE startups, funding rounds, investors, and industry events. For each opportunity include:
+
+1. **Company/Deal Profile**: Real company name, founding year, team size, headquarters location, website
+2. **Funding Stage**: Pre-seed, Seed, Series A/B/C/D+, Growth, M&A, IPO track
+3. **Financial Metrics**: Revenue (ARR/MRR if SaaS), valuation, funding raised to date, burn rate if available
+4. **Sector & Industry**: Primary sector (FinTech, HealthTech, PropTech, AI/ML, CleanTech, EdTech, etc.)
+5. **Growth Signals**: User growth, revenue growth rate, market expansion, key partnerships, notable customers
+6. **Investor Profile**: Lead investors, notable angels, VC firms involved, follow-on potential
+7. **M&A Indicators**: Strategic fit signals, acquirer interest, comparable exit multiples in sector
+8. **Event Context**: Demo days, pitch competitions, accelerator cohorts if applicable
+
+In "key_metrics", ALWAYS include: "sector", "funding_stage", "revenue" (or "pre-revenue"), "valuation" (if known), "total_raised", "team_size", "growth_rate", "investor_names", "founded_year".
+In "investment_thesis", include the strategic rationale — why this is compelling NOW, competitive moat, and risks.
+In "risk_level", factor in: market timing, competition, regulatory risk, team experience, and capital efficiency.
+
+Focus on REAL companies with verifiable data from Crunchbase, TechCrunch, PitchBook, Sifted, EU-Startups, Seedrs, etc.
+Do NOT invent companies. If data is limited, say so honestly.
 ` : "";
 
     const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and identify INDIVIDUAL, SPECIFIC investment opportunities that an admin can list on the platform.
