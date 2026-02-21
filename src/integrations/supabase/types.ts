@@ -162,6 +162,54 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_scrape_history: {
+        Row: {
+          category: string
+          created_at: string
+          custom_query: string | null
+          id: string
+          market_context: string | null
+          opportunities: Json | null
+          opportunities_count: number | null
+          raw_output: string | null
+          research_date: string
+          sources: Json | null
+          status: string | null
+          sub_category: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          custom_query?: string | null
+          id?: string
+          market_context?: string | null
+          opportunities?: Json | null
+          opportunities_count?: number | null
+          raw_output?: string | null
+          research_date?: string
+          sources?: Json | null
+          status?: string | null
+          sub_category?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          custom_query?: string | null
+          id?: string
+          market_context?: string | null
+          opportunities?: Json | null
+          opportunities_count?: number | null
+          raw_output?: string | null
+          research_date?: string
+          sources?: Json | null
+          status?: string | null
+          sub_category?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           created_at: string

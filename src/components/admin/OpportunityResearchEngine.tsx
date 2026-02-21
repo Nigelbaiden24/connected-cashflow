@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,11 @@ import {
   DollarSign,
   AlertTriangle,
   Star,
+  Database,
+  Trash2,
+  History,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const categoryConfig: Record<string, { label: string; icon: any; subCategories: string[] }> = {
@@ -65,9 +70,9 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
     ],
   },
   businesses: {
-    label: "Businesses",
+    label: "Businesses/M&A",
     icon: Briefcase,
-    subCategories: ["SMEs", "Startups", "Franchises", "Established Businesses"],
+    subCategories: ["Startups", "Funding Rounds", "M&A Targets", "SMEs", "Franchises", "Established Businesses"],
   },
   stocks: {
     label: "Stocks",
@@ -191,10 +196,85 @@ export function OpportunityResearchEngine() {
   const [aiOutput, setAiOutput] = useState("");
   const [sourceMetadata, setSourceMetadata] = useState<SourceMetadata | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [scrapeHistory, setScrapeHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const opportunities = phase === "complete" ? parseOpportunities(aiOutput) : [];
   const marketContext = phase === "complete" ? getMarketContext(aiOutput) : "";
+
+  // Load scrape history
+  const loadScrapeHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('admin_scrape_history')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      setScrapeHistory(data || []);
+    } catch (err) {
+      console.error("Failed to load scrape history:", err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadScrapeHistory();
+  }, [loadScrapeHistory]);
+
+  // Save scrape to database
+  const saveScrapeToDb = useCallback(async (
+    cat: string,
+    subCat: string,
+    query: string,
+    sources: any,
+    opps: ScrapedOpportunity[],
+    rawOutput: string,
+    context: string
+  ) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase
+        .from('admin_scrape_history')
+        .insert({
+          user_id: session?.user?.id,
+          category: cat,
+          sub_category: subCat || null,
+          custom_query: query || null,
+          sources: sources || [],
+          opportunities: opps as any,
+          opportunities_count: opps.length,
+          raw_output: rawOutput,
+          market_context: context,
+          status: 'complete',
+        });
+      if (error) throw error;
+      toast.success("Scrape saved to database");
+      loadScrapeHistory();
+    } catch (err) {
+      console.error("Failed to save scrape:", err);
+      toast.error("Failed to save scrape to database");
+    }
+  }, [loadScrapeHistory]);
+
+  const deleteScrapeRecord = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('admin_scrape_history')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      toast.success("Scrape record deleted");
+      setScrapeHistory(prev => prev.filter(h => h.id !== id));
+    } catch (err) {
+      toast.error("Failed to delete record");
+    }
+  }, []);
 
   const handleCopy = useCallback(async (text: string, id?: string) => {
     try {
@@ -250,6 +330,8 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     setPhase("scraping");
     setAiOutput("");
     setSourceMetadata(null);
+    let accumulatedOutput = "";
+    let capturedSourceMeta: SourceMetadata | null = null;
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -306,11 +388,13 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
           try {
             const parsed = JSON.parse(jsonStr);
             if (parsed.type === "source_metadata") {
+              capturedSourceMeta = parsed as SourceMetadata;
               setSourceMetadata(parsed as SourceMetadata);
               continue;
             }
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
+              accumulatedOutput += content;
               setAiOutput((prev) => prev + content);
             }
           } catch {
@@ -321,6 +405,10 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
       }
 
       setPhase("complete");
+      // Auto-save the scrape to database
+      const finalOpps = parseOpportunities(accumulatedOutput);
+      const finalContext = getMarketContext(accumulatedOutput);
+      saveScrapeToDb(category, subCategory, customQuery, capturedSourceMeta?.sources, finalOpps, accumulatedOutput, finalContext);
       toast.success("Research complete — individual opportunities found!");
     } catch (error: any) {
       if (error.name === "AbortError") return;
@@ -743,6 +831,151 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
           </CardContent>
         </Card>
       )}
+
+      {/* Scrape History Database Section */}
+      <Card className="border-border shadow-lg">
+        <CardHeader className="border-b cursor-pointer" onClick={() => setShowHistory(!showHistory)}>
+          <CardTitle className="flex items-center justify-between text-lg">
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              Scrape Database
+              <Badge variant="secondary">{scrapeHistory.length} records</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); loadScrapeHistory(); }}>
+                <History className="h-4 w-4" />
+              </Button>
+              {showHistory ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </div>
+          </CardTitle>
+          <CardDescription>All previous scrapes saved with date, source, category, and opportunities</CardDescription>
+        </CardHeader>
+        {showHistory && (
+          <CardContent className="pt-4">
+            {historyLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : scrapeHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Database className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                <p>No scrape history yet. Run a search to start building your database.</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[500px]">
+                <div className="space-y-3">
+                  {scrapeHistory.map((record) => {
+                    const isExpanded = expandedHistoryId === record.id;
+                    const recordOpps = Array.isArray(record.opportunities) ? record.opportunities : [];
+                    return (
+                      <div key={record.id} className="border rounded-lg overflow-hidden">
+                        <div
+                          className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                          onClick={() => setExpandedHistoryId(isExpanded ? null : record.id)}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="outline" className="text-xs shrink-0">
+                                  {record.category?.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                                </Badge>
+                                {record.sub_category && (
+                                  <Badge variant="secondary" className="text-xs shrink-0">{record.sub_category}</Badge>
+                                )}
+                                <Badge className="text-xs shrink-0 bg-green-100 text-green-800 border-green-200">
+                                  {record.opportunities_count || recordOpps.length} opportunities
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                <span>{new Date(record.created_at).toLocaleString()}</span>
+                                {record.custom_query && (
+                                  <span className="truncate max-w-[200px]">• Query: "{record.custom_query}"</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 ml-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteScrapeRecord(record.id);
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <div className="border-t p-4 space-y-3 bg-muted/20">
+                            {/* Sources */}
+                            {record.sources && Array.isArray(record.sources) && record.sources.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                                  <Link2 className="h-3 w-3" /> Sources ({record.sources.filter((s: any) => s.status === "success").length}/{record.sources.length} successful)
+                                </p>
+                                <div className="grid gap-1">
+                                  {record.sources.map((src: any, si: number) => (
+                                    <div key={si} className={`flex items-center gap-2 text-xs p-1.5 rounded ${src.status === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                                      {src.status === "success" ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                                      <span className="truncate">{src.type === "search" ? `Search: "${src.query}"` : src.url}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Opportunities list */}
+                            {recordOpps.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                                  <Sparkles className="h-3 w-3" /> Opportunities ({recordOpps.length})
+                                </p>
+                                <div className="grid gap-2 md:grid-cols-2">
+                                  {recordOpps.map((opp: any, oi: number) => (
+                                    <div key={oi} className="border rounded-md p-3 text-sm space-y-1 bg-background">
+                                      <p className="font-semibold text-foreground">{opp.name}</p>
+                                      <p className="text-xs text-muted-foreground line-clamp-2">{opp.description}</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {opp.estimated_value && <Badge variant="outline" className="text-[10px]">{opp.estimated_value}</Badge>}
+                                        {opp.location && <Badge variant="outline" className="text-[10px]">{opp.location}</Badge>}
+                                        {opp.risk_level && <Badge variant="outline" className="text-[10px]">{opp.risk_level} Risk</Badge>}
+                                        {opp.funding_stage && <Badge variant="outline" className="text-[10px]">{opp.funding_stage}</Badge>}
+                                      </div>
+                                      {opp.source_url && (
+                                        <a href={opp.source_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline flex items-center gap-1">
+                                          <ExternalLink className="h-2.5 w-2.5" /> {opp.source_website || opp.source_url}
+                                        </a>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Market context */}
+                            {record.market_context && (
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Market Context</p>
+                                <p className="text-xs text-muted-foreground">{record.market_context.slice(0, 500)}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 }
