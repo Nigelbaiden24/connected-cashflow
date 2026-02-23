@@ -7,6 +7,8 @@ import { Sparkles, MessageSquare, Send, Loader2, ExternalLink, Download } from "
 import { toast } from "sonner";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { supabase } from "@/integrations/supabase/client";
+import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 
 interface Report {
   id: string;
@@ -111,6 +113,19 @@ export default function FinanceMarketCommentary() {
     }
   };
 
+  const [viewMode, setViewMode] = useState<string>("grid");
+
+  const showcaseItems: ShowcaseItem[] = commentaries.map((c) => ({
+    id: c.id,
+    title: c.title,
+    subtitle: c.published_date ? new Date(c.published_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : undefined,
+    description: c.description || undefined,
+    imageUrl: c.thumbnail_url || undefined,
+    icon: <MessageSquare className="h-10 w-10" />,
+    badges: [{ label: "Market Commentary" }],
+    onClick: () => handleViewReport(c),
+  }));
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -120,6 +135,7 @@ export default function FinanceMarketCommentary() {
             Expert insights and AI-powered analysis on current market conditions
           </p>
         </div>
+        <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
       </div>
 
       {/* AI Chat Interface */}
@@ -196,6 +212,8 @@ export default function FinanceMarketCommentary() {
               </p>
             </CardContent>
           </Card>
+        ) : viewMode === "showcase" ? (
+          <ContentShowcase items={showcaseItems} emptyMessage="No commentaries available" />
         ) : (
           <>
             {commentaries.map((commentary) => (

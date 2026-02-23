@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Briefcase, ExternalLink, Download, Upload, Sparkles, TrendingUp, PieChart, BarChart3, Loader2 } from "lucide-react";
+import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -35,6 +37,7 @@ export default function FinanceModelPortfolios() {
   const [userHoldings, setUserHoldings] = useState<Holding[]>([{ ticker: "", allocation: 0 }]);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<string>("");
+  const [viewMode, setViewMode] = useState<string>("grid");
 
   useEffect(() => {
     fetchPortfolios();
@@ -174,6 +177,16 @@ export default function FinanceModelPortfolios() {
     );
   }
 
+  const showcaseItems: ShowcaseItem[] = portfolios.map((p) => ({
+    id: p.id,
+    title: p.title,
+    description: p.description || undefined,
+    imageUrl: p.thumbnail_url || undefined,
+    icon: <Briefcase className="h-10 w-10" />,
+    badges: [{ label: p.user_id ? "Personal" : "Professional" }],
+    onClick: () => handleViewPortfolio(p),
+  }));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="p-6 space-y-8 max-w-7xl mx-auto">
@@ -184,12 +197,13 @@ export default function FinanceModelPortfolios() {
               <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
                 <Briefcase className="h-10 w-10" />
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-5xl font-bold tracking-tight">Model Portfolios</h1>
                 <p className="text-white/90 text-xl mt-2">
                   Elite investment strategies powered by AI insights
                 </p>
               </div>
+              <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
             </div>
             <div className="flex gap-4 mt-8">
               <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
@@ -361,6 +375,10 @@ export default function FinanceModelPortfolios() {
           </Card>
         </div>
 
+        {viewMode === "showcase" ? (
+          <ContentShowcase items={showcaseItems} emptyMessage="No model portfolios available" />
+        ) : (
+        <>
         {/* Portfolios Grid */}
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
@@ -485,6 +503,8 @@ export default function FinanceModelPortfolios() {
             </div>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
     </div>
   );

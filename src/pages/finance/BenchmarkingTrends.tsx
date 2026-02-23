@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Upload, TrendingUp, Activity, Sparkles, FileSpreadsheet } from "lucide-react";
+import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts";
@@ -19,6 +21,7 @@ export default function FinanceBenchmarkingTrends() {
   const [liveBenchmarks, setLiveBenchmarks] = useState<any[]>([]);
   const [loadingBenchmarks, setLoadingBenchmarks] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [viewMode, setViewMode] = useState<string>("grid");
 
   const fetchLiveBenchmarks = async () => {
     setLoadingBenchmarks(true);
@@ -229,7 +232,8 @@ export default function FinanceBenchmarkingTrends() {
             Upload your portfolio and compare performance against major market indices
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
           <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -274,6 +278,31 @@ export default function FinanceBenchmarkingTrends() {
         </div>
       </div>
 
+      {viewMode === "showcase" ? (
+        <ContentShowcase
+          items={[
+            ...benchmarks.map((b, i) => ({
+              id: `benchmark-${i}`,
+              title: b.name,
+              subtitle: b.value,
+              description: `1Y Change: ${b.change} | YTD: ${b.ytd}`,
+              icon: <Activity className="h-10 w-10" />,
+              stats: [
+                { label: "1Y", value: b.change, className: b.change.startsWith('+') ? "text-green-600" : "text-destructive" },
+                { label: "YTD", value: b.ytd },
+              ],
+            })),
+            ...trends.map((t) => ({
+              id: t.id,
+              title: t.title,
+              description: t.description,
+              icon: <TrendingUp className="h-10 w-10" />,
+              badges: [{ label: `${t.impact} Impact`, className: t.impact === 'High' ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-secondary-foreground' }],
+            })),
+          ]}
+          emptyMessage="No benchmarks or trends available"
+        />
+      ) : (
       <Tabs defaultValue="benchmarks" className="w-full">
         <TabsList>
           <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
@@ -490,6 +519,7 @@ export default function FinanceBenchmarkingTrends() {
           </div>
         </TabsContent>
       </Tabs>
+      )}
     </div>
   );
 }

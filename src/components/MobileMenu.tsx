@@ -97,7 +97,7 @@ const financeNavGroups: NavGroup[] = [
     items: [
       { title: "Clients", url: "/clients", icon: Users },
       { title: "Compliance", url: "/compliance", icon: Shield },
-      { title: "Reports", url: "/finance/reports", icon: FileText },
+      { title: "Analyst Reports", url: "/finance/reports", icon: FileText },
       { title: "Languages", url: "/finance/languages", icon: Globe },
     ],
   },

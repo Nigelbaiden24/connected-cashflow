@@ -22,7 +22,7 @@ const mobileNavItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Clients", path: "/clients", icon: Users },
   { label: "Planning", path: "/financial-planning", icon: Calculator },
-  { label: "Reports", path: "/finance/reports", icon: FileText },
+  { label: "Analyst Reports", path: "/finance/reports", icon: FileText },
   { label: "Chat", path: "/theodore", icon: MessageSquare },
 ];
 

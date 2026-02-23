@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Plus, TrendingUp, TrendingDown, Trash2, Loader2, Star } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -62,6 +64,8 @@ export default function FinanceWatchlists() {
   useEffect(() => {
     loadWatchlists();
   }, []);
+
+  const [viewMode, setViewMode] = useState<string>("grid");
 
   const loadWatchlists = async () => {
     setLoading(true);
@@ -289,6 +293,20 @@ export default function FinanceWatchlists() {
   const myWatchlists = watchlists.filter(w => !w.created_by_admin && !w.is_public);
   const publicWatchlists = watchlists.filter(w => w.is_public || w.created_by_admin);
 
+
+  const allWatchlistsForShowcase: ShowcaseItem[] = watchlists.map((w) => ({
+    id: w.id,
+    title: w.name,
+    subtitle: w.category || undefined,
+    description: w.description || undefined,
+    icon: w.created_by_admin ? <Star className="h-10 w-10" /> : <Eye className="h-10 w-10" />,
+    badges: [
+      { label: `${w.itemCount || 0} items` },
+      ...(w.created_by_admin ? [{ label: "Admin Curated", className: "bg-secondary text-secondary-foreground" }] : []),
+    ],
+    onClick: () => viewWatchlist(w),
+  }));
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
@@ -296,7 +314,9 @@ export default function FinanceWatchlists() {
           <h1 className="text-3xl font-bold">Watchlists</h1>
           <p className="text-muted-foreground mt-2">Track and monitor your favorite investments</p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <div className="flex items-center gap-2">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -349,8 +369,13 @@ export default function FinanceWatchlists() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
+      {viewMode === "showcase" ? (
+        <ContentShowcase items={allWatchlistsForShowcase} emptyMessage="No watchlists yet" />
+      ) : (
+      <>
       <div>
         <h2 className="text-xl font-semibold mb-4">My Watchlists</h2>
         {myWatchlists.length === 0 ? (
@@ -438,6 +463,8 @@ export default function FinanceWatchlists() {
             ))}
           </div>
         </div>
+      )}
+      </>
       )}
 
       {/* View Watchlist Dialog */}
