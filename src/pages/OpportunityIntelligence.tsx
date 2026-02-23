@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { OpportunityShowcase } from "@/components/opportunities/OpportunityShowcase";
 import { 
   Building2, 
   Briefcase, 
@@ -32,7 +33,8 @@ import {
   Award,
   Package,
   Landmark,
-  ChevronRight
+  ChevronRight,
+  Presentation
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -135,7 +137,7 @@ export default function OpportunityIntelligence() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "showcase">("grid");
 
   useEffect(() => {
     fetchOpportunities();
@@ -401,7 +403,10 @@ export default function OpportunityIntelligence() {
             <SelectItem value="rating">Highest Rating</SelectItem>
           </SelectContent>
         </Select>
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list")}>
+        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list" | "showcase")}>
+          <ToggleGroupItem value="showcase" aria-label="Showcase view">
+            <Presentation className="h-4 w-4" />
+          </ToggleGroupItem>
           <ToggleGroupItem value="grid" aria-label="Grid view">
             <LayoutGrid className="h-4 w-4" />
           </ToggleGroupItem>
@@ -463,6 +468,12 @@ export default function OpportunityIntelligence() {
                 </p>
               </div>
             </Card>
+          ) : viewMode === "showcase" ? (
+            <OpportunityShowcase
+              opportunities={filteredOpportunities}
+              categoryConfig={categoryConfig}
+              detailBasePath={detailBasePath}
+            />
           ) : viewMode === "grid" ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredOpportunities.map((opportunity) => (
