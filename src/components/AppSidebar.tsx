@@ -100,7 +100,7 @@ const researchAnalysisItems = [
   { title: "Watchlists", url: "/finance/watchlists", icon: FolderKanban },
   { title: "Screeners & Discovery", url: "/finance/screeners", icon: Zap },
   { title: "Stocks & Crypto", url: "/finance/stocks-crypto", icon: TrendingUp },
-  { title: "Reports", url: "/finance/reports", icon: FileText },
+  { title: "Analyst Reports", url: "/finance/reports", icon: FileText },
   { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb },
 ];
 

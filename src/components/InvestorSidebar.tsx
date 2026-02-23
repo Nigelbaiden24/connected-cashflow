@@ -74,7 +74,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Research & Analysis",
     items: [
-      { title: "Research Reports", url: "/investor/research", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
+      { title: "Analyst Reports", url: "/investor/research", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
       { title: "Analysis Reports", url: "/investor/analysis", icon: BarChart3, gradient: "from-violet-500 to-violet-600" },
       { title: "Market Commentary", url: "/investor/commentary", icon: TrendingUp, gradient: "from-purple-500 to-purple-600" },
       { title: "AI Analyst", url: "/investor/ai-analyst", icon: Brain, gradient: "from-pink-500 to-rose-600" },

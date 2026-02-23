@@ -18,6 +18,8 @@ import {
 import { useResearchReports, ResearchReport } from '@/hooks/useResearchReports';
 import { ResearchReportCard } from '@/components/research/ResearchReportCard';
 import { ResearchReportDetail } from '@/components/research/ResearchReportDetail';
+import { ViewModeToggle } from '@/components/showcase/ViewModeToggle';
+import { ContentShowcase, ShowcaseItem } from '@/components/showcase/ContentShowcase';
 
 export default function ResearchReports() {
   const { 
@@ -34,6 +36,7 @@ export default function ResearchReports() {
   const [assetTypeFilter, setAssetTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>('generated_at');
+  const [viewMode, setViewMode] = useState<string>('grid');
 
   useEffect(() => {
     fetchReports();
@@ -98,12 +101,13 @@ export default function ResearchReports() {
       {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Research Reports</h1>
+            <h1 className="text-3xl font-bold">Analyst Reports</h1>
             <p className="text-muted-foreground">
               Institutional-grade investment research across all asset classes
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
             <Badge variant="secondary" className="text-sm">
               <FileText className="h-4 w-4 mr-1" />
               {reports.length} Reports
@@ -178,6 +182,26 @@ export default function ResearchReports() {
               </p>
             </CardContent>
           </Card>
+        ) : viewMode === "showcase" ? (
+          <ContentShowcase
+            items={filteredReports.map((report) => ({
+              id: report.id,
+              title: report.asset_name,
+              subtitle: report.asset_symbol || report.asset_type,
+              description: `Quality: ${report.overall_quality_score?.toFixed(1) || 'N/A'}/10 | Risk: ${report.risk_score?.toFixed(1) || 'N/A'}/10`,
+              icon: <FileText className="h-10 w-10" />,
+              badges: [
+                { label: report.asset_type.toUpperCase() },
+                ...(report.confidence_level ? [{ label: report.confidence_level }] : []),
+              ],
+              stats: [
+                ...(report.overall_quality_score ? [{ label: "Quality", value: `${report.overall_quality_score.toFixed(1)}/10`, className: "text-primary" }] : []),
+                ...(report.risk_score ? [{ label: "Risk", value: `${report.risk_score.toFixed(1)}/10` }] : []),
+              ],
+              onClick: () => handleViewDetails(report),
+            }))}
+            emptyMessage="No research reports found"
+          />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredReports.map((report) => (
