@@ -13,6 +13,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OpportunityShowcase } from "@/components/opportunities/OpportunityShowcase";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { 
   Building2, 
   Briefcase, 
@@ -414,6 +415,7 @@ export default function OpportunityIntelligence() {
             <List className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
+        <ShowcaseDarkToggle />
       </div>
 
       {/* Category Tabs */}

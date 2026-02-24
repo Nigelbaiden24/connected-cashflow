@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Upload, TrendingUp, Activity, Sparkles, FileSpreadsheet } from "lucide-react";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -234,6 +235,7 @@ export default function FinanceBenchmarkingTrends() {
         </div>
         <div className="flex gap-3 items-center">
           <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+          <ShowcaseDarkToggle />
           <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">

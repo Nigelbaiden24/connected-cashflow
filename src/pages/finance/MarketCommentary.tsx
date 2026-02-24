@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { supabase } from "@/integrations/supabase/client";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 
 interface Report {
@@ -135,7 +136,10 @@ export default function FinanceMarketCommentary() {
             Expert insights and AI-powered analysis on current market conditions
           </p>
         </div>
-        <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+        <div className="flex items-center gap-2">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+          <ShowcaseDarkToggle />
+        </div>
       </div>
 
       {/* AI Chat Interface */}
