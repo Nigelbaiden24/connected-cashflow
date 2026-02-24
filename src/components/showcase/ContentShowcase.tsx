@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StarryBackground } from "./StarryBackground";
 
 export interface ShowcaseItem {
   id: string;
@@ -61,8 +62,8 @@ export function ContentShowcase({ items, onItemClick, emptyMessage = "No items t
   const active = getItem(0);
 
   return (
-    <div className="relative w-full py-8 select-none">
-      {/* Navigation arrows */}
+    <StarryBackground className="dark:bg-[hsl(0,0%,2%)]">
+      <div className="relative w-full py-8 select-none">
       <Button
         variant="ghost"
         size="icon"
@@ -235,5 +236,6 @@ export function ContentShowcase({ items, onItemClick, emptyMessage = "No items t
         {activeIndex + 1} / {items.length}
       </div>
     </div>
+    </StarryBackground>
   );
 }
