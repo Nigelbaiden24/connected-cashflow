@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Eye, Plus, TrendingUp, TrendingDown, Trash2, Loader2, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -316,6 +317,7 @@ export default function FinanceWatchlists() {
         </div>
         <div className="flex items-center gap-2">
           <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+          <ShowcaseDarkToggle />
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
             <Button>

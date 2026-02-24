@@ -303,15 +303,42 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </div>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`w-full bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
-            onClick={onLogout}
-          >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
-            {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
-          </Button>
+          <div className={`flex gap-2 ${isCollapsed ? 'flex-col items-center' : ''}`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 ${isCollapsed ? 'justify-center px-0 w-full' : 'justify-start'}`}
+              onClick={() => {
+                const html = document.documentElement;
+                const isDark = html.classList.contains("dark");
+                if (isDark) {
+                  html.classList.remove("dark", "gold-theme");
+                } else {
+                  html.classList.add("dark", "gold-theme");
+                }
+                window.dispatchEvent(new Event("darkmode-toggle"));
+              }}
+              title="Toggle Black & Gold mode"
+            >
+              {isCollapsed ? (
+                <Palette className="h-4 w-4 text-amber-400" />
+              ) : (
+                <>
+                  <Palette className="h-4 w-4 flex-shrink-0 text-amber-400" />
+                  <span className="ml-2 text-xs">Black & Gold</span>
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 ${isCollapsed ? 'justify-center px-0 w-full' : 'justify-start'}`}
+              onClick={onLogout}
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -19,6 +19,7 @@ import { useResearchReports, ResearchReport } from '@/hooks/useResearchReports';
 import { ResearchReportCard } from '@/components/research/ResearchReportCard';
 import { ResearchReportDetail } from '@/components/research/ResearchReportDetail';
 import { ViewModeToggle } from '@/components/showcase/ViewModeToggle';
+import { ShowcaseDarkToggle } from '@/components/showcase/ShowcaseDarkToggle';
 import { ContentShowcase, ShowcaseItem } from '@/components/showcase/ContentShowcase';
 
 export default function ResearchReports() {
@@ -108,6 +109,7 @@ export default function ResearchReports() {
           </div>
           <div className="flex items-center gap-2">
             <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+            <ShowcaseDarkToggle />
             <Badge variant="secondary" className="text-sm">
               <FileText className="h-4 w-4 mr-1" />
               {reports.length} Reports

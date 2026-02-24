@@ -8,6 +8,7 @@ import { GrowthScreener } from "@/components/investor/GrowthScreener";
 import { InsiderActivityScreener } from "@/components/investor/InsiderActivityScreener";
 import { AIDiscoveryScreener } from "@/components/investor/AIDiscoveryScreener";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { Search, TrendingUp, BarChart3, Shield, Sprout, Users, Sparkles } from "lucide-react";
 
@@ -31,7 +32,10 @@ export default function FinanceScreenersDiscovery() {
           <h1 className="text-3xl font-bold">Screeners & Discovery</h1>
           <p className="text-muted-foreground mt-2">Find investment opportunities with advanced AI-powered screening tools</p>
         </div>
-        <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+        <div className="flex items-center gap-2">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+          <ShowcaseDarkToggle />
+        </div>
       </div>
 
       {viewMode === "showcase" ? (

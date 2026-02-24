@@ -5,6 +5,7 @@ import { TranslatedText } from "@/components/TranslatedText";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 
 const FeaturedPicks = () => {
   const [viewMode, setViewMode] = useState<string>("grid");
@@ -25,7 +26,10 @@ const FeaturedPicks = () => {
             </p>
           </div>
         </div>
-        <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+        <div className="flex items-center gap-2">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+          <ShowcaseDarkToggle />
+        </div>
       </div>
 
       {viewMode === "showcase" ? (

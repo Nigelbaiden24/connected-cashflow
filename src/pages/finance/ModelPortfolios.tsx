@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Briefcase, ExternalLink, Download, Upload, Sparkles, TrendingUp, PieChart, BarChart3, Loader2 } from "lucide-react";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -203,7 +204,10 @@ export default function FinanceModelPortfolios() {
                   Elite investment strategies powered by AI insights
                 </p>
               </div>
-              <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+              <div className="flex items-center gap-2">
+                <ViewModeToggle value={viewMode} onChange={setViewMode} options={["grid", "showcase"]} />
+                <ShowcaseDarkToggle />
+              </div>
             </div>
             <div className="flex gap-4 mt-8">
               <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
