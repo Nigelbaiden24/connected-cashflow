@@ -68,7 +68,7 @@ const generalItems = [
   { title: "AI Chatbot", url: "/theodore", icon: MessageSquare },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "CRM", url: "/finance-crm", icon: Users },
-  { title: "Paraplanning", url: "/paraplanning", icon: FileText },
+  
   { title: "Market Data", url: "/market", icon: TrendingUp },
   { title: "News", url: "/finance/news", icon: Mail },
   { title: "Payroll", url: "/finance-payroll", icon: Calculator },
