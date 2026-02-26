@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, TrendingUp, DollarSign, ArrowLeft, Upload, Building2, LayoutGrid, Sparkles, Activity } from "lucide-react";
+import { Users, TrendingUp, DollarSign, ArrowLeft, Upload, Building2, LayoutGrid, Sparkles, Activity, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { BulkImportDialog } from "@/components/crm/BulkImportDialog";
 import { TranslatedText } from "@/components/TranslatedText";
 import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
+import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 
 const CRM = () => {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ const CRM = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50 backdrop-blur-sm border border-border/50 p-1 rounded-xl h-auto">
+        <TabsList className="grid w-full max-w-lg grid-cols-3 bg-muted/50 backdrop-blur-sm border border-border/50 p-1 rounded-xl h-auto">
           <TabsTrigger 
             value="board" 
             className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground py-2.5 transition-all duration-200"
@@ -106,6 +107,13 @@ const CRM = () => {
           >
             <Building2 className="h-4 w-4" />
             Companies House
+          </TabsTrigger>
+          <TabsTrigger 
+            value="documents" 
+            className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-foreground py-2.5 transition-all duration-200"
+          >
+            <FileText className="h-4 w-4" />
+            Document Generator
           </TabsTrigger>
         </TabsList>
 
@@ -184,6 +192,10 @@ const CRM = () => {
 
         <TabsContent value="scraper">
           <CompaniesHouseScraper />
+        </TabsContent>
+
+        <TabsContent value="documents">
+          <AdminDocumentGenerator />
         </TabsContent>
       </Tabs>
 
