@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.planner-ai-assistant]
 verify_jwt = true
+
+[functions.paraplanning-ai]
+verify_jwt = false
