@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OpportunityShowcase } from "@/components/opportunities/OpportunityShowcase";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { 
   Building2, 
   Briefcase, 
@@ -373,6 +374,7 @@ export default function OpportunityIntelligence() {
   };
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="space-y-2">
@@ -512,5 +514,6 @@ export default function OpportunityIntelligence() {
         </TabsContent>
       </Tabs>
     </div>
+    </StarryBackground>
   );
 }

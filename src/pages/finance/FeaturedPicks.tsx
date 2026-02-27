@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Sparkles } from "lucide-react";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 
 const FeaturedPicks = () => {
   const [viewMode, setViewMode] = useState<string>("grid");
 
   return (
+    <StarryBackground className="flex-1 min-h-screen">
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -51,6 +53,7 @@ const FeaturedPicks = () => {
         </Card>
       )}
     </div>
+    </StarryBackground>
   );
 };
 

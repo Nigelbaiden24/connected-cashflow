@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 
 interface Report {
   id: string;
@@ -128,6 +129,7 @@ export default function FinanceMarketCommentary() {
   }));
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -270,5 +272,6 @@ export default function FinanceMarketCommentary() {
         )}
       </div>
     </div>
+    </StarryBackground>
   );
 }

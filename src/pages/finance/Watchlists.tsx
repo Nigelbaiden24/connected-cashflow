@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -309,6 +310,7 @@ export default function FinanceWatchlists() {
   }));
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-start">
         <div>
@@ -674,5 +676,6 @@ export default function FinanceWatchlists() {
         </DialogContent>
       </Dialog>
     </div>
+    </StarryBackground>
   );
 }

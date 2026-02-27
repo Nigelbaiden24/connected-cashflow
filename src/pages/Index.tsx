@@ -378,34 +378,37 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden h-[60vh] md:h-[65vh]">
+      <section className="relative overflow-hidden h-[75vh] md:h-[80vh]">
         {/* Background Image with Lighter Overlay */}
         <div className="absolute inset-0">
           <img 
             src={heroBackground} 
             alt="Business Presentation" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover saturate-[1.3] contrast-[1.05] brightness-[1.05]"
+            style={{ filter: "saturate(1.3) contrast(1.05) brightness(1.05)" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-background/60 to-green-900/70" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-slate-900/40 to-emerald-900/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+          {/* Glossy sheen overlay */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.08]" />
         </div>
 
         <div className="relative container mx-auto px-6 py-20 md:py-28 text-center flex flex-col justify-center h-full">
-          <div className="max-w-6xl mx-auto space-y-8">
+          <div className="max-w-6xl mx-auto space-y-6">
             <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
               <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
                 ✨ AI-Powered Workflow Intelligence
               </span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white drop-shadow-2xl">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-2xl">
               <span className="block mb-2">Transform Your Workflow with</span>
               <span className="font-space-grotesk bg-gradient-to-r from-blue-300 via-cyan-300 to-green-300 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
                 FlowPulse Intelligence
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-blue-50 max-w-2xl mx-auto drop-shadow-lg font-medium">
+            <p className="text-base md:text-lg text-blue-50/90 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Enterprise platforms powered by AI for financial advisors and modern businesses
             </p>
           </div>
@@ -428,7 +431,7 @@ const Index = () => {
             <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent blur-sm opacity-50" />
           </span>
         </h2>
-        <p className="mt-6 text-gray-700 text-xl md:text-2xl font-medium tracking-wide">
+        <p className="mt-6 text-gray-600 text-lg md:text-xl font-medium tracking-wide">
           Institutional-Grade Deal Intelligence for Independent Investors and Advisors
         </p>
       </div>

@@ -10,6 +10,7 @@ import { Briefcase, ExternalLink, Download, Upload, Sparkles, TrendingUp, PieCha
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -189,6 +190,7 @@ export default function FinanceModelPortfolios() {
   }));
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="p-6 space-y-8 max-w-7xl mx-auto">
         {/* Hero Header */}
@@ -511,5 +513,6 @@ export default function FinanceModelPortfolios() {
         )}
       </div>
     </div>
+    </StarryBackground>
   );
 }

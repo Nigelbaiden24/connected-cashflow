@@ -9,6 +9,7 @@ import { Upload, TrendingUp, Activity, Sparkles, FileSpreadsheet } from "lucide-
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts";
@@ -225,6 +226,7 @@ export default function FinanceBenchmarkingTrends() {
   };
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -523,5 +525,6 @@ export default function FinanceBenchmarkingTrends() {
       </Tabs>
       )}
     </div>
+    </StarryBackground>
   );
 }
