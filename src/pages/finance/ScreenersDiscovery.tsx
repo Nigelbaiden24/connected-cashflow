@@ -10,6 +10,7 @@ import { AIDiscoveryScreener } from "@/components/investor/AIDiscoveryScreener";
 import { ViewModeToggle } from "@/components/showcase/ViewModeToggle";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShowcase";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { Search, TrendingUp, BarChart3, Shield, Sprout, Users, Sparkles } from "lucide-react";
 
 export default function FinanceScreenersDiscovery() {
@@ -26,6 +27,7 @@ export default function FinanceScreenersDiscovery() {
   ];
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -82,5 +84,6 @@ export default function FinanceScreenersDiscovery() {
       </Tabs>
       )}
     </div>
+    </StarryBackground>
   );
 }

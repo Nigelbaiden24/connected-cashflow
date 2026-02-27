@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 
 export default function FinanceAIAnalyst() {
   const [query, setQuery] = useState("");
@@ -121,6 +122,7 @@ export default function FinanceAIAnalyst() {
   ];
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">AI Analyst</h1>
@@ -259,5 +261,6 @@ export default function FinanceAIAnalyst() {
         </CardContent>
       </Card>
     </div>
+    </StarryBackground>
   );
 }

@@ -21,6 +21,7 @@ import { ResearchReportDetail } from '@/components/research/ResearchReportDetail
 import { ViewModeToggle } from '@/components/showcase/ViewModeToggle';
 import { ShowcaseDarkToggle } from '@/components/showcase/ShowcaseDarkToggle';
 import { ContentShowcase, ShowcaseItem } from '@/components/showcase/ContentShowcase';
+import { StarryBackground } from '@/components/showcase/StarryBackground';
 
 export default function ResearchReports() {
   const { 
@@ -98,6 +99,7 @@ export default function ResearchReports() {
   }
 
   return (
+    <StarryBackground className="min-h-screen">
     <div className="container mx-auto py-6 px-4 space-y-6">
       {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -226,5 +228,6 @@ export default function ResearchReports() {
           </CardContent>
         </Card>
       </div>
+    </StarryBackground>
   );
 }

@@ -388,13 +388,7 @@ const App = () => {
                 )
               } />
               
-              <Route path="/paraplanning" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Paraplanning />
-                  </FinanceLayout>
-                )
-              } />
+              <Route path="/paraplanning" element={<Paraplanning />} />
               
               <Route path="/finance/commentary" element={
                 !isAuthenticated ? <Navigate to="/login" replace /> : (
