@@ -70,17 +70,20 @@ export function AdvisorGoals() {
   };
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-xl">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
+          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+            <Target className="h-4 w-4 text-primary" />
+          </div>
           Quarterly Goals
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {goals.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <Target className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <Target className="h-12 w-12 mx-auto mb-2 opacity-30" />
             <p>No active goals for this quarter</p>
           </div>
         ) : (
@@ -89,13 +92,15 @@ export function AdvisorGoals() {
             const progress = Math.min((goal.current_value / goal.target_value) * 100, 100);
             
             return (
-              <div key={i} className="space-y-2">
+              <div key={i} className="space-y-2 p-3 rounded-xl bg-muted/20 border border-border/50 backdrop-blur-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <div className="p-1.5 rounded-lg bg-primary/10">
+                      <Icon className="h-3.5 w-3.5 text-primary" />
+                    </div>
                     <span className="font-medium text-sm">{getGoalLabel(goal.goal_type)}</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {formatValue(goal.goal_type, goal.current_value)} / {formatValue(goal.goal_type, goal.target_value)}
                   </span>
                 </div>

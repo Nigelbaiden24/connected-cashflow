@@ -40,7 +40,6 @@ export function AISummaryPanel() {
       const startOfWeek = new Date();
       startOfWeek.setDate(startOfWeek.getDate() - 7);
       
-      // Parallel data fetching for performance
       const [
         meetingsResult,
         tasksResult,
@@ -59,7 +58,6 @@ export function AISummaryPanel() {
         supabase.from('advisor_activity').select('*').eq('user_id', user.user.id).gte('created_at', startOfWeek.toISOString())
       ]);
 
-      // Calculate metrics
       const todayMeetings = meetingsResult.data?.length || 0;
       const pendingTasks = tasksResult.data?.length || 0;
       const overdueTasks = tasksResult.data?.filter(t => t.status === 'overdue').length || 0;
@@ -73,10 +71,8 @@ export function AISummaryPanel() {
       const goalProgress = goalsResult.data?.filter(g => g.current_value && g.target_value && (g.current_value / g.target_value) >= 0.8).length || 0;
       const weeklyActivities = activityResult.data?.length || 0;
 
-      // Generate AI-powered insights
       const newInsights: Insight[] = [];
       
-      // Critical insights (red)
       if (criticalAlerts > 0) {
         newInsights.push({ 
           icon: AlertCircle, 
@@ -95,7 +91,6 @@ export function AISummaryPanel() {
         });
       }
 
-      // Warning insights (orange)
       if (highRiskClients > 0) {
         newInsights.push({ 
           icon: Users, 
@@ -123,7 +118,6 @@ export function AISummaryPanel() {
         });
       }
 
-      // Success insights (green)
       if (goalProgress > 0 && activeGoals > 0) {
         newInsights.push({ 
           icon: Target, 
@@ -142,7 +136,6 @@ export function AISummaryPanel() {
         });
       }
 
-      // Default success state
       if (newInsights.length === 0 || (criticalAlerts === 0 && overdueTasks === 0 && highAlerts === 0)) {
         newInsights.push({ 
           icon: Sparkles, 
@@ -152,7 +145,6 @@ export function AISummaryPanel() {
         });
       }
 
-      // Generate natural language summary
       const summaryParts = [];
       if (todayMeetings > 0) summaryParts.push(`${todayMeetings} meeting${todayMeetings > 1 ? 's' : ''}`);
       if (pendingTasks > 0) summaryParts.push(`${pendingTasks} pending task${pendingTasks > 1 ? 's' : ''}`);
@@ -179,13 +171,13 @@ export function AISummaryPanel() {
   const getTypeStyles = (type: Insight['type']) => {
     switch (type) {
       case 'critical': 
-        return 'border-destructive/50 bg-destructive/10 hover:bg-destructive/20 text-destructive';
+        return 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10 text-destructive backdrop-blur-sm';
       case 'warning': 
-        return 'border-orange-500/50 bg-orange-500/10 hover:bg-orange-500/20 text-orange-700 dark:text-orange-400';
+        return 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 backdrop-blur-sm';
       case 'success': 
-        return 'border-green-500/50 bg-green-500/10 hover:bg-green-500/20 text-green-700 dark:text-green-400';
+        return 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 backdrop-blur-sm';
       case 'info':
-        return 'border-primary/50 bg-primary/10 hover:bg-primary/20 text-primary';
+        return 'border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary backdrop-blur-sm';
     }
   };
 
@@ -200,11 +192,13 @@ export function AISummaryPanel() {
 
   if (loading) {
     return (
-      <Card className="col-span-full border-primary/20 bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 shadow-lg">
+      <Card className="col-span-full border-primary/20 bg-gradient-to-br from-primary/5 via-card to-violet-500/5 backdrop-blur-xl shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 animate-pulse" />
+              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                <Brain className="h-5 w-5 animate-pulse text-primary" />
+              </div>
               AI Daily Snapshot
             </CardTitle>
             <Skeleton className="h-9 w-24" />
@@ -214,7 +208,7 @@ export function AISummaryPanel() {
           <Skeleton className="h-6 w-3/4" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-16 w-full" />
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
             ))}
           </div>
         </CardContent>
@@ -223,22 +217,32 @@ export function AISummaryPanel() {
   }
 
   return (
-    <Card className="col-span-full border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-      {/* Animated background effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer" />
+    <Card className="col-span-full relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-card to-violet-500/5 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500">
+      {/* Animated gradient border top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+      
+      {/* Floating ambient orbs */}
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl" />
       
       <CardHeader className="relative">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-              <Brain className="h-5 w-5 text-primary" />
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-violet-500 rounded-xl blur opacity-40 animate-pulse" />
+              <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-violet-500/20 border border-primary/30 backdrop-blur-sm">
+                <Brain className="h-5 w-5 text-primary" />
+              </div>
             </div>
             <div>
               <CardTitle className="flex items-center gap-2">
                 AI Daily Snapshot
                 {aiGenerated && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Sparkles className="h-3 w-3 mr-1" />
+                  <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs">
+                    <span className="relative flex h-1.5 w-1.5 mr-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                    </span>
                     Live
                   </Badge>
                 )}
@@ -253,7 +257,7 @@ export function AISummaryPanel() {
             size="sm"
             onClick={generateSummary}
             disabled={loading}
-            className="hover:bg-primary/10 transition-colors"
+            className="backdrop-blur-sm bg-card/50 border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -262,7 +266,7 @@ export function AISummaryPanel() {
       </CardHeader>
       
       <CardContent className="space-y-4 relative">
-        <div className="text-base font-medium leading-relaxed text-foreground/90 p-4 bg-background/50 rounded-lg border border-border/50">
+        <div className="text-base font-medium leading-relaxed text-foreground/90 p-4 bg-background/30 backdrop-blur-sm rounded-xl border border-border/30">
           {summary}
         </div>
         
@@ -272,7 +276,7 @@ export function AISummaryPanel() {
             return (
               <div
                 key={i}
-                className={`flex items-center justify-between gap-2 p-3 rounded-lg border transition-all duration-200 cursor-default ${getTypeStyles(insight.type)}`}
+                className={`flex items-center justify-between gap-2 p-3 rounded-xl border transition-all duration-300 cursor-default hover:-translate-y-0.5 hover:shadow-md ${getTypeStyles(insight.type)}`}
                 onClick={insight.action}
               >
                 <div className="flex items-center gap-2 flex-1">
@@ -285,10 +289,10 @@ export function AISummaryPanel() {
           })}
         </div>
 
-        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground border-t border-border/50">
+        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground border-t border-border/30">
           <span>Last updated: {new Date().toLocaleTimeString()}</span>
           <span className="flex items-center gap-1">
-            <Sparkles className="h-3 w-3" />
+            <Sparkles className="h-3 w-3 text-primary" />
             Powered by AI Analytics
           </span>
         </div>
