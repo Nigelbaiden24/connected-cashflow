@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { DollarSign, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,21 +23,18 @@ export function AdvisoryRevenues() {
       const yearStart = new Date(now.getFullYear(), 0, 1);
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      // Fetch YTD revenues
       const { data: ytdData } = await supabase
         .from('advisory_revenues')
         .select('amount')
         .eq('user_id', user.user.id)
         .gte('period_start', yearStart.toISOString().split('T')[0]);
 
-      // Fetch monthly revenues
       const { data: monthlyData } = await supabase
         .from('advisory_revenues')
         .select('amount')
         .eq('user_id', user.user.id)
         .gte('period_start', monthStart.toISOString().split('T')[0]);
 
-      // Fetch top clients by revenue
       const { data: clientRevenues } = await supabase
         .from('advisory_revenues')
         .select('client_id, amount, clients(name)')
@@ -73,41 +70,45 @@ export function AdvisoryRevenues() {
   };
 
   return (
-    <Card className="col-span-2">
+    <Card className="relative overflow-hidden col-span-2 border-border/50 bg-card/80 backdrop-blur-xl">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl" />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5" />
+          <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <DollarSign className="h-4 w-4 text-emerald-500" />
+          </div>
           Advisory Revenues
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Monthly Recurring</p>
-            <p className="text-2xl font-bold">{formatCurrency(revenues.monthly)}</p>
-            <div className="flex items-center gap-1 text-xs text-success">
+          <div className="space-y-2 p-4 rounded-xl bg-muted/20 border border-border/50 backdrop-blur-sm">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Monthly Recurring</p>
+            <p className="text-2xl font-bold tracking-tight">{formatCurrency(revenues.monthly)}</p>
+            <div className="flex items-center gap-1 text-xs text-emerald-500">
               <TrendingUp className="h-3 w-3" />
               <span>+12% vs last month</span>
             </div>
           </div>
           
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Fee Income YTD</p>
-            <p className="text-2xl font-bold">{formatCurrency(revenues.ytd)}</p>
-            <div className="flex items-center gap-1 text-xs text-success">
+          <div className="space-y-2 p-4 rounded-xl bg-muted/20 border border-border/50 backdrop-blur-sm">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Fee Income YTD</p>
+            <p className="text-2xl font-bold tracking-tight">{formatCurrency(revenues.ytd)}</p>
+            <div className="flex items-center gap-1 text-xs text-emerald-500">
               <TrendingUp className="h-3 w-3" />
               <span>+18% vs last year</span>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Top Fee Producers</p>
-            <div className="space-y-1">
+          <div className="space-y-2 p-4 rounded-xl bg-muted/20 border border-border/50 backdrop-blur-sm">
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Top Fee Producers</p>
+            <div className="space-y-1.5 mt-1">
               {revenues.topClients.length > 0 ? (
                 revenues.topClients.map((client, i) => (
-                  <div key={i} className="text-xs flex justify-between">
+                  <div key={i} className="text-xs flex justify-between items-center">
                     <span className="text-muted-foreground truncate">{client.name}</span>
-                    <span className="font-medium">{formatCurrency(client.amount)}</span>
+                    <span className="font-medium text-foreground">{formatCurrency(client.amount)}</span>
                   </div>
                 ))
               ) : (

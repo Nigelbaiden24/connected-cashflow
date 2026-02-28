@@ -30,7 +30,6 @@ export function CalendarSnapshot() {
       const today = now.toISOString().split('T')[0];
       const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      // Fetch upcoming meetings
       const { data: meetingsData } = await supabase
         .from('client_meetings')
         .select('id, meeting_date, meeting_type, location, clients(name)')
@@ -39,7 +38,6 @@ export function CalendarSnapshot() {
         .order('meeting_date', { ascending: true })
         .limit(3);
 
-      // Fetch today's tasks
       const { data: tasksData } = await supabase
         .from('advisor_tasks')
         .select('id')
@@ -61,29 +59,32 @@ export function CalendarSnapshot() {
   };
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-xl">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
+          <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/20">
+            <Calendar className="h-4 w-4 text-violet-500" />
+          </div>
           Calendar Snapshot
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Today's summary */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-            <div className="text-2xl font-bold">{meetings.length}</div>
-            <div className="text-xs text-muted-foreground">Upcoming Meetings</div>
+          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 backdrop-blur-sm">
+            <div className="text-2xl font-bold tracking-tight">{meetings.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">Upcoming Meetings</div>
           </div>
-          <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
-            <div className="text-2xl font-bold">{todayTasks}</div>
-            <div className="text-xs text-muted-foreground">Tasks Due Today</div>
+          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 backdrop-blur-sm">
+            <div className="text-2xl font-bold tracking-tight">{todayTasks}</div>
+            <div className="text-xs text-muted-foreground mt-1">Tasks Due Today</div>
           </div>
         </div>
 
         {/* Next 3 meetings */}
         <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">Next 3 Days</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Next 3 Days</p>
           {meetings.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground text-sm">
               No upcoming meetings
@@ -94,11 +95,13 @@ export function CalendarSnapshot() {
               return (
                 <div
                   key={meeting.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-muted/20 backdrop-blur-sm hover:bg-muted/40 hover:border-primary/20 cursor-pointer transition-all duration-300 group"
                 >
-                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <div className="p-1.5 rounded-lg bg-muted/50">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
+                    <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
                       {meeting.clients?.name || 'Client Meeting'}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
@@ -106,7 +109,7 @@ export function CalendarSnapshot() {
                       <span>{format(new Date(meeting.meeting_date), 'MMM d, h:mm a')}</span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge className="bg-muted/50 text-muted-foreground border-border/50 text-xs">
                     {meeting.meeting_type}
                   </Badge>
                 </div>

@@ -21,14 +21,12 @@ export function ComplianceHealth() {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
-      // Fetch compliance-related tasks
       const { data: tasks } = await supabase
         .from('advisor_tasks')
         .select('status, priority')
         .eq('user_id', user.user.id)
         .eq('task_type', 'compliance');
 
-      // Fetch client compliance documents
       const { data: docs } = await supabase
         .from('client_compliance_documents')
         .select('status, expiry_date');
@@ -44,7 +42,6 @@ export function ComplianceHealth() {
         t.status === 'overdue' || t.priority === 'urgent'
       ).length || 0;
 
-      // Calculate compliance score (simple algorithm)
       const totalItems = (tasks?.length || 0) + (docs?.length || 0);
       const compliantItems = (tasks?.filter(t => t.status === 'completed').length || 0) +
                             (docs?.filter(d => d.status === 'approved').length || 0);
@@ -71,34 +68,34 @@ export function ComplianceHealth() {
       case 'compliant':
         return {
           icon: CheckCircle,
-          color: 'bg-success/10 border-success/20',
-          badgeVariant: 'default' as const,
-          badgeClass: 'bg-success text-success-foreground',
-          label: 'Fully Compliant'
+          ringColor: 'text-emerald-500',
+          badgeClass: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+          label: 'Fully Compliant',
+          bgGlow: 'bg-emerald-500/5',
         };
       case 'warning':
         return {
           icon: AlertTriangle,
-          color: 'bg-warning/10 border-warning/20',
-          badgeVariant: 'secondary' as const,
-          badgeClass: 'bg-warning text-warning-foreground',
-          label: `${complianceScore.dueItems} Item${complianceScore.dueItems !== 1 ? 's' : ''} Due Soon`
+          ringColor: 'text-amber-500',
+          badgeClass: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+          label: `${complianceScore.dueItems} Item${complianceScore.dueItems !== 1 ? 's' : ''} Due Soon`,
+          bgGlow: 'bg-amber-500/5',
         };
       case 'critical':
         return {
           icon: AlertTriangle,
-          color: 'bg-destructive/10 border-destructive/20',
-          badgeVariant: 'destructive' as const,
-          badgeClass: '',
-          label: `${complianceScore.atRisk} At-Risk Item${complianceScore.atRisk !== 1 ? 's' : ''}`
+          ringColor: 'text-destructive',
+          badgeClass: 'bg-destructive/10 text-destructive border-destructive/20',
+          label: `${complianceScore.atRisk} At-Risk Item${complianceScore.atRisk !== 1 ? 's' : ''}`,
+          bgGlow: 'bg-destructive/5',
         };
       default:
         return {
           icon: Shield,
-          color: 'bg-muted/10 border-muted/20',
-          badgeVariant: 'outline' as const,
+          ringColor: 'text-muted-foreground',
           badgeClass: '',
-          label: 'Unknown'
+          label: 'Unknown',
+          bgGlow: 'bg-muted/5',
         };
     }
   };
@@ -107,18 +104,38 @@ export function ComplianceHealth() {
   const Icon = status.icon;
 
   return (
-    <Card className={`border ${status.color}`}>
+    <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-xl">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
+          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+            <Shield className="h-4 w-4 text-primary" />
+          </div>
           Compliance Health Score
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4 relative">
           <div>
-            <div className="text-6xl font-bold mb-2">{complianceScore.score}%</div>
-            <Badge variant={status.badgeVariant} className={status.badgeClass}>
+            <div className="relative w-32 h-32 mx-auto mb-4">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" strokeWidth="8" className="stroke-muted/30" />
+                <circle 
+                  cx="60" cy="60" r="52" fill="none" strokeWidth="8" 
+                  className={`${status.ringColor} transition-all duration-1000`}
+                  style={{ 
+                    stroke: 'currentColor',
+                    strokeDasharray: `${(complianceScore.score / 100) * 327} 327`,
+                    strokeLinecap: 'round',
+                  }} 
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-4xl font-bold tracking-tight">{complianceScore.score}%</span>
+              </div>
+            </div>
+            <Badge className={`${status.badgeClass} text-xs`}>
               <Icon className="h-3 w-3 mr-1" />
               {status.label}
             </Badge>
@@ -127,14 +144,14 @@ export function ComplianceHealth() {
           {complianceScore.status !== 'compliant' && (
             <div className="space-y-2 text-sm text-left">
               {complianceScore.dueItems > 0 && (
-                <div className="flex justify-between p-2 rounded bg-muted">
-                  <span>Documents expiring soon</span>
+                <div className="flex justify-between p-3 rounded-xl bg-muted/20 backdrop-blur-sm border border-border/50">
+                  <span className="text-muted-foreground">Documents expiring soon</span>
                   <span className="font-medium">{complianceScore.dueItems}</span>
                 </div>
               )}
               {complianceScore.atRisk > 0 && (
-                <div className="flex justify-between p-2 rounded bg-muted">
-                  <span>Overdue compliance tasks</span>
+                <div className="flex justify-between p-3 rounded-xl bg-muted/20 backdrop-blur-sm border border-border/50">
+                  <span className="text-muted-foreground">Overdue compliance tasks</span>
                   <span className="font-medium">{complianceScore.atRisk}</span>
                 </div>
               )}

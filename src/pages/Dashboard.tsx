@@ -1,7 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign, ArrowLeft, FileText, Calendar, UserPlus, PieChart } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, MessageSquare, Clock, DollarSign, ArrowLeft, FileText, Calendar, UserPlus, PieChart, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +44,6 @@ const Dashboard = () => {
       
       setClients(clientsData || []);
       
-      // Calculate total AUM from all clients
       const totalAUM = clientsData?.reduce((sum, client) => {
         const portfolioValue = client.portfolio_holdings?.reduce((pSum: number, holding: any) => 
           pSum + (holding.current_value || 0), 0) || 0;
@@ -85,6 +84,9 @@ const Dashboard = () => {
       change: "+12%",
       trend: "up",
       icon: Users,
+      gradient: "from-blue-500/20 to-cyan-500/10",
+      iconColor: "text-blue-500",
+      borderColor: "border-blue-500/20",
     },
     {
       titleKey: "Total AUM",
@@ -92,6 +94,9 @@ const Dashboard = () => {
       change: "+3%",
       trend: "up",
       icon: DollarSign,
+      gradient: "from-emerald-500/20 to-green-500/10",
+      iconColor: "text-emerald-500",
+      borderColor: "border-emerald-500/20",
     },
     {
       titleKey: "Portfolio Holdings",
@@ -99,6 +104,9 @@ const Dashboard = () => {
       change: "+8%",
       trend: "up",
       icon: MessageSquare,
+      gradient: "from-violet-500/20 to-purple-500/10",
+      iconColor: "text-violet-500",
+      borderColor: "border-violet-500/20",
     },
     {
       titleKey: "Avg Client Value",
@@ -106,14 +114,10 @@ const Dashboard = () => {
       change: "-2%",
       trend: "down",
       icon: Clock,
+      gradient: "from-amber-500/20 to-orange-500/10",
+      iconColor: "text-amber-500",
+      borderColor: "border-amber-500/20",
     },
-  ];
-
-  const quickActions = [
-    { title: "Create Financial Plan", icon: FileText, description: "Build a new plan", path: "/financial-planning/new" },
-    { title: "Add Client", icon: UserPlus, description: "Onboard a new client", path: "/onboarding" },
-    { title: "Generate Report", icon: PieChart, description: "Create financial report", path: "/finance-ai-generator" },
-    { title: "Schedule Meeting", icon: Calendar, description: "Plan client meeting", path: "/calendar" },
   ];
 
   const recentQueries = [
@@ -144,62 +148,88 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6 relative">
+      {/* Ambient background glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-cyan-500/5 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <img 
-            src={flowpulseLogo} 
-            alt="The Flowpulse Group" 
-            className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
-            onClick={() => navigate('/')}
-          />
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-violet-500/50 rounded-xl blur opacity-0 group-hover:opacity-75 transition-opacity duration-500" />
+            <img 
+              src={flowpulseLogo} 
+              alt="The Flowpulse Group" 
+              className="relative h-14 w-14 rounded-lg object-contain cursor-pointer" 
+              onClick={() => navigate('/')}
+            />
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
-            className="gap-2"
+            className="gap-2 backdrop-blur-sm bg-card/50 border-border/50 hover:bg-card/80 transition-all duration-300"
           >
             <ArrowLeft className="h-4 w-4" />
             <TranslatedText>Back</TranslatedText>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight"><TranslatedText>Dashboard</TranslatedText></h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text">
+              <TranslatedText>Dashboard</TranslatedText>
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
               <TranslatedText>AI Assistant</TranslatedText>: {botName}
             </p>
           </div>
         </div>
-        <Badge variant="secondary" className="text-sm">
+        <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 backdrop-blur-sm animate-pulse">
+          <span className="relative flex h-2 w-2 mr-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
           <TranslatedText>Live Data</TranslatedText>
         </Badge>
       </div>
 
       <div className="space-y-6">
-        {/* AI Summary Panel - Top Banner */}
+        {/* AI Summary Panel */}
         <AISummaryPanel />
 
-        {/* Key Metrics Grid */}
+        {/* Key Metrics Grid - Glassmorphic */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {metrics.map((metric) => (
-            <Card key={metric.titleKey}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+          {metrics.map((metric, index) => (
+            <Card 
+              key={metric.titleKey} 
+              className={`relative overflow-hidden border ${metric.borderColor} bg-gradient-to-br ${metric.gradient} backdrop-blur-xl hover:shadow-lg hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-1 group`}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   <TranslatedText>{metric.titleKey}</TranslatedText>
                 </CardTitle>
-                <metric.icon className="h-4 w-4 text-muted-foreground" />
+                <div className={`p-2 rounded-lg bg-background/50 backdrop-blur-sm border border-border/50`}>
+                  <metric.icon className={`h-4 w-4 ${metric.iconColor}`} />
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{metric.value}</div>
-                <div className="flex items-center text-xs text-muted-foreground">
+              <CardContent className="relative">
+                <div className="text-2xl font-bold tracking-tight">{metric.value}</div>
+                <div className="flex items-center text-xs mt-1">
                   {metric.trend === "up" ? (
-                    <TrendingUp className="mr-1 h-3 w-3 text-success" />
+                    <TrendingUp className="mr-1 h-3 w-3 text-emerald-500" />
                   ) : (
                     <TrendingDown className="mr-1 h-3 w-3 text-destructive" />
                   )}
-                  <span className={metric.trend === "up" ? "text-success" : "text-destructive"}>
+                  <span className={metric.trend === "up" ? "text-emerald-500" : "text-destructive"}>
                     {metric.change}
                   </span>
-                  <span className="ml-1"><TranslatedText>from last month</TranslatedText></span>
+                  <span className="ml-1 text-muted-foreground"><TranslatedText>from last month</TranslatedText></span>
                 </div>
               </CardContent>
             </Card>
@@ -244,32 +274,38 @@ const Dashboard = () => {
         {/* Quick Links Panel */}
         <QuickLinks />
 
-        {/* Recent Queries - Collapsible */}
-        <Card>
+        {/* Recent Queries */}
+        <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-xl">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <CardHeader>
-            <CardTitle><TranslatedText>Recent AI Queries</TranslatedText></CardTitle>
-            <CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <TranslatedText>Recent AI Queries</TranslatedText>
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
               <TranslatedText>Latest advisor interactions with the AI assistant</TranslatedText>
-            </CardDescription>
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {recentQueries.map((query, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between border-b pb-4 last:border-0"
+                  className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/30 backdrop-blur-sm hover:bg-muted/50 hover:border-primary/20 transition-all duration-300 group"
                 >
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <p className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
                       {query.query}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       <TranslatedText>by</TranslatedText> {query.advisor} • {query.time}
                     </p>
                   </div>
                   <Badge
-                    variant={
-                      query.status === "resolved" ? "default" : "secondary"
+                    variant={query.status === "resolved" ? "default" : "secondary"}
+                    className={query.status === "resolved" 
+                      ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                      : "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse"
                     }
                   >
                     <TranslatedText>{query.status}</TranslatedText>
