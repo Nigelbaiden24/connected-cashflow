@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,6 @@ export function TimeTrackingSnapshot() {
         .filter(e => new Date(e.created_at) >= weekStart)
         .reduce((sum, e) => sum + (e.duration_minutes || 0), 0);
 
-      // Group by project
       const projectMap = new Map<string, number>();
       timeEntries.forEach(entry => {
         const projectName = entry.business_projects?.project_name || 'Unassigned';
@@ -67,45 +66,42 @@ export function TimeTrackingSnapshot() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <Clock className="h-4 w-4 text-primary" />
           Time Tracking
         </CardTitle>
-        <CardDescription>Time logged across projects</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-            <div className="text-xs text-muted-foreground mb-1">Today</div>
-            <div className="text-2xl font-bold text-blue-600">{stats.today}h</div>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+            <div className="text-xs text-muted-foreground mb-0.5">Today</div>
+            <div className="text-2xl font-bold text-foreground">{stats.today}h</div>
           </div>
-          <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-            <div className="text-xs text-muted-foreground mb-1">This Week</div>
-            <div className="text-2xl font-bold text-green-600">{stats.thisWeek}h</div>
+          <div className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
+            <div className="text-xs text-muted-foreground mb-0.5">This Week</div>
+            <div className="text-2xl font-bold text-foreground">{stats.thisWeek}h</div>
           </div>
         </div>
 
-        {/* By Project */}
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading time data...</div>
+          <div className="text-sm text-muted-foreground">Loading...</div>
         ) : stats.byProject.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No time logged yet</div>
+          <div className="text-sm text-muted-foreground text-center py-2">No time logged</div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <TrendingUp className="h-4 w-4" />
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5" />
               Time by Project
             </div>
             {stats.byProject.map((project, idx) => (
-              <div key={idx} className="space-y-2">
+              <div key={idx} className="space-y-1.5">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium truncate">{project.name}</span>
+                  <span className="font-medium text-foreground truncate">{project.name}</span>
                   <span className="text-muted-foreground">{project.hours}h</span>
                 </div>
-                <Progress value={Math.min(100, (project.hours / 40) * 100)} />
+                <Progress value={Math.min(100, (project.hours / 40) * 100)} className="h-1.5" />
               </div>
             ))}
           </div>

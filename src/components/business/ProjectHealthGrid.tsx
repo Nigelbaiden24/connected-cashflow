@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
@@ -39,18 +39,23 @@ export function ProjectHealthGrid() {
     }
   };
 
-  const getHealthBadge = (health: string) => {
+  const getHealthColor = (health: string) => {
     switch (health) {
-      case 'on-track':
-        return <Badge className="bg-green-600">🟢 On Track</Badge>;
-      case 'at-risk':
-        return <Badge className="bg-yellow-600">🟡 At Risk</Badge>;
-      case 'behind':
-        return <Badge className="bg-red-600">🔴 Behind</Badge>;
-      case 'completed':
-        return <Badge className="bg-blue-600">⚪ Completed</Badge>;
-      default:
-        return <Badge variant="outline">⚪ Planned</Badge>;
+      case 'on-track': return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+      case 'at-risk': return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
+      case 'behind': return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'completed': return 'bg-primary/10 text-primary border-primary/20';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const getHealthLabel = (health: string) => {
+    switch (health) {
+      case 'on-track': return 'On Track';
+      case 'at-risk': return 'At Risk';
+      case 'behind': return 'Behind';
+      case 'completed': return 'Done';
+      default: return 'Planned';
     }
   };
 
@@ -62,54 +67,45 @@ export function ProjectHealthGrid() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Project Health Summary</CardTitle>
-        <CardDescription>Traffic-light view of all projects</CardDescription>
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">Project Health</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Health Summary */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="text-center p-3 rounded-lg bg-green-50">
-            <div className="text-2xl font-bold text-green-600">{healthCounts['on-track']}</div>
-            <div className="text-xs text-muted-foreground">On Track</div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-yellow-50">
-            <div className="text-2xl font-bold text-yellow-600">{healthCounts['at-risk']}</div>
-            <div className="text-xs text-muted-foreground">At Risk</div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-red-50">
-            <div className="text-2xl font-bold text-red-600">{healthCounts['behind']}</div>
-            <div className="text-xs text-muted-foreground">Behind</div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-blue-50">
-            <div className="text-2xl font-bold text-blue-600">{healthCounts['completed']}</div>
-            <div className="text-xs text-muted-foreground">Completed</div>
-          </div>
+        <div className="grid grid-cols-4 gap-2">
+          {Object.entries(healthCounts).map(([key, count]) => (
+            <div key={key} className={`text-center p-2.5 rounded-lg border ${getHealthColor(key)}`}>
+              <div className="text-xl font-bold">{count}</div>
+              <div className="text-xs">{getHealthLabel(key)}</div>
+            </div>
+          ))}
         </div>
 
         {/* Project List */}
         {loading ? (
           <div className="text-sm text-muted-foreground">Loading projects...</div>
         ) : projects.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No projects yet</div>
+          <div className="text-sm text-muted-foreground text-center py-4">No projects yet</div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2">
             {projects.slice(0, 6).map((project) => (
-              <div key={project.id} className="p-4 rounded-lg border bg-muted/20 space-y-2">
+              <div key={project.id} className="p-3 rounded-lg border border-border bg-muted/20 space-y-2">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h4 className="font-medium">{project.project_name}</h4>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm text-foreground truncate">{project.project_name}</h4>
                     <p className="text-xs text-muted-foreground">Status: {project.status}</p>
                   </div>
-                  {getHealthBadge(project.health_status)}
+                  <Badge variant="outline" className={`text-xs ${getHealthColor(project.health_status)}`}>
+                    {getHealthLabel(project.health_status)}
+                  </Badge>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span>Progress</span>
+                    <span className="text-muted-foreground">Progress</span>
                     <span className="font-medium">{project.completion_percentage}%</span>
                   </div>
-                  <Progress value={project.completion_percentage} />
+                  <Progress value={project.completion_percentage} className="h-1.5" />
                 </div>
               </div>
             ))}

@@ -40,15 +40,7 @@ export function AISummaryPanel() {
       const startOfWeek = new Date();
       startOfWeek.setDate(startOfWeek.getDate() - 7);
       
-      const [
-        meetingsResult,
-        tasksResult,
-        alertsResult,
-        clientsResult,
-        revenueResult,
-        goalsResult,
-        activityResult
-      ] = await Promise.all([
+      const [meetingsResult, tasksResult, alertsResult, clientsResult, revenueResult, goalsResult, activityResult] = await Promise.all([
         supabase.from('advisor_tasks').select('*').eq('user_id', user.user.id).eq('task_type', 'meeting').gte('due_date', today).limit(20),
         supabase.from('advisor_tasks').select('*').eq('user_id', user.user.id).in('status', ['pending', 'overdue']).limit(20),
         supabase.from('advisor_alerts').select('*').eq('user_id', user.user.id).eq('is_read', false).limit(20),
@@ -63,9 +55,7 @@ export function AISummaryPanel() {
       const overdueTasks = tasksResult.data?.filter(t => t.status === 'overdue').length || 0;
       const pendingDocs = tasksResult.data?.filter(t => t.task_type === 'document_review').length || 0;
       const criticalAlerts = alertsResult.data?.filter(a => a.severity === 'critical').length || 0;
-      const highAlerts = alertsResult.data?.filter(a => a.severity === 'high').length || 0;
       const highRiskClients = clientsResult.data?.filter(c => c.risk_level === 'high').length || 0;
-      const mediumRiskClients = clientsResult.data?.filter(c => c.risk_level === 'medium').length || 0;
       const weeklyRevenue = revenueResult.data?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
       const activeGoals = goalsResult.data?.length || 0;
       const goalProgress = goalsResult.data?.filter(g => g.current_value && g.target_value && (g.current_value / g.target_value) >= 0.8).length || 0;
@@ -73,76 +63,16 @@ export function AISummaryPanel() {
 
       const newInsights: Insight[] = [];
       
-      if (criticalAlerts > 0) {
-        newInsights.push({ 
-          icon: AlertCircle, 
-          text: `${criticalAlerts} critical alert${criticalAlerts > 1 ? 's' : ''} requiring immediate attention`, 
-          type: 'critical',
-          trend: 'up'
-        });
-      }
-      
-      if (overdueTasks > 0) {
-        newInsights.push({ 
-          icon: FileText, 
-          text: `${overdueTasks} overdue task${overdueTasks > 1 ? 's' : ''}`, 
-          type: 'critical',
-          trend: 'up'
-        });
-      }
+      if (criticalAlerts > 0) newInsights.push({ icon: AlertCircle, text: `${criticalAlerts} critical alert${criticalAlerts > 1 ? 's' : ''} requiring attention`, type: 'critical', trend: 'up' });
+      if (overdueTasks > 0) newInsights.push({ icon: FileText, text: `${overdueTasks} overdue task${overdueTasks > 1 ? 's' : ''}`, type: 'critical', trend: 'up' });
+      if (highRiskClients > 0) newInsights.push({ icon: Users, text: `${highRiskClients} high-risk portfolio${highRiskClients > 1 ? 's' : ''} need review`, type: 'warning', trend: highRiskClients > 3 ? 'up' : 'stable' });
+      if (todayMeetings > 0) newInsights.push({ icon: Calendar, text: `${todayMeetings} meeting${todayMeetings > 1 ? 's' : ''} scheduled today`, type: 'info', trend: 'stable' });
+      if (pendingDocs > 0) newInsights.push({ icon: FileText, text: `${pendingDocs} document${pendingDocs > 1 ? 's' : ''} awaiting review`, type: 'warning', trend: 'stable' });
+      if (goalProgress > 0 && activeGoals > 0) newInsights.push({ icon: Target, text: `${goalProgress}/${activeGoals} goals on track (80%+)`, type: 'success', trend: 'up' });
+      if (weeklyRevenue > 0) newInsights.push({ icon: TrendingUp, text: `£${(weeklyRevenue / 1000).toFixed(1)}K revenue this week`, type: 'success', trend: 'up' });
 
-      if (highRiskClients > 0) {
-        newInsights.push({ 
-          icon: Users, 
-          text: `${highRiskClients} high-risk portfolio${highRiskClients > 1 ? 's' : ''} need review`, 
-          type: 'warning',
-          trend: highRiskClients > 3 ? 'up' : 'stable'
-        });
-      }
-
-      if (todayMeetings > 0) {
-        newInsights.push({ 
-          icon: Calendar, 
-          text: `${todayMeetings} meeting${todayMeetings > 1 ? 's' : ''} scheduled today`, 
-          type: 'info',
-          trend: 'stable'
-        });
-      }
-
-      if (pendingDocs > 0) {
-        newInsights.push({ 
-          icon: FileText, 
-          text: `${pendingDocs} document${pendingDocs > 1 ? 's' : ''} awaiting review`, 
-          type: 'warning',
-          trend: 'stable'
-        });
-      }
-
-      if (goalProgress > 0 && activeGoals > 0) {
-        newInsights.push({ 
-          icon: Target, 
-          text: `${goalProgress}/${activeGoals} goals on track (80%+ complete)`, 
-          type: 'success',
-          trend: 'up'
-        });
-      }
-
-      if (weeklyRevenue > 0) {
-        newInsights.push({ 
-          icon: TrendingUp, 
-          text: `£${(weeklyRevenue / 1000).toFixed(1)}K revenue this week`, 
-          type: 'success',
-          trend: 'up'
-        });
-      }
-
-      if (newInsights.length === 0 || (criticalAlerts === 0 && overdueTasks === 0 && highAlerts === 0)) {
-        newInsights.push({ 
-          icon: Sparkles, 
-          text: 'All systems healthy - excellent performance', 
-          type: 'success',
-          trend: 'stable'
-        });
+      if (newInsights.length === 0) {
+        newInsights.push({ icon: Sparkles, text: 'All systems healthy', type: 'success', trend: 'stable' });
       }
 
       const summaryParts = [];
@@ -158,10 +88,9 @@ export function AISummaryPanel() {
       setSummary(summaryText);
       setInsights(newInsights);
       setAiGenerated(true);
-      
     } catch (error) {
       console.error('Error generating summary:', error);
-      setSummary("Unable to generate AI insights. Please refresh to try again.");
+      setSummary("Unable to generate AI insights. Please refresh.");
       toast.error("Failed to load AI insights");
     } finally {
       setLoading(false);
@@ -170,46 +99,26 @@ export function AISummaryPanel() {
 
   const getTypeStyles = (type: Insight['type']) => {
     switch (type) {
-      case 'critical': 
-        return 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10 text-destructive backdrop-blur-sm';
-      case 'warning': 
-        return 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 backdrop-blur-sm';
-      case 'success': 
-        return 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 backdrop-blur-sm';
-      case 'info':
-        return 'border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary backdrop-blur-sm';
-    }
-  };
-
-  const getTrendIcon = (trend?: 'up' | 'down' | 'stable') => {
-    if (!trend) return null;
-    switch (trend) {
-      case 'up': return <TrendingUp className="h-3 w-3 ml-1" />;
-      case 'down': return <TrendingUp className="h-3 w-3 ml-1 rotate-180" />;
-      case 'stable': return <div className="h-1 w-3 bg-current rounded ml-1" />;
+      case 'critical': return 'border-l-destructive text-destructive';
+      case 'warning': return 'border-l-amber-500 text-amber-600 dark:text-amber-400';
+      case 'success': return 'border-l-emerald-500 text-emerald-600 dark:text-emerald-400';
+      case 'info': return 'border-l-primary text-primary';
     }
   };
 
   if (loading) {
     return (
-      <Card className="col-span-full border-primary/20 bg-gradient-to-br from-primary/5 via-card to-violet-500/5 backdrop-blur-xl shadow-lg">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                <Brain className="h-5 w-5 animate-pulse text-primary" />
-              </div>
-              AI Daily Snapshot
-            </CardTitle>
-            <Skeleton className="h-9 w-24" />
-          </div>
+      <Card className="border-border bg-card shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Brain className="h-4 w-4 animate-pulse text-primary" />
+            AI Daily Snapshot
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-6 w-3/4" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {[1, 2, 3, 4].map(i => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
+        <CardContent className="space-y-3">
+          <Skeleton className="h-5 w-3/4" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
           </div>
         </CardContent>
       </Card>
@@ -217,84 +126,44 @@ export function AISummaryPanel() {
   }
 
   return (
-    <Card className="col-span-full relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 via-card to-violet-500/5 backdrop-blur-xl shadow-xl hover:shadow-2xl transition-all duration-500">
-      {/* Animated gradient border top */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
-      
-      {/* Floating ambient orbs */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl" />
-      
-      <CardHeader className="relative">
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary to-violet-500 rounded-xl blur opacity-40 animate-pulse" />
-              <div className="relative p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-violet-500/20 border border-primary/30 backdrop-blur-sm">
-                <Brain className="h-5 w-5 text-primary" />
-              </div>
-            </div>
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                AI Daily Snapshot
-                {aiGenerated && (
-                  <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs">
-                    <span className="relative flex h-1.5 w-1.5 mr-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                    </span>
-                    Live
-                  </Badge>
-                )}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Real-time intelligence powered by AI
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Brain className="h-4 w-4 text-primary" />
+            <CardTitle className="text-base font-semibold">AI Daily Snapshot</CardTitle>
+            {aiGenerated && (
+              <Badge variant="outline" className="text-xs gap-1 border-emerald-500/30 text-emerald-600">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                </span>
+                Live
+              </Badge>
+            )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={generateSummary}
-            disabled={loading}
-            className="backdrop-blur-sm bg-card/50 border-border/50 hover:bg-primary/10 hover:border-primary/30 transition-all duration-300"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="ghost" size="sm" onClick={generateSummary} disabled={loading} className="text-xs gap-1">
+            <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </CardHeader>
-      
-      <CardContent className="space-y-4 relative">
-        <div className="text-base font-medium leading-relaxed text-foreground/90 p-4 bg-background/30 backdrop-blur-sm rounded-xl border border-border/30">
-          {summary}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <CardContent className="space-y-3">
+        <p className="text-sm text-foreground/80 p-3 bg-muted/30 rounded-lg border border-border">{summary}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {insights.map((insight, i) => {
             const Icon = insight.icon;
             return (
-              <div
-                key={i}
-                className={`flex items-center justify-between gap-2 p-3 rounded-xl border transition-all duration-300 cursor-default hover:-translate-y-0.5 hover:shadow-md ${getTypeStyles(insight.type)}`}
-                onClick={insight.action}
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <Icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="text-sm font-medium leading-tight">{insight.text}</span>
-                </div>
-                {getTrendIcon(insight.trend)}
+              <div key={i} className={`flex items-center gap-2 p-2.5 rounded-lg border border-border border-l-4 bg-muted/20 ${getTypeStyles(insight.type)}`}>
+                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="text-xs font-medium leading-tight">{insight.text}</span>
               </div>
             );
           })}
         </div>
-
-        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground border-t border-border/30">
-          <span>Last updated: {new Date().toLocaleTimeString()}</span>
-          <span className="flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-primary" />
-            Powered by AI Analytics
-          </span>
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+          <span>Updated: {new Date().toLocaleTimeString()}</span>
+          <span className="flex items-center gap-1"><Sparkles className="h-3 w-3 text-primary" />AI Analytics</span>
         </div>
       </CardContent>
     </Card>

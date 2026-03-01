@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,75 +18,63 @@ export function NotificationsCenter() {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'destructive';
-      case 'warning': return 'secondary';
-      default: return 'outline';
-    }
-  };
-
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notifications & Alerts
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="ml-2">{unreadCount}</Badge>
-              )}
-            </CardTitle>
-            <CardDescription>Important updates and alerts</CardDescription>
-          </div>
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
+            <Bell className="h-4 w-4 text-primary" />
+            Notifications
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="text-xs">{unreadCount}</Badge>
+            )}
+          </CardTitle>
           {unreadCount > 0 && (
-            <Button size="sm" variant="outline" onClick={markAllAsRead}>
-              Mark all as read
+            <Button size="sm" variant="ghost" onClick={markAllAsRead} className="text-xs">
+              Mark all read
             </Button>
           )}
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="h-[380px] pr-4">
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading notifications...</div>
+            <div className="text-sm text-muted-foreground">Loading...</div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <CheckCircle className="h-12 w-12 text-green-600 mb-2" />
-              <p className="text-sm text-muted-foreground">All caught up! No new notifications</p>
+              <CheckCircle className="h-10 w-10 text-emerald-500 mb-2 opacity-50" />
+              <p className="text-sm text-muted-foreground">All caught up!</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {notifications.map((notification) => {
                 const Icon = getIcon(notification.notification_type);
-                
                 return (
                   <div
                     key={notification.id}
-                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                      notification.is_read ? 'bg-background' : 'bg-muted/50 border-primary/20'
-                    }`}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      notification.is_read 
+                        ? 'border-border bg-muted/10' 
+                        : 'border-primary/20 bg-primary/5'
+                    } hover:bg-muted/30`}
                     onClick={() => !notification.is_read && markAsRead(notification.id)}
                   >
-                    <div className="flex items-start gap-3">
-                      <Icon className={`h-5 w-5 mt-0.5 ${
+                    <div className="flex items-start gap-2.5">
+                      <Icon className={`h-4 w-4 mt-0.5 ${
                         notification.severity === 'critical' ? 'text-destructive' :
-                        notification.severity === 'warning' ? 'text-yellow-600' :
+                        notification.severity === 'warning' ? 'text-amber-500' :
                         'text-muted-foreground'
                       }`} />
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-medium text-sm">{notification.title}</p>
-                          <Badge variant={getSeverityColor(notification.severity) as any} className="text-xs">
-                            {notification.severity}
-                          </Badge>
-                        </div>
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <p className="font-medium text-sm text-foreground">{notification.title}</p>
                         <p className="text-xs text-muted-foreground">{notification.message}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground/60">
                           {new Date(notification.created_at).toLocaleString()}
                         </p>
                       </div>
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {notification.severity}
+                      </Badge>
                     </div>
                   </div>
                 );

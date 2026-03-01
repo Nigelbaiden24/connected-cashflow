@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle, FileText, MessageSquare, Zap, TrendingUp, AlertCircle } from "lucide-react";
@@ -20,7 +20,6 @@ export function ActivityFeed() {
   useEffect(() => {
     fetchActivities();
     
-    // Subscribe to realtime updates
     const channel = supabase
       .channel('activity-feed')
       .on('postgres_changes', { 
@@ -69,16 +68,6 @@ export function ActivityFeed() {
     }
   };
 
-  const getColor = (type: string) => {
-    switch (type) {
-      case 'task_completed': return 'text-green-600';
-      case 'task_created': return 'text-blue-600';
-      case 'workflow_triggered': return 'text-yellow-600';
-      case 'ai_insight': return 'text-purple-600';
-      default: return 'text-gray-600';
-    }
-  };
-
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -93,34 +82,37 @@ export function ActivityFeed() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Team Activity Feed</span>
-          <Badge variant="secondary" className="animate-pulse">Live</Badge>
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center justify-between text-base font-semibold">
+          <span>Activity Feed</span>
+          <Badge variant="outline" className="text-xs gap-1 border-emerald-500/30 text-emerald-600">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            Live
+          </Badge>
         </CardTitle>
-        <CardDescription>Real-time team updates and changes</CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="h-[380px] pr-4">
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading activities...</div>
           ) : activities.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No recent activity</div>
+            <div className="text-sm text-muted-foreground text-center py-8">No recent activity</div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-1">
               {activities.map((activity) => {
                 const Icon = getIcon(activity.activity_type);
-                const color = getColor(activity.activity_type);
-                
                 return (
-                  <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Icon className={`h-5 w-5 mt-0.5 ${color}`} />
+                  <div key={activity.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
+                    <Icon className="h-4 w-4 mt-0.5 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{activity.title}</p>
+                      <p className="text-sm font-medium text-foreground">{activity.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{formatTime(activity.created_at)}</p>
                     </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">{formatTime(activity.created_at)}</span>
                   </div>
                 );
               })}

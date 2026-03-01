@@ -1,5 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -36,14 +35,11 @@ export function SmartRecommendations() {
       const projects = projectsRes.data || [];
       const workflows = workflowsRes.data || [];
 
-      // Call AI function for smart recommendations
       const { data: aiData, error: aiError } = await supabase.functions.invoke('business-recommendations', {
         body: { tasks, projects, workflows }
       });
 
       if (aiError) {
-        console.error('AI recommendations error:', aiError);
-        // Fallback to basic recommendations
         setRecommendations([{
           id: '1',
           type: 'suggestion',
@@ -84,47 +80,44 @@ export function SmartRecommendations() {
     }
   };
 
-  const getVariant = (type: string): "default" | "secondary" | "destructive" => {
+  const getAccent = (type: string) => {
     switch (type) {
-      case 'warning': return 'destructive';
-      case 'success': return 'default';
-      default: return 'secondary';
+      case 'warning': return 'border-l-destructive';
+      case 'success': return 'border-l-emerald-500';
+      default: return 'border-l-primary';
     }
   };
 
   return (
-    <Card className="h-fit">
+    <Card className="border-border bg-card shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Lightbulb className="h-5 w-5 text-primary" />
-          AI Smart Recommendations
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <Lightbulb className="h-4 w-4 text-primary" />
+          AI Recommendations
         </CardTitle>
-        <CardDescription className="text-xs">Intelligent insights powered by AI analytics</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
         {loading ? (
           <div className="text-center py-6 text-sm text-muted-foreground">
-            <Lightbulb className="h-8 w-8 mx-auto mb-2 animate-pulse text-primary" />
-            Analyzing your business data with AI...
+            <Lightbulb className="h-6 w-6 mx-auto mb-2 animate-pulse text-primary" />
+            Analyzing your data...
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto pr-1 space-y-2">
+          <div className="max-h-[380px] overflow-y-auto pr-1 space-y-2">
             {recommendations.map((rec) => {
               const Icon = getIcon(rec.type);
               return (
                 <div
                   key={rec.id}
-                  className="p-3 rounded-lg border bg-card/50 hover:bg-card transition-colors"
+                  className={`p-3 rounded-lg border border-border border-l-4 ${getAccent(rec.type)} bg-muted/20 hover:bg-muted/40 transition-colors`}
                 >
-                  <div className="flex items-start gap-3">
-                    <Icon className="h-4 w-4 mt-0.5 shrink-0 flex-shrink-0" />
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <h4 className="font-medium text-sm leading-tight break-words">{rec.title}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed break-words">{rec.description}</p>
+                  <div className="flex items-start gap-2.5">
+                    <Icon className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                      <h4 className="font-medium text-sm text-foreground">{rec.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{rec.description}</p>
                       {rec.actionLabel && (
-                        <Badge variant={getVariant(rec.type)} className="text-xs mt-1">
-                          {rec.actionLabel}
-                        </Badge>
+                        <Badge variant="outline" className="text-xs mt-1">{rec.actionLabel}</Badge>
                       )}
                     </div>
                   </div>
