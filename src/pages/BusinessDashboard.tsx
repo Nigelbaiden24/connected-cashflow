@@ -20,6 +20,7 @@ import { DocumentHub } from "@/components/business/DocumentHub";
 import { DeadlinesTimeline } from "@/components/business/DeadlinesTimeline";
 import { TimeTrackingSnapshot } from "@/components/business/TimeTrackingSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
+import { Badge } from "@/components/ui/badge";
 
 export default function BusinessDashboard() {
   const navigate = useNavigate();
@@ -39,43 +40,55 @@ export default function BusinessDashboard() {
     }
   };
 
-
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={handleLogout} />
         
         <div className="flex-1 flex flex-col w-full">
-          <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex h-16 items-center gap-4 px-6">
+          <header className="sticky top-0 z-40 border-b border-border bg-background">
+            <div className="flex h-14 items-center gap-3 px-6">
               <img
                 src={flowpulseLogo} 
                 alt="The Flowpulse Group" 
-                className="h-14 w-14 rounded-lg object-contain cursor-pointer" 
+                className="h-10 w-10 rounded-lg object-contain cursor-pointer" 
                 onClick={() => navigate('/')}
               />
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => navigate(-1)}
-                className="gap-2"
+                className="h-8 w-8"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Home className="h-5 w-5 text-muted-foreground" />
-                  <h1 className="text-2xl font-bold"><TranslatedText>Business Dashboard</TranslatedText></h1>
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                  <h1 className="text-lg font-semibold"><TranslatedText>Business Dashboard</TranslatedText></h1>
                 </div>
               </div>
+              <Badge variant="outline" className="text-xs gap-1.5 border-emerald-500/30 text-emerald-600">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                </span>
+                <TranslatedText>Live</TranslatedText>
+              </Badge>
             </div>
           </header>
 
-          <main className="flex-1 w-full space-y-6 p-6 bg-gradient-to-br from-background via-background to-muted/20 overflow-auto">
-            {/* Welcome Banner */}
-            <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-primary-foreground shadow-lg">
-              <h2 className="text-3xl font-bold mb-2"><TranslatedText>Welcome to Flowpulse Business Command Center</TranslatedText></h2>
-              <p className="text-primary-foreground/90"><TranslatedText>Your enterprise-grade business automation platform</TranslatedText></p>
+          <main className="flex-1 w-full space-y-5 p-6 bg-background overflow-auto">
+            {/* Welcome Banner - Clean */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  <TranslatedText>Command Center</TranslatedText>
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  <TranslatedText>Here's a snapshot of your business operations</TranslatedText>
+                </p>
+              </div>
             </div>
 
             {/* Global Workload Summary */}
@@ -84,17 +97,17 @@ export default function BusinessDashboard() {
             {/* Command Center */}
             <CommandCenter />
 
+            {/* Performance Metrics */}
+            <PerformanceMetrics />
+
             {/* Smart Recommendations + Activity Feed */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <SmartRecommendations />
               <ActivityFeed />
             </div>
 
-            {/* Performance Metrics */}
-            <PerformanceMetrics />
-
             {/* Project Health + Workload Heatmap */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <ProjectHealthGrid />
               <WorkloadHeatmap />
             </div>
@@ -103,13 +116,13 @@ export default function BusinessDashboard() {
             <AutomationMonitoring />
 
             {/* Notifications + Document Hub */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <NotificationsCenter />
               <DocumentHub />
             </div>
 
             {/* Deadlines Timeline + Time Tracking */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <DeadlinesTimeline />
               <TimeTrackingSnapshot />
             </div>

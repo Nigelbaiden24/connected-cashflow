@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Users, Upload, Zap, FileText, GitBranch } from "lucide-react";
 import { useState } from "react";
 import { AssignMemberDialog } from "./AssignMemberDialog";
@@ -97,15 +98,37 @@ export function CommandCenter() {
     }
   };
 
+  const actions = [
+    { label: "Create Task", icon: Plus, onClick: () => setTaskDialog(true), primary: true },
+    { label: "Create Project", icon: GitBranch, onClick: () => setProjectDialog(true) },
+    { label: "Assign Member", icon: Users, onClick: () => setAssignDialog(true) },
+    { label: "Upload Document", icon: Upload, onClick: () => setUploadDialog(true) },
+    { label: "Trigger Automation", icon: Zap, onClick: () => setAutomationDialog(true) },
+    { label: "Add Workflow", icon: FileText, onClick: () => setWorkflowDialog(true) },
+  ];
+
   return (
-    <div className="flex flex-wrap gap-2 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border">
+    <>
+      <Card className="border-border bg-card shadow-sm">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-2">
+            {actions.map((action) => (
+              <Button
+                key={action.label}
+                size="sm"
+                variant={action.primary ? "default" : "outline"}
+                className="gap-2 text-xs"
+                onClick={action.onClick}
+              >
+                <action.icon className="h-3.5 w-3.5" />
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <Dialog open={taskDialog} onOpenChange={setTaskDialog}>
-        <DialogTrigger asChild>
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Task
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>
@@ -123,9 +146,7 @@ export function CommandCenter() {
             <div>
               <Label>Priority</Label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
@@ -140,12 +161,6 @@ export function CommandCenter() {
       </Dialog>
 
       <Dialog open={projectDialog} onOpenChange={setProjectDialog}>
-        <DialogTrigger asChild>
-          <Button size="sm" variant="outline" className="gap-2">
-            <GitBranch className="h-4 w-4" />
-            Create Project
-          </Button>
-        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
@@ -165,47 +180,10 @@ export function CommandCenter() {
         </DialogContent>
       </Dialog>
 
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="gap-2"
-        onClick={() => setAssignDialog(true)}
-      >
-        <Users className="h-4 w-4" />
-        Assign Member
-      </Button>
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="gap-2"
-        onClick={() => setUploadDialog(true)}
-      >
-        <Upload className="h-4 w-4" />
-        Upload Document
-      </Button>
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="gap-2"
-        onClick={() => setAutomationDialog(true)}
-      >
-        <Zap className="h-4 w-4" />
-        Trigger Automation
-      </Button>
-      <Button 
-        size="sm" 
-        variant="outline" 
-        className="gap-2"
-        onClick={() => setWorkflowDialog(true)}
-      >
-        <FileText className="h-4 w-4" />
-        Add Workflow
-      </Button>
-
       <AssignMemberDialog open={assignDialog} onOpenChange={setAssignDialog} />
       <UploadDocumentDialog open={uploadDialog} onOpenChange={setUploadDialog} />
       <TriggerAutomationDialog open={automationDialog} onOpenChange={setAutomationDialog} />
       <AddWorkflowDialog open={workflowDialog} onOpenChange={setWorkflowDialog} />
-    </div>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Upload, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -42,14 +42,10 @@ export function DocumentHub() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-600"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>;
-      case 'pending_approval':
-        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive"><AlertCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
-      default:
-        return <Badge variant="outline">Uploaded</Badge>;
+      case 'approved': return <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-500/20 bg-emerald-500/10">Approved</Badge>;
+      case 'pending_approval': return <Badge variant="outline" className="text-xs text-amber-600 border-amber-500/20 bg-amber-500/10">Pending</Badge>;
+      case 'rejected': return <Badge variant="destructive" className="text-xs">Rejected</Badge>;
+      default: return <Badge variant="outline" className="text-xs">Uploaded</Badge>;
     }
   };
 
@@ -60,58 +56,48 @@ export function DocumentHub() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <FileText className="h-4 w-4 text-primary" />
           Document Hub
         </CardTitle>
-        <CardDescription>Recent uploads and document status</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-3 rounded-lg bg-muted">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-xs text-muted-foreground">Total Documents</div>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="text-center p-2.5 rounded-lg border border-border bg-muted/20">
+            <div className="text-xl font-bold text-foreground">{stats.total}</div>
+            <div className="text-xs text-muted-foreground">Total</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-yellow-50">
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-            <div className="text-xs text-muted-foreground">Pending Approval</div>
+          <div className="text-center p-2.5 rounded-lg border border-amber-500/20 bg-amber-500/5">
+            <div className="text-xl font-bold text-amber-600">{stats.pending}</div>
+            <div className="text-xs text-muted-foreground">Pending</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-blue-50">
-            <div className="text-2xl font-bold text-blue-600">{stats.needsSignature}</div>
-            <div className="text-xs text-muted-foreground">Needs Signature</div>
+          <div className="text-center p-2.5 rounded-lg border border-primary/20 bg-primary/5">
+            <div className="text-xl font-bold text-primary">{stats.needsSignature}</div>
+            <div className="text-xs text-muted-foreground">Signature</div>
           </div>
         </div>
 
-        {/* Document List */}
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading documents...</div>
+          <div className="text-sm text-muted-foreground">Loading...</div>
         ) : documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Upload className="h-12 w-12 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">No documents uploaded yet</p>
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <Upload className="h-8 w-8 text-muted-foreground mb-2 opacity-40" />
+            <p className="text-sm text-muted-foreground">No documents yet</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border bg-background hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div key={doc.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/10 hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{doc.document_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(doc.created_at).toLocaleDateString()}
-                    </p>
+                    <p className="text-sm font-medium text-foreground truncate">{doc.document_name}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {doc.requires_signature && (
-                    <Badge variant="outline" className="text-xs">Signature Required</Badge>
-                  )}
-                  {getStatusBadge(doc.status)}
-                </div>
+                {getStatusBadge(doc.status)}
               </div>
             ))}
           </div>

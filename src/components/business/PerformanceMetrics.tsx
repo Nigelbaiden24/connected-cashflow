@@ -1,5 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Target, Clock, Zap } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Target, TrendingUp, Clock, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
@@ -55,64 +55,31 @@ export function PerformanceMetrics() {
   };
 
   const kpis = [
-    {
-      title: "Task Completion Rate",
-      value: `${metrics.taskCompletionRate}%`,
-      progress: metrics.taskCompletionRate,
-      icon: Target,
-      color: "text-green-600"
-    },
-    {
-      title: "Workflow Success Rate",
-      value: `${metrics.workflowSuccessRate}%`,
-      progress: metrics.workflowSuccessRate,
-      icon: TrendingUp,
-      color: "text-blue-600"
-    },
-    {
-      title: "SLA Adherence",
-      value: `${metrics.slaAdherence}%`,
-      progress: metrics.slaAdherence,
-      icon: Clock,
-      color: "text-purple-600"
-    },
-    {
-      title: "Automation Time Saved",
-      value: `${metrics.automationTimeSaved}h`,
-      progress: Math.min(100, metrics.automationTimeSaved * 10),
-      icon: Zap,
-      color: "text-yellow-600"
-    },
-    {
-      title: "Team Efficiency Score",
-      value: `${metrics.teamEfficiency}%`,
-      progress: metrics.teamEfficiency,
-      icon: TrendingUp,
-      color: "text-indigo-600"
-    }
+    { title: "Task Completion", value: `${metrics.taskCompletionRate}%`, progress: metrics.taskCompletionRate, icon: Target },
+    { title: "Workflow Success", value: `${metrics.workflowSuccessRate}%`, progress: metrics.workflowSuccessRate, icon: TrendingUp },
+    { title: "SLA Adherence", value: `${metrics.slaAdherence}%`, progress: metrics.slaAdherence, icon: Clock },
+    { title: "Time Saved", value: `${metrics.automationTimeSaved}h`, progress: Math.min(100, metrics.automationTimeSaved * 10), icon: Zap },
+    { title: "Efficiency", value: `${metrics.teamEfficiency}%`, progress: metrics.teamEfficiency, icon: TrendingUp },
   ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Performance Metrics & KPIs</CardTitle>
-        <CardDescription>Key performance indicators for your workspace</CardDescription>
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold">Performance Metrics & KPIs</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="text-sm text-muted-foreground">Loading metrics...</div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
             {kpis.map((kpi, idx) => (
-              <div key={idx} className="p-4 rounded-lg border bg-muted/20 space-y-3">
+              <div key={idx} className="p-3 rounded-lg border border-border bg-muted/30 space-y-2">
                 <div className="flex items-center justify-between">
-                  <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
-                  <span className="text-2xl font-bold">{kpi.value}</span>
+                  <kpi.icon className="h-4 w-4 text-primary" />
+                  <span className="text-xl font-bold text-foreground">{kpi.value}</span>
                 </div>
-                <div>
-                  <div className="text-sm font-medium mb-2">{kpi.title}</div>
-                  <Progress value={kpi.progress} />
-                </div>
+                <p className="text-xs text-muted-foreground">{kpi.title}</p>
+                <Progress value={kpi.progress} className="h-1.5" />
               </div>
             ))}
           </div>

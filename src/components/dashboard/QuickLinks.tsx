@@ -7,42 +7,39 @@ export function QuickLinks() {
   const navigate = useNavigate();
 
   const quickLinks = [
-    { title: "Generate Suitability Report", icon: FileText, description: "Create client suitability documentation", path: "/finance-ai-generator", gradient: "from-blue-500 to-blue-600", glow: "shadow-blue-500/20" },
-    { title: "Portfolio Rebalancer", icon: Target, description: "Optimize client portfolio allocation", path: "/portfolio", gradient: "from-violet-500 to-purple-600", glow: "shadow-violet-500/20" },
-    { title: "Create Risk Profile", icon: PieChart, description: "Assess client risk tolerance", path: "/risk", gradient: "from-amber-500 to-orange-600", glow: "shadow-amber-500/20" },
-    { title: "Add KYC Document", icon: Upload, description: "Upload client compliance docs", path: "/compliance", gradient: "from-emerald-500 to-green-600", glow: "shadow-emerald-500/20" },
-    { title: "Investment Proposal", icon: Calculator, description: "Generate investment proposals", path: "/finance-ai-generator", gradient: "from-rose-500 to-pink-600", glow: "shadow-rose-500/20" },
-    { title: "Market Analysis", icon: TrendingUp, description: "View market data and trends", path: "/market", gradient: "from-cyan-500 to-blue-600", glow: "shadow-cyan-500/20" },
+    { title: "Suitability Report", icon: FileText, description: "Generate documentation", path: "/finance-ai-generator" },
+    { title: "Portfolio Rebalancer", icon: Target, description: "Optimize allocations", path: "/portfolio" },
+    { title: "Risk Profile", icon: PieChart, description: "Assess risk tolerance", path: "/risk" },
+    { title: "KYC Document", icon: Upload, description: "Upload compliance docs", path: "/compliance" },
+    { title: "Investment Proposal", icon: Calculator, description: "Generate proposals", path: "/finance-ai-generator" },
+    { title: "Market Analysis", icon: TrendingUp, description: "View market trends", path: "/market" },
   ];
 
   return (
-    <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-xl">
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-            <Zap className="h-4 w-4 text-primary" />
-          </div>
-          Quick Actions & Workflows
+    <Card className="border-border bg-card shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <Zap className="h-4 w-4 text-primary" />
+          Quick Actions
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {quickLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Button
                 key={link.title}
                 variant="outline"
-                className={`h-auto flex-col gap-3 p-5 border-border/50 bg-muted/20 backdrop-blur-sm hover:bg-muted/40 hover:shadow-lg ${link.glow} hover:border-primary/20 transition-all duration-300 hover:-translate-y-1 group`}
+                className="h-auto flex-col gap-2 p-4 border-border bg-muted/10 hover:bg-muted/30 transition-colors"
                 onClick={() => navigate(link.path)}
               >
-                <div className={`p-3 rounded-xl bg-gradient-to-br ${link.gradient} shadow-lg ${link.glow} group-hover:scale-110 transition-transform duration-300`}>
-                  <Icon className="h-5 w-5 text-white" />
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Icon className="h-4 w-4 text-primary" />
                 </div>
                 <div className="text-center">
-                  <div className="font-medium text-sm">{link.title}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{link.description}</div>
+                  <div className="font-medium text-xs text-foreground">{link.title}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{link.description}</div>
                 </div>
               </Button>
             );

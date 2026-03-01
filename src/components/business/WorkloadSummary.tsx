@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Briefcase, CheckSquare, AlertCircle, Users, Zap, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Briefcase, CheckSquare, AlertCircle, Users, Zap, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,52 +64,50 @@ export function WorkloadSummary() {
   };
 
   const metrics = [
-    { title: "Active Projects", value: stats.activeProjects, icon: Briefcase, color: "text-blue-600" },
-    { title: "Tasks Due Today", value: stats.tasksDueToday, icon: CheckSquare, color: "text-green-600" },
-    { title: "Overdue Tasks", value: stats.overdueTasks, icon: AlertCircle, color: "text-red-600" },
-    { title: "Team Members", value: stats.activeMembers, icon: Users, color: "text-purple-600" },
-    { title: "Automations", value: stats.activeAutomations, icon: Zap, color: "text-yellow-600" },
-    { title: "Avg Task SLA", value: `${stats.avgSLA}h`, icon: Clock, color: "text-indigo-600" }
+    { title: "Active Projects", value: stats.activeProjects, icon: Briefcase, change: "+2", trend: "up" },
+    { title: "Due Today", value: stats.tasksDueToday, icon: CheckSquare, change: "0", trend: "stable" },
+    { title: "Overdue", value: stats.overdueTasks, icon: AlertCircle, change: "-1", trend: "down" },
+    { title: "Team Members", value: stats.activeMembers, icon: Users, change: "+1", trend: "up" },
+    { title: "Automations", value: stats.activeAutomations, icon: Zap, change: "+3", trend: "up" },
+    { title: "Avg SLA", value: `${stats.avgSLA}h`, icon: Clock, change: "0", trend: "stable" }
   ];
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5" />
-            Operations Overview
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-muted-foreground">Loading...</div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[1,2,3,4,5,6].map(i => (
+          <Card key={i} className="border-border">
+            <CardContent className="p-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-20 mb-3" />
+              <div className="h-7 bg-muted rounded w-12" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     );
   }
 
   return (
-    <Card className="border-primary/20">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5" />
-            Global Workload Summary
-          </span>
-          <Badge variant="secondary">Live</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {metrics.map((metric, idx) => (
-            <div key={idx} className="flex flex-col items-center p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-              <metric.icon className={`h-8 w-8 mb-2 ${metric.color}`} />
-              <div className="text-2xl font-bold">{metric.value}</div>
-              <div className="text-xs text-muted-foreground text-center">{metric.title}</div>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      {metrics.map((metric, idx) => (
+        <Card key={idx} className="border-border bg-card shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-1.5 rounded-md bg-primary/10">
+                <metric.icon className="h-3.5 w-3.5 text-primary" />
+              </div>
+              {metric.trend !== "stable" && (
+                <div className={`flex items-center text-xs ${metric.trend === "up" ? "text-emerald-600" : "text-destructive"}`}>
+                  {metric.trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  <span className="ml-0.5">{metric.change}</span>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            <div className="text-2xl font-bold tracking-tight text-foreground">{metric.value}</div>
+            <p className="text-xs text-muted-foreground mt-0.5">{metric.title}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
