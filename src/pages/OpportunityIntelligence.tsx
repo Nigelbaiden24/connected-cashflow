@@ -13,6 +13,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OpportunityShowcase } from "@/components/opportunities/OpportunityShowcase";
+import { SectorFolderGrid } from "@/components/opportunities/SectorFolderGrid";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { 
@@ -36,7 +37,8 @@ import {
   Package,
   Landmark,
   ChevronRight,
-  Presentation
+  Presentation,
+  ArrowLeft
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -140,12 +142,35 @@ export default function OpportunityIntelligence() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [viewMode, setViewMode] = useState<"grid" | "list" | "showcase">("grid");
+  const [showFolders, setShowFolders] = useState(true);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetchCategoryCounts();
+  }, []);
 
   useEffect(() => {
     fetchOpportunities();
   }, [activeCategory]);
 
-  const fetchOpportunities = async () => {
+  const fetchCategoryCounts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("opportunity_products")
+        .select("category")
+        .in("status", ["active", "draft"]);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      (data || []).forEach((item: any) => {
+        counts[item.category] = (counts[item.category] || 0) + 1;
+      });
+      setCategoryCounts(counts);
+    } catch (e) {
+      console.error("Error fetching category counts:", e);
+    }
+  };
+
+
     setLoading(true);
     try {
       let query = supabase
@@ -373,146 +398,180 @@ export default function OpportunityIntelligence() {
     );
   };
 
+  const handleSelectSector = (category: string) => {
+    setActiveCategory(category);
+    setShowFolders(false);
+  };
+
+  const handleBackToFolders = () => {
+    setActiveCategory("all");
+    setShowFolders(true);
+  };
+
   return (
     <StarryBackground className="min-h-screen">
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Live Deal Alerts</h1>
-        <p className="text-muted-foreground">
-          Real-time investment opportunities across multiple asset classes
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Live Deal Alerts</h1>
+          <p className="text-muted-foreground">
+            Real-time investment opportunities across multiple asset classes
+          </p>
+        </div>
+        {!showFolders && (
+          <Button variant="outline" onClick={handleBackToFolders} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            All Sectors
+          </Button>
+        )}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search opportunities..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+      {/* Sector Folder Grid */}
+      {showFolders && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-muted-foreground">Browse by Sector</h2>
+          <SectorFolderGrid
+            categoryConfig={categoryConfig}
+            categoryCounts={categoryCounts}
+            onSelectCategory={handleSelectSector}
           />
         </div>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="price_high">Price: High to Low</SelectItem>
-            <SelectItem value="price_low">Price: Low to High</SelectItem>
-            <SelectItem value="rating">Highest Rating</SelectItem>
-          </SelectContent>
-        </Select>
-        <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list" | "showcase")}>
-          <ToggleGroupItem value="showcase" aria-label="Showcase view">
-            <Presentation className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="grid" aria-label="Grid view">
-            <LayoutGrid className="h-4 w-4" />
-          </ToggleGroupItem>
-          <ToggleGroupItem value="list" aria-label="List view">
-            <List className="h-4 w-4" />
-          </ToggleGroupItem>
-        </ToggleGroup>
-        <ShowcaseDarkToggle />
-      </div>
+      )}
 
-      {/* Category Tabs */}
-      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-        <TabsList className="flex flex-wrap h-auto gap-1 p-1">
-          <TabsTrigger value="all" className="flex-shrink-0">All Deals</TabsTrigger>
-          {Object.entries(categoryConfig).map(([key, config]) => (
-            <TabsTrigger key={key} value={key} className="flex items-center gap-1.5 flex-shrink-0">
-              <config.icon className="h-3.5 w-3.5" />
-              <span className="hidden md:inline">{config.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Filters - shown when browsing opportunities */}
+      {!showFolders && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search opportunities..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="price_high">Price: High to Low</SelectItem>
+                <SelectItem value="price_low">Price: Low to High</SelectItem>
+                <SelectItem value="rating">Highest Rating</SelectItem>
+              </SelectContent>
+            </Select>
+            <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "grid" | "list" | "showcase")}>
+              <ToggleGroupItem value="showcase" aria-label="Showcase view">
+                <Presentation className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view">
+                <List className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <ShowcaseDarkToggle />
+          </div>
 
-        <TabsContent value={activeCategory} className="mt-6">
-          {loading ? (
-            viewMode === "grid" ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Card key={i}>
-                    <Skeleton className="aspect-video" />
-                    <CardHeader>
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-4 w-1/2" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-16" />
-                    </CardContent>
+          {/* Category Tabs */}
+          <Tabs value={activeCategory} onValueChange={(val) => { setActiveCategory(val); setShowFolders(false); }} className="w-full">
+            <TabsList className="flex flex-wrap h-auto gap-1 p-1">
+              <TabsTrigger value="all" className="flex-shrink-0" onClick={() => { setActiveCategory("all"); setShowFolders(true); }}>All Deals</TabsTrigger>
+              {Object.entries(categoryConfig).map(([key, config]) => (
+                <TabsTrigger key={key} value={key} className="flex items-center gap-1.5 flex-shrink-0">
+                  <config.icon className="h-3.5 w-3.5" />
+                  <span className="hidden md:inline">{config.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value={activeCategory} className="mt-6">
+              {loading ? (
+                viewMode === "grid" ? (
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Card key={i}>
+                        <Skeleton className="aspect-video" />
+                        <CardHeader>
+                          <Skeleton className="h-6 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                        </CardHeader>
+                        <CardContent>
+                          <Skeleton className="h-16" />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <div className="p-4 space-y-3">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <Skeleton key={i} className="h-16 w-full" />
+                      ))}
+                    </div>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <div className="p-4 space-y-3">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
+                )
+              ) : filteredOpportunities.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <div className="space-y-4">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                      <Search className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold">No Opportunities Found</h3>
+                    <p className="text-muted-foreground">
+                      {searchQuery 
+                        ? "Try adjusting your search criteria" 
+                        : "New opportunities will be added soon. Check back later!"}
+                    </p>
+                  </div>
+                </Card>
+              ) : viewMode === "showcase" ? (
+                <OpportunityShowcase
+                  opportunities={filteredOpportunities}
+                  categoryConfig={categoryConfig}
+                  detailBasePath={detailBasePath}
+                />
+              ) : viewMode === "grid" ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredOpportunities.map((opportunity) => (
+                    <OpportunityCard key={opportunity.id} opportunity={opportunity} />
                   ))}
                 </div>
-              </Card>
-            )
-          ) : filteredOpportunities.length === 0 ? (
-            <Card className="p-12 text-center">
-              <div className="space-y-4">
-                <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <Search className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-semibold">No Opportunities Found</h3>
-                <p className="text-muted-foreground">
-                  {searchQuery 
-                    ? "Try adjusting your search criteria" 
-                    : "New opportunities will be added soon. Check back later!"}
-                </p>
-              </div>
-            </Card>
-          ) : viewMode === "showcase" ? (
-            <OpportunityShowcase
-              opportunities={filteredOpportunities}
-              categoryConfig={categoryConfig}
-              detailBasePath={detailBasePath}
-            />
-          ) : viewMode === "grid" ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredOpportunities.map((opportunity) => (
-                <OpportunityCard key={opportunity.id} opportunity={opportunity} />
-              ))}
-            </div>
-          ) : (
-            <Card className="border-border/50 overflow-hidden bg-gradient-to-br from-background to-muted/10">
-              <ScrollArea className="h-[650px]">
-                <div className="overflow-x-auto">
-                  <Table className="min-w-[900px]">
-                    <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="min-w-[300px] font-semibold text-foreground whitespace-nowrap pl-4">Opportunity</TableHead>
-                        <TableHead className="min-w-[120px] font-semibold text-foreground whitespace-nowrap">Category</TableHead>
-                        <TableHead className="min-w-[100px] text-right font-semibold text-foreground whitespace-nowrap">Price</TableHead>
-                        <TableHead className="min-w-[80px] text-center font-semibold text-foreground whitespace-nowrap">Rating</TableHead>
-                        <TableHead className="min-w-[80px] text-center font-semibold text-foreground whitespace-nowrap">Score</TableHead>
-                        <TableHead className="min-w-[100px] font-semibold text-foreground whitespace-nowrap">Location</TableHead>
-                        <TableHead className="min-w-[90px] font-semibold text-foreground whitespace-nowrap">Date</TableHead>
-                        <TableHead className="w-10"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredOpportunities.map((opportunity) => (
-                        <OpportunityRow key={opportunity.id} opportunity={opportunity} />
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </ScrollArea>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+              ) : (
+                <Card className="border-border/50 overflow-hidden bg-gradient-to-br from-background to-muted/10">
+                  <ScrollArea className="h-[650px]">
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[900px]">
+                        <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
+                          <TableRow className="hover:bg-transparent">
+                            <TableHead className="min-w-[300px] font-semibold text-foreground whitespace-nowrap pl-4">Opportunity</TableHead>
+                            <TableHead className="min-w-[120px] font-semibold text-foreground whitespace-nowrap">Category</TableHead>
+                            <TableHead className="min-w-[100px] text-right font-semibold text-foreground whitespace-nowrap">Price</TableHead>
+                            <TableHead className="min-w-[80px] text-center font-semibold text-foreground whitespace-nowrap">Rating</TableHead>
+                            <TableHead className="min-w-[80px] text-center font-semibold text-foreground whitespace-nowrap">Score</TableHead>
+                            <TableHead className="min-w-[100px] font-semibold text-foreground whitespace-nowrap">Location</TableHead>
+                            <TableHead className="min-w-[90px] font-semibold text-foreground whitespace-nowrap">Date</TableHead>
+                            <TableHead className="w-10"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredOpportunities.map((opportunity) => (
+                            <OpportunityRow key={opportunity.id} opportunity={opportunity} />
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </ScrollArea>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
     </div>
     </StarryBackground>
   );
