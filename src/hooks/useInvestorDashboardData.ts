@@ -1,0 +1,92 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+export function useInvestorDashboardData() {
+  const [researchReports, setResearchReports] = useState<any[]>([]);
+  const [commentary, setCommentary] = useState<any[]>([]);
+  const [portfolios, setPortfolios] = useState<any[]>([]);
+  const [newsletters, setNewsletters] = useState<any[]>([]);
+  const [learningContent, setLearningContent] = useState<any[]>([]);
+  const [purchasableReports, setPurchasableReports] = useState<any[]>([]);
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      const [resRes, comRes, portRes, newsRes, learnRes, repRes, oppRes] = await Promise.all([
+        supabase.from("asset_research_reports").select("id, asset_name, asset_symbol, asset_type, overall_quality_score, created_at, confidence_level").order("created_at", { ascending: false }).limit(20),
+        supabase.from("market_commentary").select("id, title, description, thumbnail_url, published_date, created_at").order("created_at", { ascending: false }).limit(20),
+        supabase.from("model_portfolios").select("id, title, description, thumbnail_url, created_at").order("created_at", { ascending: false }).limit(20),
+        supabase.from("newsletters").select("id, title, category, preview, published_date, created_at, read_time, edition").order("created_at", { ascending: false }).limit(20),
+        supabase.from("learning_content").select("id, title, description, category, thumbnail_url, difficulty_level, duration, view_count, created_at, is_published").eq("is_published", true).order("created_at", { ascending: false }).limit(20),
+        supabase.from("purchasable_reports").select("id, title, description, thumbnail_url, category, price_cents, currency, download_count, featured, author_name, reading_time, created_at, tags, is_published").eq("is_published", true).order("created_at", { ascending: false }).limit(20),
+        supabase.from("opportunity_products").select("id, title, short_description, category, sub_category, price, price_currency, location, overall_conviction_score, analyst_rating, thumbnail_url, strengths, risk_score, value_score, quality_score, status").eq("status", "active").order("overall_conviction_score", { ascending: false }).limit(20),
+      ]);
+
+      setResearchReports(resRes.data || []);
+      setCommentary(comRes.data || []);
+      setPortfolios(portRes.data || []);
+      setNewsletters(newsRes.data || []);
+      setLearningContent(learnRes.data || []);
+      setPurchasableReports(repRes.data || []);
+      setOpportunities(oppRes.data || []);
+    } catch (err) {
+      console.error("Dashboard data fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Analytics aggregation
+  const contentCounts = [
+    { name: "Research", value: researchReports.length, color: "#3b82f6" },
+    { name: "Commentary", value: commentary.length, color: "#10b981" },
+    { name: "Portfolios", value: portfolios.length, color: "#8b5cf6" },
+    { name: "Newsletters", value: newsletters.length, color: "#f59e0b" },
+    { name: "Learning", value: learningContent.length, color: "#06b6d4" },
+    { name: "Reports", value: purchasableReports.length, color: "#ec4899" },
+  ].filter(c => c.value > 0);
+
+  const categoryBreakdown = opportunities.reduce<Record<string, number>>((acc, o) => {
+    const cat = o.category || "Other";
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {});
+  const categoryChartData = Object.entries(categoryBreakdown)
+    .map(([name, count]) => ({ name: name.replace(/_/g, " "), count }))
+    .sort((a, b) => b.count - a.count);
+
+  const totalViews = learningContent.reduce((s: number, l: any) => s + (l.view_count || 0), 0);
+  const totalDownloads = purchasableReports.reduce((s: number, r: any) => s + (r.download_count || 0), 0);
+  const totalContent = contentCounts.reduce((s, c) => s + c.value, 0);
+  const totalDeals = opportunities.length;
+
+  const engagementData = [
+    { name: "Content Views", value: totalViews, fill: "#3b82f6" },
+    { name: "Downloads", value: totalDownloads, fill: "#10b981" },
+    { name: "Active Deals", value: totalDeals, fill: "#f59e0b" },
+    { name: "Total Content", value: totalContent, fill: "#8b5cf6" },
+  ];
+
+  return {
+    researchReports,
+    commentary,
+    portfolios,
+    newsletters,
+    learningContent,
+    purchasableReports,
+    opportunities,
+    loading,
+    analytics: {
+      contentCounts,
+      categoryBreakdown: categoryChartData,
+      engagementData,
+      totalContent,
+    },
+  };
+}
