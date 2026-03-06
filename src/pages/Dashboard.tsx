@@ -20,6 +20,7 @@ import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
 import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
 import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalystPicksSection";
+import { DashboardDealWidgets } from "@/components/dashboard/DashboardDealWidgets";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 
 const Dashboard = () => {
@@ -243,6 +244,9 @@ const Dashboard = () => {
         <PortfolioWatchlist />
         <CalendarSnapshot />
       </div>
+
+      {/* Market Overview & Deals */}
+      <DashboardDealWidgets basePath="/finance" />
 
       {/* Activity Overview */}
       <ActivityOverview />
