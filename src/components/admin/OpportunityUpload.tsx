@@ -707,7 +707,146 @@ export function OpportunityUpload() {
             </Card>
           </TabsContent>
 
+          {/* Pitchbook Tab */}
+          <TabsContent value="pitchbook" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Opportunity Snapshot</CardTitle>
+                <CardDescription>Key deal metrics for investor evaluation</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Expected IRR (%)</Label>
+                  <Input type="number" step="0.1" value={form.expected_irr} onChange={(e) => updateForm("expected_irr", e.target.value)} placeholder="e.g., 15.5" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Minimum Investment (£)</Label>
+                  <Input type="number" value={form.minimum_investment} onChange={(e) => updateForm("minimum_investment", e.target.value)} placeholder="e.g., 50000" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Liquidity Horizon</Label>
+                  <Select value={form.liquidity_horizon} onValueChange={(v) => updateForm("liquidity_horizon", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select horizon" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="< 1 year">Less than 1 year</SelectItem>
+                      <SelectItem value="1-3 years">1-3 years</SelectItem>
+                      <SelectItem value="3-5 years">3-5 years</SelectItem>
+                      <SelectItem value="5-10 years">5-10 years</SelectItem>
+                      <SelectItem value="10+ years">10+ years</SelectItem>
+                      <SelectItem value="Illiquid">Illiquid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Deal Stage</Label>
+                  <Select value={form.deal_stage} onValueChange={(v) => updateForm("deal_stage", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pre-seed">Pre-Seed</SelectItem>
+                      <SelectItem value="seed">Seed</SelectItem>
+                      <SelectItem value="series-a">Series A</SelectItem>
+                      <SelectItem value="series-b">Series B+</SelectItem>
+                      <SelectItem value="growth">Growth</SelectItem>
+                      <SelectItem value="buyout">Buyout</SelectItem>
+                      <SelectItem value="asset-backed">Asset Backed</SelectItem>
+                      <SelectItem value="mature">Mature</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Geography / Region</Label>
+                  <Input value={form.geography} onChange={(e) => updateForm("geography", e.target.value)} placeholder="e.g., UK, Europe, Global" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Investment Thesis Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Catalysts</Label>
+                  <Textarea value={form.catalysts} onChange={(e) => updateForm("catalysts", e.target.value)} placeholder="Key catalysts driving the opportunity..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Market Dynamics</Label>
+                  <Textarea value={form.market_dynamics} onChange={(e) => updateForm("market_dynamics", e.target.value)} placeholder="Supply/demand dynamics, market trends..." rows={3} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Financial Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>EBITDA (£)</Label>
+                  <Input type="number" value={form.ebitda} onChange={(e) => updateForm("ebitda", e.target.value)} placeholder="e.g., 2000000" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Growth Rate (%)</Label>
+                  <Input type="number" step="0.1" value={form.growth_rate} onChange={(e) => updateForm("growth_rate", e.target.value)} placeholder="e.g., 25" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Valuation</Label>
+                  <Input value={form.valuation} onChange={(e) => updateForm("valuation", e.target.value)} placeholder="e.g., £10M pre-money, 8x EBITDA" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparable Deals</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Similar Transactions</Label>
+                  <Textarea value={form.comparable_deals} onChange={(e) => updateForm("comparable_deals", e.target.value)} placeholder="Reference similar completed deals..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Comparable Valuations</Label>
+                  <Textarea value={form.comparable_valuations} onChange={(e) => updateForm("comparable_valuations", e.target.value)} placeholder="Peer valuations and multiples..." rows={3} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Downside Analysis</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>What Could Go Wrong</Label>
+                  <Textarea value={form.downside_analysis} onChange={(e) => updateForm("downside_analysis", e.target.value)} placeholder="Key risk scenarios and potential downsides..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Sensitivity Analysis</Label>
+                  <Textarea value={form.sensitivity_analysis} onChange={(e) => updateForm("sensitivity_analysis", e.target.value)} placeholder="How returns change under different assumptions..." rows={3} />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Exit Scenarios</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Likely Exits</Label>
+                  <Textarea value={form.exit_scenarios} onChange={(e) => updateForm("exit_scenarios", e.target.value)} placeholder="IPO, trade sale, secondary buyout, refinance..." rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Expected Timeline</Label>
+                  <Textarea value={form.exit_timeline} onChange={(e) => updateForm("exit_timeline", e.target.value)} placeholder="Expected exit timeline and milestones..." rows={2} />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* Product Details Tab */}
+
           <TabsContent value="details" className="space-y-4 mt-4">
             {(form.category === "uk_property" || form.category === "overseas_property") && (
               <Card>
