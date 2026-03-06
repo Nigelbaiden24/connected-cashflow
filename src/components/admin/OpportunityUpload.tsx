@@ -333,6 +333,22 @@ export function OpportunityUpload() {
         condition: form.category === "collectibles_luxury" ? form.condition : null,
         authenticity_verified: form.category === "collectibles_luxury" ? form.authenticity_verified : false,
         estimated_appreciation: form.category === "collectibles_luxury" && form.estimated_appreciation ? parseFloat(form.estimated_appreciation) : null,
+        expected_irr: form.expected_irr ? parseFloat(form.expected_irr) : null,
+        minimum_investment: form.minimum_investment ? parseFloat(form.minimum_investment) : null,
+        liquidity_horizon: form.liquidity_horizon || null,
+        deal_stage: form.deal_stage || null,
+        catalysts: form.catalysts || null,
+        market_dynamics: form.market_dynamics || null,
+        ebitda: form.ebitda ? parseFloat(form.ebitda) : null,
+        growth_rate: form.growth_rate ? parseFloat(form.growth_rate) : null,
+        valuation: form.valuation || null,
+        comparable_deals: form.comparable_deals || null,
+        comparable_valuations: form.comparable_valuations || null,
+        downside_analysis: form.downside_analysis || null,
+        sensitivity_analysis: form.sensitivity_analysis || null,
+        exit_scenarios: form.exit_scenarios || null,
+        exit_timeline: form.exit_timeline || null,
+        geography: form.geography || null,
         status: form.status,
         featured: form.featured,
         source: form.source || null,
@@ -376,10 +392,11 @@ export function OpportunityUpload() {
     <ScrollArea className="h-[calc(100vh-200px)]">
       <form onSubmit={handleSubmit} className="space-y-6 pr-4">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="ratings">Product Scoring</TabsTrigger>
             <TabsTrigger value="commentary">Analysis</TabsTrigger>
+            <TabsTrigger value="pitchbook">Pitchbook</TabsTrigger>
             <TabsTrigger value="details">Category Details</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
