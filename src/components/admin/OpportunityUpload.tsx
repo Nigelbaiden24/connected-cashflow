@@ -140,6 +140,24 @@ interface OpportunityForm {
   authenticity_verified: boolean;
   estimated_appreciation: string;
   
+  // Pitchbook fields
+  expected_irr: string;
+  minimum_investment: string;
+  liquidity_horizon: string;
+  deal_stage: string;
+  catalysts: string;
+  market_dynamics: string;
+  ebitda: string;
+  growth_rate: string;
+  valuation: string;
+  comparable_deals: string;
+  comparable_valuations: string;
+  downside_analysis: string;
+  sensitivity_analysis: string;
+  exit_scenarios: string;
+  exit_timeline: string;
+  geography: string;
+
   // Status
   status: string;
   featured: boolean;
@@ -193,6 +211,22 @@ const initialForm: OpportunityForm = {
   condition: "",
   authenticity_verified: false,
   estimated_appreciation: "",
+  expected_irr: "",
+  minimum_investment: "",
+  liquidity_horizon: "",
+  deal_stage: "",
+  catalysts: "",
+  market_dynamics: "",
+  ebitda: "",
+  growth_rate: "",
+  valuation: "",
+  comparable_deals: "",
+  comparable_valuations: "",
+  downside_analysis: "",
+  sensitivity_analysis: "",
+  exit_scenarios: "",
+  exit_timeline: "",
+  geography: "",
   status: "draft",
   featured: false,
   source: ""
