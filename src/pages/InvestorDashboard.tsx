@@ -12,6 +12,7 @@ import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalyst
 import { NetflixContentRow } from "@/components/investor/NetflixContentRow";
 import { PlatformAnalyticsCharts } from "@/components/investor/PlatformAnalyticsCharts";
 import { PitchbookDealFlow } from "@/components/investor/PitchbookDealFlow";
+import { DashboardDealWidgets } from "@/components/dashboard/DashboardDealWidgets";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, RadarChart, Radar, PolarGrid,
   PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -217,6 +218,9 @@ const InvestorDashboard = () => {
           <PlatformAnalyticsCharts data={dashboardData.analytics} />
         )}
       </div>
+
+      {/* Market Overview & Deals */}
+      <DashboardDealWidgets basePath="/investor" />
 
       {/* Featured Analyst Picks */}
       <FeaturedAnalystPicksSection />
