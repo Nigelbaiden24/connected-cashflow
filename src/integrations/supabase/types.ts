@@ -4145,30 +4145,44 @@ export type Database = {
           bathrooms: number | null
           bedrooms: number | null
           business_stage: string | null
+          catalysts: string | null
           category: string
+          comparable_deals: string | null
+          comparable_valuations: string | null
           complexity_commentary: string | null
           complexity_score: number | null
           condition: string | null
           country: string | null
           created_at: string
+          deal_stage: string | null
+          downside_analysis: string | null
+          ebitda: number | null
           employee_count: number | null
           estimated_appreciation: number | null
+          exit_scenarios: string | null
+          exit_timeline: string | null
+          expected_irr: number | null
           featured: boolean | null
           founding_year: number | null
           full_description: string | null
           gallery_images: string[] | null
           geographic_regulatory_commentary: string | null
           geographic_regulatory_score: number | null
+          geography: string | null
+          growth_rate: number | null
           id: string
           industry: string | null
           investment_thesis: string | null
           key_watchpoints: string | null
           last_analyst_review_date: string | null
           liquidity_commentary: string | null
+          liquidity_horizon: string | null
           liquidity_score: number | null
           location: string | null
+          market_dynamics: string | null
           market_sentiment_commentary: string | null
           market_sentiment_score: number | null
+          minimum_investment: number | null
           overall_conviction_score: number | null
           price: number | null
           price_currency: string | null
@@ -4180,6 +4194,7 @@ export type Database = {
           risk_commentary: string | null
           risk_score: number | null
           risks: string | null
+          sensitivity_analysis: string | null
           short_description: string | null
           source: string | null
           square_footage: number | null
@@ -4193,6 +4208,7 @@ export type Database = {
           transparency_score: number | null
           updated_at: string
           uploaded_by: string | null
+          valuation: string | null
           value_score: number | null
           year_built: number | null
         }
@@ -4205,30 +4221,44 @@ export type Database = {
           bathrooms?: number | null
           bedrooms?: number | null
           business_stage?: string | null
+          catalysts?: string | null
           category: string
+          comparable_deals?: string | null
+          comparable_valuations?: string | null
           complexity_commentary?: string | null
           complexity_score?: number | null
           condition?: string | null
           country?: string | null
           created_at?: string
+          deal_stage?: string | null
+          downside_analysis?: string | null
+          ebitda?: number | null
           employee_count?: number | null
           estimated_appreciation?: number | null
+          exit_scenarios?: string | null
+          exit_timeline?: string | null
+          expected_irr?: number | null
           featured?: boolean | null
           founding_year?: number | null
           full_description?: string | null
           gallery_images?: string[] | null
           geographic_regulatory_commentary?: string | null
           geographic_regulatory_score?: number | null
+          geography?: string | null
+          growth_rate?: number | null
           id?: string
           industry?: string | null
           investment_thesis?: string | null
           key_watchpoints?: string | null
           last_analyst_review_date?: string | null
           liquidity_commentary?: string | null
+          liquidity_horizon?: string | null
           liquidity_score?: number | null
           location?: string | null
+          market_dynamics?: string | null
           market_sentiment_commentary?: string | null
           market_sentiment_score?: number | null
+          minimum_investment?: number | null
           overall_conviction_score?: number | null
           price?: number | null
           price_currency?: string | null
@@ -4240,6 +4270,7 @@ export type Database = {
           risk_commentary?: string | null
           risk_score?: number | null
           risks?: string | null
+          sensitivity_analysis?: string | null
           short_description?: string | null
           source?: string | null
           square_footage?: number | null
@@ -4253,6 +4284,7 @@ export type Database = {
           transparency_score?: number | null
           updated_at?: string
           uploaded_by?: string | null
+          valuation?: string | null
           value_score?: number | null
           year_built?: number | null
         }
@@ -4265,30 +4297,44 @@ export type Database = {
           bathrooms?: number | null
           bedrooms?: number | null
           business_stage?: string | null
+          catalysts?: string | null
           category?: string
+          comparable_deals?: string | null
+          comparable_valuations?: string | null
           complexity_commentary?: string | null
           complexity_score?: number | null
           condition?: string | null
           country?: string | null
           created_at?: string
+          deal_stage?: string | null
+          downside_analysis?: string | null
+          ebitda?: number | null
           employee_count?: number | null
           estimated_appreciation?: number | null
+          exit_scenarios?: string | null
+          exit_timeline?: string | null
+          expected_irr?: number | null
           featured?: boolean | null
           founding_year?: number | null
           full_description?: string | null
           gallery_images?: string[] | null
           geographic_regulatory_commentary?: string | null
           geographic_regulatory_score?: number | null
+          geography?: string | null
+          growth_rate?: number | null
           id?: string
           industry?: string | null
           investment_thesis?: string | null
           key_watchpoints?: string | null
           last_analyst_review_date?: string | null
           liquidity_commentary?: string | null
+          liquidity_horizon?: string | null
           liquidity_score?: number | null
           location?: string | null
+          market_dynamics?: string | null
           market_sentiment_commentary?: string | null
           market_sentiment_score?: number | null
+          minimum_investment?: number | null
           overall_conviction_score?: number | null
           price?: number | null
           price_currency?: string | null
@@ -4300,6 +4346,7 @@ export type Database = {
           risk_commentary?: string | null
           risk_score?: number | null
           risks?: string | null
+          sensitivity_analysis?: string | null
           short_description?: string | null
           source?: string | null
           square_footage?: number | null
@@ -4313,6 +4360,7 @@ export type Database = {
           transparency_score?: number | null
           updated_at?: string
           uploaded_by?: string | null
+          valuation?: string | null
           value_score?: number | null
           year_built?: number | null
         }

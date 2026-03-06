@@ -1,0 +1,17 @@
+ALTER TABLE public.opportunity_products
+  ADD COLUMN IF NOT EXISTS expected_irr numeric,
+  ADD COLUMN IF NOT EXISTS minimum_investment numeric,
+  ADD COLUMN IF NOT EXISTS liquidity_horizon text,
+  ADD COLUMN IF NOT EXISTS deal_stage text,
+  ADD COLUMN IF NOT EXISTS catalysts text,
+  ADD COLUMN IF NOT EXISTS market_dynamics text,
+  ADD COLUMN IF NOT EXISTS ebitda numeric,
+  ADD COLUMN IF NOT EXISTS growth_rate numeric,
+  ADD COLUMN IF NOT EXISTS valuation text,
+  ADD COLUMN IF NOT EXISTS comparable_deals text,
+  ADD COLUMN IF NOT EXISTS comparable_valuations text,
+  ADD COLUMN IF NOT EXISTS downside_analysis text,
+  ADD COLUMN IF NOT EXISTS sensitivity_analysis text,
+  ADD COLUMN IF NOT EXISTS exit_scenarios text,
+  ADD COLUMN IF NOT EXISTS exit_timeline text,
+  ADD COLUMN IF NOT EXISTS geography text;
