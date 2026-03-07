@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { memo } from "react";
+import { memo, useState, useCallback } from "react";
+import { SidebarTabFilter } from "./SidebarTabFilter";
 import { TranslatedText } from "./TranslatedText";
 import {
   Sidebar,
@@ -105,10 +106,25 @@ const researchAnalysisItems = [
 ];
 
 
+const financeNavGroups = [
+  { label: "General", items: generalItems },
+  { label: "Adviser Tools", items: adviserToolsItems },
+  { label: "Research & Analysis", items: researchAnalysisItems },
+];
+
 export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
+
+  const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_finance") || "[]"); } catch { return []; }
+  });
+  const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
+
+  const filteredGeneralItems = generalItems.filter(i => !hiddenUrls.includes(i.url));
+  const filteredAdviserItems = adviserToolsItems.filter(i => !hiddenUrls.includes(i.url));
+  const filteredResearchItems = researchAnalysisItems.filter(i => !hiddenUrls.includes(i.url));
 
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
@@ -166,6 +182,12 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
 
       <SidebarContent className="relative z-10 px-2">
         <TooltipProvider>
+          {!isCollapsed && (
+            <div className="flex justify-end mt-2 mb-1 px-2">
+              <SidebarTabFilter platform="finance" navGroups={financeNavGroups} onFilterChange={handleFilterChange} />
+            </div>
+          )}
+          {filteredGeneralItems.length > 0 && (
           <SidebarGroup className="mt-4">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
@@ -174,7 +196,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {generalItems.map((item) => (
+                {filteredGeneralItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
@@ -204,7 +226,9 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          )}
 
+          {filteredAdviserItems.length > 0 && (
           <SidebarGroup className="mt-6">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
@@ -213,7 +237,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {adviserToolsItems.map((item) => (
+                {filteredAdviserItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
@@ -243,7 +267,9 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          )}
 
+          {filteredResearchItems.length > 0 && (
           <SidebarGroup className="mt-6">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
@@ -252,7 +278,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {researchAnalysisItems.map((item) => (
+                {filteredResearchItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
@@ -282,6 +308,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          )}
         </TooltipProvider>
       </SidebarContent>
 

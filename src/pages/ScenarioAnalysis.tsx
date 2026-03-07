@@ -30,6 +30,7 @@ import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import MonteCarloSimulations from "@/components/scenario/MonteCarloSimulations";
+import PEVCScenarioAnalysis from "@/components/scenario/PEVCScenarioAnalysis";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
@@ -483,14 +484,24 @@ export default function ScenarioAnalysis() {
       </Card>
 
       <Tabs defaultValue="monte-carlo" className="space-y-6">
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-7 w-full">
           <TabsTrigger value="monte-carlo">Monte Carlo</TabsTrigger>
+          <TabsTrigger value="pe-vc">PE / VC / FO</TabsTrigger>
           <TabsTrigger value="what-if">What-If</TabsTrigger>
           <TabsTrigger value="stress-test">Stress Test</TabsTrigger>
           <TabsTrigger value="goals">Goal Planning</TabsTrigger>
           <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
           <TabsTrigger value="retirement">Retirement</TabsTrigger>
         </TabsList>
+
+        {/* PE / VC / Family Office */}
+        <TabsContent value="pe-vc" className="space-y-6">
+          <PEVCScenarioAnalysis
+            selectedClient={selectedClient}
+            clients={clients}
+            formatCurrency={formatCurrency}
+          />
+        </TabsContent>
 
         {/* Monte Carlo Simulation - Elite Dropdown System */}
         <TabsContent value="monte-carlo" className="space-y-6">

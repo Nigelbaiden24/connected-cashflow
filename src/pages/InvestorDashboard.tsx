@@ -169,6 +169,9 @@ const InvestorDashboard = () => {
         </div>
       </div>
 
+      {/* Market Overview & Deals - Top */}
+      <DashboardDealWidgets basePath="/investor" />
+
       {/* AI Insights */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
@@ -219,8 +222,6 @@ const InvestorDashboard = () => {
         )}
       </div>
 
-      {/* Market Overview & Deals */}
-      <DashboardDealWidgets basePath="/investor" />
 
       {/* Featured Analyst Picks */}
       <FeaturedAnalystPicksSection />
