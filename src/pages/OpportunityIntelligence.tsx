@@ -43,6 +43,8 @@ interface OpportunityProduct {
   minimum_investment: number | null;
   deal_stage: string | null;
   geography: string | null;
+  liquidity_horizon: string | null;
+  risk_score: number | null;
 }
 
 const categoryConfig = {
@@ -67,6 +69,8 @@ const ratingColors: Record<string, string> = {
 };
 
 export default function OpportunityIntelligence() {
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const isFinancePlatform = location.pathname.startsWith("/finance");
@@ -196,11 +200,21 @@ export default function OpportunityIntelligence() {
     );
   };
 
+  const toggleCompare = (id: string) => {
+    setCompareIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 5 ? [...prev, id] : prev);
+  };
+
   const OpportunityRow = ({ opportunity }: { opportunity: OpportunityProduct }) => {
     const config = categoryConfig[opportunity.category as keyof typeof categoryConfig];
     const Icon = config?.icon || Building2;
+    const isCompared = compareIds.includes(opportunity.id);
     return (
-      <TableRow className="cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30" onClick={() => navigate(`${detailBasePath}/${opportunity.id}`)}>
+      <TableRow className={cn("cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30", isCompared && "bg-primary/5")} onClick={() => compareMode ? toggleCompare(opportunity.id) : navigate(`${detailBasePath}/${opportunity.id}`)}>
+        {compareMode && (
+          <TableCell className="w-10 text-center">
+            <input type="checkbox" checked={isCompared} onChange={() => toggleCompare(opportunity.id)} className="rounded" />
+          </TableCell>
+        )}
         <TableCell className="pl-4">
           <div className="flex items-center gap-3">
             <div className="relative h-12 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
@@ -216,19 +230,28 @@ export default function OpportunityIntelligence() {
         <TableCell>
           <Badge variant="outline" className={`text-xs ${config?.color}`}>{config?.label || opportunity.category}</Badge>
         </TableCell>
-        <TableCell className="text-right whitespace-nowrap">
-          {opportunity.price ? <span className="font-semibold text-primary">{formatPrice(opportunity.price, opportunity.price_currency)}</span> : <span className="text-muted-foreground">-</span>}
+        <TableCell className="text-center whitespace-nowrap">
+          {opportunity.expected_irr != null ? <span className={`font-semibold text-sm ${opportunity.expected_irr >= 20 ? 'text-emerald-500' : opportunity.expected_irr >= 10 ? 'text-primary' : 'text-amber-500'}`}>{opportunity.expected_irr.toFixed(1)}%</span> : <span className="text-muted-foreground text-xs">—</span>}
         </TableCell>
         <TableCell className="text-center whitespace-nowrap">
-          {opportunity.analyst_rating ? <Badge className={`${ratingColors[opportunity.analyst_rating]} border`}>{opportunity.analyst_rating}</Badge> : <span className="text-muted-foreground text-xs">Not rated</span>}
+          {opportunity.analyst_rating ? <Badge className={`${ratingColors[opportunity.analyst_rating]} border`}>{opportunity.analyst_rating}</Badge> : <span className="text-muted-foreground text-xs">—</span>}
+        </TableCell>
+        <TableCell className="text-right whitespace-nowrap">
+          {opportunity.price ? <span className="font-semibold text-primary">{formatPrice(opportunity.price, opportunity.price_currency)}</span> : <span className="text-muted-foreground">—</span>}
+        </TableCell>
+        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+          {opportunity.liquidity_horizon || "—"}
+        </TableCell>
+        <TableCell className="whitespace-nowrap">
+          {opportunity.deal_stage ? <Badge variant="outline" className="text-xs">{opportunity.deal_stage}</Badge> : <span className="text-muted-foreground text-xs">—</span>}
         </TableCell>
         <TableCell className="text-center whitespace-nowrap">
           {opportunity.overall_conviction_score ? (
-            <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3 w-3 text-green-500" /><span className="font-medium text-sm">{opportunity.overall_conviction_score.toFixed(1)}/5</span></div>
-          ) : <span className="text-muted-foreground">-</span>}
+            <div className="flex items-center justify-center gap-1"><TrendingUp className="h-3 w-3 text-green-500" /><span className="font-medium text-sm">{opportunity.overall_conviction_score.toFixed(1)}</span></div>
+          ) : <span className="text-muted-foreground">—</span>}
         </TableCell>
         <TableCell className="whitespace-nowrap">
-          {opportunity.location && <div className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" /><span>{opportunity.location}</span></div>}
+          {(opportunity.geography || opportunity.location) && <div className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" /><span>{opportunity.geography || opportunity.location}</span></div>}
         </TableCell>
         <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{new Date(opportunity.created_at).toLocaleDateString()}</TableCell>
         <TableCell>
@@ -240,7 +263,12 @@ export default function OpportunityIntelligence() {
     );
   };
 
-  const handleSelectSector = (category: string) => { setActiveCategory(category); setShowFolders(false); };
+  const cn = (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(' ');
+
+  const handleSelectSector = (category: string) => {
+    setActiveCategory(category);
+    setShowFolders(false);
+  };
   const handleBackToFolders = () => { setActiveCategory("all"); setShowFolders(true); };
 
   return (
