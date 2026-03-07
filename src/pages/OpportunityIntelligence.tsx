@@ -328,7 +328,7 @@ export default function OpportunityIntelligence() {
 
             <Tabs value={activeCategory} onValueChange={(val) => { setActiveCategory(val); setShowFolders(false); }} className="w-full">
               <TabsList className="flex flex-wrap h-auto gap-1 p-1">
-                <TabsTrigger value="all" className="flex-shrink-0" onClick={() => { setActiveCategory("all"); setShowFolders(true); }}>All Deals</TabsTrigger>
+                <TabsTrigger value="all" className="flex-shrink-0">All Deals</TabsTrigger>
                 {Object.entries(categoryConfig).map(([key, config]) => (
                   <TabsTrigger key={key} value={key} className="flex items-center gap-1.5 flex-shrink-0">
                     <config.icon className="h-3.5 w-3.5" />
