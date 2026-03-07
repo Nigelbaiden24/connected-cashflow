@@ -210,6 +210,9 @@ const Dashboard = () => {
         })}
       </div>
 
+      {/* Market Overview & Deals - Top */}
+      <DashboardDealWidgets basePath="/finance" />
+
       {/* AI Summary Panel */}
       <AISummaryPanel />
 
@@ -244,9 +247,6 @@ const Dashboard = () => {
         <PortfolioWatchlist />
         <CalendarSnapshot />
       </div>
-
-      {/* Market Overview & Deals */}
-      <DashboardDealWidgets basePath="/finance" />
 
       {/* Activity Overview */}
       <ActivityOverview />
