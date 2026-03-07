@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState, useCallback } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { TranslatedText } from "./TranslatedText";
 import { 
@@ -45,6 +45,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import { SidebarTabFilter } from "./SidebarTabFilter";
 
 interface InvestorSidebarProps {
   userEmail: string;
@@ -127,6 +128,15 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
+  const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_investor") || "[]"); } catch { return []; }
+  });
+  const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
+
+  const filteredNavGroups = navGroups.map(g => ({
+    ...g,
+    items: g.items.filter(item => !hiddenUrls.includes(item.url))
+  })).filter(g => g.items.length > 0);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -172,7 +182,12 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
       {/* Navigation with grouped sections */}
       <SidebarContent className="flex-1">
         <ScrollArea className="h-full px-3 py-4">
-          {navGroups.map((group) => (
+          {!collapsed && (
+            <div className="flex justify-end mb-2 px-1">
+              <SidebarTabFilter platform="investor" navGroups={navGroups} onFilterChange={handleFilterChange} />
+            </div>
+          )}
+          {filteredNavGroups.map((group) => (
             <SidebarGroup key={group.label} className="mb-4">
               {!collapsed && (
                 <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/80">
