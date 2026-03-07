@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -263,7 +264,7 @@ export default function OpportunityIntelligence() {
     );
   };
 
-  const cn = (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(' ');
+  
 
   const handleSelectSector = (category: string) => {
     setActiveCategory(category);
@@ -314,6 +315,11 @@ export default function OpportunityIntelligence() {
                 <ToggleGroupItem value="grid"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
                 <ToggleGroupItem value="list"><List className="h-4 w-4" /></ToggleGroupItem>
               </ToggleGroup>
+              {viewMode === "list" && (
+                <Button variant={compareMode ? "default" : "outline"} size="sm" onClick={() => { setCompareMode(!compareMode); setCompareIds([]); }} className="gap-1.5">
+                  <Eye className="h-3.5 w-3.5" /> {compareMode ? "Exit Compare" : "Compare"}
+                </Button>
+              )}
               <ShowcaseDarkToggle />
             </div>
 
@@ -352,29 +358,79 @@ export default function OpportunityIntelligence() {
                     {filteredOpportunities.map((opp) => <OpportunityCard key={opp.id} opportunity={opp} />)}
                   </div>
                 ) : (
-                  <Card className="border-border/50 overflow-hidden bg-gradient-to-br from-background to-muted/10">
-                    <ScrollArea className="h-[650px]">
-                      <div className="overflow-x-auto">
-                        <Table className="min-w-[900px]">
-                          <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
-                            <TableRow className="hover:bg-transparent">
-                              <TableHead className="min-w-[300px] font-semibold text-foreground pl-4">Opportunity</TableHead>
-                              <TableHead className="min-w-[120px] font-semibold text-foreground">Category</TableHead>
-                              <TableHead className="min-w-[100px] text-right font-semibold text-foreground">Price</TableHead>
-                              <TableHead className="min-w-[80px] text-center font-semibold text-foreground">Rating</TableHead>
-                              <TableHead className="min-w-[80px] text-center font-semibold text-foreground">Score</TableHead>
-                              <TableHead className="min-w-[100px] font-semibold text-foreground">Location</TableHead>
-                              <TableHead className="min-w-[90px] font-semibold text-foreground">Date</TableHead>
-                              <TableHead className="w-10"></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredOpportunities.map((opp) => <OpportunityRow key={opp.id} opportunity={opp} />)}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </ScrollArea>
-                  </Card>
+                  <div className="space-y-4">
+                    {/* Compare Panel */}
+                    {compareMode && compareIds.length >= 2 && (
+                      <Card className="border-primary/30 bg-primary/5 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-bold flex items-center gap-2"><Eye className="h-4 w-4 text-primary" /> Side-by-Side Comparison ({compareIds.length})</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-border/50">
+                                <th className="py-2 px-3 text-left text-xs font-semibold text-muted-foreground">Deal</th>
+                                <th className="py-2 px-3 text-center text-xs font-semibold text-muted-foreground">IRR</th>
+                                <th className="py-2 px-3 text-center text-xs font-semibold text-muted-foreground">Risk</th>
+                                <th className="py-2 px-3 text-center text-xs font-semibold text-muted-foreground">Sector</th>
+                                <th className="py-2 px-3 text-right text-xs font-semibold text-muted-foreground">Ticket</th>
+                                <th className="py-2 px-3 text-center text-xs font-semibold text-muted-foreground">Liquidity</th>
+                                <th className="py-2 px-3 text-center text-xs font-semibold text-muted-foreground">Score</th>
+                                <th className="py-2 px-3 text-center text-xs font-semibold text-muted-foreground">Stage</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {compareIds.map(id => {
+                                const opp = filteredOpportunities.find(o => o.id === id);
+                                if (!opp) return null;
+                                const config = categoryConfig[opp.category as keyof typeof categoryConfig];
+                                return (
+                                  <tr key={id} className="border-b border-border/30 hover:bg-muted/30">
+                                    <td className="py-2 px-3 font-medium text-sm cursor-pointer hover:text-primary" onClick={() => navigate(`${detailBasePath}/${opp.id}`)}>{opp.title}</td>
+                                    <td className="py-2 px-3 text-center font-bold">{opp.expected_irr != null ? `${opp.expected_irr.toFixed(1)}%` : "—"}</td>
+                                    <td className="py-2 px-3 text-center">{opp.analyst_rating ? <Badge className={`${ratingColors[opp.analyst_rating]} border text-xs`}>{opp.analyst_rating}</Badge> : "—"}</td>
+                                    <td className="py-2 px-3 text-center"><Badge variant="outline" className="text-xs">{config?.label || opp.category}</Badge></td>
+                                    <td className="py-2 px-3 text-right font-semibold text-primary">{opp.price ? formatPrice(opp.price, opp.price_currency) : "—"}</td>
+                                    <td className="py-2 px-3 text-center text-xs">{opp.liquidity_horizon || "—"}</td>
+                                    <td className="py-2 px-3 text-center font-medium">{opp.overall_conviction_score?.toFixed(1) || "—"}</td>
+                                    <td className="py-2 px-3 text-center text-xs">{opp.deal_stage || "—"}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </Card>
+                    )}
+
+                    <Card className="border-border/50 overflow-hidden bg-gradient-to-br from-background to-muted/10">
+                      <ScrollArea className="h-[650px]">
+                        <div className="overflow-x-auto">
+                          <Table className="min-w-[1200px]">
+                            <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b border-border/50">
+                              <TableRow className="hover:bg-transparent">
+                                {compareMode && <TableHead className="w-10"></TableHead>}
+                                <TableHead className="min-w-[280px] font-semibold text-foreground pl-4">Deal</TableHead>
+                                <TableHead className="min-w-[100px] font-semibold text-foreground">Sector</TableHead>
+                                <TableHead className="min-w-[70px] text-center font-semibold text-foreground">IRR</TableHead>
+                                <TableHead className="min-w-[80px] text-center font-semibold text-foreground">Risk</TableHead>
+                                <TableHead className="min-w-[100px] text-right font-semibold text-foreground">Ticket</TableHead>
+                                <TableHead className="min-w-[90px] font-semibold text-foreground">Liquidity</TableHead>
+                                <TableHead className="min-w-[90px] font-semibold text-foreground">Stage</TableHead>
+                                <TableHead className="min-w-[70px] text-center font-semibold text-foreground">Score</TableHead>
+                                <TableHead className="min-w-[100px] font-semibold text-foreground">Geography</TableHead>
+                                <TableHead className="min-w-[80px] font-semibold text-foreground">Date</TableHead>
+                                <TableHead className="w-10"></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {filteredOpportunities.map((opp) => <OpportunityRow key={opp.id} opportunity={opp} />)}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </ScrollArea>
+                    </Card>
+                  </div>
                 )}
               </TabsContent>
             </Tabs>
