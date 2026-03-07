@@ -226,7 +226,9 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          )}
 
+          {filteredAdviserItems.length > 0 && (
           <SidebarGroup className="mt-6">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
