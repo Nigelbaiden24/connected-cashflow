@@ -237,7 +237,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {adviserToolsItems.map((item) => (
+                {filteredAdviserItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     {isCollapsed ? (
                       <Tooltip>
