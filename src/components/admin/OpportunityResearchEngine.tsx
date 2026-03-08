@@ -109,6 +109,26 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
     icon: Zap,
     subCategories: ["DeFi Protocols", "Layer 2 Solutions", "Tokenized Assets (RWA)", "Blockchain Gaming", "DAOs", "Infrastructure"],
   },
+  crowdfunding: {
+    label: "Crowdfunding",
+    icon: DollarSign,
+    subCategories: ["Equity Crowdfunding", "Reward-Based", "Real Estate Crowdfunding", "Revenue Share", "Mini Bonds", "Community Shares"],
+  },
+  startup_funding: {
+    label: "Startup Funding News",
+    icon: TrendingUp,
+    subCategories: ["Pre-Seed & Seed", "Series A", "Series B+", "Bridge Rounds", "ICO/IEO/IDO", "SEIS/EIS Eligible", "Demo Days & Accelerators"],
+  },
+  property_opportunities: {
+    label: "Property Opportunities",
+    icon: Building2,
+    subCategories: ["Off-Plan Developments", "Auction Properties", "Distressed Assets", "Student Accommodation", "Co-Living", "Serviced Apartments", "Social Housing"],
+  },
+  infrastructure: {
+    label: "Infrastructure Projects",
+    icon: MapPin,
+    subCategories: ["Renewable Energy", "Transport & Rail", "Data Centres", "Water & Utilities", "5G & Telecoms", "Social Infrastructure", "Green Hydrogen"],
+  },
 };
 
 type ResearchPhase = "idle" | "scraping" | "analyzing" | "complete" | "error";
