@@ -42,6 +42,10 @@ import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { useAdminAutoLogout } from "@/hooks/useAdminAutoLogout";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
+import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
+import { CaseManagement } from "@/components/compliance/CaseManagement";
+import { DocumentTracker } from "@/components/compliance/DocumentTracker";
 
 interface Profile {
   user_id: string;

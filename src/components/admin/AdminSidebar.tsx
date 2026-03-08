@@ -61,6 +61,7 @@ const navItems: NavItem[] = [
   { id: "learning", label: "Learning", icon: BookOpen, gradient: "from-pink-500 to-pink-600" },
   { id: "videos", label: "Videos", icon: Video, gradient: "from-red-500 to-red-600" },
   { id: "watchlists", label: "Watchlists", icon: List, gradient: "from-teal-500 to-teal-600" },
+  { id: "compliance", label: "Compliance Management", icon: Shield, gradient: "from-emerald-500 to-emerald-600" },
   { id: "risk-compliance", label: "Risk & Compliance", icon: Shield, gradient: "from-amber-500 to-amber-600" },
   { id: "alerts", label: "Signals & Alerts", icon: Bell, gradient: "from-rose-500 to-rose-600" },
   { id: "market-trends", label: "Market Trends", icon: TrendingUp, gradient: "from-lime-500 to-lime-600" },
