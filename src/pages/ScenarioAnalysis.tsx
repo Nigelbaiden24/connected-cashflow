@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import MonteCarloSimulations from "@/components/scenario/MonteCarloSimulations";
 import PEVCScenarioAnalysis from "@/components/scenario/PEVCScenarioAnalysis";
+import OpportunityStressTest from "@/components/scenario/OpportunityStressTest";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
@@ -484,11 +485,12 @@ export default function ScenarioAnalysis() {
       </Card>
 
       <Tabs defaultValue="monte-carlo" className="space-y-6">
-        <TabsList className="grid grid-cols-7 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="monte-carlo">Monte Carlo</TabsTrigger>
           <TabsTrigger value="pe-vc">PE / VC / FO</TabsTrigger>
           <TabsTrigger value="what-if">What-If</TabsTrigger>
           <TabsTrigger value="stress-test">Stress Test</TabsTrigger>
+          <TabsTrigger value="opp-stress">AI Deal Test</TabsTrigger>
           <TabsTrigger value="goals">Goal Planning</TabsTrigger>
           <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
           <TabsTrigger value="retirement">Retirement</TabsTrigger>
@@ -497,6 +499,15 @@ export default function ScenarioAnalysis() {
         {/* PE / VC / Family Office */}
         <TabsContent value="pe-vc" className="space-y-6">
           <PEVCScenarioAnalysis
+            selectedClient={selectedClient}
+            clients={clients}
+            formatCurrency={formatCurrency}
+          />
+        </TabsContent>
+
+        {/* AI Opportunity Stress Test */}
+        <TabsContent value="opp-stress" className="space-y-6">
+          <OpportunityStressTest
             selectedClient={selectedClient}
             clients={clients}
             formatCurrency={formatCurrency}

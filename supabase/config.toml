@@ -125,3 +125,6 @@ verify_jwt = true
 
 [functions.paraplanning-ai]
 verify_jwt = false
+
+[functions.opportunity-stress-test]
+verify_jwt = false
