@@ -225,7 +225,7 @@ export default function OpportunityIntelligence() {
     const Icon = config?.icon || Building2;
     const isCompared = compareIds.includes(opportunity.id);
     return (
-      <TableRow className={cn("cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30", isCompared && "bg-primary/5")} onClick={() => compareMode ? toggleCompare(opportunity.id) : navigate(`${detailBasePath}/${opportunity.id}`)}>
+      <TableRow className={cn("cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30", isCompared && "bg-primary/5")} onClick={() => compareMode ? toggleCompare(opportunity.id) : handleOpportunityClick(opportunity)}>
         {compareMode && (
           <TableCell className="w-10 text-center">
             <input type="checkbox" checked={isCompared} onChange={() => toggleCompare(opportunity.id)} className="rounded" />
