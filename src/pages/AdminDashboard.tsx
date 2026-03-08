@@ -1507,15 +1507,30 @@ export default function AdminDashboard() {
                  </TabsList>
 
                  <TabsContent value="rules">
-                   <RuleEngineManager />
+                   <RuleEngineManager 
+                     rules={complianceRules}
+                     onToggleRule={handleToggleRule}
+                     onRunCheck={handleRunCheck}
+                     onConfigureRule={handleConfigureRule}
+                     onCreateRule={handleCreateRule}
+                   />
                  </TabsContent>
 
                  <TabsContent value="cases">
-                   <CaseManagement />
+                   <CaseManagement 
+                     cases={complianceCases}
+                     onViewCase={handleViewCase}
+                     onUpdateStatus={handleUpdateCaseStatus}
+                     onAddComment={handleAddCaseComment}
+                   />
                  </TabsContent>
 
                  <TabsContent value="documents">
-                   <DocumentTracker />
+                   <DocumentTracker 
+                     documents={complianceDocuments}
+                     onUploadDocument={handleUploadDocument}
+                     onViewDocument={handleViewDocument}
+                   />
                  </TabsContent>
                </Tabs>
              </div>
