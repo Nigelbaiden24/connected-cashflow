@@ -21,7 +21,8 @@ import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { 
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Car, Globe, LineChart, Bitcoin, Users, Award, Package,
-  Landmark, ChevronRight, Presentation, ArrowLeft
+  Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
+  Zap, Factory, Shield
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -58,7 +59,11 @@ const categoryConfig = {
   private_equity: { label: "Private Equity", icon: Users, color: "bg-purple-500/10 text-purple-500", subCategories: ["Growth Equity", "Buyouts", "Venture Capital", "Mezzanine"] },
   memorabilia: { label: "Memorabilia", icon: Award, color: "bg-pink-500/10 text-pink-500", subCategories: ["Sports Memorabilia", "Entertainment", "Historical Items", "Signed Items"] },
   commodities: { label: "Commodities & Hard Assets", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Gold", "Silver", "Precious Metals", "Raw Materials"] },
-  funds: { label: "Funds", icon: Landmark, color: "bg-slate-500/10 text-slate-500", subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs"] }
+  funds: { label: "Funds & ETFs", icon: Landmark, color: "bg-slate-500/10 text-slate-500", subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs", "Index Funds"] },
+  mini_bonds: { label: "Mini Bonds", icon: Banknote, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Convertible Mini Bonds"] },
+  private_credit: { label: "Private Credit & Lending", icon: HandCoins, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Peer-to-Peer Lending", "Private Debt Funds", "Real Estate Lending", "SME Lending", "Invoice Financing"] },
+  infrastructure_energy: { label: "Infrastructure & Energy", icon: Factory, color: "bg-lime-500/10 text-lime-600", subCategories: ["Renewable Energy Projects", "Infrastructure Funds", "Energy Transition", "Solar Farms", "Wind Energy", "EV Charging"] },
+  bonds: { label: "Bonds", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"] },
 };
 
 const ratingColors: Record<string, string> = {
