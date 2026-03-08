@@ -18,10 +18,12 @@ import { SectorFolderGrid } from "@/components/opportunities/SectorFolderGrid";
 import { AdvancedFilters, type FilterState } from "@/components/opportunities/AdvancedFilters";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { StarryBackground } from "@/components/showcase/StarryBackground";
+import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import { 
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Car, Globe, LineChart, Bitcoin, Users, Award, Package,
-  Landmark, ChevronRight, Presentation, ArrowLeft
+  Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
+  Zap, Factory, Shield
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -58,7 +60,11 @@ const categoryConfig = {
   private_equity: { label: "Private Equity", icon: Users, color: "bg-purple-500/10 text-purple-500", subCategories: ["Growth Equity", "Buyouts", "Venture Capital", "Mezzanine"] },
   memorabilia: { label: "Memorabilia", icon: Award, color: "bg-pink-500/10 text-pink-500", subCategories: ["Sports Memorabilia", "Entertainment", "Historical Items", "Signed Items"] },
   commodities: { label: "Commodities & Hard Assets", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Gold", "Silver", "Precious Metals", "Raw Materials"] },
-  funds: { label: "Funds", icon: Landmark, color: "bg-slate-500/10 text-slate-500", subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs"] }
+  funds: { label: "Funds & ETFs", icon: Landmark, color: "bg-slate-500/10 text-slate-500", subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs", "Index Funds"] },
+  mini_bonds: { label: "Mini Bonds", icon: Banknote, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Convertible Mini Bonds"] },
+  private_credit: { label: "Private Credit & Lending", icon: HandCoins, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Peer-to-Peer Lending", "Private Debt Funds", "Real Estate Lending", "SME Lending", "Invoice Financing"] },
+  infrastructure_energy: { label: "Infrastructure & Energy", icon: Factory, color: "bg-lime-500/10 text-lime-600", subCategories: ["Renewable Energy Projects", "Infrastructure Funds", "Energy Transition", "Solar Farms", "Wind Energy", "EV Charging"] },
+  bonds: { label: "Bonds", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"] },
 };
 
 const ratingColors: Record<string, string> = {
@@ -87,6 +93,15 @@ export default function OpportunityIntelligence() {
   const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
     geography: "all", ticketMin: "", ticketMax: "", expectedReturn: "all", riskRating: "all", dealStage: "all"
   });
+  const [selectedAnalysisAsset, setSelectedAnalysisAsset] = useState<OpportunityProduct | null>(null);
+
+  const handleOpportunityClick = (opportunity: OpportunityProduct) => {
+    if (opportunity.category === "stocks" || opportunity.category === "crypto") {
+      setSelectedAnalysisAsset(opportunity);
+    } else {
+      navigate(`${detailBasePath}/${opportunity.id}`);
+    }
+  };
 
   useEffect(() => { fetchCategoryCounts(); }, []);
   useEffect(() => { fetchOpportunities(); }, [activeCategory]);
@@ -193,7 +208,7 @@ export default function OpportunityIntelligence() {
             {opportunity.location && <div className="flex items-center gap-1"><MapPin className="h-3 w-3" /><span>{opportunity.location}</span></div>}
             <div className="flex items-center gap-1"><Clock className="h-3 w-3" /><span>{new Date(opportunity.created_at).toLocaleDateString()}</span></div>
           </div>
-          <Button className="w-full" variant="outline" size="sm" onClick={() => navigate(`${detailBasePath}/${opportunity.id}`)}>
+          <Button className="w-full" variant="outline" size="sm" onClick={() => handleOpportunityClick(opportunity)}>
             <Eye className="h-4 w-4 mr-2" /> View Details
           </Button>
         </CardContent>
@@ -210,7 +225,7 @@ export default function OpportunityIntelligence() {
     const Icon = config?.icon || Building2;
     const isCompared = compareIds.includes(opportunity.id);
     return (
-      <TableRow className={cn("cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30", isCompared && "bg-primary/5")} onClick={() => compareMode ? toggleCompare(opportunity.id) : navigate(`${detailBasePath}/${opportunity.id}`)}>
+      <TableRow className={cn("cursor-pointer hover:bg-muted/50 group transition-colors border-b border-border/30", isCompared && "bg-primary/5")} onClick={() => compareMode ? toggleCompare(opportunity.id) : handleOpportunityClick(opportunity)}>
         {compareMode && (
           <TableCell className="w-10 text-center">
             <input type="checkbox" checked={isCompared} onChange={() => toggleCompare(opportunity.id)} className="rounded" />
@@ -437,6 +452,38 @@ export default function OpportunityIntelligence() {
           </>
         )}
       </div>
+
+      {/* Stocks/Crypto Morningstar-Style Analysis Panel */}
+      {selectedAnalysisAsset && (
+        <div className="fixed inset-0 z-50 flex">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedAnalysisAsset(null)}
+          />
+          <div className="relative ml-auto w-full max-w-4xl h-full">
+            <MorningstarDetailPanel
+              asset={{
+                id: selectedAnalysisAsset.id,
+                symbol: selectedAnalysisAsset.sub_category || selectedAnalysisAsset.title.split(" ")[0],
+                name: selectedAnalysisAsset.title,
+                assetType: selectedAnalysisAsset.category === "crypto" ? "crypto" : "stock",
+                currentPrice: selectedAnalysisAsset.price || 0,
+                priceChange24h: 0,
+                priceChange7d: 0,
+                priceChange30d: 0,
+                priceChange1y: selectedAnalysisAsset.expected_irr || 0,
+                marketCap: selectedAnalysisAsset.minimum_investment || 0,
+                volume24h: 0,
+                analystRating: selectedAnalysisAsset.analyst_rating || undefined,
+                overallScore: selectedAnalysisAsset.overall_conviction_score || undefined,
+                currency: selectedAnalysisAsset.price_currency || "GBP",
+                sector: selectedAnalysisAsset.geography || undefined,
+              }}
+              onClose={() => setSelectedAnalysisAsset(null)}
+            />
+          </div>
+        </div>
+      )}
     </StarryBackground>
   );
 }

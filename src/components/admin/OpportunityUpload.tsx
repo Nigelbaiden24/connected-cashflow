@@ -32,7 +32,7 @@ const categoryConfig = {
   },
   vehicles: {
     label: "Vehicles",
-    icon: Briefcase, // Using Briefcase as placeholder since Car icon not imported
+    icon: Briefcase,
     subCategories: ["Classic Cars", "Luxury Vehicles", "Motorcycles", "Commercial Vehicles"]
   },
   overseas_property: {
@@ -71,10 +71,30 @@ const categoryConfig = {
     subCategories: ["Gold", "Silver", "Precious Metals", "Raw Materials"]
   },
   funds: {
-    label: "Funds",
+    label: "Funds & ETFs",
     icon: Building2,
-    subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs"]
-  }
+    subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs", "Index Funds"]
+  },
+  mini_bonds: {
+    label: "Mini Bonds",
+    icon: Briefcase,
+    subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Convertible Mini Bonds"]
+  },
+  private_credit: {
+    label: "Private Credit & Lending",
+    icon: Briefcase,
+    subCategories: ["Peer-to-Peer Lending", "Private Debt Funds", "Real Estate Lending", "SME Lending", "Invoice Financing"]
+  },
+  infrastructure_energy: {
+    label: "Infrastructure & Energy",
+    icon: Building2,
+    subCategories: ["Renewable Energy Projects", "Infrastructure Funds", "Energy Transition", "Solar Farms", "Wind Energy", "EV Charging"]
+  },
+  bonds: {
+    label: "Bonds",
+    icon: Gem,
+    subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"]
+  },
 };
 
 interface OpportunityForm {
