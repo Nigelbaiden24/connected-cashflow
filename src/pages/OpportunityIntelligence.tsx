@@ -208,7 +208,7 @@ export default function OpportunityIntelligence() {
             {opportunity.location && <div className="flex items-center gap-1"><MapPin className="h-3 w-3" /><span>{opportunity.location}</span></div>}
             <div className="flex items-center gap-1"><Clock className="h-3 w-3" /><span>{new Date(opportunity.created_at).toLocaleDateString()}</span></div>
           </div>
-          <Button className="w-full" variant="outline" size="sm" onClick={() => navigate(`${detailBasePath}/${opportunity.id}`)}>
+          <Button className="w-full" variant="outline" size="sm" onClick={() => handleOpportunityClick(opportunity)}>
             <Eye className="h-4 w-4 mr-2" /> View Details
           </Button>
         </CardContent>
