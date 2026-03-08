@@ -13,10 +13,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit } from "lucide-react";
+import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit, Building2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { EnterpriseGoalTypes } from "@/components/goal-planning/EnterpriseGoalTypes";
 
 // Dummy data for financial goals
 const goals = [
