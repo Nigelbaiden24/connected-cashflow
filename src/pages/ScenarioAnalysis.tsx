@@ -505,6 +505,15 @@ export default function ScenarioAnalysis() {
           />
         </TabsContent>
 
+        {/* AI Opportunity Stress Test */}
+        <TabsContent value="opp-stress" className="space-y-6">
+          <OpportunityStressTest
+            selectedClient={selectedClient}
+            clients={clients}
+            formatCurrency={formatCurrency}
+          />
+        </TabsContent>
+
         {/* Monte Carlo Simulation - Elite Dropdown System */}
         <TabsContent value="monte-carlo" className="space-y-6">
           <MonteCarloSimulations 
