@@ -68,6 +68,7 @@ const navItems: NavItem[] = [
   { id: "fund-scoring", label: "Fund Scoring", icon: Star, gradient: "from-amber-500 to-amber-600" },
   { id: "fund-analyst", label: "Fund Analyst", icon: TrendingUp, gradient: "from-teal-500 to-teal-600" },
   { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600" },
+  { id: "ai-scanner", label: "AI Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700" },
   { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600" },
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600" },
   { id: "document-generator", label: "Document Generator", icon: Sparkles, gradient: "from-violet-500 to-violet-600" },

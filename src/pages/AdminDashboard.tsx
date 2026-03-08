@@ -1403,6 +1403,8 @@ export default function AdminDashboard() {
 
           {activeTab === 'research-scraper' && <FinancialResearchScraper />}
 
+          {activeTab === 'ai-scanner' && <AIAutoScanner />}
+
           {activeTab === 'crm' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
