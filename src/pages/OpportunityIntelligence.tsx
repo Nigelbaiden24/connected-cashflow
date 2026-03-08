@@ -18,6 +18,7 @@ import { SectorFolderGrid } from "@/components/opportunities/SectorFolderGrid";
 import { AdvancedFilters, type FilterState } from "@/components/opportunities/AdvancedFilters";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { StarryBackground } from "@/components/showcase/StarryBackground";
+import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import { 
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Car, Globe, LineChart, Bitcoin, Users, Award, Package,
