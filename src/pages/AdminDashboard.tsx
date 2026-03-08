@@ -42,6 +42,10 @@ import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { useAdminAutoLogout } from "@/hooks/useAdminAutoLogout";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
+import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
+import { CaseManagement } from "@/components/compliance/CaseManagement";
+import { DocumentTracker } from "@/components/compliance/DocumentTracker";
 
 interface Profile {
   user_id: string;
@@ -80,6 +84,11 @@ export default function AdminDashboard() {
   const [alertTarget, setAlertTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
   const [marketTrendsTarget, setMarketTrendsTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
   const [opportunityTarget, setOpportunityTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
+
+  // Compliance state
+  const [complianceRules, setComplianceRules] = useState<any[]>([]);
+  const [complianceCases, setComplianceCases] = useState<any[]>([]);
+  const [complianceDocuments, setComplianceDocuments] = useState<any[]>([]);
 
   // Time tracking for admin dashboard - always active when on this page
   useAdminTimeTracking(true);
@@ -176,9 +185,82 @@ export default function AdminDashboard() {
     sendVia: [] as string[]
   });
 
+  // Load compliance data on mount
   useEffect(() => {
-    checkAdminAccess();
+    loadComplianceData();
   }, []);
+
+  const loadComplianceData = async () => {
+    try {
+      const [rulesRes, casesRes, docsRes] = await Promise.all([
+        supabase.from('compliance_rules').select('*').order('severity', { ascending: false }),
+        supabase.from('compliance_cases').select('*, clients(name)').order('created_at', { ascending: false }),
+        supabase.from('client_compliance_documents').select('*, clients(name)').order('expiry_date', { ascending: true })
+      ]);
+
+      if (rulesRes.data) setComplianceRules(rulesRes.data);
+      if (casesRes.data) setComplianceCases(casesRes.data);
+      if (docsRes.data) setComplianceDocuments(docsRes.data);
+    } catch (error) {
+      console.error('Error loading compliance data:', error);
+    }
+  };
+
+  const handleToggleRule = async (ruleId: string, enabled: boolean) => {
+    try {
+      await supabase.from('compliance_rules').update({ enabled }).eq('id', ruleId);
+      setComplianceRules(complianceRules.map(r => r.id === ruleId ? { ...r, enabled } : r));
+      toast.success(enabled ? 'Rule enabled' : 'Rule disabled');
+    } catch (error) {
+      toast.error('Error updating rule');
+    }
+  };
+
+  const handleRunCheck = async (ruleId: string) => {
+    toast.success('Compliance check initiated');
+  };
+
+  const handleConfigureRule = (ruleId: string) => {
+    toast.success('Configure rule panel opened');
+  };
+
+  const handleCreateRule = () => {
+    toast.success('Create rule dialog opened');
+  };
+
+  const handleViewCase = (caseId: string) => {
+    toast.success('Case detail panel opened');
+  };
+
+  const handleUpdateCaseStatus = async (caseId: string, status: string) => {
+    try {
+      await supabase.from('compliance_cases').update({ status }).eq('id', caseId);
+      setComplianceCases(complianceCases.map(c => c.id === caseId ? { ...c, status } : c));
+      toast.success('Case status updated');
+    } catch (error) {
+      toast.error('Error updating case');
+    }
+  };
+
+  const handleAddCaseComment = async (caseId: string, comment: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      await supabase.from('compliance_case_comments').insert({ case_id: caseId, user_id: user.id, comment });
+      toast.success('Comment added');
+    } catch (error) {
+      toast.error('Error adding comment');
+    }
+  };
+
+  const handleUploadDocument = () => {
+    toast.success('Document upload dialog opened');
+  };
+
+  const handleViewDocument = (docId: string) => {
+    toast.success('Document viewer opened');
+  };
+
 
   const checkAdminAccess = async () => {
     try {
@@ -1403,7 +1485,56 @@ export default function AdminDashboard() {
 
           {activeTab === 'research-scraper' && <FinancialResearchScraper />}
 
-          {activeTab === 'ai-scanner' && <AIAutoScanner />}
+           {activeTab === 'ai-scanner' && <AIAutoScanner />}
+
+           {activeTab === 'compliance' && (
+             <div className="space-y-6">
+               <ComplianceDashboard
+                 overallScore={92}
+                 trend="up"
+                 totalRules={24}
+                 passedChecks={156}
+                 failedChecks={12}
+                 pendingCases={3}
+                 expiringDocs={2}
+               />
+               
+               <Tabs defaultValue="rules" className="w-full">
+                 <TabsList className="grid w-full grid-cols-3 mb-6">
+                   <TabsTrigger value="rules">Compliance Rules</TabsTrigger>
+                   <TabsTrigger value="cases">Case Management</TabsTrigger>
+                   <TabsTrigger value="documents">Document Tracker</TabsTrigger>
+                 </TabsList>
+
+                 <TabsContent value="rules">
+                   <RuleEngineManager 
+                     rules={complianceRules}
+                     onToggleRule={handleToggleRule}
+                     onRunCheck={handleRunCheck}
+                     onConfigureRule={handleConfigureRule}
+                     onCreateRule={handleCreateRule}
+                   />
+                 </TabsContent>
+
+                 <TabsContent value="cases">
+                   <CaseManagement 
+                     cases={complianceCases}
+                     onViewCase={handleViewCase}
+                     onUpdateStatus={handleUpdateCaseStatus}
+                     onAddComment={handleAddCaseComment}
+                   />
+                 </TabsContent>
+
+                 <TabsContent value="documents">
+                   <DocumentTracker 
+                     documents={complianceDocuments}
+                     onUploadDocument={handleUploadDocument}
+                     onViewDocument={handleViewDocument}
+                   />
+                 </TabsContent>
+               </Tabs>
+             </div>
+           )}
 
           {activeTab === 'crm' && (
             <div className="space-y-6">

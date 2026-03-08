@@ -12,7 +12,7 @@ import { AdvisorTasks } from "@/components/dashboard/AdvisorTasks";
 import { AdvisoryRevenues } from "@/components/dashboard/AdvisoryRevenues";
 import { PortfolioWatchlist } from "@/components/dashboard/PortfolioWatchlist";
 import { DynamicAlerts } from "@/components/dashboard/DynamicAlerts";
-import { ComplianceHealth } from "@/components/dashboard/ComplianceHealth";
+
 import { ActivityOverview } from "@/components/dashboard/ActivityOverview";
 import { AISummaryPanel } from "@/components/dashboard/AISummaryPanel";
 import { QuickLinks } from "@/components/dashboard/QuickLinks";
@@ -216,11 +216,8 @@ const Dashboard = () => {
       {/* AI Summary Panel */}
       <AISummaryPanel />
 
-      {/* Risk & Compliance Row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ClientRiskRadar />
-        <ComplianceHealth />
-      </div>
+      {/* Risk Assessment */}
+      <ClientRiskRadar />
 
       {/* Pipeline Overview */}
       <PipelineOverview />
