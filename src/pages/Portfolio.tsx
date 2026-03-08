@@ -8,11 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts";
-import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield, Building2, Rocket, Gem, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { AssetAllocationChart } from "@/components/AssetAllocationChart";
 import { PortfolioMetricCard } from "@/components/portfolio/PortfolioMetricCard";
+import { MultiEntityView } from "@/components/portfolio/MultiEntityView";
+import { DealPipelineView } from "@/components/portfolio/DealPipelineView";
+import { AlternativeAssetsView } from "@/components/portfolio/AlternativeAssetsView";
+import { AttributionBenchmark } from "@/components/portfolio/AttributionBenchmark";
 import { cn } from "@/lib/utils";
 
 export default function Portfolio() {
