@@ -452,6 +452,38 @@ export default function OpportunityIntelligence() {
           </>
         )}
       </div>
+
+      {/* Stocks/Crypto Morningstar-Style Analysis Panel */}
+      {selectedAnalysisAsset && (
+        <div className="fixed inset-0 z-50 flex">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedAnalysisAsset(null)}
+          />
+          <div className="relative ml-auto w-full max-w-4xl h-full">
+            <MorningstarDetailPanel
+              asset={{
+                id: selectedAnalysisAsset.id,
+                symbol: selectedAnalysisAsset.sub_category || selectedAnalysisAsset.title.split(" ")[0],
+                name: selectedAnalysisAsset.title,
+                assetType: selectedAnalysisAsset.category === "crypto" ? "crypto" : "stock",
+                currentPrice: selectedAnalysisAsset.price || 0,
+                priceChange24h: 0,
+                priceChange7d: 0,
+                priceChange30d: 0,
+                priceChange1y: selectedAnalysisAsset.expected_irr || 0,
+                marketCap: selectedAnalysisAsset.minimum_investment || 0,
+                volume24h: 0,
+                analystRating: selectedAnalysisAsset.analyst_rating || undefined,
+                overallScore: selectedAnalysisAsset.overall_conviction_score || undefined,
+                currency: selectedAnalysisAsset.price_currency || "GBP",
+                sector: selectedAnalysisAsset.geography || undefined,
+              }}
+              onClose={() => setSelectedAnalysisAsset(null)}
+            />
+          </div>
+        </div>
+      )}
     </StarryBackground>
   );
 }
