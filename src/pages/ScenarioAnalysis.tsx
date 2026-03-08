@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import MonteCarloSimulations from "@/components/scenario/MonteCarloSimulations";
 import PEVCScenarioAnalysis from "@/components/scenario/PEVCScenarioAnalysis";
+import OpportunityStressTest from "@/components/scenario/OpportunityStressTest";
 import { 
   LineChart as RechartsLineChart, 
   Line, 
