@@ -485,11 +485,12 @@ export default function ScenarioAnalysis() {
       </Card>
 
       <Tabs defaultValue="monte-carlo" className="space-y-6">
-        <TabsList className="grid grid-cols-7 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="monte-carlo">Monte Carlo</TabsTrigger>
           <TabsTrigger value="pe-vc">PE / VC / FO</TabsTrigger>
           <TabsTrigger value="what-if">What-If</TabsTrigger>
           <TabsTrigger value="stress-test">Stress Test</TabsTrigger>
+          <TabsTrigger value="opp-stress">AI Deal Test</TabsTrigger>
           <TabsTrigger value="goals">Goal Planning</TabsTrigger>
           <TabsTrigger value="cashflow">Cash Flow</TabsTrigger>
           <TabsTrigger value="retirement">Retirement</TabsTrigger>
