@@ -597,6 +597,22 @@ export default function Portfolio() {
               ))}
             </div>
           </TabsContent>
+
+          <TabsContent value="multi-entity" className="space-y-4">
+            <MultiEntityView clients={clients} formatCurrency={formatCurrency} />
+          </TabsContent>
+
+          <TabsContent value="deal-pipeline" className="space-y-4">
+            <DealPipelineView formatCurrency={formatCurrency} />
+          </TabsContent>
+
+          <TabsContent value="alternatives" className="space-y-4">
+            <AlternativeAssetsView formatCurrency={formatCurrency} />
+          </TabsContent>
+
+          <TabsContent value="attribution" className="space-y-4">
+            <AttributionBenchmark formatCurrency={formatCurrency} totalPortfolioValue={totalPortfolioValue} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
