@@ -33,6 +33,7 @@ import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerato
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
+import { AIAutoScanner } from "@/components/admin/AIAutoScanner";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
