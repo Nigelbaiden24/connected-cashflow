@@ -341,6 +341,22 @@ export default function Portfolio() {
               <Shield className="h-4 w-4" />
               Risk Analysis
             </TabsTrigger>
+            <TabsTrigger value="multi-entity" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              Multi-Entity
+            </TabsTrigger>
+            <TabsTrigger value="deal-pipeline" className="gap-2">
+              <Rocket className="h-4 w-4" />
+              Deal Pipeline
+            </TabsTrigger>
+            <TabsTrigger value="alternatives" className="gap-2">
+              <Gem className="h-4 w-4" />
+              Alternatives
+            </TabsTrigger>
+            <TabsTrigger value="attribution" className="gap-2">
+              <Award className="h-4 w-4" />
+              Attribution
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
