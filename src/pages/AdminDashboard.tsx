@@ -85,6 +85,11 @@ export default function AdminDashboard() {
   const [marketTrendsTarget, setMarketTrendsTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
   const [opportunityTarget, setOpportunityTarget] = useState<ContentTarget>({ platform: "all", selectedUsers: [], allUsers: true });
 
+  // Compliance state
+  const [complianceRules, setComplianceRules] = useState<any[]>([]);
+  const [complianceCases, setComplianceCases] = useState<any[]>([]);
+  const [complianceDocuments, setComplianceDocuments] = useState<any[]>([]);
+
   // Time tracking for admin dashboard - always active when on this page
   useAdminTimeTracking(true);
 
