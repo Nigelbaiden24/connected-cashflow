@@ -216,11 +216,8 @@ const Dashboard = () => {
       {/* AI Summary Panel */}
       <AISummaryPanel />
 
-      {/* Risk & Compliance Row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ClientRiskRadar />
-        <ComplianceHealth />
-      </div>
+      {/* Risk Assessment */}
+      <ClientRiskRadar />
 
       {/* Pipeline Overview */}
       <PipelineOverview />
