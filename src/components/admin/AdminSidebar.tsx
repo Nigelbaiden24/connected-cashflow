@@ -29,6 +29,7 @@ import {
   ClipboardList,
   Globe,
   Settings,
+  Radar,
 } from "lucide-react";
 
 interface AdminSidebarProps {
