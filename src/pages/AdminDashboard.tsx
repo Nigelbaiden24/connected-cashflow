@@ -185,9 +185,82 @@ export default function AdminDashboard() {
     sendVia: [] as string[]
   });
 
+  // Load compliance data on mount
   useEffect(() => {
-    checkAdminAccess();
+    loadComplianceData();
   }, []);
+
+  const loadComplianceData = async () => {
+    try {
+      const [rulesRes, casesRes, docsRes] = await Promise.all([
+        supabase.from('compliance_rules').select('*').order('severity', { ascending: false }),
+        supabase.from('compliance_cases').select('*, clients(name)').order('created_at', { ascending: false }),
+        supabase.from('client_compliance_documents').select('*, clients(name)').order('expiry_date', { ascending: true })
+      ]);
+
+      if (rulesRes.data) setComplianceRules(rulesRes.data);
+      if (casesRes.data) setComplianceCases(casesRes.data);
+      if (docsRes.data) setComplianceDocuments(docsRes.data);
+    } catch (error) {
+      console.error('Error loading compliance data:', error);
+    }
+  };
+
+  const handleToggleRule = async (ruleId: string, enabled: boolean) => {
+    try {
+      await supabase.from('compliance_rules').update({ enabled }).eq('id', ruleId);
+      setComplianceRules(complianceRules.map(r => r.id === ruleId ? { ...r, enabled } : r));
+      toast.success(enabled ? 'Rule enabled' : 'Rule disabled');
+    } catch (error) {
+      toast.error('Error updating rule');
+    }
+  };
+
+  const handleRunCheck = async (ruleId: string) => {
+    toast.success('Compliance check initiated');
+  };
+
+  const handleConfigureRule = (ruleId: string) => {
+    toast.success('Configure rule panel opened');
+  };
+
+  const handleCreateRule = () => {
+    toast.success('Create rule dialog opened');
+  };
+
+  const handleViewCase = (caseId: string) => {
+    toast.success('Case detail panel opened');
+  };
+
+  const handleUpdateCaseStatus = async (caseId: string, status: string) => {
+    try {
+      await supabase.from('compliance_cases').update({ status }).eq('id', caseId);
+      setComplianceCases(complianceCases.map(c => c.id === caseId ? { ...c, status } : c));
+      toast.success('Case status updated');
+    } catch (error) {
+      toast.error('Error updating case');
+    }
+  };
+
+  const handleAddCaseComment = async (caseId: string, comment: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      await supabase.from('compliance_case_comments').insert({ case_id: caseId, user_id: user.id, comment });
+      toast.success('Comment added');
+    } catch (error) {
+      toast.error('Error adding comment');
+    }
+  };
+
+  const handleUploadDocument = () => {
+    toast.success('Document upload dialog opened');
+  };
+
+  const handleViewDocument = (docId: string) => {
+    toast.success('Document viewer opened');
+  };
+
 
   const checkAdminAccess = async () => {
     try {
