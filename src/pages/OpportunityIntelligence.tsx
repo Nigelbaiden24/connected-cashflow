@@ -93,6 +93,15 @@ export default function OpportunityIntelligence() {
   const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
     geography: "all", ticketMin: "", ticketMax: "", expectedReturn: "all", riskRating: "all", dealStage: "all"
   });
+  const [selectedAnalysisAsset, setSelectedAnalysisAsset] = useState<OpportunityProduct | null>(null);
+
+  const handleOpportunityClick = (opportunity: OpportunityProduct) => {
+    if (opportunity.category === "stocks" || opportunity.category === "crypto") {
+      setSelectedAnalysisAsset(opportunity);
+    } else {
+      navigate(`${detailBasePath}/${opportunity.id}`);
+    }
+  };
 
   useEffect(() => { fetchCategoryCounts(); }, []);
   useEffect(() => { fetchOpportunities(); }, [activeCategory]);
