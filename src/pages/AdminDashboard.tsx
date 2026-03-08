@@ -1407,7 +1407,41 @@ export default function AdminDashboard() {
 
           {activeTab === 'research-scraper' && <FinancialResearchScraper />}
 
-          {activeTab === 'ai-scanner' && <AIAutoScanner />}
+           {activeTab === 'ai-scanner' && <AIAutoScanner />}
+
+           {activeTab === 'compliance' && (
+             <div className="space-y-6">
+               <ComplianceDashboard
+                 overallScore={92}
+                 trend="up"
+                 totalRules={24}
+                 passedChecks={156}
+                 failedChecks={12}
+                 pendingCases={3}
+                 expiringDocs={2}
+               />
+               
+               <Tabs defaultValue="rules" className="w-full">
+                 <TabsList className="grid w-full grid-cols-3 mb-6">
+                   <TabsTrigger value="rules">Compliance Rules</TabsTrigger>
+                   <TabsTrigger value="cases">Case Management</TabsTrigger>
+                   <TabsTrigger value="documents">Document Tracker</TabsTrigger>
+                 </TabsList>
+
+                 <TabsContent value="rules">
+                   <RuleEngineManager />
+                 </TabsContent>
+
+                 <TabsContent value="cases">
+                   <CaseManagement />
+                 </TabsContent>
+
+                 <TabsContent value="documents">
+                   <DocumentTracker />
+                 </TabsContent>
+               </Tabs>
+             </div>
+           )}
 
           {activeTab === 'crm' && (
             <div className="space-y-6">
