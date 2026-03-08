@@ -13,10 +13,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit } from "lucide-react";
+import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit, Building2, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { EnterpriseGoalTypes } from "@/components/goal-planning/EnterpriseGoalTypes";
 
 // Dummy data for financial goals
 const goals = [
@@ -477,158 +478,173 @@ export default function GoalPlanning() {
         </Dialog>
       </div>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Goal Value</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalGoalAmount)}</div>
-            <p className="text-xs text-muted-foreground">Across {clientGoals.length} goals</p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="client-goals" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="client-goals" className="gap-2">
+            <Target className="h-4 w-4" />
+            Client Goals
+          </TabsTrigger>
+          <TabsTrigger value="enterprise" className="gap-2">
+            <Crown className="h-4 w-4" />
+            Enterprise Goals
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Amount Saved</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalCurrentAmount)}</div>
-            <p className="text-xs text-muted-foreground">
-              {((totalCurrentAmount / totalGoalAmount) * 100).toFixed(1)}% of total goals
-            </p>
-          </CardContent>
-        </Card>
+        <TabsContent value="client-goals" className="space-y-6">
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Goal Value</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totalGoalAmount)}</div>
+                <p className="text-xs text-muted-foreground">Across {clientGoals.length} goals</p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Savings</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalMonthlyContributions)}</div>
-            <p className="text-xs text-muted-foreground">Total monthly contributions</p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Amount Saved</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totalCurrentAmount)}</div>
+                <p className="text-xs text-muted-foreground">
+                  {totalGoalAmount > 0 ? ((totalCurrentAmount / totalGoalAmount) * 100).toFixed(1) : '0'}% of total goals
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">On Track Goals</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {clientGoals.filter(g => g.status === "On Track" || g.status === "Ahead").length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              of {clientGoals.length} total goals
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Monthly Savings</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(totalMonthlyContributions)}</div>
+                <p className="text-xs text-muted-foreground">Total monthly contributions</p>
+              </CardContent>
+            </Card>
 
-      {/* Goals List */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Active Goals</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {clientGoals.map((goal) => {
-            const progress = calculateProgress(goal.current_amount || 0, goal.target_amount || 0);
-            const monthsToGoal = calculateMonthsToGoal(goal.current_amount || 0, goal.target_amount || 0, goal.monthly_contribution || 0);
-            
-            return (
-              <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{goal.goal_name}</CardTitle>
-                      <CardDescription>{goal.goal_type}</CardDescription>
-                    </div>
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className={getPriorityColor(goal.priority?.toLowerCase() || 'medium')}>
-                        {goal.priority}
-                      </Badge>
-                      <Badge className={getStatusColor(goal.status?.toLowerCase().replace(' ', '-') || 'on-track')}>
-                        {goal.status || 'On Track'}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span className="font-medium">{progress.toFixed(1)}%</span>
-                    </div>
-                    <Progress value={progress} />
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{formatCurrency(goal.current_amount || 0)}</span>
-                      <span>{formatCurrency(goal.target_amount || 0)}</span>
-                    </div>
-                  </div>
-
-                  {/* Goal Details */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="text-muted-foreground">Target Date</div>
-                      <div className="font-medium flex items-center gap-1">
-                        <CalendarIcon className="h-3 w-3" />
-                        {goal.target_date ? format(new Date(goal.target_date), "MMM yyyy") : "Not set"}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Monthly Savings</div>
-                      <div className="font-medium">{formatCurrency(goal.monthly_contribution || 0)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Priority</div>
-                      <div className="font-medium">{goal.priority || 'Medium'}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Months to Goal</div>
-                      <div className="font-medium flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {monthsToGoal === Infinity ? "∞" : `${monthsToGoal} mo`}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  {goal.notes && (
-                    <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="text-sm text-muted-foreground">{goal.notes}</div>
-                    </div>
-                  )}
-
-                  {/* Edit Button */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => startEditGoal(goal)}
-                    className="w-full"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Goal
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-        
-        {clientGoals.length === 0 && (
-          <div className="text-center py-12">
-            <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">No Goals Yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Start by adding a financial goal for {selectedClient.name}
-            </p>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">On Track Goals</CardTitle>
+                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {clientGoals.filter(g => g.status === "On Track" || g.status === "Ahead").length}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  of {clientGoals.length} total goals
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </div>
+
+          {/* Goals List */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Active Goals</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {clientGoals.map((goal) => {
+                const progress = calculateProgress(goal.current_amount || 0, goal.target_amount || 0);
+                const monthsToGoal = calculateMonthsToGoal(goal.current_amount || 0, goal.target_amount || 0, goal.monthly_contribution || 0);
+                
+                return (
+                  <Card key={goal.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg">{goal.goal_name}</CardTitle>
+                          <CardDescription>{goal.goal_type}</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                          <Badge variant="outline" className={getPriorityColor(goal.priority?.toLowerCase() || 'medium')}>
+                            {goal.priority}
+                          </Badge>
+                          <Badge className={getStatusColor(goal.status?.toLowerCase().replace(' ', '-') || 'on-track')}>
+                            {goal.status || 'On Track'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Progress</span>
+                          <span className="font-medium">{progress.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={progress} />
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span>{formatCurrency(goal.current_amount || 0)}</span>
+                          <span>{formatCurrency(goal.target_amount || 0)}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">Target Date</div>
+                          <div className="font-medium flex items-center gap-1">
+                            <CalendarIcon className="h-3 w-3" />
+                            {goal.target_date ? format(new Date(goal.target_date), "MMM yyyy") : "Not set"}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Monthly Savings</div>
+                          <div className="font-medium">{formatCurrency(goal.monthly_contribution || 0)}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Priority</div>
+                          <div className="font-medium">{goal.priority || 'Medium'}</div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">Months to Goal</div>
+                          <div className="font-medium flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {monthsToGoal === Infinity ? "∞" : `${monthsToGoal} mo`}
+                          </div>
+                        </div>
+                      </div>
+
+                      {goal.notes && (
+                        <div className="p-3 rounded-lg bg-muted/50">
+                          <div className="text-sm text-muted-foreground">{goal.notes}</div>
+                        </div>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEditGoal(goal)}
+                        className="w-full"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Goal
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+            
+            {clientGoals.length === 0 && (
+              <div className="text-center py-12">
+                <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">No Goals Yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Start by adding a financial goal for {selectedClient.name}
+                </p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="enterprise" className="space-y-6">
+          <EnterpriseGoalTypes formatCurrency={formatCurrency} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -8,11 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts";
-import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield, Building2, Rocket, Gem, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { AssetAllocationChart } from "@/components/AssetAllocationChart";
 import { PortfolioMetricCard } from "@/components/portfolio/PortfolioMetricCard";
+import { MultiEntityView } from "@/components/portfolio/MultiEntityView";
+import { DealPipelineView } from "@/components/portfolio/DealPipelineView";
+import { AlternativeAssetsView } from "@/components/portfolio/AlternativeAssetsView";
+import { AttributionBenchmark } from "@/components/portfolio/AttributionBenchmark";
 import { cn } from "@/lib/utils";
 
 export default function Portfolio() {
@@ -337,6 +341,22 @@ export default function Portfolio() {
               <Shield className="h-4 w-4" />
               Risk Analysis
             </TabsTrigger>
+            <TabsTrigger value="multi-entity" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              Multi-Entity
+            </TabsTrigger>
+            <TabsTrigger value="deal-pipeline" className="gap-2">
+              <Rocket className="h-4 w-4" />
+              Deal Pipeline
+            </TabsTrigger>
+            <TabsTrigger value="alternatives" className="gap-2">
+              <Gem className="h-4 w-4" />
+              Alternatives
+            </TabsTrigger>
+            <TabsTrigger value="attribution" className="gap-2">
+              <Award className="h-4 w-4" />
+              Attribution
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -576,6 +596,22 @@ export default function Portfolio() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="multi-entity" className="space-y-4">
+            <MultiEntityView clients={clients} formatCurrency={formatCurrency} />
+          </TabsContent>
+
+          <TabsContent value="deal-pipeline" className="space-y-4">
+            <DealPipelineView formatCurrency={formatCurrency} />
+          </TabsContent>
+
+          <TabsContent value="alternatives" className="space-y-4">
+            <AlternativeAssetsView formatCurrency={formatCurrency} />
+          </TabsContent>
+
+          <TabsContent value="attribution" className="space-y-4">
+            <AttributionBenchmark formatCurrency={formatCurrency} totalPortfolioValue={totalPortfolioValue} />
           </TabsContent>
         </Tabs>
       </div>
