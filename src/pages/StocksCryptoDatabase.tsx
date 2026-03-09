@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { 
   Search, 
   TrendingUp, 
