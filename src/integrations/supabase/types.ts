@@ -5931,6 +5931,57 @@ export type Database = {
         }
         Relationships: []
       }
+      security_anomalies: {
+        Row: {
+          anomaly_type: string
+          created_at: string
+          description: string
+          details: Json | null
+          detected_at: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          scan_id: string | null
+          severity: string
+          status: string
+          title: string
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          anomaly_type: string
+          created_at?: string
+          description: string
+          details?: Json | null
+          detected_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          scan_id?: string | null
+          severity?: string
+          status?: string
+          title: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          anomaly_type?: string
+          created_at?: string
+          description?: string
+          details?: Json | null
+          detected_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          scan_id?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       security_policies: {
         Row: {
           compliance_frameworks: string[] | null
