@@ -92,62 +92,6 @@ const Pricing = () => {
   const addonCount = Math.max(0, selectedProducts.length - INCLUDED_PRODUCTS);
   const totalPrice = BASE_PRICE + addonCount * ADDON_PRICE;
 
-  // FlowPulse CRM - Tiered plans
-  const crmTiers = [
-    {
-      name: "Basic",
-      description: "Essential CRM tools for small teams",
-      monthlyPrice: 12,
-      stripePriceId: "price_crm_basic",
-      features: [
-        "Contact management",
-        "Basic pipeline tracking",
-        "Email integration",
-        "Task management",
-        "Up to 500 contacts",
-        "Standard reporting",
-      ],
-      gradient: "from-rose-600 to-pink-600",
-      icon: Users,
-    },
-    {
-      name: "Pro",
-      description: "Advanced CRM for growing practices",
-      monthlyPrice: 22,
-      stripePriceId: "price_crm_pro",
-      features: [
-        "Everything in Basic",
-        "Unlimited contacts",
-        "Advanced pipeline analytics",
-        "Custom fields & tags",
-        "Automated workflows",
-        "Client portal access",
-        "Document management",
-        "Priority support",
-      ],
-      gradient: "from-rose-500 to-fuchsia-600",
-      icon: Building2,
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      description: "Full-featured CRM for large organizations",
-      monthlyPrice: 34,
-      stripePriceId: "price_crm_enterprise",
-      features: [
-        "Everything in Pro",
-        "API access & integrations",
-        "Custom reporting & dashboards",
-        "Role-based permissions",
-        "Dedicated account manager",
-        "SLA guarantees",
-        "Custom onboarding & training",
-        "White-label options",
-      ],
-      gradient: "from-fuchsia-600 to-purple-600",
-      icon: Shield,
-    },
-  ];
 
   // Jenrate / Document Generator - Tiered plans
   const jenrateTiers = [
