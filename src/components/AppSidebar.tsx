@@ -172,9 +172,9 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             </div>
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <TranslatedText as="span" className="text-base font-bold text-white tracking-tight">FlowPulse.io</TranslatedText>
-              <TranslatedText as="span" className="text-xs text-white/60 font-medium">Wealth Platform</TranslatedText>
+            <div className="flex flex-col min-w-0">
+              <TranslatedText as="span" className="text-base font-bold text-white tracking-tight truncate">FlowPulse.io</TranslatedText>
+              <TranslatedText as="span" className="text-xs text-white/60 font-medium truncate">Wealth Platform</TranslatedText>
             </div>
           )}
         </div>
