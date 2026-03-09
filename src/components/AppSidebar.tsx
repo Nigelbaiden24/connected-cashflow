@@ -152,7 +152,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
 
   return (
     <Sidebar 
-      className={`${isCollapsed ? "w-16" : "w-64"} border-r-0`}
+      className={`${isCollapsed ? "w-16" : "w-72"} border-r-0`}
       collapsible="icon"
       style={{
         background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
@@ -172,15 +172,15 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             </div>
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <TranslatedText as="span" className="text-base font-bold text-white tracking-tight">FlowPulse.io</TranslatedText>
-              <TranslatedText as="span" className="text-xs text-white/60 font-medium">Wealth Platform</TranslatedText>
+            <div className="flex flex-col min-w-0">
+              <TranslatedText as="span" className="text-base font-bold text-white tracking-tight truncate">FlowPulse.io</TranslatedText>
+              <TranslatedText as="span" className="text-xs text-white/60 font-medium truncate">Wealth Platform</TranslatedText>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="relative z-10 px-2">
+      <SidebarContent className="relative z-10 px-2 overflow-y-auto">
         <TooltipProvider>
           {!isCollapsed && (
             <div className="flex justify-end mt-2 mb-1 px-2">
