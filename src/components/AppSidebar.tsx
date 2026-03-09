@@ -169,7 +169,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
       </div>
 
       <SidebarHeader className="border-b border-white/10 relative z-10 shrink-0">
-        <div className={`flex items-center gap-3 px-4 py-5 ${isCollapsed ? 'justify-center px-2' : ''}`}>
+        <div className={`flex items-center gap-3 px-4 py-5 ${isCollapsed ? 'flex-col justify-center px-2 gap-2' : ''}`}>
           <div className="relative group shrink-0">
             <div className="absolute -inset-1 bg-gradient-to-r from-white/30 to-white/10 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
