@@ -95,6 +95,11 @@ const categoryConfig = {
     icon: Gem,
     subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"]
   },
+  timepieces: {
+    label: "Timepieces",
+    icon: Gem,
+    subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"]
+  },
 };
 
 interface OpportunityForm {
@@ -999,7 +1004,7 @@ export function OpportunityUpload() {
               </Card>
             )}
 
-            {(form.category === "memorabilia" || form.category === "vehicles" || form.category === "commodities") && (
+            {(form.category === "memorabilia" || form.category === "vehicles" || form.category === "commodities" || form.category === "timepieces") && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

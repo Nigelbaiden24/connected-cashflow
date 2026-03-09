@@ -18,13 +18,13 @@ const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#e
 const categoryIcons: Record<string, any> = {
   uk_property: Building2, vehicles: Car, overseas_property: Globe, businesses: Briefcase,
   stocks: LineChart, crypto: Bitcoin, private_equity: Users, memorabilia: Award,
-  commodities: Package, funds: Landmark
+  commodities: Package, funds: Landmark, timepieces: Clock
 };
 
 const categoryLabels: Record<string, string> = {
   uk_property: "UK Property", vehicles: "Vehicles", overseas_property: "Overseas Property",
   businesses: "Businesses", stocks: "Stocks", crypto: "Crypto", private_equity: "Private Equity",
-  memorabilia: "Memorabilia", commodities: "Commodities", funds: "Funds"
+  memorabilia: "Memorabilia", commodities: "Commodities", funds: "Funds", timepieces: "Timepieces"
 };
 
 interface DashboardDealWidgetsProps {
