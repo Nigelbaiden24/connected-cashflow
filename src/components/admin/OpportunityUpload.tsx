@@ -95,6 +95,11 @@ const categoryConfig = {
     icon: Gem,
     subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"]
   },
+  timepieces: {
+    label: "Timepieces",
+    icon: Gem,
+    subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"]
+  },
 };
 
 interface OpportunityForm {
