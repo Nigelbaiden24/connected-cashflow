@@ -73,7 +73,6 @@ const generalItems = [
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "CRM", url: "/finance-crm", icon: Users },
   { title: "Market Data", url: "/market", icon: TrendingUp },
-  { title: "News", url: "/finance/news", icon: Mail },
   { title: "Languages", url: "/finance/languages", icon: Globe },
 ];
 
