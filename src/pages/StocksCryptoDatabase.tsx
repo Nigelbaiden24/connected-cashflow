@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
+import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
+import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { 
   Search, 
   TrendingUp, 
@@ -246,7 +248,7 @@ export default function StocksCryptoDatabase() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
+    <StarryBackground className="min-h-screen">
       {/* Header Section */}
       <div className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-6 py-5">
@@ -295,6 +297,7 @@ export default function StocksCryptoDatabase() {
                 <Bookmark className="h-4 w-4" />
                 Watchlist
               </Button>
+              <ShowcaseDarkToggle />
               <Button size="sm" className="gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md shadow-primary/20">
                 <Download className="h-4 w-4" />
                 Export
@@ -516,7 +519,7 @@ export default function StocksCryptoDatabase() {
           </div>
         </div>
       )}
-    </div>
+    </StarryBackground>
   );
 }
 
