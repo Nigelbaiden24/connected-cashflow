@@ -180,7 +180,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="relative z-10 px-2">
+      <SidebarContent className="relative z-10 px-2 overflow-y-auto">
         <TooltipProvider>
           {!isCollapsed && (
             <div className="flex justify-end mt-2 mb-1 px-2">
