@@ -168,9 +168,9 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 via-transparent to-transparent" />
       </div>
 
-      <SidebarHeader className="border-b border-white/10 relative z-10">
-        <div className={`flex items-center gap-3 px-4 py-4 ${isCollapsed ? 'justify-center px-2' : ''}`}>
-          <div className="relative group">
+      <SidebarHeader className="border-b border-white/10 relative z-10 shrink-0">
+        <div className={`flex items-center gap-3 px-4 py-5 ${isCollapsed ? 'justify-center px-2' : ''}`}>
+          <div className="relative group shrink-0">
             <div className="absolute -inset-1 bg-gradient-to-r from-white/30 to-white/10 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
               <Bot className="h-5 w-5 text-white" />
