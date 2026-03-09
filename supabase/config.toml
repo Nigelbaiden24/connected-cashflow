@@ -128,3 +128,6 @@ verify_jwt = false
 
 [functions.opportunity-stress-test]
 verify_jwt = false
+
+[functions.security-anomaly-detection]
+verify_jwt = true
