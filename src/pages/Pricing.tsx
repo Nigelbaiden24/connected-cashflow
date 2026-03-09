@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowLeft, Users, Building2, TrendingUp, Shield, CreditCard } from "lucide-react";
+import { Check, ArrowLeft, Users, Building2, TrendingUp, Shield, CreditCard, Plus, Minus, Package } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,7 @@ const Pricing = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [crmAnnual, setCrmAnnual] = useState(false);
   const [jenrateAnnual, setJenrateAnnual] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const handleCheckout = async (
     priceId: string,
@@ -59,29 +61,37 @@ const Pricing = () => {
     });
   };
 
-  // FlowPulse Investor - Single annual tier
-  const investorPlan = {
-    name: "FlowPulse Investor",
-    description: "Complete research, analysis & insights for self-directed investors",
-    annualPrice: 1049,
-    stripePriceId: "price_investor_annual", // Replace with actual Stripe price ID
-    features: [
-      "Market news & commentary",
-      "Advanced stock screeners & filters",
-      "AI analyst Q&A access",
-      "Educational learning hub",
-      "Unlimited watchlists",
-      "Real-time signals & alerts",
-      "Full research reports access",
-      "Model portfolio insights",
-      "Fund & ETF database",
-      "Priority support",
-      "Exclusive analyst picks",
-      "Risk & scenario analysis tools",
-    ],
-    gradient: "from-violet-600 to-purple-600",
-    icon: TrendingUp,
+  // Investment opportunity products available to choose from
+  const investmentProducts = [
+    { id: "stocks", name: "Stocks & Equities", description: "Listed equities, IPOs & secondary offerings" },
+    { id: "crypto", name: "Crypto & Digital Assets", description: "Cryptocurrency and blockchain investments" },
+    { id: "real-estate", name: "Real Estate", description: "Commercial & residential property deals" },
+    { id: "private-equity", name: "Private Equity", description: "PE deals, buyouts & growth capital" },
+    { id: "venture-capital", name: "Venture Capital", description: "Early-stage & startup funding rounds" },
+    { id: "fixed-income", name: "Fixed Income & Bonds", description: "Government & corporate bonds" },
+    { id: "commodities", name: "Commodities", description: "Gold, oil, agriculture & natural resources" },
+    { id: "forex", name: "Foreign Exchange", description: "FX opportunities & currency markets" },
+    { id: "funds-etfs", name: "Funds & ETFs", description: "Fund analysis, scoring & selection" },
+    { id: "alternatives", name: "Alternative Investments", description: "Hedge funds, art, wine & collectibles" },
+    { id: "infrastructure", name: "Infrastructure", description: "Energy, transport & utilities projects" },
+    { id: "sme-acquisitions", name: "SME Acquisitions", description: "Small & medium business buy-side deals" },
+    { id: "debt-lending", name: "Debt & Lending", description: "Private credit, bridging & mezzanine finance" },
+    { id: "esg-impact", name: "ESG & Impact Investing", description: "Sustainable & socially responsible opportunities" },
+    { id: "distressed", name: "Distressed Assets", description: "Turnarounds, workouts & special situations" },
+  ];
+
+  const BASE_PRICE = 1049;
+  const ADDON_PRICE = 250;
+  const INCLUDED_PRODUCTS = 5;
+
+  const toggleProduct = (id: string) => {
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
   };
+
+  const addonCount = Math.max(0, selectedProducts.length - INCLUDED_PRODUCTS);
+  const totalPrice = BASE_PRICE + addonCount * ADDON_PRICE;
 
   // FlowPulse CRM - Tiered plans
   const crmTiers = [
