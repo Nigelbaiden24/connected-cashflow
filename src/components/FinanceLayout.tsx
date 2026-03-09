@@ -60,6 +60,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="finance" />
         </div>
+      </div>
 
       {/* Mobile Search Overlay */}
       <MobileSearchOverlay
