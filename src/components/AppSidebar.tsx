@@ -387,7 +387,6 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
                 title="Toggle Black & Gold mode"
               >
                 <Moon className="h-4 w-4 flex-shrink-0 text-amber-400" />
-                <span className="ml-2 text-xs">Black & Gold</span>
               </Button>
               <Button
                 variant="ghost"
