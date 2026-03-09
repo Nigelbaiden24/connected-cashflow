@@ -4411,6 +4411,118 @@ export type Database = {
         }
         Relationships: []
       }
+      organisation_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          organisation_id: string
+          role: string
+          status: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          organisation_id: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          organisation_id?: string
+          role?: string
+          status?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisation_invitations_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organisation_members: {
+        Row: {
+          id: string
+          invited_by: string | null
+          joined_at: string
+          organisation_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          organisation_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          organisation_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisation_members_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organisations: {
+        Row: {
+          billing_email: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          organisation_name: string
+          owner_user_id: string | null
+          subscription_plan: string
+          updated_at: string
+        }
+        Insert: {
+          billing_email?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          organisation_name: string
+          owner_user_id?: string | null
+          subscription_plan?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_email?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          organisation_name?: string
+          owner_user_id?: string | null
+          subscription_plan?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payroll_items: {
         Row: {
           created_at: string
@@ -6679,6 +6791,7 @@ export type Database = {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
       }
+      get_user_organisation_id: { Args: { _user_id: string }; Returns: string }
       grant_platform_access: {
         Args: {
           _business?: boolean
@@ -6702,6 +6815,10 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_hr_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_payroll_admin: { Args: { _user_id: string }; Returns: boolean }
       update_tab_permissions: {
         Args: { _permissions: Json; _user_id: string }
