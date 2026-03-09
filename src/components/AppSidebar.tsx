@@ -153,9 +153,11 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
       .slice(0, 2);
   };
 
+  const { toggleSidebar } = useSidebar();
+
   return (
     <Sidebar 
-      className={`${isCollapsed ? "w-16" : "w-72"} border-r-0`}
+      className="border-r-0"
       collapsible="icon"
       style={{
         background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
