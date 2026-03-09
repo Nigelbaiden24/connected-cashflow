@@ -3,12 +3,12 @@ import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarInset } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calculator, 
-  FileText, 
-  MessageSquare 
+import {
+  LayoutDashboard,
+  Users,
+  Calculator,
+  FileText,
+  MessageSquare,
 } from "lucide-react";
 
 interface FinanceLayoutProps {
@@ -32,7 +32,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar userEmail={userEmail} onLogout={onLogout} />
-      <SidebarInset className="flex flex-col min-h-screen bg-background">
+      <SidebarInset className="flex min-w-0 flex-col min-h-screen bg-background md:peer-data-[state=expanded]:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin-left] duration-200 ease-linear">
         {/* Enterprise Mobile Header */}
         {!hideHeader && (
           <MobileHeader
@@ -46,15 +46,13 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
             rightContent={<FinanceNotificationsDropdown variant="finance" />}
           />
         )}
-        
+
         {/* Desktop notification bell */}
         <div className="hidden md:flex items-center justify-end px-4 py-2">
           <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
         </div>
 
-        <main className="flex-1 overflow-auto pb-20 md:pb-0">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
 
         {/* Mobile Bottom Navigation */}
         <MobileBottomNav items={mobileNavItems} variant="finance" />
