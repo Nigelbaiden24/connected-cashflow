@@ -177,11 +177,20 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             </div>
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 flex-1">
               <TranslatedText as="span" className="text-base font-bold text-white tracking-tight truncate">FlowPulse.io</TranslatedText>
               <TranslatedText as="span" className="text-xs text-white/60 font-medium truncate">Wealth Platform</TranslatedText>
             </div>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex-shrink-0 transition-all duration-200"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </Button>
         </div>
       </SidebarHeader>
 

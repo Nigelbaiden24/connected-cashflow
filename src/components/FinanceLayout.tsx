@@ -31,8 +31,9 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
 
   return (
     <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen flex w-full">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-background md:peer-data-[state=expanded]:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin-left] duration-200 ease-linear">
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-background">
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
