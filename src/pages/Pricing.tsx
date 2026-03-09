@@ -264,7 +264,7 @@ const Pricing = () => {
         </div>
 
         <Tabs defaultValue="investor" className="mb-12">
-          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 md:grid-cols-3 mb-8 h-auto">
+          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 md:grid-cols-4 mb-8 h-auto">
             <TabsTrigger value="investor" className="text-sm md:text-base py-3 px-3">
               FlowPulse Investor
             </TabsTrigger>
@@ -273,6 +273,9 @@ const Pricing = () => {
             </TabsTrigger>
             <TabsTrigger value="jenrate" className="text-sm md:text-base py-3 px-3">
               Jenrate
+            </TabsTrigger>
+            <TabsTrigger value="teams" className="text-sm md:text-base py-3 px-3">
+              Teams
             </TabsTrigger>
           </TabsList>
 
