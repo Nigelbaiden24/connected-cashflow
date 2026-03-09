@@ -129,6 +129,11 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
     icon: MapPin,
     subCategories: ["Renewable Energy", "Transport & Rail", "Data Centres", "Water & Utilities", "5G & Telecoms", "Social Infrastructure", "Green Hydrogen"],
   },
+  timepieces: {
+    label: "Timepieces",
+    icon: Gem,
+    subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"],
+  },
 };
 
 type ResearchPhase = "idle" | "scraping" | "analyzing" | "complete" | "error";
