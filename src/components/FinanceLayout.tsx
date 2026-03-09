@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarProvider } from "./ui/sidebar";
+import { SidebarProvider, SidebarInset } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
 import { 
@@ -31,36 +31,34 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
-        <AppSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-background">
-          {/* Enterprise Mobile Header */}
-          {!hideHeader && (
-            <MobileHeader
-              title="FlowPulse Finance"
-              userEmail={userEmail}
-              onLogout={onLogout}
-              variant="finance"
-              showSearch={true}
-              onSearchClick={() => setSearchOpen(true)}
-              notificationCount={0}
-              rightContent={<FinanceNotificationsDropdown variant="finance" />}
-            />
-          )}
-          
-          {/* Desktop notification bell */}
-          <div className="hidden md:flex items-center justify-end px-4 py-2">
-            <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
-          </div>
-
-          <main className="flex-1 overflow-auto pb-20 md:pb-0">
-            {children}
-          </main>
-
-          {/* Mobile Bottom Navigation */}
-          <MobileBottomNav items={mobileNavItems} variant="finance" />
+      <AppSidebar userEmail={userEmail} onLogout={onLogout} />
+      <SidebarInset className="flex flex-col min-h-screen bg-background">
+        {/* Enterprise Mobile Header */}
+        {!hideHeader && (
+          <MobileHeader
+            title="FlowPulse Finance"
+            userEmail={userEmail}
+            onLogout={onLogout}
+            variant="finance"
+            showSearch={true}
+            onSearchClick={() => setSearchOpen(true)}
+            notificationCount={0}
+            rightContent={<FinanceNotificationsDropdown variant="finance" />}
+          />
+        )}
+        
+        {/* Desktop notification bell */}
+        <div className="hidden md:flex items-center justify-end px-4 py-2">
+          <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
         </div>
-      </div>
+
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">
+          {children}
+        </main>
+
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav items={mobileNavItems} variant="finance" />
+      </SidebarInset>
 
       {/* Mobile Search Overlay */}
       <MobileSearchOverlay
