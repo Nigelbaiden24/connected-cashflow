@@ -519,7 +519,7 @@ export default function StocksCryptoDatabase() {
           </div>
         </div>
       )}
-    </div>
+    </StarryBackground>
   );
 }
 
