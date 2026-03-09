@@ -344,42 +344,62 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </div>
             )}
           </div>
-          <div className={`flex gap-2 ${isCollapsed ? 'flex-col items-center' : ''}`}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 ${isCollapsed ? 'justify-center px-0 w-full' : 'justify-start'}`}
-              onClick={() => {
-                const html = document.documentElement;
-                const isDark = html.classList.contains("dark");
-                if (isDark) {
-                  html.classList.remove("dark", "gold-theme");
-                } else {
-                  html.classList.add("dark", "gold-theme");
-                }
-                window.dispatchEvent(new Event("darkmode-toggle"));
-              }}
-              title="Toggle Black & Gold mode"
-            >
-              {isCollapsed ? (
-                <Moon className="h-4 w-4 text-amber-400" />
-              ) : (
-                <>
-                  <Moon className="h-4 w-4 flex-shrink-0 text-amber-400" />
-                  <span className="ml-2 text-xs">Black & Gold</span>
-                </>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 ${isCollapsed ? 'justify-center px-0 w-full' : 'justify-start'}`}
-              onClick={onLogout}
-            >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
-            </Button>
-          </div>
+          {isCollapsed ? (
+            <div className="flex flex-col items-center gap-1.5 overflow-visible shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-lg bg-white/10 hover:bg-white/20 text-amber-400 hover:text-amber-300 transition-all duration-200"
+                onClick={() => {
+                  const html = document.documentElement;
+                  const isDark = html.classList.contains("dark");
+                  if (isDark) { html.classList.remove("dark", "gold-theme"); }
+                  else { html.classList.add("dark", "gold-theme"); }
+                  window.dispatchEvent(new Event("darkmode-toggle"));
+                }}
+                title="Toggle Black & Gold mode"
+              >
+                <Moon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200"
+                onClick={onLogout}
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 justify-start"
+                onClick={() => {
+                  const html = document.documentElement;
+                  const isDark = html.classList.contains("dark");
+                  if (isDark) { html.classList.remove("dark", "gold-theme"); }
+                  else { html.classList.add("dark", "gold-theme"); }
+                  window.dispatchEvent(new Event("darkmode-toggle"));
+                }}
+                title="Toggle Black & Gold mode"
+              >
+                <Moon className="h-4 w-4 flex-shrink-0 text-amber-400" />
+                <span className="ml-2 text-xs">Black & Gold</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 justify-start"
+                onClick={onLogout}
+              >
+                <LogOut className="h-4 w-4 flex-shrink-0" />
+                <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>
+              </Button>
+            </div>
+          )}
         </div>
       </SidebarFooter>
     </Sidebar>
