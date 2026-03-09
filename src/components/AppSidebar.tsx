@@ -326,7 +326,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
         </TooltipProvider>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-white/10 relative z-10">
+      <SidebarFooter className="border-t border-white/10 relative z-10 shrink-0">
         <div className={`p-4 space-y-3 ${isCollapsed ? 'px-2' : ''}`}>
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
             <div className="relative group">

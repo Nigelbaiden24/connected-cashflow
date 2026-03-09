@@ -32,7 +32,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar userEmail={userEmail} onLogout={onLogout} />
-      <SidebarInset className="flex min-w-0 flex-col min-h-screen bg-background md:peer-data-[state=expanded]:ml-[--sidebar-width] md:peer-data-[state=collapsed]:ml-[--sidebar-width-icon] transition-[margin-left] duration-200 ease-linear">
+      <SidebarInset className="flex min-w-0 flex-col min-h-screen bg-background md:peer-data-[state=expanded]:ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-200 ease-linear">
         {/* Enterprise Mobile Header */}
         {!hideHeader && (
           <MobileHeader
