@@ -123,6 +123,7 @@ const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const Install = lazy(() => import("./pages/Install"));
 const PublicReports = lazy(() => import("./pages/PublicReports"));
 const ReportDetail = lazy(() => import("./pages/ReportDetail"));
+const OrganisationSettings = lazy(() => import("./pages/OrganisationSettings"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -179,6 +180,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/organisation" element={<OrganisationSettings />} />
             <Route path="/reports" element={<PublicReports />} />
             <Route path="/reports/:id" element={<ReportDetail />} />
             <Route path="/subscription-success" element={<SubscriptionSuccess />} />

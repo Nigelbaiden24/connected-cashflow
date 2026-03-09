@@ -264,7 +264,7 @@ const Pricing = () => {
         </div>
 
         <Tabs defaultValue="investor" className="mb-12">
-          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 md:grid-cols-3 mb-8 h-auto">
+          <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-2 md:grid-cols-4 mb-8 h-auto">
             <TabsTrigger value="investor" className="text-sm md:text-base py-3 px-3">
               FlowPulse Investor
             </TabsTrigger>
@@ -273,6 +273,9 @@ const Pricing = () => {
             </TabsTrigger>
             <TabsTrigger value="jenrate" className="text-sm md:text-base py-3 px-3">
               Jenrate
+            </TabsTrigger>
+            <TabsTrigger value="teams" className="text-sm md:text-base py-3 px-3">
+              Teams
             </TabsTrigger>
           </TabsList>
 
@@ -741,6 +744,73 @@ const Pricing = () => {
                 </Card>
                 );
               })}
+            </div>
+          </TabsContent>
+
+          {/* Teams Tab */}
+          <TabsContent value="teams">
+            <div className="mb-6 text-center">
+              <h2 className="text-3xl font-bold mb-2 text-primary">Teams</h2>
+              <p className="text-muted-foreground">
+                Multi-tenant organisation support for enterprises and growing teams
+              </p>
+            </div>
+
+            <div className="max-w-3xl mx-auto">
+              <Card className="relative overflow-hidden border-2 border-primary/30 shadow-xl">
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-600 to-violet-600" />
+                <CardHeader className="pt-8 text-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 flex items-center justify-center mb-4 mx-auto">
+                    <Users className="h-10 w-10 text-white" />
+                  </div>
+                  <CardTitle className="text-3xl">Enterprise Teams</CardTitle>
+                  <CardDescription className="text-lg">Custom quotation for your organisation</CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-6">
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-primary mb-2">Contact Us</div>
+                    <p className="text-muted-foreground">Get a tailored plan for your team size and requirements</p>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {[
+                      "Create & manage organisations",
+                      "Invite unlimited team members",
+                      "Role-based access control",
+                      "Shared workflows & analytics",
+                      "Shared cost tracking",
+                      "Shared integrations",
+                      "Organisation-scoped data isolation",
+                      "Admin dashboard & controls",
+                      "Ownership transfer",
+                      "Priority enterprise support",
+                      "Custom onboarding",
+                      "SLA guarantees",
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <div className="rounded-full p-1 bg-gradient-to-r from-indigo-600 to-violet-600 flex-shrink-0">
+                          <Check className="h-3 w-3 text-white" />
+                        </div>
+                        <span className="text-sm">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+
+                <CardFooter className="pb-8 flex-col gap-3">
+                  <Button
+                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:opacity-90 text-white border-0 text-lg py-6"
+                    size="lg"
+                    onClick={handleContactSales}
+                  >
+                    Contact Us for Custom Quotation
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Our team will get back to you within 24 hours
+                  </p>
+                </CardFooter>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
