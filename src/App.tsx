@@ -123,6 +123,7 @@ const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const Install = lazy(() => import("./pages/Install"));
 const PublicReports = lazy(() => import("./pages/PublicReports"));
 const ReportDetail = lazy(() => import("./pages/ReportDetail"));
+const OrganisationSettings = lazy(() => import("./pages/OrganisationSettings"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
