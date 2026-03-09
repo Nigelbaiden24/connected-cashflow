@@ -202,7 +202,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             </div>
           )}
           {filteredGeneralItems.length > 0 && (
-          <SidebarGroup className="mt-4">
+          <SidebarGroup className="mt-1">
             {!isCollapsed && (
               <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
                 <TranslatedText>General</TranslatedText>
