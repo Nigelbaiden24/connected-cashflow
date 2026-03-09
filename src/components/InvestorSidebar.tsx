@@ -158,9 +158,9 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
       {/* Header with premium branding */}
       <SidebarHeader className="relative border-b border-slate-700/50 p-4">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10" />
-        <div className="relative flex items-center gap-3">
+        <div className="relative flex items-center justify-center gap-3">
           <div className={cn(
-            "p-2 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/30",
+            "shrink-0 p-2 rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/30",
             "ring-2 ring-white/10"
           )}>
             <img src={flowpulseLogo} alt="FlowPulse" className="h-6 w-6" />
@@ -181,33 +181,38 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
 
       {/* Navigation with grouped sections */}
       <SidebarContent className="flex-1">
-        <ScrollArea className="h-full px-3 py-4">
+        <ScrollArea className="h-full px-2 py-3">
           {!collapsed && (
             <div className="flex justify-end mb-2 px-1">
               <SidebarTabFilter platform="investor" navGroups={navGroups} onFilterChange={handleFilterChange} />
             </div>
           )}
           {filteredNavGroups.map((group) => (
-            <SidebarGroup key={group.label} className="mb-4">
+            <SidebarGroup key={group.label} className={cn("mb-2 p-1", collapsed && "px-0")}>
               {!collapsed && (
-                <SidebarGroupLabel className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/80">
+                <SidebarGroupLabel className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/80">
                   <TranslatedText>{group.label}</TranslatedText>
                 </SidebarGroupLabel>
               )}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">
+                <SidebarMenu className="space-y-0.5">
                   {group.items.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.url);
 
-                    const menuItem = (
+                    return (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={item.title}
+                          size="default"
+                        >
                           <NavLink
                             to={item.url}
                             className={cn(
-                              "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                              "group relative overflow-hidden",
+                              "w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200",
+                              "group/nav relative overflow-hidden",
+                              collapsed ? "justify-center p-0" : "px-3 py-2",
                               active
                                 ? cn(
                                     "bg-gradient-to-r text-white shadow-lg",
@@ -227,17 +232,10 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
                               <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/10 pointer-events-none" />
                             )}
                             
-                            <div className={cn(
-                              "relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200",
-                              active 
-                                ? "bg-white/20 shadow-inner" 
-                                : "bg-slate-800/60 group-hover:bg-slate-700/60"
-                            )}>
-                              <Icon className={cn(
-                                "h-4 w-4",
-                                active ? "text-white" : "text-white/80 group-hover:text-white"
-                              )} />
-                            </div>
+                            <Icon className={cn(
+                              "h-4 w-4 shrink-0",
+                              active ? "text-white" : "text-white/80 group-hover/nav:text-white"
+                            )} />
                             
                             {!collapsed && (
                               <span className="relative truncate">
@@ -253,23 +251,6 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
-
-                    if (collapsed) {
-                      return (
-                        <TooltipProvider key={item.title}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              {menuItem}
-                            </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
-                              <TranslatedText as="p">{item.title}</TranslatedText>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      );
-                    }
-
-                    return menuItem;
                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -281,9 +262,9 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
       {/* Premium footer with user info */}
       <SidebarFooter className="relative border-t border-slate-700/50 p-3">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-600/50 to-transparent" />
-        <div className="flex items-center gap-3">
+        <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
           <Avatar className={cn(
-            "h-9 w-9 ring-2 ring-slate-700 shadow-lg",
+            "h-9 w-9 shrink-0 ring-2 ring-slate-700 shadow-lg",
             "bg-gradient-to-br from-primary to-primary/80"
           )}>
             <AvatarFallback className="bg-transparent text-white font-semibold text-sm">
@@ -291,48 +272,25 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">{userEmail}</p>
-              <p className="text-xs text-slate-500">Investor Account</p>
-            </div>
-          )}
-          {!collapsed ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onLogout}
-              className={cn(
-                "h-9 w-9 rounded-lg",
-                "bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400",
-                "border border-slate-700/50 hover:border-red-500/30",
-                "transition-all duration-200"
-              )}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          ) : (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onLogout}
-                    className={cn(
-                      "h-9 w-9 rounded-lg",
-                      "bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400",
-                      "border border-slate-700/50 hover:border-red-500/30",
-                      "transition-all duration-200"
-                    )}
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="bg-slate-800 text-white border-slate-700">
-                  <TranslatedText as="p">Logout</TranslatedText>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-medium text-white truncate">{userEmail}</p>
+                <p className="text-xs text-slate-500">Investor Account</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onLogout}
+                className={cn(
+                  "h-9 w-9 shrink-0 rounded-lg",
+                  "bg-slate-800/60 hover:bg-red-500/20 text-slate-400 hover:text-red-400",
+                  "border border-slate-700/50 hover:border-red-500/30",
+                  "transition-all duration-200"
+                )}
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
           )}
         </div>
       </SidebarFooter>
