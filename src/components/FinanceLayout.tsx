@@ -31,32 +31,35 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <AppSidebar userEmail={userEmail} onLogout={onLogout} />
-      <SidebarInset className="flex min-w-0 flex-col min-h-screen bg-background md:peer-data-[state=expanded]:ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-200 ease-linear">
-        {/* Enterprise Mobile Header */}
-        {!hideHeader && (
-          <MobileHeader
-            title="FlowPulse Finance"
-            userEmail={userEmail}
-            onLogout={onLogout}
-            variant="finance"
-            showSearch={true}
-            onSearchClick={() => setSearchOpen(true)}
-            notificationCount={0}
-            rightContent={<FinanceNotificationsDropdown variant="finance" />}
-          />
-        )}
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar userEmail={userEmail} onLogout={onLogout} />
 
-        {/* Desktop notification bell */}
-        <div className="hidden md:flex items-center justify-end px-4 py-2">
-          <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
-        </div>
+        <SidebarInset className="flex min-w-0 flex-1 flex-col md:peer-data-[state=expanded]:ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-200 ease-linear">
+          {/* Enterprise Mobile Header */}
+          {!hideHeader && (
+            <MobileHeader
+              title="FlowPulse Finance"
+              userEmail={userEmail}
+              onLogout={onLogout}
+              variant="finance"
+              showSearch={true}
+              onSearchClick={() => setSearchOpen(true)}
+              notificationCount={0}
+              rightContent={<FinanceNotificationsDropdown variant="finance" />}
+            />
+          )}
 
-        <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
+          {/* Desktop notification bell */}
+          <div className="hidden md:flex items-center justify-end px-4 py-2">
+            <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
+          </div>
 
-        {/* Mobile Bottom Navigation */}
-        <MobileBottomNav items={mobileNavItems} variant="finance" />
-      </SidebarInset>
+          <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
+
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomNav items={mobileNavItems} variant="finance" />
+        </SidebarInset>
+      </div>
 
       {/* Mobile Search Overlay */}
       <MobileSearchOverlay
