@@ -53,7 +53,7 @@ import {
   PanelLeft,
   User,
   Bell,
-  Palette,
+  Moon,
   UserCog,
   History,
   FolderKanban,
