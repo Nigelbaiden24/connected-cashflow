@@ -28,7 +28,7 @@ const LoginCRM = lazy(() => import("./pages/LoginCRM"));
 const LoginJenrate = lazy(() => import("./pages/LoginJenrate"));
 const CRMStandalone = lazy(() => import("./pages/CRMStandalone"));
 const JenrateStandalone = lazy(() => import("./pages/JenrateStandalone"));
-const Paraplanning = lazy(() => import("./pages/Paraplanning"));
+
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const InvestorDashboard = lazy(() => import("./pages/InvestorDashboard"));
 const InvestorResearchReports = lazy(() => import("./pages/investor/ResearchReports"));
@@ -388,7 +388,7 @@ const App = () => {
                 )
               } />
               
-              <Route path="/paraplanning" element={<Paraplanning />} />
+              
               
               <Route path="/finance/commentary" element={
                 !isAuthenticated ? <Navigate to="/login" replace /> : (
