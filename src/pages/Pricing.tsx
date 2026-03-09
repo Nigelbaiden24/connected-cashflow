@@ -15,7 +15,6 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
-  const [crmAnnual, setCrmAnnual] = useState(false);
   const [jenrateAnnual, setJenrateAnnual] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
