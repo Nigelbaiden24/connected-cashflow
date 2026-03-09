@@ -72,12 +72,8 @@ const generalItems = [
   { title: "AI Chatbot", url: "/theodore", icon: MessageSquare },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "CRM", url: "/finance-crm", icon: Users },
-  
   { title: "Market Data", url: "/market", icon: TrendingUp },
   { title: "News", url: "/finance/news", icon: Mail },
-  { title: "Payroll", url: "/finance-payroll", icon: Calculator },
-  { title: "Security", url: "/security", icon: Shield },
-  { title: "Automation Center", url: "/automation-center", icon: Activity },
   { title: "Languages", url: "/finance/languages", icon: Globe },
 ];
 

@@ -76,6 +76,9 @@ const navItems: NavItem[] = [
   { id: "research-ai", label: "Research AI", icon: Bot, gradient: "from-rose-500 to-pink-600" },
   { id: "research-scraper", label: "Research Scraper", icon: Globe, gradient: "from-sky-500 to-blue-600" },
   { id: "crm", label: "CRM", icon: Contact, gradient: "from-blue-500 to-blue-600" },
+  { id: "payroll", label: "Payroll", icon: Calculator, gradient: "from-teal-500 to-teal-600" },
+  { id: "security", label: "Security", icon: Shield, gradient: "from-red-500 to-red-600" },
+  { id: "automation-center", label: "Automation Center", icon: Zap, gradient: "from-violet-500 to-purple-600" },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700" },
 ];
 
