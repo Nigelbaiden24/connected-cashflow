@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Shield, Key, Activity, FileText, Lock, AlertTriangle, Users, ArrowLeft } from "lucide-react";
+import { Shield, Key, Activity, FileText, Lock, AlertTriangle, Users, ArrowLeft, Brain } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SecurityDashboard } from "@/components/security/SecurityDashboard";
 import { SecureVault } from "@/components/security/SecureVault";
@@ -10,6 +10,7 @@ import { RoleManagement } from "@/components/security/RoleManagement";
 import { ComplianceCenter } from "@/components/security/ComplianceCenter";
 import { RiskAssessments } from "@/components/security/RiskAssessments";
 import { MFASettings } from "@/components/security/MFASettings";
+import { AIAnomalyDetection } from "@/components/security/AIAnomalyDetection";
 
 const Security = () => {
   const navigate = useNavigate();
@@ -37,10 +38,14 @@ const Security = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-7 w-full">
+        <TabsList className="grid grid-cols-8 w-full">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="anomaly" className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            AI Anomaly
           </TabsTrigger>
           <TabsTrigger value="vault" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
@@ -70,6 +75,10 @@ const Security = () => {
 
         <TabsContent value="dashboard">
           <SecurityDashboard />
+        </TabsContent>
+
+        <TabsContent value="anomaly">
+          <AIAnomalyDetection />
         </TabsContent>
 
         <TabsContent value="vault">
