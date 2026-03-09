@@ -267,6 +267,98 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
       "https://www.iigcc.org/",
     ],
   },
+  infrastructure_energy: {
+    queries: [
+      "renewable energy investment projects UK Europe 2025",
+      "solar farm wind energy investment opportunities fund",
+      "energy transition clean tech investment opportunities current",
+      "EV charging infrastructure investment UK fund 2025",
+      "green energy infrastructure project finance deals",
+      "battery storage energy investment opportunities",
+    ],
+    urls: [
+      "https://renewablesnow.com/",
+      "https://www.energylivenews.com/",
+      "https://www.solarpowerportal.co.uk/",
+      "https://www.current-news.co.uk/",
+      "https://www.iigcc.org/",
+      "https://www.cleanenergywire.org/",
+    ],
+  },
+  mini_bonds: {
+    queries: [
+      "mini bonds investment opportunities UK 2025",
+      "corporate mini bonds high yield fixed income UK",
+      "property backed mini bonds investment current offerings",
+      "green mini bonds sustainable investment UK 2025",
+      "convertible mini bonds startup investment opportunities",
+      "FCA regulated mini bonds available for investors UK",
+    ],
+    urls: [
+      "https://www.ethex.org.uk/invest",
+      "https://www.triodos-im.com/",
+      "https://www.abundanceinvestment.com/",
+      "https://www.downing.co.uk/",
+      "https://www.fca.org.uk/consumers/mini-bonds",
+    ],
+  },
+  private_credit: {
+    queries: [
+      "private credit lending investment opportunities 2025",
+      "peer to peer lending platform investment UK returns",
+      "private debt fund opportunities institutional investors 2025",
+      "real estate lending bridging finance investment returns",
+      "SME lending investment platform UK high yield",
+      "invoice financing factoring investment opportunities UK",
+    ],
+    urls: [
+      "https://www.kuflink.co.uk/",
+      "https://www.lendingworks.co.uk/",
+      "https://www.assetzexchange.co.uk/",
+      "https://www.capitalpilot.co.uk/",
+      "https://www.creditbenchmark.com/",
+      "https://www.preqin.com/academy/lesson-5-private-debt",
+    ],
+  },
+  bonds: {
+    queries: [
+      "government bonds gilt investment opportunities UK 2025",
+      "corporate bonds high yield investment opportunities current",
+      "green bonds ESG fixed income investment 2025",
+      "inflation linked bonds investment opportunities UK",
+      "bond ETF fixed income investment high yield current",
+      "UK gilt yields bond market investment outlook",
+    ],
+    urls: [
+      "https://www.dmo.gov.uk/",
+      "https://www.hl.co.uk/shares/corporate-bonds-gilts",
+      "https://www.yieldgimp.com/",
+      "https://www.climatebonds.net/",
+      "https://www.fixedincomeinvestor.co.uk/",
+    ],
+  },
+  timepieces: {
+    queries: [
+      "luxury watch investment opportunities Rolex Patek Philippe 2025",
+      "vintage watch auction results investment grade timepieces",
+      "rare watches appreciating value collectible investment 2025",
+      "limited edition watches investment potential high demand",
+      "watch market index investment returns performance tracking",
+      "pocket watches antique horology investment auction lots",
+      "pre-owned luxury watch market prices trends 2025",
+      "watch collecting investment strategy blue chip references",
+    ],
+    urls: [
+      "https://www.hodinkee.com/",
+      "https://www.watchchartsapp.com/",
+      "https://www.christies.com/en/results?Keyword=watches",
+      "https://www.sothebys.com/en/results?query=watches",
+      "https://www.phillips.com/watches",
+      "https://www.watchfinder.co.uk/",
+      "https://www.chrono24.co.uk/",
+      "https://www.watchpro.com/",
+    ],
+  },
 };
 
 interface SourceRecord {
@@ -459,6 +551,7 @@ serve(async (req) => {
 
     const isOverseasProperty = category === "overseas_property";
     const isBusinessMA = category === "businesses";
+    const isTimepieces = category === "timepieces";
 
     const economicAnalysisInstructions = isOverseasProperty ? `
 
@@ -498,6 +591,25 @@ In "risk_level", factor in: market timing, competition, regulatory risk, team ex
 
 Focus on REAL companies with verifiable data from Crunchbase, TechCrunch, PitchBook, Sifted, EU-Startups, Seedrs, etc.
 Do NOT invent companies. If data is limited, say so honestly.
+` : isTimepieces ? `
+
+CRITICAL ADDITIONAL INSTRUCTIONS FOR TIMEPIECES:
+You are an expert horological investment analyst. You MUST find REAL, SPECIFIC watches and timepieces that represent genuine investment opportunities. For each opportunity include:
+
+1. **Watch Profile**: Exact reference number, brand, model name, year of manufacture, case material, movement type
+2. **Market Data**: Current market price, price trend over last 12-24 months (appreciating/stable/declining), retail vs secondary market premium/discount
+3. **Investment Metrics**: 1-year return, 3-year return, 5-year CAGR where available, production numbers (limited vs mass production)
+4. **Condition & Provenance**: Box & papers status, service history importance, provenance value factors
+5. **Liquidity**: Ease of resale, auction house demand, dealer buy-back rates, average time to sell
+6. **Risk Factors**: Counterfeiting risk, brand strategy changes (discontinuation effect), market saturation, condition depreciation
+
+In "key_metrics", ALWAYS include: "reference_number", "brand", "case_material", "movement", "year_range", "production_quantity" (if limited), "price_trend" (Appreciating/Stable/Declining), "liquidity" (High/Medium/Low), "1yr_return", "condition_importance" (Critical/Important/Moderate).
+In "investment_thesis", explain WHY this specific reference is compelling — discontinuation hype, collector demand, historical significance, celebrity provenance, or scarcity dynamics.
+In "risk_level", consider: market cycle positioning, brand reputation trajectory, counterfeit prevalence, and maintenance costs (servicing).
+
+Focus on REAL watches with verifiable market data from Chrono24, WatchCharts, Phillips, Christie's, Sotheby's, Hodinkee.
+Include blue-chip references (Rolex Daytona, Submariner, Patek Nautilus, AP Royal Oak) AND emerging value picks (Tudor, Omega Speedmaster, Grand Seiko, independent brands).
+Do NOT invent references. Use real auction results and market index data.
 ` : "";
 
     const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and identify INDIVIDUAL, SPECIFIC investment opportunities that an admin can list on the platform.
