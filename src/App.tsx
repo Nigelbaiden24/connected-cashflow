@@ -388,7 +388,7 @@ const App = () => {
                 )
               } />
               
-              <Route path="/paraplanning" element={<Paraplanning />} />
+              
               
               <Route path="/finance/commentary" element={
                 !isAuthenticated ? <Navigate to="/login" replace /> : (

@@ -263,12 +263,6 @@ const Index = () => {
               FlowPulse CRM
             </button>
 
-            <button 
-              onClick={() => navigate('/paraplanning')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              Paraplanning
-            </button>
 
             <button 
               onClick={() => navigate('/pricing')}
