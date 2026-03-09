@@ -297,6 +297,7 @@ export default function StocksCryptoDatabase() {
                 <Bookmark className="h-4 w-4" />
                 Watchlist
               </Button>
+              <ShowcaseDarkToggle />
               <Button size="sm" className="gap-2 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-md shadow-primary/20">
                 <Download className="h-4 w-4" />
                 Export
