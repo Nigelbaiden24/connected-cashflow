@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, ArrowLeft, Users, Building2, TrendingUp, Shield, CreditCard } from "lucide-react";
+import { Check, ArrowLeft, Users, Building2, TrendingUp, Shield, CreditCard, Plus, Minus, Package } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,6 +17,7 @@ const Pricing = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [crmAnnual, setCrmAnnual] = useState(false);
   const [jenrateAnnual, setJenrateAnnual] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
 
   const handleCheckout = async (
     priceId: string,
@@ -59,29 +61,37 @@ const Pricing = () => {
     });
   };
 
-  // FlowPulse Investor - Single annual tier
-  const investorPlan = {
-    name: "FlowPulse Investor",
-    description: "Complete research, analysis & insights for self-directed investors",
-    annualPrice: 1049,
-    stripePriceId: "price_investor_annual", // Replace with actual Stripe price ID
-    features: [
-      "Market news & commentary",
-      "Advanced stock screeners & filters",
-      "AI analyst Q&A access",
-      "Educational learning hub",
-      "Unlimited watchlists",
-      "Real-time signals & alerts",
-      "Full research reports access",
-      "Model portfolio insights",
-      "Fund & ETF database",
-      "Priority support",
-      "Exclusive analyst picks",
-      "Risk & scenario analysis tools",
-    ],
-    gradient: "from-violet-600 to-purple-600",
-    icon: TrendingUp,
+  // Investment opportunity products available to choose from
+  const investmentProducts = [
+    { id: "stocks", name: "Stocks & Equities", description: "Listed equities, IPOs & secondary offerings" },
+    { id: "crypto", name: "Crypto & Digital Assets", description: "Cryptocurrency and blockchain investments" },
+    { id: "real-estate", name: "Real Estate", description: "Commercial & residential property deals" },
+    { id: "private-equity", name: "Private Equity", description: "PE deals, buyouts & growth capital" },
+    { id: "venture-capital", name: "Venture Capital", description: "Early-stage & startup funding rounds" },
+    { id: "fixed-income", name: "Fixed Income & Bonds", description: "Government & corporate bonds" },
+    { id: "commodities", name: "Commodities", description: "Gold, oil, agriculture & natural resources" },
+    { id: "forex", name: "Foreign Exchange", description: "FX opportunities & currency markets" },
+    { id: "funds-etfs", name: "Funds & ETFs", description: "Fund analysis, scoring & selection" },
+    { id: "alternatives", name: "Alternative Investments", description: "Hedge funds, art, wine & collectibles" },
+    { id: "infrastructure", name: "Infrastructure", description: "Energy, transport & utilities projects" },
+    { id: "sme-acquisitions", name: "SME Acquisitions", description: "Small & medium business buy-side deals" },
+    { id: "debt-lending", name: "Debt & Lending", description: "Private credit, bridging & mezzanine finance" },
+    { id: "esg-impact", name: "ESG & Impact Investing", description: "Sustainable & socially responsible opportunities" },
+    { id: "distressed", name: "Distressed Assets", description: "Turnarounds, workouts & special situations" },
+  ];
+
+  const BASE_PRICE = 1049;
+  const ADDON_PRICE = 250;
+  const INCLUDED_PRODUCTS = 5;
+
+  const toggleProduct = (id: string) => {
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
   };
+
+  const addonCount = Math.max(0, selectedProducts.length - INCLUDED_PRODUCTS);
+  const totalPrice = BASE_PRICE + addonCount * ADDON_PRICE;
 
   // FlowPulse CRM - Tiered plans
   const crmTiers = [
@@ -326,68 +336,186 @@ const Pricing = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* FlowPulse Investor Tab */}
+          {/* FlowPulse Investor Tab - Modular Subscription Builder */}
           <TabsContent value="investor">
-            <div className="mb-6 text-center">
+            <div className="mb-8 text-center">
               <h2 className="text-3xl font-bold mb-2" style={{ color: 'hsl(270, 76%, 56%)' }}>
                 FlowPulse Investor
               </h2>
-              <p className="text-muted-foreground">
-                Professional-grade research for individual investors
+              <p className="text-muted-foreground mb-4">
+                Build your personalised investment intelligence package
               </p>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Badge className="bg-gradient-to-r from-violet-600 to-purple-600 text-white border-0 text-sm px-4 py-1.5">
+                  <Package className="h-3.5 w-3.5 mr-1.5" />
+                  Base: £{BASE_PRICE.toLocaleString()}/year — includes {INCLUDED_PRODUCTS} products
+                </Badge>
+                <Badge variant="outline" className="text-sm px-4 py-1.5 border-primary/30">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Add-ons: £{ADDON_PRICE}/year each
+                </Badge>
+              </div>
             </div>
 
-            <div className="max-w-xl mx-auto">
-              <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 border-2 border-violet-500/30">
-                <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${investorPlan.gradient}`} />
-                
-                <CardHeader className="pt-8 text-center">
-                  <div className={`w-20 h-20 rounded-full bg-gradient-to-r ${investorPlan.gradient} flex items-center justify-center mb-4 mx-auto`}>
-                    <investorPlan.icon className="h-10 w-10 text-white" />
-                  </div>
-                  <CardTitle className="text-3xl">{investorPlan.name}</CardTitle>
-                  <CardDescription className="text-base">{investorPlan.description}</CardDescription>
-                </CardHeader>
+            <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              {/* Product Selector */}
+              <div className="lg:col-span-2">
+                <Card className="border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      Select Your Investment Opportunity Products
+                    </CardTitle>
+                    <CardDescription>
+                      Choose {INCLUDED_PRODUCTS} products included in your base subscription. Each additional product is £{ADDON_PRICE}/year.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {investmentProducts.map((product) => {
+                        const isSelected = selectedProducts.includes(product.id);
+                        const selectionIndex = selectedProducts.indexOf(product.id);
+                        const isAddon = selectionIndex >= INCLUDED_PRODUCTS;
 
-                <CardContent className="text-center">
-                  <div className="mb-8">
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold">£{investorPlan.annualPrice.toLocaleString()}</span>
-                      <span className="text-muted-foreground text-lg">/year</span>
+                        return (
+                          <button
+                            key={product.id}
+                            onClick={() => toggleProduct(product.id)}
+                            className={`flex items-start gap-3 p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                              isSelected
+                                ? isAddon
+                                  ? 'border-amber-500/60 bg-amber-500/5 shadow-sm'
+                                  : 'border-primary/60 bg-primary/5 shadow-sm'
+                                : 'border-border/50 hover:border-primary/30 hover:bg-muted/50'
+                            }`}
+                          >
+                            <div className={`mt-0.5 flex-shrink-0 h-5 w-5 rounded-sm border-2 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? isAddon
+                                  ? 'bg-amber-500 border-amber-500'
+                                  : 'bg-primary border-primary'
+                                : 'border-muted-foreground/30'
+                            }`}>
+                              {isSelected && <Check className="h-3 w-3 text-white" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-sm text-foreground">{product.name}</p>
+                                {isSelected && isAddon && (
+                                  <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/30 text-[10px] px-1.5 py-0">
+                                    +£{ADDON_PRICE}
+                                  </Badge>
+                                )}
+                                {isSelected && !isAddon && (
+                                  <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] px-1.5 py-0">
+                                    Included
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">{product.description}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      That's just £{Math.round(investorPlan.annualPrice / 12)}/month
-                    </p>
-                  </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                  <ul className="space-y-3 text-left max-w-md mx-auto">
-                    {investorPlan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <div className={`rounded-full p-1 bg-gradient-to-r ${investorPlan.gradient} flex-shrink-0 mt-0.5`}>
-                          <Check className="h-3 w-3 text-white" />
+              {/* Order Summary - Sticky */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-24">
+                  <Card className="relative overflow-hidden border-2 border-primary/30 shadow-xl">
+                    <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-violet-600 to-purple-600" />
+                    
+                    <CardHeader className="pt-8 text-center">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-violet-600 to-purple-600 flex items-center justify-center mb-3 mx-auto">
+                        <TrendingUp className="h-8 w-8 text-white" />
+                      </div>
+                      <CardTitle className="text-xl">Your Subscription</CardTitle>
+                      <CardDescription>Annual billing</CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      {/* Base package */}
+                      <div className="flex justify-between items-center pb-3 border-b border-border/50">
+                        <div>
+                          <p className="font-medium text-sm">Base Package</p>
+                          <p className="text-xs text-muted-foreground">{INCLUDED_PRODUCTS} products included</p>
                         </div>
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
+                        <span className="font-semibold">£{BASE_PRICE.toLocaleString()}</span>
+                      </div>
 
-                <CardFooter className="pb-8">
-                  <Button
-                    className={`w-full bg-gradient-to-r ${investorPlan.gradient} hover:opacity-90 text-white border-0 text-lg py-6`}
-                    size="lg"
-                    onClick={() => handleCheckout(
-                      investorPlan.stripePriceId,
-                      'subscription',
-                      investorPlan.name,
-                      'investor'
-                    )}
-                    disabled={loading === `investor-${investorPlan.name}`}
-                  >
-                    {loading === `investor-${investorPlan.name}` ? 'Loading...' : 'Get Started Now'}
-                  </Button>
-                </CardFooter>
-              </Card>
+                      {/* Selected count */}
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Products selected</span>
+                        <span className="font-medium">{selectedProducts.length} / {INCLUDED_PRODUCTS}{addonCount > 0 ? ` + ${addonCount}` : ''}</span>
+                      </div>
+
+                      {/* Add-ons breakdown */}
+                      {addonCount > 0 && (
+                        <div className="flex justify-between items-center pb-3 border-b border-border/50">
+                          <div>
+                            <p className="font-medium text-sm text-amber-600 dark:text-amber-400">Add-on Products</p>
+                            <p className="text-xs text-muted-foreground">{addonCount} × £{ADDON_PRICE}/year</p>
+                          </div>
+                          <span className="font-semibold text-amber-600 dark:text-amber-400">+£{(addonCount * ADDON_PRICE).toLocaleString()}</span>
+                        </div>
+                      )}
+
+                      {/* Total */}
+                      <div className="bg-muted/50 rounded-lg p-4 mt-2">
+                        <div className="flex justify-between items-baseline">
+                          <span className="font-semibold text-lg">Total</span>
+                          <div className="text-right">
+                            <span className="text-3xl font-bold">£{totalPrice.toLocaleString()}</span>
+                            <span className="text-muted-foreground text-sm">/year</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground text-right mt-1">
+                          That's £{Math.round(totalPrice / 12)}/month
+                        </p>
+                      </div>
+
+                      {/* Selected products list */}
+                      {selectedProducts.length > 0 && (
+                        <div className="space-y-1.5 pt-2">
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Selected Products</p>
+                          {selectedProducts.map((id, idx) => {
+                            const product = investmentProducts.find(p => p.id === id);
+                            const isAddonItem = idx >= INCLUDED_PRODUCTS;
+                            return (
+                              <div key={id} className="flex items-center gap-2 text-xs">
+                                <Check className={`h-3 w-3 flex-shrink-0 ${isAddonItem ? 'text-amber-500' : 'text-primary'}`} />
+                                <span className="text-foreground">{product?.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </CardContent>
+
+                    <CardFooter className="pb-8 flex-col gap-3">
+                      <Button
+                        className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-90 text-white border-0 text-lg py-6"
+                        size="lg"
+                        disabled={selectedProducts.length < 1 || loading === 'investor-FlowPulse Investor'}
+                        onClick={() => handleCheckout(
+                          'price_investor_annual',
+                          'subscription',
+                          'FlowPulse Investor',
+                          'investor'
+                        )}
+                      >
+                        {loading === 'investor-FlowPulse Investor' ? 'Loading...' : selectedProducts.length < 1 ? 'Select at least 1 product' : 'Get Started Now'}
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        Cancel anytime • 14-day money-back guarantee
+                      </p>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
