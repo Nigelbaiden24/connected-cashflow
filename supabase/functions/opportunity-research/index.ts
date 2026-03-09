@@ -551,6 +551,7 @@ serve(async (req) => {
 
     const isOverseasProperty = category === "overseas_property";
     const isBusinessMA = category === "businesses";
+    const isTimepieces = category === "timepieces";
 
     const economicAnalysisInstructions = isOverseasProperty ? `
 
@@ -590,6 +591,25 @@ In "risk_level", factor in: market timing, competition, regulatory risk, team ex
 
 Focus on REAL companies with verifiable data from Crunchbase, TechCrunch, PitchBook, Sifted, EU-Startups, Seedrs, etc.
 Do NOT invent companies. If data is limited, say so honestly.
+` : isTimepieces ? `
+
+CRITICAL ADDITIONAL INSTRUCTIONS FOR TIMEPIECES:
+You are an expert horological investment analyst. You MUST find REAL, SPECIFIC watches and timepieces that represent genuine investment opportunities. For each opportunity include:
+
+1. **Watch Profile**: Exact reference number, brand, model name, year of manufacture, case material, movement type
+2. **Market Data**: Current market price, price trend over last 12-24 months (appreciating/stable/declining), retail vs secondary market premium/discount
+3. **Investment Metrics**: 1-year return, 3-year return, 5-year CAGR where available, production numbers (limited vs mass production)
+4. **Condition & Provenance**: Box & papers status, service history importance, provenance value factors
+5. **Liquidity**: Ease of resale, auction house demand, dealer buy-back rates, average time to sell
+6. **Risk Factors**: Counterfeiting risk, brand strategy changes (discontinuation effect), market saturation, condition depreciation
+
+In "key_metrics", ALWAYS include: "reference_number", "brand", "case_material", "movement", "year_range", "production_quantity" (if limited), "price_trend" (Appreciating/Stable/Declining), "liquidity" (High/Medium/Low), "1yr_return", "condition_importance" (Critical/Important/Moderate).
+In "investment_thesis", explain WHY this specific reference is compelling — discontinuation hype, collector demand, historical significance, celebrity provenance, or scarcity dynamics.
+In "risk_level", consider: market cycle positioning, brand reputation trajectory, counterfeit prevalence, and maintenance costs (servicing).
+
+Focus on REAL watches with verifiable market data from Chrono24, WatchCharts, Phillips, Christie's, Sotheby's, Hodinkee.
+Include blue-chip references (Rolex Daytona, Submariner, Patek Nautilus, AP Royal Oak) AND emerging value picks (Tudor, Omega Speedmaster, Grand Seiko, independent brands).
+Do NOT invent references. Use real auction results and market index data.
 ` : "";
 
     const systemPrompt = `You are an investment research analyst at FlowPulse, an institutional-grade financial platform. Your task is to analyze raw scraped research data and identify INDIVIDUAL, SPECIFIC investment opportunities that an admin can list on the platform.
