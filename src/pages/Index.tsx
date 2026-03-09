@@ -196,17 +196,7 @@ const Index = () => {
                   >
                     FlowPulse Investor
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
-                      navigate("/login-crm");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    FlowPulse CRM
-                  </Button>
-                  <Button
+                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
