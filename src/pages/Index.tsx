@@ -196,17 +196,7 @@ const Index = () => {
                   >
                     FlowPulse Investor
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
-                      navigate("/login-crm");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    FlowPulse CRM
-                  </Button>
-                  <Button
+                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
@@ -256,15 +246,7 @@ const Index = () => {
               FlowPulse Investor
             </button>
 
-            <button 
-              onClick={() => navigate('/login-crm')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              FlowPulse CRM
-            </button>
-
-
-            <button 
+            <button
               onClick={() => navigate('/pricing')}
               className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
             >
