@@ -1004,7 +1004,7 @@ export function OpportunityUpload() {
               </Card>
             )}
 
-            {(form.category === "memorabilia" || form.category === "vehicles" || form.category === "commodities") && (
+            {(form.category === "memorabilia" || form.category === "vehicles" || form.category === "commodities" || form.category === "timepieces") && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

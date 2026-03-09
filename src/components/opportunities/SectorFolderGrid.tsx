@@ -18,6 +18,7 @@ import miniBondsImg from "@/assets/sectors/mini-bonds.jpg";
 import privateCreditImg from "@/assets/sectors/private-credit.jpg";
 import infrastructureEnergyImg from "@/assets/sectors/infrastructure-energy.jpg";
 import bondsImg from "@/assets/sectors/bonds.jpg";
+import timepiecesImg from "@/assets/sectors/timepieces.jpg";
 
 export const sectorThumbnails: Record<string, string> = {
   uk_property: ukPropertyImg,
@@ -34,6 +35,7 @@ export const sectorThumbnails: Record<string, string> = {
   private_credit: privateCreditImg,
   infrastructure_energy: infrastructureEnergyImg,
   bonds: bondsImg,
+  timepieces: timepiecesImg,
 };
 
 interface SectorFolderGridProps {

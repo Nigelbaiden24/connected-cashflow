@@ -24,6 +24,7 @@ const categoryConfig: Record<string, { label: string; icon: any; color: string }
   memorabilia: { label: "Memorabilia", icon: Award, color: "bg-pink-500/10 text-pink-500" },
   commodities: { label: "Commodities & Hard Assets", icon: Package, color: "bg-yellow-500/10 text-yellow-600" },
   funds: { label: "Funds", icon: Landmark, color: "bg-slate-500/10 text-slate-500" },
+  timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600" },
 };
 
 const ratingColors: Record<string, string> = {

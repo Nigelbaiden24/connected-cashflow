@@ -65,6 +65,7 @@ const categoryConfig = {
   private_credit: { label: "Private Credit & Lending", icon: HandCoins, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Peer-to-Peer Lending", "Private Debt Funds", "Real Estate Lending", "SME Lending", "Invoice Financing"] },
   infrastructure_energy: { label: "Infrastructure & Energy", icon: Factory, color: "bg-lime-500/10 text-lime-600", subCategories: ["Renewable Energy Projects", "Infrastructure Funds", "Energy Transition", "Solar Farms", "Wind Energy", "EV Charging"] },
   bonds: { label: "Bonds", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"] },
+  timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600", subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"] },
 };
 
 const ratingColors: Record<string, string> = {
