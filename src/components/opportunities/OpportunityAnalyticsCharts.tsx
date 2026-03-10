@@ -224,7 +224,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
       <BarChart data={scoreComparison} layout="vertical" barGap={2} barSize={14}>
         <GlossyGradientDefs />
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} horizontal={false} />
-        <XAxis type="number" domain={[0, 10]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+        <XAxis type="number" domain={[0, 5]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
         <YAxis type="category" dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} width={80} />
         <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="value" name="Score" radius={[0, 6, 6, 0]}>
