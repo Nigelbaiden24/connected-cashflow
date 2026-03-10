@@ -111,7 +111,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
   // Score comparison bar chart (detailed view)
   const scoreComparison = scoreItems.map((s, i) => ({
     ...s,
-    benchmark: 6.5, // industry average benchmark
+    benchmark: 3.2, // industry average benchmark
     color: GLOSS_COLORS[i % GLOSS_COLORS.length],
   }));
 
