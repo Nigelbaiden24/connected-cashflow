@@ -66,14 +66,14 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
 
   // ── Build data from opportunity fields ──
   const scoreItems = [
-    { name: "Risk", value: opportunity.risk_score, fullMark: 10 },
-    { name: "Liquidity", value: opportunity.liquidity_score, fullMark: 10 },
-    { name: "Value", value: opportunity.value_score, fullMark: 10 },
-    { name: "Quality", value: opportunity.quality_score, fullMark: 10 },
-    { name: "Sentiment", value: opportunity.market_sentiment_score, fullMark: 10 },
-    { name: "Transparency", value: opportunity.transparency_score, fullMark: 10 },
-    { name: "Complexity", value: opportunity.complexity_score, fullMark: 10 },
-    { name: "Geo/Reg", value: opportunity.geographic_regulatory_score, fullMark: 10 },
+    { name: "Risk", value: opportunity.risk_score, fullMark: 5 },
+    { name: "Liquidity", value: opportunity.liquidity_score, fullMark: 5 },
+    { name: "Value", value: opportunity.value_score, fullMark: 5 },
+    { name: "Quality", value: opportunity.quality_score, fullMark: 5 },
+    { name: "Sentiment", value: opportunity.market_sentiment_score, fullMark: 5 },
+    { name: "Transparency", value: opportunity.transparency_score, fullMark: 5 },
+    { name: "Complexity", value: opportunity.complexity_score, fullMark: 5 },
+    { name: "Geo/Reg", value: opportunity.geographic_regulatory_score, fullMark: 5 },
   ].filter((s) => s.value != null);
 
   const hasScores = scoreItems.length >= 3;
