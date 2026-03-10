@@ -419,12 +419,13 @@ export function OpportunityUpload() {
     <ScrollArea className="h-[calc(100vh-200px)]">
       <form onSubmit={handleSubmit} className="space-y-6 pr-4">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="ratings">Product Scoring</TabsTrigger>
             <TabsTrigger value="commentary">Analysis</TabsTrigger>
             <TabsTrigger value="pitchbook">Pitchbook</TabsTrigger>
             <TabsTrigger value="details">Category Details</TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-1"><Eye className="h-3 w-3" /> Preview</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
