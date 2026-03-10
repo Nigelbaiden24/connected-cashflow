@@ -12,6 +12,7 @@ import {
   MapPin, TrendingUp, Star, Calendar, Shield, Target, Eye, DollarSign, Clock, BarChart3, AlertTriangle,
   ArrowUpRight, Scale, Layers
 } from "lucide-react";
+import { OpportunityAnalyticsCharts } from "@/components/opportunities/OpportunityAnalyticsCharts";
 
 const categoryConfig: Record<string, { label: string; icon: any; color: string }> = {
   uk_property: { label: "UK Property", icon: Building2, color: "bg-blue-500/10 text-blue-500" },
