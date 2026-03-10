@@ -240,6 +240,9 @@ export default function OpportunityDetailPage() {
             </PitchbookSection>
           )}
 
+          {/* Interactive Analytics Charts */}
+          <OpportunityAnalyticsCharts opportunity={opportunity} />
+
           {/* Strengths / Risks */}
           <div className="grid gap-4 md:grid-cols-2">
             {opportunity.strengths && (
