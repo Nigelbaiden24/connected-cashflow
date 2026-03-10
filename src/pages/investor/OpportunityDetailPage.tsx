@@ -26,6 +26,10 @@ const categoryConfig: Record<string, { label: string; icon: any; color: string }
   commodities: { label: "Commodities & Hard Assets", icon: Package, color: "bg-yellow-500/10 text-yellow-600" },
   funds: { label: "Funds", icon: Landmark, color: "bg-slate-500/10 text-slate-500" },
   timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600" },
+  mini_bonds: { label: "Mini Bonds", icon: Landmark, color: "bg-cyan-500/10 text-cyan-600" },
+  private_credit: { label: "Private Credit & Lending", icon: Briefcase, color: "bg-emerald-500/10 text-emerald-600" },
+  infrastructure_energy: { label: "Infrastructure & Energy", icon: Building2, color: "bg-lime-500/10 text-lime-600" },
+  bonds: { label: "Bonds", icon: Landmark, color: "bg-sky-500/10 text-sky-600" },
 };
 
 const ratingColors: Record<string, string> = {
