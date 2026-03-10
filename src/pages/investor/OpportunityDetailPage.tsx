@@ -26,6 +26,10 @@ const categoryConfig: Record<string, { label: string; icon: any; color: string }
   commodities: { label: "Commodities & Hard Assets", icon: Package, color: "bg-yellow-500/10 text-yellow-600" },
   funds: { label: "Funds", icon: Landmark, color: "bg-slate-500/10 text-slate-500" },
   timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600" },
+  mini_bonds: { label: "Mini Bonds", icon: Landmark, color: "bg-cyan-500/10 text-cyan-600" },
+  private_credit: { label: "Private Credit & Lending", icon: Briefcase, color: "bg-emerald-500/10 text-emerald-600" },
+  infrastructure_energy: { label: "Infrastructure & Energy", icon: Building2, color: "bg-lime-500/10 text-lime-600" },
+  bonds: { label: "Bonds", icon: Landmark, color: "bg-sky-500/10 text-sky-600" },
 };
 
 const ratingColors: Record<string, string> = {
@@ -288,8 +292,8 @@ export default function OpportunityDetailPage() {
               <CardContent className="space-y-3">
                 {scoreItems.map((s) => (
                   <div key={s.label}>
-                    <div className="flex justify-between text-sm mb-1"><span className="text-muted-foreground">{s.label}</span><span className="font-medium">{s.value}/10</span></div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${((s.value as number) / 10) * 100}%` }} /></div>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-muted-foreground">{s.label}</span><span className="font-medium">{s.value}/5</span></div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${((s.value as number) / 5) * 100}%` }} /></div>
                   </div>
                 ))}
               </CardContent></Card>

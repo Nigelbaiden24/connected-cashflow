@@ -66,14 +66,14 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
 
   // ── Build data from opportunity fields ──
   const scoreItems = [
-    { name: "Risk", value: opportunity.risk_score, fullMark: 10 },
-    { name: "Liquidity", value: opportunity.liquidity_score, fullMark: 10 },
-    { name: "Value", value: opportunity.value_score, fullMark: 10 },
-    { name: "Quality", value: opportunity.quality_score, fullMark: 10 },
-    { name: "Sentiment", value: opportunity.market_sentiment_score, fullMark: 10 },
-    { name: "Transparency", value: opportunity.transparency_score, fullMark: 10 },
-    { name: "Complexity", value: opportunity.complexity_score, fullMark: 10 },
-    { name: "Geo/Reg", value: opportunity.geographic_regulatory_score, fullMark: 10 },
+    { name: "Risk", value: opportunity.risk_score, fullMark: 5 },
+    { name: "Liquidity", value: opportunity.liquidity_score, fullMark: 5 },
+    { name: "Value", value: opportunity.value_score, fullMark: 5 },
+    { name: "Quality", value: opportunity.quality_score, fullMark: 5 },
+    { name: "Sentiment", value: opportunity.market_sentiment_score, fullMark: 5 },
+    { name: "Transparency", value: opportunity.transparency_score, fullMark: 5 },
+    { name: "Complexity", value: opportunity.complexity_score, fullMark: 5 },
+    { name: "Geo/Reg", value: opportunity.geographic_regulatory_score, fullMark: 5 },
   ].filter((s) => s.value != null);
 
   const hasScores = scoreItems.length >= 3;
@@ -111,7 +111,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
   // Score comparison bar chart (detailed view)
   const scoreComparison = scoreItems.map((s, i) => ({
     ...s,
-    benchmark: 6.5, // industry average benchmark
+    benchmark: 3.2, // industry average benchmark
     color: GLOSS_COLORS[i % GLOSS_COLORS.length],
   }));
 
@@ -155,7 +155,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
         <GlossyGradientDefs />
         <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.3} />
         <PolarAngleAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
-        <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
+        <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
         <Radar name="Score" dataKey="value" stroke="#0ea5e9" fill="url(#area-gradient-blue)" strokeWidth={2} filter="url(#glow)" />
         <Tooltip content={<CustomTooltip />} />
       </RadarChart>
@@ -224,7 +224,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
       <BarChart data={scoreComparison} layout="vertical" barGap={2} barSize={14}>
         <GlossyGradientDefs />
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} horizontal={false} />
-        <XAxis type="number" domain={[0, 10]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+        <XAxis type="number" domain={[0, 5]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
         <YAxis type="category" dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} width={80} />
         <Tooltip content={<CustomTooltip />} />
         <Bar dataKey="value" name="Score" radius={[0, 6, 6, 0]}>
@@ -309,7 +309,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
                         <div className="h-2.5 w-2.5 rounded-full" style={{ background: GLOSS_COLORS[i % GLOSS_COLORS.length] }} />
                         <span className="text-xs text-muted-foreground">{s.name}</span>
                       </div>
-                      <span className="text-sm font-bold">{s.value}/10</span>
+                      <span className="text-sm font-bold">{s.value}/5</span>
                     </div>
                   ))}
                 </div>

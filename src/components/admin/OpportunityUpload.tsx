@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { createOpportunityNotification } from "@/utils/notificationService";
+import { OpportunityAnalyticsCharts } from "@/components/opportunities/OpportunityAnalyticsCharts";
 import { 
   Upload, 
   Building2, 
@@ -21,7 +22,8 @@ import {
   Loader2,
   Star,
   Save,
-  Image
+  Image,
+  Eye
 } from "lucide-react";
 
 const categoryConfig = {
@@ -417,12 +419,13 @@ export function OpportunityUpload() {
     <ScrollArea className="h-[calc(100vh-200px)]">
       <form onSubmit={handleSubmit} className="space-y-6 pr-4">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="basic">Basic Info</TabsTrigger>
             <TabsTrigger value="ratings">Product Scoring</TabsTrigger>
             <TabsTrigger value="commentary">Analysis</TabsTrigger>
             <TabsTrigger value="pitchbook">Pitchbook</TabsTrigger>
             <TabsTrigger value="details">Category Details</TabsTrigger>
+            <TabsTrigger value="preview" className="flex items-center gap-1"><Eye className="h-3 w-3" /> Preview</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -1099,9 +1102,181 @@ export function OpportunityUpload() {
               </Card>
             )}
 
+            {(form.category === "mini_bonds" || form.category === "bonds") && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Gem className="h-5 w-5" /> Bond / Mini Bond Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Coupon Rate (%)</Label>
+                    <Input type="number" step="0.1" value={form.expected_irr} onChange={(e) => updateForm("expected_irr", e.target.value)} placeholder="e.g., 6.5" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Maturity / Term</Label>
+                    <Input value={form.liquidity_horizon} onChange={(e) => updateForm("liquidity_horizon", e.target.value)} placeholder="e.g., 3 years" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Issuer / Provider</Label>
+                    <Input value={form.industry} onChange={(e) => updateForm("industry", e.target.value)} placeholder="e.g., ABC Corp, UK Government" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Credit Rating</Label>
+                    <Select value={form.condition} onValueChange={(v) => updateForm("condition", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select rating" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AAA">AAA</SelectItem>
+                        <SelectItem value="AA">AA</SelectItem>
+                        <SelectItem value="A">A</SelectItem>
+                        <SelectItem value="BBB">BBB</SelectItem>
+                        <SelectItem value="BB">BB (High Yield)</SelectItem>
+                        <SelectItem value="B">B</SelectItem>
+                        <SelectItem value="unrated">Unrated</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Security / Collateral</Label>
+                    <Textarea value={form.provenance} onChange={(e) => updateForm("provenance", e.target.value)} placeholder="Asset-backed, unsecured, details of collateral..." rows={2} />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {form.category === "private_credit" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5" /> Private Credit & Lending Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Target Yield (%)</Label>
+                    <Input type="number" step="0.1" value={form.expected_irr} onChange={(e) => updateForm("expected_irr", e.target.value)} placeholder="e.g., 8.0" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Loan-to-Value (%)</Label>
+                    <Input type="number" step="0.1" value={form.growth_rate} onChange={(e) => updateForm("growth_rate", e.target.value)} placeholder="e.g., 65" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Lending Platform / Fund</Label>
+                    <Input value={form.industry} onChange={(e) => updateForm("industry", e.target.value)} placeholder="e.g., Kuflink, Funding Circle" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Loan Term</Label>
+                    <Input value={form.liquidity_horizon} onChange={(e) => updateForm("liquidity_horizon", e.target.value)} placeholder="e.g., 12 months" />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Security Details</Label>
+                    <Textarea value={form.provenance} onChange={(e) => updateForm("provenance", e.target.value)} placeholder="First charge, second charge, asset-backed details..." rows={2} />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {form.category === "infrastructure_energy" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5" /> Infrastructure & Energy Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Project Type</Label>
+                    <Select value={form.property_type} onValueChange={(v) => updateForm("property_type", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="solar">Solar Farm</SelectItem>
+                        <SelectItem value="wind">Wind Energy</SelectItem>
+                        <SelectItem value="ev_charging">EV Charging</SelectItem>
+                        <SelectItem value="battery_storage">Battery Storage</SelectItem>
+                        <SelectItem value="infrastructure_fund">Infrastructure Fund</SelectItem>
+                        <SelectItem value="hydrogen">Hydrogen</SelectItem>
+                        <SelectItem value="other_energy">Other Energy</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Capacity / Output</Label>
+                    <Input value={form.valuation} onChange={(e) => updateForm("valuation", e.target.value)} placeholder="e.g., 50MW, 200 charge points" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Target Yield (%)</Label>
+                    <Input type="number" step="0.1" value={form.expected_irr} onChange={(e) => updateForm("expected_irr", e.target.value)} placeholder="e.g., 7.5" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Project Lifespan</Label>
+                    <Input value={form.liquidity_horizon} onChange={(e) => updateForm("liquidity_horizon", e.target.value)} placeholder="e.g., 25 years" />
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Government Subsidies / Contracts</Label>
+                    <Textarea value={form.provenance} onChange={(e) => updateForm("provenance", e.target.value)} placeholder="Feed-in tariffs, CfD contracts, subsidies..." rows={2} />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {!form.category && (
               <Card className="p-8 text-center">
                 <p className="text-muted-foreground">Select a category first to see product-specific fields</p>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Preview Tab */}
+          <TabsContent value="preview" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-primary" />
+                  Investor View Preview
+                </CardTitle>
+                <CardDescription>
+                  This is how the interactive analytics will appear to investors. Fill in more data fields to generate richer charts.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Data completeness indicators */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                  {[
+                    { label: "Scores", filled: [form.quality_score, form.value_score, form.liquidity_score, form.risk_score].filter(v => v > 0).length, total: 9 },
+                    { label: "Financials", filled: [form.price, form.ebitda, form.annual_revenue, form.minimum_investment].filter(Boolean).length, total: 4 },
+                    { label: "Returns", filled: [form.expected_irr, form.rental_yield, form.growth_rate, form.estimated_appreciation].filter(Boolean).length, total: 4 },
+                    { label: "Pitchbook", filled: [form.investment_thesis, form.catalysts, form.exit_scenarios, form.downside_analysis].filter(Boolean).length, total: 4 },
+                  ].map(({ label, filled, total }) => (
+                    <div key={label} className="p-3 rounded-lg border border-border/40 bg-muted/30 text-center">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
+                      <p className="text-lg font-bold">{filled}/{total}</p>
+                      <div className="h-1.5 bg-muted rounded-full mt-1 overflow-hidden">
+                        <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(filled / total) * 100}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Live Analytics Charts */}
+            <OpportunityAnalyticsCharts opportunity={{
+              ...form,
+              price: form.price ? parseFloat(form.price) : null,
+              annual_revenue: form.annual_revenue ? parseFloat(form.annual_revenue) : null,
+              ebitda: form.ebitda ? parseFloat(form.ebitda) : null,
+              minimum_investment: form.minimum_investment ? parseFloat(form.minimum_investment) : null,
+              expected_irr: form.expected_irr ? parseFloat(form.expected_irr) : null,
+              rental_yield: form.rental_yield ? parseFloat(form.rental_yield) : null,
+              growth_rate: form.growth_rate ? parseFloat(form.growth_rate) : null,
+              estimated_appreciation: form.estimated_appreciation ? parseFloat(form.estimated_appreciation) : null,
+              overall_conviction_score: parseFloat(overallScore),
+            }} />
+
+            {!form.quality_score && !form.price && !form.expected_irr && (
+              <Card className="p-8 text-center border-dashed">
+                <p className="text-muted-foreground">Add scores, financial data, and return metrics to see live chart previews</p>
               </Card>
             )}
           </TabsContent>
