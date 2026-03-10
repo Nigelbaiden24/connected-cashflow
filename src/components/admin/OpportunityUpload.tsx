@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { createOpportunityNotification } from "@/utils/notificationService";
+import { OpportunityAnalyticsCharts } from "@/components/opportunities/OpportunityAnalyticsCharts";
 import { 
   Upload, 
   Building2, 
@@ -21,7 +22,8 @@ import {
   Loader2,
   Star,
   Save,
-  Image
+  Image,
+  Eye
 } from "lucide-react";
 
 const categoryConfig = {
