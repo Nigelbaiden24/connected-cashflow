@@ -292,8 +292,8 @@ export default function OpportunityDetailPage() {
               <CardContent className="space-y-3">
                 {scoreItems.map((s) => (
                   <div key={s.label}>
-                    <div className="flex justify-between text-sm mb-1"><span className="text-muted-foreground">{s.label}</span><span className="font-medium">{s.value}/10</span></div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${((s.value as number) / 10) * 100}%` }} /></div>
+                    <div className="flex justify-between text-sm mb-1"><span className="text-muted-foreground">{s.label}</span><span className="font-medium">{s.value}/5</span></div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden"><div className="h-full bg-primary rounded-full transition-all" style={{ width: `${((s.value as number) / 5) * 100}%` }} /></div>
                   </div>
                 ))}
               </CardContent></Card>

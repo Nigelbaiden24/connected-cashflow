@@ -309,7 +309,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
                         <div className="h-2.5 w-2.5 rounded-full" style={{ background: GLOSS_COLORS[i % GLOSS_COLORS.length] }} />
                         <span className="text-xs text-muted-foreground">{s.name}</span>
                       </div>
-                      <span className="text-sm font-bold">{s.value}/10</span>
+                      <span className="text-sm font-bold">{s.value}/5</span>
                     </div>
                   ))}
                 </div>
