@@ -155,7 +155,7 @@ export function OpportunityAnalyticsCharts({ opportunity }: OpportunityAnalytics
         <GlossyGradientDefs />
         <PolarGrid stroke="hsl(var(--border))" strokeOpacity={0.3} />
         <PolarAngleAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
-        <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
+        <PolarRadiusAxis angle={30} domain={[0, 5]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
         <Radar name="Score" dataKey="value" stroke="#0ea5e9" fill="url(#area-gradient-blue)" strokeWidth={2} filter="url(#glow)" />
         <Tooltip content={<CustomTooltip />} />
       </RadarChart>
