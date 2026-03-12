@@ -417,28 +417,19 @@ All colors MUST be HSL.
     border-radius: 50%;
     opacity: 0.1;
     filter: blur(60px);
-    animation: float 20s ease-in-out infinite;
+    /* Static — no animation */
   }
 
   .ai-floating-particles::before {
     background: hsl(var(--primary));
     top: 20%;
     left: 10%;
-    animation-delay: 0s;
   }
 
   .ai-floating-particles::after {
     background: hsl(270 75% 55%);
     bottom: 20%;
     right: 10%;
-    animation-delay: -10s;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(50px, -50px) scale(1.1); }
-    50% { transform: translate(100px, 0) scale(1); }
-    75% { transform: translate(50px, 50px) scale(0.9); }
   }
 
   .ai-glass-card {
