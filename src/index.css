@@ -2,6 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   GLOBAL PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* GPU-accelerate fixed/sticky elements and reduce paint storms */
+*,
+*::before,
+*::after {
+  /* Prevent layout thrash from hover transitions */
+  backface-visibility: hidden;
+}
+
+/* Promote fixed/sticky elements to their own compositing layer */
+[class*="fixed"],
+[class*="sticky"],
+[data-sidebar],
+.backdrop-blur-sm,
+.backdrop-blur-xl,
+.backdrop-blur-lg {
+  will-change: transform;
+  contain: layout style;
+}
+
+/* Skip rendering for off-screen sections */
+main > section,
+main > div,
+[role="tabpanel"][hidden],
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Reduce backdrop-blur cost globally — use lighter blur values */
+.backdrop-blur-xl {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Disable all infinite animations when user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
