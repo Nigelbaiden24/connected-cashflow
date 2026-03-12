@@ -2,6 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   GLOBAL PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* GPU-accelerate fixed/sticky elements and reduce paint storms */
+*,
+*::before,
+*::after {
+  /* Prevent layout thrash from hover transitions */
+  backface-visibility: hidden;
+}
+
+/* Promote fixed/sticky elements to their own compositing layer */
+[class*="fixed"],
+[class*="sticky"],
+[data-sidebar],
+.backdrop-blur-sm,
+.backdrop-blur-xl,
+.backdrop-blur-lg {
+  will-change: transform;
+  contain: layout style;
+}
+
+/* Skip rendering for off-screen sections */
+main > section,
+main > div,
+[role="tabpanel"][hidden],
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Reduce backdrop-blur cost globally — use lighter blur values */
+.backdrop-blur-xl {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Disable all infinite animations when user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
@@ -296,59 +345,18 @@ All colors MUST be HSL.
   }
 
   /* Neon text effects */
+  /* Neon text effects — static glow, no animation to save GPU */
   .neon-text {
     text-shadow: 
       0 0 10px rgba(255, 255, 255, 0.8),
-      0 0 20px rgba(255, 255, 255, 0.6),
-      0 0 30px rgba(59, 130, 246, 0.8),
-      0 0 40px rgba(59, 130, 246, 0.6),
-      0 0 50px rgba(59, 130, 246, 0.4),
-      0 0 60px rgba(59, 130, 246, 0.3);
-    animation: neon-pulse 2s ease-in-out infinite;
+      0 0 20px rgba(59, 130, 246, 0.6),
+      0 0 30px rgba(59, 130, 246, 0.4);
   }
 
   .neon-text-subtle {
     text-shadow: 
       0 0 10px rgba(59, 130, 246, 0.5),
-      0 0 20px rgba(59, 130, 246, 0.3),
-      0 0 30px rgba(59, 130, 246, 0.2);
-    animation: neon-pulse-subtle 3s ease-in-out infinite;
-  }
-
-  @keyframes neon-pulse {
-    0%, 100% {
-      text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.8),
-        0 0 20px rgba(255, 255, 255, 0.6),
-        0 0 30px rgba(59, 130, 246, 0.8),
-        0 0 40px rgba(59, 130, 246, 0.6),
-        0 0 50px rgba(59, 130, 246, 0.4),
-        0 0 60px rgba(59, 130, 246, 0.3);
-    }
-    50% {
-      text-shadow: 
-        0 0 15px rgba(255, 255, 255, 1),
-        0 0 25px rgba(255, 255, 255, 0.8),
-        0 0 35px rgba(59, 130, 246, 1),
-        0 0 45px rgba(59, 130, 246, 0.8),
-        0 0 55px rgba(59, 130, 246, 0.6),
-        0 0 70px rgba(59, 130, 246, 0.4);
-    }
-  }
-
-  @keyframes neon-pulse-subtle {
-    0%, 100% {
-      text-shadow: 
-        0 0 10px rgba(59, 130, 246, 0.5),
-        0 0 20px rgba(59, 130, 246, 0.3),
-        0 0 30px rgba(59, 130, 246, 0.2);
-    }
-    50% {
-      text-shadow: 
-        0 0 15px rgba(59, 130, 246, 0.7),
-        0 0 25px rgba(59, 130, 246, 0.5),
-        0 0 35px rgba(59, 130, 246, 0.3);
-    }
+      0 0 20px rgba(59, 130, 246, 0.3);
   }
   
   @keyframes gradient {
@@ -362,10 +370,11 @@ All colors MUST be HSL.
   
   .animate-gradient {
     background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
+    /* Static position — no infinite animation */
+    background-position: 0% 50%;
   }
 
-  /* Elite AI Chatbot Styles */
+  /* AI chat gradients — static, no animation */
   .ai-chat-gradient {
     background: linear-gradient(135deg, 
       hsl(221 83% 53% / 0.1) 0%, 
@@ -374,8 +383,6 @@ All colors MUST be HSL.
       hsl(142 76% 36% / 0.1) 75%,
       hsl(340 82% 52% / 0.1) 100%
     );
-    background-size: 400% 400%;
-    animation: gradient-flow 15s ease infinite;
   }
 
   .ai-chat-gradient-dark {
@@ -385,14 +392,6 @@ All colors MUST be HSL.
       hsl(199 89% 20% / 0.3) 50%,
       hsl(0 0% 5%) 100%
     );
-    background-size: 400% 400%;
-    animation: gradient-flow 15s ease infinite;
-  }
-
-  @keyframes gradient-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
   }
 
   .ai-message-gradient {
@@ -417,24 +416,9 @@ All colors MUST be HSL.
       hsl(270 75% 55%) 50%,
       hsl(199 89% 48%) 100%
     );
-    animation: orb-pulse 3s ease-in-out infinite;
-  }
-
-  @keyframes orb-pulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 
-        0 0 20px hsl(var(--primary) / 0.5),
-        0 0 40px hsl(270 75% 55% / 0.3),
-        0 0 60px hsl(199 89% 48% / 0.2);
-    }
-    50% {
-      transform: scale(1.05);
-      box-shadow: 
-        0 0 30px hsl(var(--primary) / 0.6),
-        0 0 50px hsl(270 75% 55% / 0.4),
-        0 0 70px hsl(199 89% 48% / 0.3);
-    }
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.5),
+      0 0 40px hsl(270 75% 55% / 0.3);
   }
 
   .ai-glow-border {
@@ -454,16 +438,9 @@ All colors MUST be HSL.
       hsl(142 76% 36%) 75%,
       hsl(var(--primary)) 100%
     );
-    background-size: 400% 400%;
-    animation: glow-spin 4s linear infinite;
     z-index: -1;
     border-radius: inherit;
-  }
-
-  @keyframes glow-spin {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    /* Static — no animation */
   }
 
   .ai-floating-particles {
@@ -482,28 +459,19 @@ All colors MUST be HSL.
     border-radius: 50%;
     opacity: 0.1;
     filter: blur(60px);
-    animation: float 20s ease-in-out infinite;
+    /* Static — no animation */
   }
 
   .ai-floating-particles::before {
     background: hsl(var(--primary));
     top: 20%;
     left: 10%;
-    animation-delay: 0s;
   }
 
   .ai-floating-particles::after {
     background: hsl(270 75% 55%);
     bottom: 20%;
     right: 10%;
-    animation-delay: -10s;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(50px, -50px) scale(1.1); }
-    50% { transform: translate(100px, 0) scale(1); }
-    75% { transform: translate(50px, 50px) scale(0.9); }
   }
 
   .ai-glass-card {
@@ -642,8 +610,6 @@ All colors MUST be HSL.
       hsl(270 75% 55%) 66%,
       hsl(var(--primary)) 100%
     );
-    background-size: 300% 300%;
-    animation: crm-border-flow 6s ease infinite;
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -651,12 +617,6 @@ All colors MUST be HSL.
 
   .crm-gradient-border:hover::after {
     opacity: 1;
-  }
-
-  @keyframes crm-border-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
   }
 
   /* Stat card icon glow */
@@ -680,33 +640,13 @@ All colors MUST be HSL.
     opacity: 0.6;
   }
 
-  /* Premium header shimmer */
+  /* Premium header shimmer — static, no animation */
   .crm-header-shimmer {
     position: relative;
     overflow: hidden;
   }
 
-  .crm-header-shimmer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-      transparent, 
-      hsl(0 0% 100% / 0.08), 
-      transparent
-    );
-    animation: crm-shimmer 4s ease-in-out infinite;
-  }
-
-  @keyframes crm-shimmer {
-    0% { left: -100%; }
-    100% { left: 200%; }
-  }
-
-  /* Floating orb background */
+  /* Floating orb background — static, no animation */
   .crm-orb-bg {
     position: relative;
     overflow: hidden;
@@ -728,7 +668,6 @@ All colors MUST be HSL.
     background: hsl(var(--primary));
     top: -100px;
     right: -50px;
-    animation: crm-float 15s ease-in-out infinite;
   }
 
   .crm-orb-bg::after {
@@ -737,13 +676,6 @@ All colors MUST be HSL.
     background: hsl(199 89% 48%);
     bottom: -80px;
     left: -30px;
-    animation: crm-float 18s ease-in-out infinite reverse;
-  }
-
-  @keyframes crm-float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -20px) scale(1.1); }
-    66% { transform: translate(-20px, 15px) scale(0.95); }
   }
 
   /* ===== CRM SPREADSHEET GRID — Excel-grade ===== */
