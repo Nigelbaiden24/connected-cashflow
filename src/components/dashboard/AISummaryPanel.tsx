@@ -123,7 +123,7 @@ export function AISummaryPanel() {
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-primary" />
             <CardTitle className="text-base font-semibold">AI Daily Snapshot</CardTitle>
-            {aiGenerated && (
+            {isSuccess && (
               <Badge variant="outline" className="text-xs gap-1 border-emerald-500/30 text-emerald-600">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -133,7 +133,7 @@ export function AISummaryPanel() {
               </Badge>
             )}
           </div>
-          <Button variant="ghost" size="sm" onClick={generateSummary} disabled={loading} className="text-xs gap-1">
+          <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={loading} className="text-xs gap-1">
             <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
