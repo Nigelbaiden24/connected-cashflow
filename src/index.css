@@ -561,8 +561,6 @@ All colors MUST be HSL.
       hsl(270 75% 55%) 66%,
       hsl(var(--primary)) 100%
     );
-    background-size: 300% 300%;
-    animation: crm-border-flow 6s ease infinite;
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -570,12 +568,6 @@ All colors MUST be HSL.
 
   .crm-gradient-border:hover::after {
     opacity: 1;
-  }
-
-  @keyframes crm-border-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
   }
 
   /* Stat card icon glow */
