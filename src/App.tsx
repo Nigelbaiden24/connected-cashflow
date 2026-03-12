@@ -1,13 +1,15 @@
-import { useState, lazy, Suspense, memo } from "react";
+import { useState, lazy, Suspense, memo, useCallback, useMemo, ComponentType, ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
-import { BusinessLayout } from "@/components/BusinessLayout";
-import { FinanceLayout } from "@/components/FinanceLayout";
-import { InvestorLayout } from "@/components/InvestorLayout";
+
+// Lazy-load layout shells to reduce initial bundle
+const BusinessLayout = lazy(() => import("@/components/BusinessLayout").then(m => ({ default: m.BusinessLayout })));
+const FinanceLayout = lazy(() => import("@/components/FinanceLayout").then(m => ({ default: m.FinanceLayout })));
+const InvestorLayout = lazy(() => import("@/components/InvestorLayout").then(m => ({ default: m.InvestorLayout })));
 
 // Global loading fallback
 const PageLoader = () => (
