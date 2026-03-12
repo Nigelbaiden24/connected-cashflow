@@ -591,33 +591,13 @@ All colors MUST be HSL.
     opacity: 0.6;
   }
 
-  /* Premium header shimmer */
+  /* Premium header shimmer — static, no animation */
   .crm-header-shimmer {
     position: relative;
     overflow: hidden;
   }
 
-  .crm-header-shimmer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-      transparent, 
-      hsl(0 0% 100% / 0.08), 
-      transparent
-    );
-    animation: crm-shimmer 4s ease-in-out infinite;
-  }
-
-  @keyframes crm-shimmer {
-    0% { left: -100%; }
-    100% { left: 200%; }
-  }
-
-  /* Floating orb background */
+  /* Floating orb background — static, no animation */
   .crm-orb-bg {
     position: relative;
     overflow: hidden;
@@ -639,7 +619,6 @@ All colors MUST be HSL.
     background: hsl(var(--primary));
     top: -100px;
     right: -50px;
-    animation: crm-float 15s ease-in-out infinite;
   }
 
   .crm-orb-bg::after {
@@ -648,13 +627,6 @@ All colors MUST be HSL.
     background: hsl(199 89% 48%);
     bottom: -80px;
     left: -30px;
-    animation: crm-float 18s ease-in-out infinite reverse;
-  }
-
-  @keyframes crm-float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -20px) scale(1.1); }
-    66% { transform: translate(-20px, 15px) scale(0.95); }
   }
 
   /* ===== CRM SPREADSHEET GRID — Excel-grade ===== */
