@@ -1,13 +1,15 @@
-import { useState, lazy, Suspense, memo } from "react";
+import { useState, lazy, Suspense, memo, useCallback, useMemo, ComponentType, ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
-import { BusinessLayout } from "@/components/BusinessLayout";
-import { FinanceLayout } from "@/components/FinanceLayout";
-import { InvestorLayout } from "@/components/InvestorLayout";
+
+// Lazy-load layout shells to reduce initial bundle
+const BusinessLayout = lazy(() => import("@/components/BusinessLayout").then(m => ({ default: m.BusinessLayout })));
+const FinanceLayout = lazy(() => import("@/components/FinanceLayout").then(m => ({ default: m.FinanceLayout })));
+const InvestorLayout = lazy(() => import("@/components/InvestorLayout").then(m => ({ default: m.InvestorLayout })));
 
 // Global loading fallback
 const PageLoader = () => (
@@ -128,27 +130,43 @@ const OrganisationSettings = lazy(() => import("./pages/OrganisationSettings"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 min - avoid refetching fresh data
-      gcTime: 10 * 60 * 1000, // 10 min garbage collection
-      refetchOnWindowFocus: false, // prevent refetch on tab switch
-      retry: 1, // single retry on failure
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+      refetchOnMount: false, // Don't refetch when component remounts
     },
   },
 });
+
+// Memoized auth guard to prevent re-renders on route changes
+const AuthGuard = memo(({ 
+  isAuthenticated, 
+  redirectTo, 
+  children 
+}: { 
+  isAuthenticated: boolean; 
+  redirectTo: string; 
+  children: ReactNode;
+}) => {
+  if (!isAuthenticated) return <Navigate to={redirectTo} replace />;
+  return <>{children}</>;
+});
+AuthGuard.displayName = "AuthGuard";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
 
-  const handleLogin = (email: string) => {
+  const handleLogin = useCallback((email: string) => {
     setIsAuthenticated(true);
     setUserEmail(email);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
     setUserEmail("");
-  };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

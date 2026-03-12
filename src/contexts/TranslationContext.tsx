@@ -23,10 +23,17 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load language preference
-    const loadLanguage = async () => {
+    // Fast path: check localStorage first, only hit DB if non-English
+    const stored = localStorage.getItem("preferredLanguage");
+    if (stored && stored !== "en") {
+      setLanguageState(stored);
+    }
+    // Immediately unblock rendering - don't wait for DB
+    setIsLoading(false);
+
+    // Background sync from DB (non-blocking)
+    const syncFromDB = async () => {
       try {
-        // Try to load from database first
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase
@@ -35,36 +42,18 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
             .eq("user_id", user.id)
             .maybeSingle();
           
-          if (data?.language) {
+          if (data?.language && data.language !== language) {
             setLanguageState(data.language);
             localStorage.setItem("preferredLanguage", data.language);
-          } else {
-            // Fallback to localStorage if no DB entry
-            const stored = localStorage.getItem("preferredLanguage");
-            if (stored && stored !== "en") {
-              setLanguageState(stored);
-            }
-          }
-        } else {
-          // No user, check localStorage
-          const stored = localStorage.getItem("preferredLanguage");
-          if (stored && stored !== "en") {
-            setLanguageState(stored);
           }
         }
-      } catch (error) {
-        console.error("Error loading language:", error);
-        // Fallback to localStorage on error
-        const stored = localStorage.getItem("preferredLanguage");
-        if (stored && stored !== "en") {
-          setLanguageState(stored);
-        }
-      } finally {
-        setIsLoading(false);
+      } catch {
+        // Silent fail - localStorage is already applied
       }
     };
 
-    loadLanguage();
+    // Defer DB call to after paint
+    requestAnimationFrame(() => { syncFromDB(); });
   }, []);
 
   const setLanguage = (lang: string) => {
