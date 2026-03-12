@@ -321,10 +321,11 @@ All colors MUST be HSL.
   
   .animate-gradient {
     background-size: 200% 200%;
-    animation: gradient 3s ease infinite;
+    /* Static position — no infinite animation */
+    background-position: 0% 50%;
   }
 
-  /* Elite AI Chatbot Styles */
+  /* AI chat gradients — static, no animation */
   .ai-chat-gradient {
     background: linear-gradient(135deg, 
       hsl(221 83% 53% / 0.1) 0%, 
@@ -333,8 +334,6 @@ All colors MUST be HSL.
       hsl(142 76% 36% / 0.1) 75%,
       hsl(340 82% 52% / 0.1) 100%
     );
-    background-size: 400% 400%;
-    animation: gradient-flow 15s ease infinite;
   }
 
   .ai-chat-gradient-dark {
@@ -344,14 +343,6 @@ All colors MUST be HSL.
       hsl(199 89% 20% / 0.3) 50%,
       hsl(0 0% 5%) 100%
     );
-    background-size: 400% 400%;
-    animation: gradient-flow 15s ease infinite;
-  }
-
-  @keyframes gradient-flow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
   }
 
   .ai-message-gradient {
