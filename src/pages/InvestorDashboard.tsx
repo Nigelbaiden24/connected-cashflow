@@ -41,6 +41,7 @@ const InvestorDashboard = () => {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [liveMarketData, setLiveMarketData] = useState<any[]>([]);
   const [loadingMarketData, setLoadingMarketData] = useState(false);
+  const { profile } = useUserProfile();
 
   const dashboardData = useInvestorDashboardData();
 
