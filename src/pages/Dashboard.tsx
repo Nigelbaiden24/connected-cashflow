@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [totalAUM, setTotalAUM] = useState(0);
   const [loading, setLoading] = useState(true);
   const [botName] = useState(() => localStorage.getItem('botName') || 'Theodore');
+  const { profile } = useUserProfile();
   const [sparklineData, setSparklineData] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
