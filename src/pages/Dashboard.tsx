@@ -139,7 +139,11 @@ const Dashboard = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              <TranslatedText>Dashboard</TranslatedText>
+              {profile.first_name ? (
+                <><TranslatedText>Welcome back</TranslatedText>, {profile.first_name}</>
+              ) : (
+                <TranslatedText>Dashboard</TranslatedText>
+              )}
             </h1>
             <p className="text-xs text-muted-foreground">
               <TranslatedText>Here's a snapshot of your advisory performance</TranslatedText>

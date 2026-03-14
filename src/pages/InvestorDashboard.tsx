@@ -160,7 +160,13 @@ const InvestorDashboard = () => {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight"><TranslatedText>Investment Dashboard</TranslatedText></h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {profile.first_name ? (
+              <><TranslatedText>Welcome back</TranslatedText>, {profile.first_name}</>
+            ) : (
+              <TranslatedText>Investment Dashboard</TranslatedText>
+            )}
+          </h1>
           <p className="text-muted-foreground mt-1"><TranslatedText>Your global investment command centre</TranslatedText></p>
         </div>
         <div className="flex items-center gap-2">
