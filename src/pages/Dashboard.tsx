@@ -20,6 +20,7 @@ import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
 import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
 import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalystPicksSection";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { DashboardDealWidgets } from "@/components/dashboard/DashboardDealWidgets";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 
