@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChar
 import { useState, useEffect } from "react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { useInvestorDashboardData } from "@/hooks/useInvestorDashboardData";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { TranslatedText } from "@/components/TranslatedText";
