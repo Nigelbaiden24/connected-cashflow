@@ -85,7 +85,11 @@ export default function BusinessDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                  <TranslatedText>Command Center</TranslatedText>
+                  {profile.first_name ? (
+                    <><TranslatedText>Welcome back</TranslatedText>, {profile.first_name}</>
+                  ) : (
+                    <TranslatedText>Command Center</TranslatedText>
+                  )}
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   <TranslatedText>Here's a snapshot of your business operations</TranslatedText>
