@@ -128,10 +128,14 @@ const Chat = () => {
     fetchName();
   }, []);
 
-  const personalGreeting = userFirstName ? `Hi ${userFirstName}! ` : "Hello! ";
-  const defaultMessage = isBusinessPlatform 
-    ? `${personalGreeting}I'm Atlas, your AI business strategist. I can help you with business planning, operations, analytics, strategy, and more. How can I drive your business forward today?`
-    : `${personalGreeting}I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?`;
+  const buildGreeting = (name: string, bot: string, isBusiness: boolean) => {
+    const greeting = name ? `Hi ${name}! ` : "Hello! ";
+    return isBusiness 
+      ? `${greeting}I'm ${bot}, your AI business strategist. I can help you with business planning, operations, analytics, strategy, and more. How can I drive your business forward today?`
+      : `${greeting}I'm ${bot}, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?`;
+  };
+
+  const defaultMessage = buildGreeting("", defaultBotName, isBusinessPlatform);
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -142,6 +146,21 @@ const Chat = () => {
       category: "general",
     },
   ]);
+
+  // Update greeting message when user name loads
+  useEffect(() => {
+    if (userFirstName) {
+      setMessages(prev => {
+        if (prev.length === 1 && prev[0].id === "1") {
+          return [{
+            ...prev[0],
+            content: buildGreeting(userFirstName, botName, isBusinessPlatform),
+          }];
+        }
+        return prev;
+      });
+    }
+  }, [userFirstName]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [useStreaming, setUseStreaming] = useState(() => {
