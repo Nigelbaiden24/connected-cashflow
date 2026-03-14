@@ -20,6 +20,7 @@ import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
 import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
 import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalystPicksSection";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { DashboardDealWidgets } from "@/components/dashboard/DashboardDealWidgets";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -29,6 +30,7 @@ const Dashboard = () => {
   const [totalAUM, setTotalAUM] = useState(0);
   const [loading, setLoading] = useState(true);
   const [botName] = useState(() => localStorage.getItem('botName') || 'Theodore');
+  const { profile } = useUserProfile();
   const [sparklineData, setSparklineData] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
@@ -137,7 +139,11 @@ const Dashboard = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              <TranslatedText>Dashboard</TranslatedText>
+              {profile.first_name ? (
+                <><TranslatedText>Welcome back</TranslatedText>, {profile.first_name}</>
+              ) : (
+                <TranslatedText>Dashboard</TranslatedText>
+              )}
             </h1>
             <p className="text-xs text-muted-foreground">
               <TranslatedText>Here's a snapshot of your advisory performance</TranslatedText>

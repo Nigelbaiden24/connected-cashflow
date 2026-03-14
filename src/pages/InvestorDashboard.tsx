@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChar
 import { useState, useEffect } from "react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { useInvestorDashboardData } from "@/hooks/useInvestorDashboardData";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { TranslatedText } from "@/components/TranslatedText";
@@ -40,6 +41,7 @@ const InvestorDashboard = () => {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [liveMarketData, setLiveMarketData] = useState<any[]>([]);
   const [loadingMarketData, setLoadingMarketData] = useState(false);
+  const { profile } = useUserProfile();
 
   const dashboardData = useInvestorDashboardData();
 
@@ -158,7 +160,13 @@ const InvestorDashboard = () => {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight"><TranslatedText>Investment Dashboard</TranslatedText></h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {profile.first_name ? (
+              <><TranslatedText>Welcome back</TranslatedText>, {profile.first_name}</>
+            ) : (
+              <TranslatedText>Investment Dashboard</TranslatedText>
+            )}
+          </h1>
           <p className="text-muted-foreground mt-1"><TranslatedText>Your global investment command centre</TranslatedText></p>
         </div>
         <div className="flex items-center gap-2">

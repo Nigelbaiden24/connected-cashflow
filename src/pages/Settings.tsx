@@ -1,4 +1,5 @@
 import { LanguageSettings } from "@/components/settings/LanguageSettings";
+import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { TranslatedText } from "@/components/TranslatedText";
 
 const Settings = () => {
@@ -9,10 +10,11 @@ const Settings = () => {
           Settings
         </TranslatedText>
         <TranslatedText as="p" className="text-muted-foreground">
-          Choose your preferred language for the platform
+          Manage your profile and preferences
         </TranslatedText>
       </div>
 
+      <ProfileSettings />
       <LanguageSettings />
     </div>
   );

@@ -114,9 +114,24 @@ const Chat = () => {
   const isBusinessPlatform = location.pathname.includes('/business/');
   
   const defaultBotName = isBusinessPlatform ? 'Atlas' : 'Theodore';
+  
+  // Fetch user's first name for personalized greeting
+  const [userFirstName, setUserFirstName] = useState("");
+  useEffect(() => {
+    const fetchName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("user_profiles").select("full_name").eq("user_id", user.id).single();
+      const name = data?.full_name || user.user_metadata?.full_name || "";
+      setUserFirstName(name.split(" ")[0] || "");
+    };
+    fetchName();
+  }, []);
+
+  const personalGreeting = userFirstName ? `Hi ${userFirstName}! ` : "Hello! ";
   const defaultMessage = isBusinessPlatform 
-    ? "Hello! I'm Atlas, your AI business strategist. I can help you with business planning, operations, analytics, strategy, and more. How can I drive your business forward today?"
-    : "Hello! I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?";
+    ? `${personalGreeting}I'm Atlas, your AI business strategist. I can help you with business planning, operations, analytics, strategy, and more. How can I drive your business forward today?`
+    : `${personalGreeting}I'm Theodore, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?`;
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -245,7 +260,7 @@ const Chat = () => {
       setMessages([{
         id: "1",
         type: "assistant",
-        content: `Hello! I'm ${botName}, your AI assistant. I can help you with ${isBusinessPlatform ? 'business planning, operations, analytics, and strategy' : 'market data, client information, compliance checks, and more'}. How can I assist you today?`,
+        content: `${userFirstName ? `Hi ${userFirstName}! ` : "Hello! "}I'm ${botName}, your AI assistant. I can help you with ${isBusinessPlatform ? 'business planning, operations, analytics, and strategy' : 'market data, client information, compliance checks, and more'}. How can I assist you today?`,
         timestamp: new Date(),
         category: "general",
       }]);
