@@ -260,7 +260,7 @@ const Chat = () => {
       setMessages([{
         id: "1",
         type: "assistant",
-        content: `Hello! I'm ${botName}, your AI assistant. I can help you with ${isBusinessPlatform ? 'business planning, operations, analytics, and strategy' : 'market data, client information, compliance checks, and more'}. How can I assist you today?`,
+        content: `${userFirstName ? `Hi ${userFirstName}! ` : "Hello! "}I'm ${botName}, your AI assistant. I can help you with ${isBusinessPlatform ? 'business planning, operations, analytics, and strategy' : 'market data, client information, compliance checks, and more'}. How can I assist you today?`,
         timestamp: new Date(),
         category: "general",
       }]);
