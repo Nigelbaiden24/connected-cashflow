@@ -21,11 +21,13 @@ import { DeadlinesTimeline } from "@/components/business/DeadlinesTimeline";
 import { TimeTrackingSnapshot } from "@/components/business/TimeTrackingSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
 import { Badge } from "@/components/ui/badge";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 export default function BusinessDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userEmail] = useState("business@flowpulse.io");
+  const { profile } = useUserProfile();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
