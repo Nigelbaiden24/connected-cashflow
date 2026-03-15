@@ -28,6 +28,7 @@ const mobileNavItems = [
 
 export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { profile } = useUserProfile();
 
   return (
     <SidebarProvider defaultOpen={true}>
