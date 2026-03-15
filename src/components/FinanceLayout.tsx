@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarInset } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   LayoutDashboard,
   Users,
