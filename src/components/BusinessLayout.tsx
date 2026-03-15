@@ -28,6 +28,7 @@ const mobileNavItems = [
 
 export function BusinessLayout({ children, userEmail, onLogout, hideHeader = false }: BusinessLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { profile } = useUserProfile();
 
   return (
     <SidebarProvider defaultOpen={true}>
