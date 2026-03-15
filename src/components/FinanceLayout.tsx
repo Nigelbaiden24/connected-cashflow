@@ -29,6 +29,7 @@ const mobileNavItems = [
 
 export function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { profile } = useUserProfile();
 
   return (
     <SidebarProvider defaultOpen={true}>
