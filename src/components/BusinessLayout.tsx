@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { BusinessSidebar } from "./BusinessSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { 
   LayoutDashboard, 
   FolderKanban, 
