@@ -38,7 +38,8 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
-              title="FlowPulse Business"
+              title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Business"}
+              subtitle="FlowPulse Business"
               userEmail={userEmail}
               onLogout={onLogout}
               variant="business"

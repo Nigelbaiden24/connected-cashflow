@@ -37,7 +37,8 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
         <div className="flex-1 flex flex-col min-w-0">
           {/* Enterprise Mobile Header */}
           <MobileHeader
-            title="FlowPulse Investor"
+            title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Investor"}
+            subtitle="FlowPulse Investor"
             userEmail={userEmail}
             onLogout={onLogout}
             variant="investor"

@@ -40,7 +40,8 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
-              title="FlowPulse Finance"
+              title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Finance"}
+              subtitle="FlowPulse Finance"
               userEmail={userEmail}
               onLogout={onLogout}
               variant="finance"
