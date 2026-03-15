@@ -3,6 +3,7 @@ import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { InvestorNotificationsDropdown } from "@/components/notifications";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -27,6 +28,7 @@ const mobileNavItems = [
 
 export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { profile } = useUserProfile();
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -35,7 +37,8 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
         <div className="flex-1 flex flex-col min-w-0">
           {/* Enterprise Mobile Header */}
           <MobileHeader
-            title="FlowPulse Investor"
+            title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Investor"}
+            subtitle="FlowPulse Investor"
             userEmail={userEmail}
             onLogout={onLogout}
             variant="investor"

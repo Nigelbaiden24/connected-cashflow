@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarInset } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   LayoutDashboard,
   Users,
@@ -28,6 +29,7 @@ const mobileNavItems = [
 
 export function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { profile } = useUserProfile();
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -38,7 +40,8 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
-              title="FlowPulse Finance"
+              title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Finance"}
+              subtitle="FlowPulse Finance"
               userEmail={userEmail}
               onLogout={onLogout}
               variant="finance"

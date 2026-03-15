@@ -26,24 +26,45 @@ export const useUserProfile = () => {
         if (!session?.user || !mounted) return;
 
         const user = session.user;
-        
-        const { data } = await supabase
+
+        // Try to fetch existing profile
+        const { data, error } = await supabase
           .from("user_profiles")
           .select("full_name, email, avatar_url")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (!mounted) return;
 
-        const fullName = data?.full_name || user.user_metadata?.full_name || "";
-        const firstName = fullName.split(" ")[0] || "";
+        // If no profile row exists, create one from auth metadata
+        if (!data && !error) {
+          const metaName = user.user_metadata?.full_name || "";
+          await supabase.from("user_profiles").upsert({
+            user_id: user.id,
+            email: user.email || "",
+            full_name: metaName || user.email || "",
+          }, { onConflict: "user_id" });
 
-        setProfile({
-          full_name: fullName || null,
-          email: data?.email || user.email || null,
-          avatar_url: data?.avatar_url || null,
-          first_name: firstName,
-        });
+          if (!mounted) return;
+
+          const firstName = metaName.split(" ")[0] || "";
+          setProfile({
+            full_name: metaName || null,
+            email: user.email || null,
+            avatar_url: null,
+            first_name: firstName,
+          });
+        } else if (data) {
+          const fullName = data.full_name || user.user_metadata?.full_name || "";
+          const firstName = fullName.split(" ")[0] || "";
+
+          setProfile({
+            full_name: fullName || null,
+            email: data.email || user.email || null,
+            avatar_url: data.avatar_url || null,
+            first_name: firstName,
+          });
+        }
       } catch (error) {
         console.error("Error fetching user profile:", error);
       } finally {
@@ -55,15 +76,11 @@ export const useUserProfile = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user && mounted) {
-        const user = session.user;
-        const fullName = user.user_metadata?.full_name || "";
-        const firstName = fullName.split(" ")[0] || "";
-        setProfile(prev => ({
-          ...prev,
-          full_name: prev.full_name || fullName || null,
-          email: prev.email || user.email || null,
-          first_name: prev.first_name || firstName,
-        }));
+        // Re-fetch profile on auth change
+        loadProfile();
+      } else if (!session && mounted) {
+        setProfile({ full_name: null, email: null, avatar_url: null, first_name: "" });
+        setLoading(false);
       }
     });
 

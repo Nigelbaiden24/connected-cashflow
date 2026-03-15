@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { BusinessSidebar } from "./BusinessSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { 
   LayoutDashboard, 
   FolderKanban, 
@@ -27,6 +28,7 @@ const mobileNavItems = [
 
 export function BusinessLayout({ children, userEmail, onLogout, hideHeader = false }: BusinessLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const { profile } = useUserProfile();
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -36,7 +38,8 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
-              title="FlowPulse Business"
+              title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Business"}
+              subtitle="FlowPulse Business"
               userEmail={userEmail}
               onLogout={onLogout}
               variant="business"
