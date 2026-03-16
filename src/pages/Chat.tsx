@@ -16,6 +16,7 @@ import { FileManager } from "@/components/FileManager";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useBusinessChat } from "@/hooks/useBusinessChat";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
