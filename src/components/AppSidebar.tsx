@@ -115,6 +115,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
+  const { profile } = useUserProfile();
 
   const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_finance") || "[]"); } catch { return []; }
@@ -139,16 +140,18 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
       : "text-white/80 hover:bg-white/10 hover:text-white";
   };
 
-  const getUserInitials = (email: string) => {
-    return email
+  const getUserInitials = (value: string) => {
+    return value
       .split("@")[0]
-      .split(".")
+      .split(/[.\s_-]+/)
+      .filter(Boolean)
       .map((name) => name[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
+  const displayName = profile.full_name || profile.first_name || userEmail;
   const { toggleSidebar } = useSidebar();
 
   return (
