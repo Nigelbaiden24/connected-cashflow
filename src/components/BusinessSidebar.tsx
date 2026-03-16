@@ -302,26 +302,35 @@ export const BusinessSidebar = memo(function BusinessSidebar({ userEmail, onLogo
         <div className={`p-4 space-y-3 ${isCollapsed ? 'px-2' : ''}`}>
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
             <Avatar className="h-8 w-8 flex-shrink-0">
+              <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
               <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                {getUserInitials(userEmail)}
+                {getUserInitials(displayName)}
               </AvatarFallback>
             </Avatar>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-sm font-medium truncate">{userEmail}</span>
-                <TranslatedText as="span" className="text-xs text-sidebar-foreground/70 truncate">Business User</TranslatedText>
+                <span className="text-sm font-medium truncate">{displayName}</span>
+                <span className="text-xs text-sidebar-foreground/70 truncate">{userEmail}</span>
               </div>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
-            onClick={onLogout}
-          >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
-            {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
-          </Button>
+          <div className={`flex gap-2 ${isCollapsed ? 'flex-col' : ''}`}>
+            <Button asChild variant="ghost" size="sm" className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}>
+              <NavLink to="/business/settings">
+                <Settings className="h-4 w-4 flex-shrink-0" />
+                {!isCollapsed && <TranslatedText as="span" className="ml-2">Settings</TranslatedText>}
+              </NavLink>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`w-full ${isCollapsed ? 'justify-center px-0' : 'justify-start'}`}
+              onClick={onLogout}
+            >
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              {!isCollapsed && <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>}
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

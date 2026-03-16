@@ -21,7 +21,7 @@ const formatEmailFallbackName = (email?: string | null) => {
 };
 
 const resolveProfileValues = (
-  user: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]["user"],
+  user: User,
   data?: { full_name: string | null; email: string | null; avatar_url: string | null } | null,
 ) => {
   const metadata = user.user_metadata ?? {};

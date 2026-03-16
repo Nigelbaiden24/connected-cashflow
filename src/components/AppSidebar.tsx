@@ -331,20 +331,26 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-white/40 to-white/20 rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
               <Avatar className="relative h-9 w-9 flex-shrink-0 ring-2 ring-white/20">
+                <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
                 <AvatarFallback className="text-xs bg-white/20 text-white font-bold backdrop-blur-sm">
-                  {getUserInitials(userEmail)}
+                  {getUserInitials(displayName)}
                 </AvatarFallback>
               </Avatar>
             </div>
             {!isCollapsed && (
               <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-sm font-medium text-white truncate">{userEmail}</span>
-                <TranslatedText as="span" className="text-xs text-white/50 truncate">FlowPulse Advisor</TranslatedText>
+                <span className="text-sm font-medium text-white truncate">{displayName}</span>
+                <span className="text-xs text-white/50 truncate">{userEmail}</span>
               </div>
             )}
           </div>
           {isCollapsed ? (
             <div className="flex flex-col items-center gap-1.5 overflow-visible shrink-0">
+              <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200" title="Settings">
+                <NavLink to="/settings">
+                  <Settings className="h-4 w-4" />
+                </NavLink>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -372,6 +378,12 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
             </div>
           ) : (
             <div className="flex gap-2">
+              <Button asChild variant="ghost" size="sm" className="flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 justify-start">
+                <NavLink to="/settings">
+                  <Settings className="h-4 w-4 flex-shrink-0" />
+                  <TranslatedText as="span" className="ml-2">Settings</TranslatedText>
+                </NavLink>
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
