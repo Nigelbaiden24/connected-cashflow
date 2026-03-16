@@ -126,6 +126,7 @@ export const BusinessSidebar = memo(function BusinessSidebar({ userEmail, onLogo
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === "collapsed";
+  const { profile } = useUserProfile();
 
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
@@ -141,16 +142,18 @@ export const BusinessSidebar = memo(function BusinessSidebar({ userEmail, onLogo
       : "hover:bg-sidebar-accent/50";
   };
 
-  const getUserInitials = (email: string) => {
-    return email
+  const getUserInitials = (value: string) => {
+    return value
       .split("@")[0]
-      .split(".")
+      .split(/[.\s_-]+/)
+      .filter(Boolean)
       .map((name) => name[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
+  const displayName = profile.full_name || profile.first_name || userEmail;
   return (
     <Sidebar className={`${isCollapsed ? "w-16" : "w-64"} border-r`} collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
