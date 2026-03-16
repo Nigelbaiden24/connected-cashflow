@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
-import { Menu, Bell, Search, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Menu, Bell, Search, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TranslatedText } from "@/components/TranslatedText";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -19,6 +20,9 @@ interface MobileHeaderProps {
   title: string;
   subtitle?: string;
   userEmail?: string;
+  userName?: string;
+  avatarUrl?: string;
+  settingsPath?: string;
   onLogout?: () => void;
   notificationCount?: number;
   className?: string;
@@ -32,6 +36,9 @@ export function MobileHeader({
   title,
   subtitle,
   userEmail = "",
+  userName,
+  avatarUrl,
+  settingsPath,
   onLogout,
   notificationCount = 0,
   className,
@@ -40,12 +47,16 @@ export function MobileHeader({
   rightContent,
   variant = "default",
 }: MobileHeaderProps) {
-  const getUserInitials = (email: string) => {
-    if (!email) return "U";
-    return email
+  const navigate = useNavigate();
+
+  const getUserInitials = (value: string) => {
+    if (!value) return "U";
+
+    return value
       .split("@")[0]
-      .split(".")
-      .map((name) => name[0])
+      .split(/[.\s_-]+/)
+      .filter(Boolean)
+      .map((part) => part[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
@@ -68,6 +79,8 @@ export function MobileHeader({
     return variant === "default" ? "text-foreground" : "text-white";
   };
 
+  const displayName = userName || userEmail || "Account";
+
   return (
     <header
       className={cn(
@@ -77,9 +90,7 @@ export function MobileHeader({
         className
       )}
     >
-      {/* Main header row */}
       <div className="flex h-14 items-center justify-between gap-2 px-4">
-        {/* Left: Menu trigger and title */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <SidebarTrigger className={cn("h-9 w-9 touch-target", getTextColor())}>
             <Menu className="h-5 w-5" />
@@ -99,7 +110,6 @@ export function MobileHeader({
           </div>
         </div>
 
-        {/* Right: Actions */}
         <div className="flex items-center gap-1">
           {showSearch && (
             <Button
@@ -115,7 +125,6 @@ export function MobileHeader({
 
           {rightContent}
 
-          {/* Notifications - only show if no custom rightContent */}
           {!rightContent && (
             <Button
               variant="ghost"
@@ -135,7 +144,6 @@ export function MobileHeader({
             </Button>
           )}
 
-          {/* User menu */}
           {userEmail && onLogout && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -145,6 +153,7 @@ export function MobileHeader({
                   className={cn("h-9 w-9 touch-target", getTextColor())}
                 >
                   <Avatar className="h-7 w-7">
+                    <AvatarImage src={avatarUrl} alt={displayName} />
                     <AvatarFallback
                       className={cn(
                         "text-xs",
@@ -153,20 +162,35 @@ export function MobileHeader({
                           : "bg-white/20 text-white"
                       )}
                     >
-                      {getUserInitials(userEmail)}
+                      {getUserInitials(userName || userEmail)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">Account</p>
-                    <p className="text-xs leading-none text-muted-foreground truncate">
-                      {userEmail}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={avatarUrl} alt={displayName} />
+                      <AvatarFallback>{getUserInitials(userName || userEmail)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex min-w-0 flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none truncate">{displayName}</p>
+                      <p className="text-xs leading-none text-muted-foreground truncate">
+                        {userEmail}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
+                {settingsPath && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate(settingsPath)}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <TranslatedText>Settings</TranslatedText>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout} className="text-destructive">
                   <TranslatedText>Sign Out</TranslatedText>
