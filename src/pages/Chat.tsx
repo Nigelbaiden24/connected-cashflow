@@ -113,62 +113,50 @@ const Chat = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isBusinessPlatform = location.pathname.includes('/business/');
-  
   const defaultBotName = isBusinessPlatform ? 'Atlas' : 'Theodore';
-  
-  // Fetch user's first name for personalized greeting
-  const [userFirstName, setUserFirstName] = useState("");
-  useEffect(() => {
-    const fetchName = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from("user_profiles").select("full_name").eq("user_id", user.id).single();
-      const name = data?.full_name || user.user_metadata?.full_name || "";
-      setUserFirstName(name.split(" ")[0] || "");
-    };
-    fetchName();
-  }, []);
+  const { profile } = useUserProfile();
+  const userFirstName = profile.first_name;
+
+  const [botName, setBotName] = useState(() => {
+    return localStorage.getItem('botName') || defaultBotName;
+  });
 
   const buildGreeting = (name: string, bot: string, isBusiness: boolean) => {
     const greeting = name ? `Hi ${name}! ` : "Hello! ";
-    return isBusiness 
+    return isBusiness
       ? `${greeting}I'm ${bot}, your AI business strategist. I can help you with business planning, operations, analytics, strategy, and more. How can I drive your business forward today?`
       : `${greeting}I'm ${bot}, your AI financial advisor assistant. I can help you with market data, client information, compliance checks, and more. How can I assist you today?`;
   };
 
-  const defaultMessage = buildGreeting("", defaultBotName, isBusinessPlatform);
-  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
       type: "assistant",
-      content: defaultMessage,
+      content: buildGreeting(userFirstName, botName, isBusinessPlatform),
       timestamp: new Date(),
       category: "general",
     },
   ]);
 
-  // Update greeting message when user name loads
   useEffect(() => {
-    if (userFirstName) {
-      setMessages(prev => {
-        if (prev.length === 1 && prev[0].id === "1") {
-          return [{
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].id === "1") {
+        return [
+          {
             ...prev[0],
             content: buildGreeting(userFirstName, botName, isBusinessPlatform),
-          }];
-        }
-        return prev;
-      });
-    }
-  }, [userFirstName]);
+          },
+        ];
+      }
+
+      return prev;
+    });
+  }, [userFirstName, botName, isBusinessPlatform]);
+
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [useStreaming, setUseStreaming] = useState(() => {
     return localStorage.getItem('useStreaming') === 'true';
-  });
-  const [botName, setBotName] = useState(() => {
-    return localStorage.getItem('botName') || defaultBotName;
   });
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Array<{ id: string; title: string; updated_at: string }>>([]);
