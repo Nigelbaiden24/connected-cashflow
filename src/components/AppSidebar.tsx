@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -61,6 +61,7 @@ import {
   Globe,
   Lightbulb,
 } from "lucide-react";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface AppSidebarProps {
   userEmail: string;
