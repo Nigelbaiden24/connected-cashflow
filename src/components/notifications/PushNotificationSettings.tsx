@@ -105,7 +105,7 @@ export function PushNotificationSettings() {
           <Switch
             checked={subscribed}
             onCheckedChange={handleToggleSubscription}
-            disabled={permissionStatus === "denied" || !!configError || initializing}
+            disabled={permissionStatus === "denied" || initializing}
           />
         </div>
 
