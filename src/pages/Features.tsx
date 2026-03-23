@@ -165,16 +165,7 @@ export default function Features() {
                   >
                     FlowPulse Finance
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
-                      navigate("/login-investor");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    FlowPulse Investor
-                  </Button>
+                  {/* FlowPulse Investor link hidden - kept for future resurgence */}
                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
@@ -228,12 +219,7 @@ export default function Features() {
               FlowPulse Finance
             </button>
 
-            <button 
-              onClick={() => navigate('/login-investor')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              FlowPulse Investor
-            </button>
+            {/* FlowPulse Investor nav link hidden - kept for future resurgence */}
 
             <button 
               onClick={() => navigate('/reports')}
@@ -371,73 +357,7 @@ export default function Features() {
         </div>
       </section>
 
-      {/* FlowPulse Investor Section */}
-      <section className="relative py-24 bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 dark:from-purple-950/20 dark:via-indigo-950/20 dark:to-pink-950/20">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.1),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(236,72,153,0.1),transparent_50%)]" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-16 items-center mb-16">
-              <div className="order-2 lg:order-1 relative">
-                <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-3xl blur-2xl" />
-                <img 
-                  src={investorHero} 
-                  alt="FlowPulse Investor Dashboard" 
-                  className="relative rounded-2xl shadow-2xl border border-purple-200/50 dark:border-purple-800/50"
-                />
-              </div>
-              <div className="order-1 lg:order-2 space-y-6">
-                <Badge variant="outline" className="text-purple-600 border-purple-600">
-                  For Individual Investors
-                </Badge>
-                <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  FlowPulse Investor
-                </h2>
-                <p className="text-xl text-muted-foreground">
-                  Your gateway to global investment opportunities. Access institutional-grade research, real-time market data, and powerful analytical tools—all in one intuitive platform designed for serious investors.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-purple-600" />
-                    <span>Access to global markets and 500+ funds</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-purple-600" />
-                    <span>Advanced screening and discovery tools</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-purple-600" />
-                    <span>AI-powered investment recommendations</span>
-                  </li>
-                </ul>
-                <Button 
-                  size="lg" 
-                  onClick={() => navigate("/login-investor")}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                >
-                  Access FlowPulse Investor
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {investorFeatures.map((feature, idx) => (
-                <Card key={idx} className="hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border-2 hover:border-purple-200 dark:hover:border-purple-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
-                  <CardHeader>
-                    <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl w-fit mb-3 shadow-lg">
-                      <feature.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* FlowPulse Investor Section - hidden for future resurgence */}
 
       {/* Research Reports Section */}
       <section className="relative py-24">
@@ -595,15 +515,7 @@ export default function Features() {
               <Briefcase className="mr-2 h-5 w-5" />
               FlowPulse Finance
             </Button>
-            <Button 
-              size="lg"
-              variant="secondary"
-              onClick={() => navigate("/login-investor")}
-              className="bg-white text-purple-600 hover:bg-white/90 text-lg px-8 py-6"
-            >
-              <TrendingUp className="mr-2 h-5 w-5" />
-              FlowPulse Investor
-            </Button>
+            {/* FlowPulse Investor CTA hidden - kept for future resurgence */}
           </div>
         </div>
       </section>

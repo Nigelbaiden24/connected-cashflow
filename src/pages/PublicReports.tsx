@@ -563,26 +563,7 @@ export default function PublicReports() {
                 </div>
               </Card>
               
-              <Card className="bg-white/5 border-white/10 p-8 text-left hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] group">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-emerald-500/20 rounded-xl">
-                    <LineChart className="h-7 w-7 text-emerald-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-white mb-2">FlowPulse Investor</h3>
-                    <p className="text-slate-400 text-sm mb-5 leading-relaxed">
-                      For individual investors. Portfolio tracking, market data, and curated research insights.
-                    </p>
-                    <Button 
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white group-hover:shadow-lg group-hover:shadow-emerald-500/25 transition-all"
-                      onClick={() => navigate("/login-investor")}
-                    >
-                      Get Started
-                      <ChevronRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+              {/* FlowPulse Investor card hidden - kept for future resurgence */}
             </div>
           </div>
         </div>
