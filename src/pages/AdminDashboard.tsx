@@ -41,6 +41,7 @@ import { ContentTargetSelector, Platform } from "@/components/admin/ContentTarge
 import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { useAdminAutoLogout } from "@/hooks/useAdminAutoLogout";
 import { AdminSettings } from "@/components/admin/AdminSettings";
+import { AdminPushNotifications } from "@/components/admin/AdminPushNotifications";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
 import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
@@ -1600,6 +1601,10 @@ export default function AdminDashboard() {
             >
               <AdminPlanner />
             </ErrorBoundary>
+          )}
+
+          {activeTab === 'push-notifications' && (
+            <AdminPushNotifications />
           )}
 
           {activeTab === 'settings' && (

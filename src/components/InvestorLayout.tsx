@@ -3,6 +3,7 @@ import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { InvestorNotificationsDropdown } from "@/components/notifications";
+import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { 
   LayoutDashboard, 
@@ -56,6 +57,7 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children}
           </main>
+          <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="investor" />

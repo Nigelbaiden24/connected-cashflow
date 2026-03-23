@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
+import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   LayoutDashboard,
@@ -61,6 +62,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
           </div>
 
           <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
+          <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="finance" />

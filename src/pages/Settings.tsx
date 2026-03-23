@@ -3,13 +3,14 @@ import { ActivityLog } from "@/components/settings/ActivityLog";
 import { AccountSettings } from "@/components/settings/AccountSettings";
 import { LanguageSettings } from "@/components/settings/LanguageSettings";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
+import { PushNotificationSettings } from "@/components/notifications/PushNotificationSettings";
 import { TranslatedText } from "@/components/TranslatedText";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { Activity, Settings2, Shield, UserCircle2 } from "lucide-react";
+import { Activity, Bell, Settings2, Shield, UserCircle2 } from "lucide-react";
 
 const getInitials = (value: string) =>
   value
@@ -98,6 +99,10 @@ const Settings = () => {
             <UserCircle2 className="h-4 w-4" />
             Profile
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+          </TabsTrigger>
           <TabsTrigger value="updates" className="gap-2">
             <Activity className="h-4 w-4" />
             Recent updates
@@ -114,6 +119,9 @@ const Settings = () => {
 
         <TabsContent value="profile">
           <ProfileSettings />
+        </TabsContent>
+        <TabsContent value="notifications">
+          <PushNotificationSettings />
         </TabsContent>
         <TabsContent value="updates">
           <ActivityLog />

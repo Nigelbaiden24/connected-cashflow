@@ -2,6 +2,7 @@ import { ReactNode, useState } from "react";
 import { BusinessSidebar } from "./BusinessSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { 
   LayoutDashboard, 
@@ -55,6 +56,7 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children}
           </main>
+          <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="business" />
