@@ -6925,8 +6925,16 @@ export type Database = {
         Args: { _contact_id: string; _user_id: string }
         Returns: boolean
       }
+      owns_employee: {
+        Args: { _employee_id: string; _user_id: string }
+        Returns: boolean
+      }
       owns_plan: {
         Args: { _plan_id: string; _user_id: string }
+        Returns: boolean
+      }
+      owns_team_member: {
+        Args: { _member_id: string; _user_id: string }
         Returns: boolean
       }
       update_tab_permissions: {
