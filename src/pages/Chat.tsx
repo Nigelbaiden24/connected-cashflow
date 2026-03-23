@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check, ExternalLink, MessageSquare, Edit2, Users } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check, ExternalLink, MessageSquare, Edit2, Users, Brain, Target, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
