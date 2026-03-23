@@ -1602,6 +1602,10 @@ export default function AdminDashboard() {
             </ErrorBoundary>
           )}
 
+          {activeTab === 'push-notifications' && (
+            <AdminPushNotifications />
+          )}
+
           {activeTab === 'settings' && (
             <AdminSettings onSettingsChange={handleSettingsChange} />
           )}
