@@ -69,12 +69,16 @@ export function AdminPushNotifications() {
   useEffect(() => {
     const loadData = async () => {
       setLogsLoading(true);
-      const [usersRes, logsRes] = await Promise.all([
-        supabase.from("user_profiles").select("user_id, email, full_name").order("email"),
-        supabase.from("push_notification_logs").select("*").order("created_at", { ascending: false }).limit(50),
-      ]);
+      const usersRes = await supabase.from("user_profiles").select("user_id, email, full_name").order("email");
       if (usersRes.data) setUsers(usersRes.data);
-      if (logsRes.data) setLogs(logsRes.data as unknown as NotificationLog[]);
+      try {
+        const { data: logData } = await (supabase as any)
+          .from("push_notification_logs")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (logData) setLogs(logData as NotificationLog[]);
+      } catch {}
       setLogsLoading(false);
     };
     loadData();
@@ -148,13 +152,14 @@ export function AdminPushNotifications() {
       setForm({ type: "deal", title: "", message: "", url: "", sector: "", schedule: "" });
       setSelectedUserIds([]);
 
-      // Refresh logs
-      const { data } = await supabase
-        .from("push_notification_logs")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (data) setLogs(data as unknown as NotificationLog[]);
+      try {
+        const { data } = await (supabase as any)
+          .from("push_notification_logs")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (data) setLogs(data as NotificationLog[]);
+      } catch {}
     } catch (err) {
       toast.error("Failed to send notification. Check edge function logs.");
     } finally {
