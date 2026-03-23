@@ -33,7 +33,7 @@ export function PushNotificationBanner() {
       if (user) {
         await setExternalId(user.id);
         await setTags({
-          user_role: profile.role || "investor",
+          user_role: "investor",
           subscription_type: "free",
           push_deals: "true",
           push_reports: "true",
