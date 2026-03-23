@@ -25,7 +25,6 @@ export function PushNotificationBanner() {
 
   useEffect(() => {
     if (!initialized) return;
-    if (configError) return;
     if (subscribed || permissionStatus === "granted") return;
     if (permissionStatus === "denied") return;
     if (sessionStorage.getItem(DISMISSED_KEY)) return;
@@ -81,7 +80,7 @@ export function PushNotificationBanner() {
                 Get real-time deal alerts, market updates, and investor signals delivered instantly.
               </p>
               <div className="flex items-center gap-2">
-                <Button size="sm" onClick={handleEnable} className="gap-1.5" disabled={initializing || !!configError}>
+                <Button size="sm" onClick={handleEnable} className="gap-1.5" disabled={initializing}>
                   <Bell className="h-3.5 w-3.5" />
                   {initializing ? "Connecting..." : "Enable Notifications"}
                 </Button>
