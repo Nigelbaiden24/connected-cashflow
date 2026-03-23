@@ -40,7 +40,8 @@ import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
 import businessScreenshot from "@/assets/business-dashboard-screenshot.png";
-import investorScreenshot from "@/assets/investor-dashboard-real.png";
+// investor screenshot import preserved for future use
+// import investorScreenshot from "@/assets/investor-dashboard-real.png";
 import globalFinance from "@/assets/global-finance-districts.jpg";
 
 const Index = () => {
