@@ -165,16 +165,7 @@ export default function Features() {
                   >
                     FlowPulse Finance
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
-                      navigate("/login-investor");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    FlowPulse Investor
-                  </Button>
+                  {/* FlowPulse Investor link hidden - kept for future resurgence */}
                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
