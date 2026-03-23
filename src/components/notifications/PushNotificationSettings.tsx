@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export function PushNotificationSettings() {
-  const { initialized, permissionStatus, subscribed, promptForPermission, optOut, setTags } = useOneSignal();
+  const { initialized, initializing, permissionStatus, subscribed, configError, promptForPermission, optOut, setTags } = useOneSignal();
   const [prefs, setPrefs] = useState({
     deals: true,
     reports: true,
@@ -44,6 +44,8 @@ export function PushNotificationSettings() {
           const OneSignal = window.OneSignal;
           if (OneSignal) await OneSignal.login(user.id);
         }
+      } else if (configError) {
+        toast.error(configError);
       } else {
         toast.info("You can enable notifications in browser settings.");
       }
@@ -93,7 +95,9 @@ export function PushNotificationSettings() {
           <div className="space-y-0.5">
             <Label className="font-medium">Enable Push Notifications</Label>
             <p className="text-sm text-muted-foreground">
-              {permissionStatus === "denied"
+              {configError
+                ? configError
+                : permissionStatus === "denied"
                 ? "Notifications blocked — enable in browser settings"
                 : "Receive browser push notifications"}
             </p>
@@ -101,7 +105,7 @@ export function PushNotificationSettings() {
           <Switch
             checked={subscribed}
             onCheckedChange={handleToggleSubscription}
-            disabled={permissionStatus === "denied"}
+            disabled={permissionStatus === "denied" || initializing}
           />
         </div>
 

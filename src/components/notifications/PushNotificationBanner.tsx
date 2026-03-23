@@ -11,7 +11,16 @@ const DISMISSED_KEY = "flowpulse_push_banner_dismissed";
 
 export function PushNotificationBanner() {
   const [visible, setVisible] = useState(false);
-  const { initialized, permissionStatus, subscribed, promptForPermission, setTags, setExternalId } = useOneSignal();
+  const {
+    initialized,
+    initializing,
+    permissionStatus,
+    subscribed,
+    configError,
+    promptForPermission,
+    setTags,
+    setExternalId,
+  } = useOneSignal();
   const { profile } = useUserProfile();
 
   useEffect(() => {
@@ -40,6 +49,8 @@ export function PushNotificationBanner() {
           push_market_alerts: "true",
         });
       }
+    } else if (configError) {
+      toast.error(configError);
     } else {
       toast.info("You can enable notifications later in browser settings.");
     }
@@ -69,9 +80,9 @@ export function PushNotificationBanner() {
                 Get real-time deal alerts, market updates, and investor signals delivered instantly.
               </p>
               <div className="flex items-center gap-2">
-                <Button size="sm" onClick={handleEnable} className="gap-1.5">
+                <Button size="sm" onClick={handleEnable} className="gap-1.5" disabled={initializing}>
                   <Bell className="h-3.5 w-3.5" />
-                  Enable Notifications
+                  {initializing ? "Connecting..." : "Enable Notifications"}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={handleDismiss}>
                   Not now
@@ -85,10 +96,10 @@ export function PushNotificationBanner() {
               <X className="h-4 w-4" />
             </button>
           </div>
-          {permissionStatus === "denied" && (
+          {(permissionStatus === "denied" || configError) && (
             <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-muted-foreground">
               <BellOff className="h-4 w-4 text-destructive" />
-              Notifications are blocked. You can enable them in your browser settings.
+              {configError || "Notifications are blocked. You can enable them in your browser settings."}
             </div>
           )}
         </CardContent>
