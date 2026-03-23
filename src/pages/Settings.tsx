@@ -99,6 +99,10 @@ const Settings = () => {
             <UserCircle2 className="h-4 w-4" />
             Profile
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+          </TabsTrigger>
           <TabsTrigger value="updates" className="gap-2">
             <Activity className="h-4 w-4" />
             Recent updates
@@ -115,6 +119,9 @@ const Settings = () => {
 
         <TabsContent value="profile">
           <ProfileSettings />
+        </TabsContent>
+        <TabsContent value="notifications">
+          <PushNotificationSettings />
         </TabsContent>
         <TabsContent value="updates">
           <ActivityLog />
