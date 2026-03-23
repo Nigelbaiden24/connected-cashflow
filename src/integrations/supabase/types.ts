@@ -5499,6 +5499,48 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notification_logs: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          notification_type: string
+          onesignal_id: string | null
+          recipients_count: number | null
+          sent_by: string | null
+          target_type: string
+          target_user_ids: string[] | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          notification_type?: string
+          onesignal_id?: string | null
+          recipients_count?: number | null
+          sent_by?: string | null
+          target_type?: string
+          target_user_ids?: string[] | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          notification_type?: string
+          onesignal_id?: string | null
+          recipients_count?: number | null
+          sent_by?: string | null
+          target_type?: string
+          target_user_ids?: string[] | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       regulatory_updates: {
         Row: {
           ai_generated: boolean | null

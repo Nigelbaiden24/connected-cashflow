@@ -157,12 +157,14 @@ export function AdminPushNotifications() {
       setSelectedUserIds([]);
 
       // Refresh logs
-      const { data } = await supabase
-        .from("push_notification_logs")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (data) setLogs(data as unknown as NotificationLog[]);
+      try {
+        const { data } = await supabase
+          .from("push_notification_logs" as any)
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (data) setLogs(data as unknown as NotificationLog[]);
+      } catch {}
     } catch (err) {
       toast.error("Failed to send notification. Check edge function logs.");
     } finally {
