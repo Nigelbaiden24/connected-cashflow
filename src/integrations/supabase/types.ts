@@ -6913,8 +6913,20 @@ export type Database = {
         Returns: boolean
       }
       is_payroll_admin: { Args: { _user_id: string }; Returns: boolean }
+      owns_automation_rule: {
+        Args: { _rule_id: string; _user_id: string }
+        Returns: boolean
+      }
+      owns_client: {
+        Args: { _client_id: string; _user_id: string }
+        Returns: boolean
+      }
       owns_crm_contact: {
         Args: { _contact_id: string; _user_id: string }
+        Returns: boolean
+      }
+      owns_plan: {
+        Args: { _plan_id: string; _user_id: string }
         Returns: boolean
       }
       update_tab_permissions: {
