@@ -56,6 +56,7 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children}
           </main>
+          <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="business" />

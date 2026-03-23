@@ -62,6 +62,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
           </div>
 
           <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
+          <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="finance" />
