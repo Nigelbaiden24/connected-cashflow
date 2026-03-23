@@ -81,9 +81,9 @@ export function PushNotificationBanner() {
                 Get real-time deal alerts, market updates, and investor signals delivered instantly.
               </p>
               <div className="flex items-center gap-2">
-                <Button size="sm" onClick={handleEnable} className="gap-1.5">
+                <Button size="sm" onClick={handleEnable} className="gap-1.5" disabled={initializing || !!configError}>
                   <Bell className="h-3.5 w-3.5" />
-                  Enable Notifications
+                  {initializing ? "Connecting..." : "Enable Notifications"}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={handleDismiss}>
                   Not now
