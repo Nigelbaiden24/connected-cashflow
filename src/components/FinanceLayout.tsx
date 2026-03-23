@@ -1,6 +1,6 @@
 import { ReactNode, useState } from "react";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarProvider, SidebarInset } from "./ui/sidebar";
+import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -36,7 +36,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
 
-        <SidebarInset className="flex min-w-0 flex-1 flex-col md:peer-data-[state=expanded]:ml-[var(--sidebar-width)] md:peer-data-[state=collapsed]:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-200 ease-linear">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
@@ -64,7 +64,7 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="finance" />
-        </SidebarInset>
+        </div>
       </div>
 
       {/* Mobile Search Overlay */}

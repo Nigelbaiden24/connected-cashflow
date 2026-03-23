@@ -1,31 +1,6 @@
-import { NavLink, useLocation } from "react-router-dom";
 import { memo, useState, useCallback } from "react";
-import { SidebarTabFilter } from "./SidebarTabFilter";
+import { NavLink, useLocation } from "react-router-dom";
 import { TranslatedText } from "./TranslatedText";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -49,18 +24,32 @@ import {
   Mail,
   ChevronRight,
   ChevronLeft,
-  PanelLeftClose,
-  PanelLeft,
-  User,
-  Bell,
   Moon,
-  UserCog,
-  History,
   FolderKanban,
   Zap,
   Globe,
   Lightbulb,
 } from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { ScrollArea } from "./ui/scroll-area";
+import { cn } from "@/lib/utils";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import { SidebarTabFilter } from "./SidebarTabFilter";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface AppSidebarProps {
@@ -68,53 +57,67 @@ interface AppSidebarProps {
   onLogout: () => void;
 }
 
-const generalItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "AI Chatbot", url: "/theodore", icon: MessageSquare },
-  { title: "Calendar", url: "/calendar", icon: Calendar },
-  { title: "CRM", url: "/finance-crm", icon: Users },
-  { title: "Market Data", url: "/market", icon: TrendingUp },
-  { title: "Languages", url: "/finance/languages", icon: Globe },
-];
+interface NavItem {
+  title: string;
+  url: string;
+  icon: React.ElementType;
+  gradient: string;
+}
 
-const adviserToolsItems = [
-  { title: "Client Management", url: "/clients", icon: Users },
-  { title: "Client Onboarding", url: "/onboarding", icon: UserPlus },
-  { title: "Financial Planning", url: "/financial-planning", icon: Calculator },
-  { title: "Portfolio Management", url: "/portfolio", icon: PieChart },
-  { title: "Goal Planning", url: "/goals", icon: Target },
-  { title: "Investment Analysis", url: "/investments", icon: BarChart3 },
-  { title: "Risk Assessment", url: "/risk", icon: AlertTriangle },
-  { title: "Scenario Analysis", url: "/scenario", icon: Activity },
-  { title: "Fund & ETF Database", url: "/finance/fund-database", icon: BarChart3 },
-  { title: "Practice Management", url: "/practice", icon: Briefcase },
-  { title: "Compliance", url: "/compliance", icon: Shield },
-];
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
 
-const researchAnalysisItems = [
-  { title: "Featured Picks", url: "/finance/featured-picks", icon: Sparkles },
-  { title: "Market Commentary", url: "/finance/commentary", icon: TrendingUp },
-  { title: "Model Portfolios", url: "/finance/portfolios", icon: Briefcase },
-  { title: "Benchmarking & Trends", url: "/finance/trends", icon: Activity },
-  { title: "AI Analyst", url: "/finance/ai-analyst", icon: Bot },
-  { title: "Watchlists", url: "/finance/watchlists", icon: FolderKanban },
-  { title: "Screeners & Discovery", url: "/finance/screeners", icon: Zap },
-  { title: "Stocks & Crypto", url: "/finance/stocks-crypto", icon: TrendingUp },
-  { title: "Analyst Reports", url: "/finance/reports", icon: FileText },
-  { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb },
-];
-
-
-const financeNavGroups = [
-  { label: "General", items: generalItems },
-  { label: "Adviser Tools", items: adviserToolsItems },
-  { label: "Research & Analysis", items: researchAnalysisItems },
+const navGroups: NavGroup[] = [
+  {
+    label: "General",
+    items: [
+      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, gradient: "from-blue-500 to-blue-600" },
+      { title: "AI Chatbot", url: "/theodore", icon: MessageSquare, gradient: "from-violet-500 to-purple-600" },
+      { title: "Calendar", url: "/calendar", icon: Calendar, gradient: "from-emerald-500 to-emerald-600" },
+      { title: "CRM", url: "/finance-crm", icon: Users, gradient: "from-cyan-500 to-cyan-600" },
+      { title: "Market Data", url: "/market", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
+      { title: "Languages", url: "/finance/languages", icon: Globe, gradient: "from-sky-500 to-sky-600" },
+    ],
+  },
+  {
+    label: "Adviser Tools",
+    items: [
+      { title: "Client Management", url: "/clients", icon: Users, gradient: "from-indigo-500 to-indigo-600" },
+      { title: "Client Onboarding", url: "/onboarding", icon: UserPlus, gradient: "from-teal-500 to-teal-600" },
+      { title: "Financial Planning", url: "/financial-planning", icon: Calculator, gradient: "from-amber-500 to-yellow-600" },
+      { title: "Portfolio Management", url: "/portfolio", icon: PieChart, gradient: "from-pink-500 to-rose-600" },
+      { title: "Goal Planning", url: "/goals", icon: Target, gradient: "from-orange-500 to-orange-600" },
+      { title: "Investment Analysis", url: "/investments", icon: BarChart3, gradient: "from-purple-500 to-purple-600" },
+      { title: "Risk Assessment", url: "/risk", icon: AlertTriangle, gradient: "from-red-500 to-red-600" },
+      { title: "Scenario Analysis", url: "/scenario", icon: Activity, gradient: "from-fuchsia-500 to-fuchsia-600" },
+      { title: "Fund & ETF Database", url: "/finance/fund-database", icon: BarChart3, gradient: "from-slate-500 to-slate-600" },
+      { title: "Practice Management", url: "/practice", icon: Briefcase, gradient: "from-stone-500 to-stone-600" },
+      { title: "Compliance", url: "/compliance", icon: Shield, gradient: "from-rose-500 to-rose-600" },
+    ],
+  },
+  {
+    label: "Research & Analysis",
+    items: [
+      { title: "Featured Picks", url: "/finance/featured-picks", icon: Sparkles, gradient: "from-amber-500 to-yellow-600" },
+      { title: "Market Commentary", url: "/finance/commentary", icon: TrendingUp, gradient: "from-emerald-500 to-emerald-600" },
+      { title: "Model Portfolios", url: "/finance/portfolios", icon: Briefcase, gradient: "from-teal-500 to-teal-600" },
+      { title: "Benchmarking & Trends", url: "/finance/trends", icon: Activity, gradient: "from-cyan-500 to-cyan-600" },
+      { title: "AI Analyst", url: "/finance/ai-analyst", icon: Bot, gradient: "from-pink-500 to-rose-600" },
+      { title: "Watchlists", url: "/finance/watchlists", icon: FolderKanban, gradient: "from-blue-500 to-indigo-600" },
+      { title: "Screeners & Discovery", url: "/finance/screeners", icon: Zap, gradient: "from-orange-500 to-orange-600" },
+      { title: "Stocks & Crypto", url: "/finance/stocks-crypto", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
+      { title: "Analyst Reports", url: "/finance/reports", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
+      { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
+    ],
+  },
 ];
 
 export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppSidebarProps) {
-  const { state } = useSidebar();
   const location = useLocation();
-  const isCollapsed = state === "collapsed";
+  const { state, toggleSidebar } = useSidebar();
+  const collapsed = state === "collapsed";
   const { profile } = useUserProfile();
 
   const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
@@ -122,9 +125,10 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   });
   const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
 
-  const filteredGeneralItems = generalItems.filter(i => !hiddenUrls.includes(i.url));
-  const filteredAdviserItems = adviserToolsItems.filter(i => !hiddenUrls.includes(i.url));
-  const filteredResearchItems = researchAnalysisItems.filter(i => !hiddenUrls.includes(i.url));
+  const filteredNavGroups = navGroups.map(g => ({
+    ...g,
+    items: g.items.filter(item => !hiddenUrls.includes(item.url))
+  })).filter(g => g.items.length > 0);
 
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
@@ -134,284 +138,221 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     return location.pathname === path;
   };
 
-  const getNavClassName = (path: string) => {
-    return isActive(path)
-      ? "bg-white/20 text-white font-medium shadow-lg backdrop-blur-sm border border-white/20"
-      : "text-white/80 hover:bg-white/10 hover:text-white";
-  };
-
-  const getUserInitials = (value: string) => {
-    return value
-      .split("@")[0]
-      .split(/[.\s_-]+/)
-      .filter(Boolean)
-      .map((name) => name[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  const getUserInitials = (value: string) =>
+    value.split("@")[0].split(/[.\s_-]+/).filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
   const displayName = profile.full_name || profile.first_name || userEmail;
-  const { toggleSidebar } = useSidebar();
 
   return (
-    <Sidebar 
-      className="border-r-0"
+    <Sidebar
       collapsible="icon"
-      style={{
-        background: "linear-gradient(180deg, hsl(221 83% 45%) 0%, hsl(221 83% 35%) 50%, hsl(221 83% 25%) 100%)",
-      }}
+      className={cn(
+        "relative flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
+        "bg-gradient-to-b from-[hsl(221,83%,42%)] via-[hsl(221,83%,32%)] to-[hsl(221,83%,22%)]",
+        "backdrop-blur-xl",
+        "border-white/10",
+        "shadow-[4px_0_24px_-2px_rgba(0,0,0,0.3)]"
+      )}
     >
-      {/* Static background overlay */}
+      {/* Ambient glow overlay */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/5 via-transparent to-transparent" />
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white/[0.06] to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
-      <SidebarHeader className="border-b border-white/10 relative z-10 shrink-0">
-        <div className={`flex items-center gap-3 px-4 py-5 ${isCollapsed ? 'flex-col justify-center px-2 gap-2' : ''}`}>
-          <div className="relative group shrink-0">
-            <div className="absolute -inset-1 bg-gradient-to-r from-white/30 to-white/10 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-lg">
-              <Bot className="h-5 w-5 text-white" />
-            </div>
+      {/* Header */}
+      <SidebarHeader className="relative border-b border-white/10 p-4 shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.04] via-transparent to-white/[0.04]" />
+        <div className="relative flex items-center justify-center gap-3">
+          <div className={cn(
+            "shrink-0 p-2 rounded-xl bg-gradient-to-br from-white/25 to-white/10 shadow-lg shadow-black/20",
+            "ring-2 ring-white/20"
+          )}>
+            <img src={flowpulseLogo} alt="FlowPulse" className="h-6 w-6" />
           </div>
-          {!isCollapsed && (
-            <div className="flex flex-col min-w-0 flex-1">
-              <TranslatedText as="span" className="text-base font-bold text-white tracking-tight truncate">FlowPulse.io</TranslatedText>
-              <TranslatedText as="span" className="text-xs text-white/60 font-medium truncate">Wealth Platform</TranslatedText>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent truncate">
+                FlowPulse
+              </h2>
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-blue-300" />
+                <p className="text-xs text-white/50 truncate">Finance Platform</p>
+              </div>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex-shrink-0 transition-all duration-200"
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </Button>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="relative z-10 px-2 overflow-y-auto">
-        <TooltipProvider>
-          {!isCollapsed && (
-            <div className="flex justify-end mt-2 mb-1 px-2">
-              <SidebarTabFilter platform="finance" navGroups={financeNavGroups} onFilterChange={handleFilterChange} />
+      {/* Navigation */}
+      <SidebarContent className="flex-1 relative z-10">
+        <ScrollArea className="h-full px-2 py-3">
+          {!collapsed && (
+            <div className="flex justify-end mb-2 px-1">
+              <SidebarTabFilter platform="finance" navGroups={navGroups} onFilterChange={handleFilterChange} />
             </div>
           )}
-          {filteredGeneralItems.length > 0 && (
-          <SidebarGroup className="mt-1">
-            {!isCollapsed && (
-              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-                <TranslatedText>General</TranslatedText>
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {filteredGeneralItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {isCollapsed ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
-                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
-                          <TranslatedText as="p">{item.title}</TranslatedText>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton asChild className="h-10">
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}>
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
-                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
-                          </div>
-                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          )}
+          {filteredNavGroups.map((group) => (
+            <SidebarGroup key={group.label} className={cn("mb-2 p-1", collapsed && "px-0")}>
+              {!collapsed && (
+                <SidebarGroupLabel className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/70">
+                  <TranslatedText>{group.label}</TranslatedText>
+                </SidebarGroupLabel>
+              )}
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.url);
 
-          {filteredAdviserItems.length > 0 && (
-          <SidebarGroup className="mt-6">
-            {!isCollapsed && (
-              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-                <TranslatedText>Adviser Tools</TranslatedText>
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {filteredAdviserItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {isCollapsed ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
-                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
-                          <TranslatedText as="p">{item.title}</TranslatedText>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton asChild className="h-10">
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}>
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
-                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
-                          </div>
-                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          )}
-
-          {filteredResearchItems.length > 0 && (
-          <SidebarGroup className="mt-6">
-            {!isCollapsed && (
-              <SidebarGroupLabel className="text-white/40 text-xs font-semibold uppercase tracking-wider px-3 mb-2">
-                <TranslatedText>Research & Analysis</TranslatedText>
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {filteredResearchItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {isCollapsed ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton asChild className="justify-center h-10 w-10 mx-auto rounded-xl">
-                            <NavLink to={item.url} className={`${getNavClassName(item.url)} rounded-xl flex items-center justify-center`}>
-                              <item.icon className="h-5 w-5 flex-shrink-0" />
-                            </NavLink>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-sidebar-background text-white border-white/20">
-                          <TranslatedText as="p">{item.title}</TranslatedText>
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton asChild className="h-10">
-                        <NavLink to={item.url} className={`${getNavClassName(item.url)} flex items-center gap-3 px-3 py-2 rounded-xl`}>
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
-                            <item.icon className="h-4 w-4 flex-shrink-0 text-white" />
-                          </div>
-                          <TranslatedText as="span" className="truncate font-medium text-sm">{item.title}</TranslatedText>
-                        </NavLink>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          )}
-        </TooltipProvider>
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild tooltip={item.title} size="default">
+                          <NavLink
+                            to={item.url}
+                            className={cn(
+                              "w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200",
+                              "group/nav relative overflow-hidden",
+                              collapsed ? "justify-center p-0" : "px-3 py-2",
+                              active
+                                ? cn(
+                                    "bg-gradient-to-r text-white shadow-lg",
+                                    item.gradient,
+                                    "shadow-blue-500/20",
+                                    "ring-1 ring-white/25"
+                                  )
+                                : cn(
+                                    "text-white/85 hover:text-white",
+                                    "hover:bg-white/[0.08]",
+                                    "hover:shadow-sm hover:ring-1 hover:ring-white/10"
+                                  )
+                            )}
+                          >
+                            {active && (
+                              <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/10 pointer-events-none" />
+                            )}
+                            <Icon className={cn(
+                              "h-4 w-4 shrink-0",
+                              active ? "text-white" : "text-white/75 group-hover/nav:text-white"
+                            )} />
+                            {!collapsed && (
+                              <span className="relative truncate">
+                                <TranslatedText>{item.title}</TranslatedText>
+                              </span>
+                            )}
+                            {active && !collapsed && (
+                              <div className="absolute right-2 w-2 h-2 rounded-full bg-white/60 shadow-inner" />
+                            )}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </ScrollArea>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-white/10 relative z-10 shrink-0 mt-auto">
-        <div className={`p-3 space-y-2 ${isCollapsed ? 'px-2' : ''}`}>
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-white/40 to-white/20 rounded-full blur opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
-              <Avatar className="relative h-9 w-9 flex-shrink-0 ring-2 ring-white/20">
-                <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
-                <AvatarFallback className="text-xs bg-white/20 text-white font-bold backdrop-blur-sm">
-                  {getUserInitials(displayName)}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="text-sm font-medium text-white truncate">{displayName}</span>
-                <span className="text-xs text-white/50 truncate">{userEmail}</span>
+      {/* Footer */}
+      <SidebarFooter className="relative border-t border-white/10 p-3 shrink-0 mt-auto">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
+          <Avatar className={cn(
+            "h-9 w-9 shrink-0 ring-2 ring-white/20 shadow-lg",
+            "bg-gradient-to-br from-blue-400 to-blue-600"
+          )}>
+            <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
+            <AvatarFallback className="bg-transparent text-white font-semibold text-sm">
+              {getUserInitials(displayName)}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                <p className="text-xs text-white/40 truncate">{userEmail}</p>
               </div>
-            )}
-          </div>
-          {isCollapsed ? (
-            <div className="flex flex-col items-center gap-1.5 overflow-visible shrink-0">
-              <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200" title="Settings">
-                <NavLink to="/settings">
-                  <Settings className="h-4 w-4" />
-                </NavLink>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 rounded-lg bg-white/10 hover:bg-white/20 text-amber-400 hover:text-amber-300 transition-all duration-200"
-                onClick={() => {
-                  const html = document.documentElement;
-                  const isDark = html.classList.contains("dark");
-                  if (isDark) { html.classList.remove("dark", "gold-theme"); }
-                  else { html.classList.add("dark", "gold-theme"); }
-                  window.dispatchEvent(new Event("darkmode-toggle"));
-                }}
-                title="Toggle Black & Gold mode"
-              >
-                <Moon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200"
-                onClick={onLogout}
-                title="Sign Out"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <Button asChild variant="ghost" size="sm" className="flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 justify-start">
-                <NavLink to="/settings">
-                  <Settings className="h-4 w-4 flex-shrink-0" />
-                  <TranslatedText as="span" className="ml-2">Settings</TranslatedText>
-                </NavLink>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 justify-start"
-                onClick={() => {
-                  const html = document.documentElement;
-                  const isDark = html.classList.contains("dark");
-                  if (isDark) { html.classList.remove("dark", "gold-theme"); }
-                  else { html.classList.add("dark", "gold-theme"); }
-                  window.dispatchEvent(new Event("darkmode-toggle"));
-                }}
-                title="Toggle Black & Gold mode"
-              >
-                <Moon className="h-4 w-4 flex-shrink-0 text-amber-400" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 justify-start"
-                onClick={onLogout}
-              >
-                <LogOut className="h-4 w-4 flex-shrink-0" />
-                <TranslatedText as="span" className="ml-2">Sign Out</TranslatedText>
-              </Button>
-            </div>
+              <div className="flex gap-1 shrink-0">
+                <Button asChild variant="ghost" size="icon"
+                  className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white/70 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-200"
+                  title="Settings"
+                >
+                  <NavLink to="/settings"><Settings className="h-4 w-4" /></NavLink>
+                </Button>
+                <Button variant="ghost" size="icon"
+                  className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-amber-400 hover:text-amber-300 border border-white/10 hover:border-amber-500/30 transition-all duration-200"
+                  onClick={() => {
+                    const html = document.documentElement;
+                    const isDark = html.classList.contains("dark");
+                    if (isDark) { html.classList.remove("dark", "gold-theme"); }
+                    else { html.classList.add("dark", "gold-theme"); }
+                    window.dispatchEvent(new Event("darkmode-toggle"));
+                  }}
+                  title="Toggle theme"
+                >
+                  <Moon className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon"
+                  className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-red-500/20 text-white/70 hover:text-red-400 border border-white/10 hover:border-red-500/30 transition-all duration-200"
+                  onClick={onLogout}
+                  title="Sign Out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
           )}
         </div>
+        {collapsed && (
+          <div className="flex flex-col items-center gap-1.5 mt-2">
+            <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white/70 hover:text-white transition-all duration-200" title="Settings">
+              <NavLink to="/settings"><Settings className="h-4 w-4" /></NavLink>
+            </Button>
+            <Button variant="ghost" size="icon"
+              className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-amber-400 hover:text-amber-300 transition-all duration-200"
+              onClick={() => {
+                const html = document.documentElement;
+                const isDark = html.classList.contains("dark");
+                if (isDark) { html.classList.remove("dark", "gold-theme"); }
+                else { html.classList.add("dark", "gold-theme"); }
+                window.dispatchEvent(new Event("darkmode-toggle"));
+              }}
+              title="Toggle theme"
+            >
+              <Moon className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon"
+              className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-all duration-200"
+              onClick={onLogout}
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </SidebarFooter>
+
+      {/* Collapse toggle — floating pill */}
+      <button
+        onClick={toggleSidebar}
+        className={cn(
+          "absolute -right-3 top-20 z-10",
+          "w-6 h-6 rounded-full",
+          "bg-[hsl(221,83%,35%)] border border-white/20 shadow-lg",
+          "flex items-center justify-center",
+          "hover:bg-[hsl(221,83%,45%)] hover:border-white/30",
+          "transition-all duration-200",
+          "focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+        )}
+      >
+        {collapsed ? (
+          <ChevronRight className="h-3.5 w-3.5 text-white/80" />
+        ) : (
+          <ChevronLeft className="h-3.5 w-3.5 text-white/80" />
+        )}
+      </button>
     </Sidebar>
   );
 });
