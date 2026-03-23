@@ -152,14 +152,13 @@ export function AdminPushNotifications() {
       setForm({ type: "deal", title: "", message: "", url: "", sector: "", schedule: "" });
       setSelectedUserIds([]);
 
-      // Refresh logs
       try {
-        const { data } = await supabase
-          .from("push_notification_logs" as any)
+        const { data } = await (supabase as any)
+          .from("push_notification_logs")
           .select("*")
           .order("created_at", { ascending: false })
           .limit(50);
-        if (data) setLogs(data as unknown as NotificationLog[]);
+        if (data) setLogs(data as NotificationLog[]);
       } catch {}
     } catch (err) {
       toast.error("Failed to send notification. Check edge function logs.");
