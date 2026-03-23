@@ -231,12 +231,7 @@ const Index = () => {
               FlowPulse Finance
             </button>
 
-            <button 
-              onClick={() => navigate('/login-investor')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              FlowPulse Investor
-            </button>
+            {/* FlowPulse Investor nav link hidden - kept for future resurgence */}
 
             <button
               onClick={() => navigate('/pricing')}

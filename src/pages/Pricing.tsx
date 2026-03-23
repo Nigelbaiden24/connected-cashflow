@@ -263,7 +263,7 @@ const Pricing = () => {
           </Badge>
         </div>
 
-        <Tabs defaultValue="investor" className="mb-12">
+        <Tabs defaultValue="finance" className="mb-12">
           <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-3 mb-8 h-auto">
             {/* FlowPulse Investor tab hidden - kept for future resurgence */}
             <TabsTrigger value="finance" className="text-sm md:text-base py-3 px-3">

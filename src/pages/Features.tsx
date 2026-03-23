@@ -515,15 +515,7 @@ export default function Features() {
               <Briefcase className="mr-2 h-5 w-5" />
               FlowPulse Finance
             </Button>
-            <Button 
-              size="lg"
-              variant="secondary"
-              onClick={() => navigate("/login-investor")}
-              className="bg-white text-purple-600 hover:bg-white/90 text-lg px-8 py-6"
-            >
-              <TrendingUp className="mr-2 h-5 w-5" />
-              FlowPulse Investor
-            </Button>
+            {/* FlowPulse Investor CTA hidden - kept for future resurgence */}
           </div>
         </div>
       </section>
