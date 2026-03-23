@@ -57,6 +57,7 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children}
           </main>
+          <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
           <MobileBottomNav items={mobileNavItems} variant="investor" />
