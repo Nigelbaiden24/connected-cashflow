@@ -71,10 +71,18 @@ export function AdminPushNotifications() {
       setLogsLoading(true);
       const [usersRes, logsRes] = await Promise.all([
         supabase.from("user_profiles").select("user_id, email, full_name").order("email"),
-        supabase.from("push_notification_logs").select("*").order("created_at", { ascending: false }).limit(50),
+        supabase.rpc("get_push_notification_logs_fallback").then(() => null).catch(() => null),
       ]);
       if (usersRes.data) setUsers(usersRes.data);
-      if (logsRes.data) setLogs(logsRes.data as unknown as NotificationLog[]);
+      // Fetch logs via raw query since types may not be regenerated yet
+      try {
+        const { data: logData } = await supabase
+          .from("push_notification_logs" as any)
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (logData) setLogs(logData as unknown as NotificationLog[]);
+      } catch {}
       setLogsLoading(false);
     };
     loadData();
