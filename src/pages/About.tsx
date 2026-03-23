@@ -106,24 +106,7 @@ const About = () => {
         "Secure Document Management"
       ]
     },
-    {
-      icon: Briefcase,
-      name: "FlowPulse Investor",
-      tagline: "Professional Investment Intelligence",
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50",
-      description: "Institutional-grade investment research and analysis tools for serious investors. Access comprehensive market data, AI-driven insights, and advanced screening tools to make informed investment decisions.",
-      features: [
-        "Professional Research Reports",
-        "Advanced Market Analysis",
-        "AI-Powered Stock Discovery",
-        "Multi-Asset Screeners",
-        "Real-time Market Commentary",
-        "Portfolio Benchmarking Tools",
-        "Risk & Compliance Monitoring",
-        "Custom Watchlists & Alerts"
-      ]
-    }
+    // FlowPulse Investor entry hidden - kept for future resurgence
   ];
 
   return (

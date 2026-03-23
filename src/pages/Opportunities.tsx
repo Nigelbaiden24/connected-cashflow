@@ -55,7 +55,7 @@ export default function Opportunities() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
               <img src={flowpulseLogo} alt="FlowPulse" className="h-8 w-8" />
-              <span className="text-xl font-bold">FlowPulse Investor</span>
+              <span className="text-xl font-bold">FlowPulse</span>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
