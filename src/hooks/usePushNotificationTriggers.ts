@@ -1,7 +1,6 @@
 /**
  * Event-based notification trigger functions.
- * These call the OneSignal REST API via an edge function to send
- * targeted push notifications to user segments.
+ * Support sending to segments, filtered tags, or individual users.
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -12,13 +11,18 @@ interface NotificationPayload {
   url?: string;
   icon?: string;
   segment?: string;
+  notification_type?: string;
   filters?: Array<{ field: string; key?: string; value: string; relation: string }>;
+  target_user_ids?: string[];
+  schedule?: string;
+  sent_by?: string;
 }
 
-async function sendPushNotification(payload: NotificationPayload) {
+export async function sendPushNotification(payload: NotificationPayload) {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.functions.invoke("send-push-notification", {
-      body: payload,
+      body: { ...payload, sent_by: user?.id || payload.sent_by },
     });
     if (error) throw error;
     return data;
@@ -34,7 +38,7 @@ export function usePushNotificationTriggers() {
       title: "🔔 New Deal Alert",
       message: `${dealName} — ${sector} opportunity just listed`,
       url: dealUrl || "/finance/opportunities",
-      segment: "deal_alerts",
+      notification_type: "deal",
       filters: [
         { field: "tag", key: "push_deals", value: "true", relation: "=" },
       ],
@@ -46,7 +50,7 @@ export function usePushNotificationTriggers() {
       title: "📊 New Report Published",
       message: `${reportTitle} is now available`,
       url: reportUrl || "/finance/reports",
-      segment: "report_alerts",
+      notification_type: "report",
       filters: [
         { field: "tag", key: "push_reports", value: "true", relation: "=" },
       ],
@@ -58,12 +62,28 @@ export function usePushNotificationTriggers() {
       title: `⚡ ${alertTitle}`,
       message: alertMessage,
       url: alertUrl || "/finance/market-data",
-      segment: "market_alerts",
+      notification_type: "market",
       filters: [
         { field: "tag", key: "push_market_alerts", value: "true", relation: "=" },
       ],
     });
   };
 
-  return { newDealAdded, newReportPublished, marketAlertTriggered };
+  const sendToUsers = async (
+    userIds: string[],
+    title: string,
+    message: string,
+    opts?: { url?: string; type?: string; schedule?: string }
+  ) => {
+    return sendPushNotification({
+      title,
+      message,
+      url: opts?.url,
+      notification_type: opts?.type || "direct",
+      target_user_ids: userIds,
+      schedule: opts?.schedule,
+    });
+  };
+
+  return { newDealAdded, newReportPublished, marketAlertTriggered, sendToUsers, sendPushNotification };
 }
