@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-
-const ONESIGNAL_APP_ID = "YOUR_ONESIGNAL_APP_ID";
+import { supabase } from "@/integrations/supabase/client";
 
 declare global {
   interface Window {
@@ -27,47 +26,66 @@ export function useOneSignal() {
     if (initRef.current || typeof window === "undefined") return;
     initRef.current = true;
 
-    // Load the SDK script
-    if (!document.querySelector('script[src*="OneSignalSDK"]')) {
-      const script = document.createElement("script");
-      script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.OneSignalDeferred.push(async (OneSignal: any) => {
+    const initOneSignal = async () => {
       try {
-        await OneSignal.init({
-          appId: ONESIGNAL_APP_ID,
-          autoPrompt: false,
-          autoRegister: false,
-          notifyButton: { enable: false },
-          serviceWorkerParam: { scope: "/" },
-          serviceWorkerPath: "/OneSignalSDKWorker.js",
-        });
+        // Fetch App ID from backend
+        const { data, error } = await supabase.functions.invoke("get-onesignal-config");
+        if (error || !data?.appId) {
+          console.error("Failed to fetch OneSignal config:", error);
+          setState((s) => ({ ...s, initialized: true }));
+          return;
+        }
 
-        const permission = OneSignal.Notifications?.permission ?? "default";
-        const subscribed = OneSignal.User?.PushSubscription?.optedIn ?? false;
+        const appId = data.appId;
 
-        setState({
-          initialized: true,
-          permissionStatus: permission ? "granted" : "default",
-          subscribed: !!subscribed,
-        });
+        // Load the SDK script
+        if (!document.querySelector('script[src*="OneSignalSDK"]')) {
+          const script = document.createElement("script");
+          script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";
+          script.async = true;
+          script.defer = true;
+          document.head.appendChild(script);
+        }
 
-        OneSignal.Notifications?.addEventListener("permissionChange", (perm: boolean) => {
-          setState((s) => ({
-            ...s,
-            permissionStatus: perm ? "granted" : "denied",
-          }));
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        window.OneSignalDeferred.push(async (OneSignal: any) => {
+          try {
+            await OneSignal.init({
+              appId,
+              autoPrompt: false,
+              autoRegister: false,
+              notifyButton: { enable: false },
+              serviceWorkerParam: { scope: "/" },
+              serviceWorkerPath: "/OneSignalSDKWorker.js",
+            });
+
+            const permission = OneSignal.Notifications?.permission ?? false;
+            const subscribed = OneSignal.User?.PushSubscription?.optedIn ?? false;
+
+            setState({
+              initialized: true,
+              permissionStatus: permission ? "granted" : "default",
+              subscribed: !!subscribed,
+            });
+
+            OneSignal.Notifications?.addEventListener("permissionChange", (perm: boolean) => {
+              setState((s) => ({
+                ...s,
+                permissionStatus: perm ? "granted" : "denied",
+              }));
+            });
+          } catch (err) {
+            console.error("OneSignal init error:", err);
+            setState((s) => ({ ...s, initialized: true }));
+          }
         });
       } catch (err) {
-        console.error("OneSignal init error:", err);
+        console.error("OneSignal setup error:", err);
         setState((s) => ({ ...s, initialized: true }));
       }
-    });
+    };
+
+    initOneSignal();
   }, []);
 
   const promptForPermission = useCallback(async () => {

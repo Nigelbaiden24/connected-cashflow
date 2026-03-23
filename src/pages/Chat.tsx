@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check, ExternalLink, MessageSquare, Edit2, Users } from "lucide-react";
+import { Send, Bot, User, TrendingUp, Shield, FileText, Search, Download, Plus, History, Video, Loader2, ArrowLeft, FileDown, FileSpreadsheet, Presentation, FileType, UserPlus, Check, ExternalLink, MessageSquare, Edit2, Users, Brain, Target, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
@@ -324,16 +324,40 @@ const Chat = () => {
       category: "market" as const,
     },
     {
+      label: "SWOT Analysis",
+      icon: Target,
+      query: "Generate a comprehensive SWOT analysis for ",
+      category: "general" as const,
+    },
+    {
+      label: "Company Research",
+      icon: Brain,
+      query: "Generate a comprehensive research summary for ",
+      category: "market" as const,
+    },
+    {
+      label: "Valuation",
+      icon: DollarSign,
+      query: "Provide valuation commentary and analysis for ",
+      category: "market" as const,
+    },
+    {
+      label: "Trend Analysis",
+      icon: TrendingUp,
+      query: "What are the emerging market trends and sector performance?",
+      category: "market" as const,
+    },
+    {
+      label: "Filings & Earnings",
+      icon: FileText,
+      query: "Summarize the latest earnings call and SEC filings for ",
+      category: "market" as const,
+    },
+    {
       label: "Compliance Check",
       icon: Shield,
       query: "What compliance requirements should I consider for high-risk investments?",
       category: "compliance" as const,
-    },
-    {
-      label: "Find Contact",
-      icon: Search,
-      query: "Search CRM for ",
-      category: "client" as const,
     },
     {
       label: "Generate Report",
@@ -342,15 +366,15 @@ const Chat = () => {
       category: "general" as const,
     },
     {
-      label: "Add Contact",
-      icon: UserPlus,
-      query: "Add a new contact to CRM: ",
+      label: "Find Contact",
+      icon: Search,
+      query: "Search CRM for ",
       category: "client" as const,
     },
     {
-      label: "Add Note",
-      icon: MessageSquare,
-      query: "Add a note to ",
+      label: "Add Contact",
+      icon: UserPlus,
+      query: "Add a new contact to CRM: ",
       category: "client" as const,
     },
   ];
