@@ -246,7 +246,7 @@ const Pricing = () => {
                         <div className="flex justify-between items-center mb-2">
                           <div>
                             <p className="font-medium text-sm">Team Seats</p>
-                            <p className="text-xs text-muted-foreground">£{SEAT_PRICE}/seat/year (min {MIN_SEATS})</p>
+                            <p className="text-xs text-muted-foreground">£{MONTHLY_SEAT_PRICE}/seat/month billed annually (min {MIN_SEATS})</p>
                           </div>
                           <span className="font-semibold">£{seatTotal.toLocaleString()}</span>
                         </div>
