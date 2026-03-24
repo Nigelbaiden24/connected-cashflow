@@ -185,22 +185,22 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
       </SidebarHeader>
 
       {/* Navigation */}
-      <SidebarContent className="flex-1 relative z-10">
-        <ScrollArea className="h-full px-2 py-3">
+      <SidebarContent className="flex-1 relative z-10 overflow-hidden">
+        <ScrollArea className="h-full px-2 py-2">
           {!collapsed && (
-            <div className="flex justify-end mb-2 px-1">
+            <div className="flex justify-end mb-1 px-1">
               <SidebarTabFilter platform="finance" navGroups={navGroups} onFilterChange={handleFilterChange} />
             </div>
           )}
           {filteredNavGroups.map((group) => (
-            <SidebarGroup key={group.label} className={cn("mb-2 p-1", collapsed && "px-0")}>
+            <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
               {!collapsed && (
-                <SidebarGroupLabel className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/70">
+                <SidebarGroupLabel className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-white/70">
                   <TranslatedText>{group.label}</TranslatedText>
                 </SidebarGroupLabel>
               )}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">
+                <SidebarMenu className="space-y-px">
                   {group.items.map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.url);
