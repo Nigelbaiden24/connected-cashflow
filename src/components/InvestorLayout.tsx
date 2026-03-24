@@ -75,4 +75,4 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
       />
     </SidebarProvider>
   );
-}
+});

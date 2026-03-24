@@ -74,4 +74,4 @@ export const BusinessLayout = memo(function BusinessLayout({ children, userEmail
       />
     </SidebarProvider>
   );
-}
+});
