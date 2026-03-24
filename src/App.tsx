@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, memo, useCallback, useMemo, ComponentType, ReactNode } from "react";
+import { useState, lazy, Suspense, memo, useCallback, ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
-// Lazy-load layout shells to reduce initial bundle
+// Lazy-load layout shells
 const BusinessLayout = lazy(() => import("@/components/BusinessLayout").then(m => ({ default: m.BusinessLayout })));
 const FinanceLayout = lazy(() => import("@/components/FinanceLayout").then(m => ({ default: m.FinanceLayout })));
 const InvestorLayout = lazy(() => import("@/components/InvestorLayout").then(m => ({ default: m.InvestorLayout })));
@@ -134,12 +134,12 @@ const queryClient = new QueryClient({
       gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
       retry: 1,
-      refetchOnMount: false, // Don't refetch when component remounts
+      refetchOnMount: false,
     },
   },
 });
 
-// Memoized auth guard to prevent re-renders on route changes
+// Memoized auth guard
 const AuthGuard = memo(({ 
   isAuthenticated, 
   redirectTo, 
@@ -168,6 +168,25 @@ const App = () => {
     setUserEmail("");
   }, []);
 
+  // Persistent layout element — same instance reused across child routes
+  const financeLayoutElement = isAuthenticated ? (
+    <FinanceLayout userEmail={userEmail} onLogout={handleLogout} />
+  ) : (
+    <Navigate to="/login" replace />
+  );
+
+  const businessLayoutElement = isAuthenticated ? (
+    <BusinessLayout userEmail={userEmail} onLogout={handleLogout} />
+  ) : (
+    <Navigate to="/login-business" replace />
+  );
+
+  const investorLayoutElement = isAuthenticated ? (
+    <InvestorLayout userEmail={userEmail} onLogout={handleLogout} />
+  ) : (
+    <Navigate to="/login-investor" replace />
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -177,505 +196,150 @@ const App = () => {
           <Sonner />
           <Suspense fallback={<PageLoader />}>
             <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/install" element={<Install />} />
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
-            <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
-            <Route path="/login-crm" element={<LoginCRM onLogin={handleLogin} />} />
-            <Route path="/login-jenrate" element={<LoginJenrate onLogin={handleLogin} />} />
-            <Route path="/crm-standalone" element={
-              !isAuthenticated ? <Navigate to="/login-crm" replace /> : <CRMStandalone userEmail={userEmail} onLogout={handleLogout} />
-            } />
-            <Route path="/jenrate" element={
-              !isAuthenticated ? <Navigate to="/login-jenrate" replace /> : <JenrateStandalone userEmail={userEmail} onLogout={handleLogout} />
-            } />
-            <Route path="/opportunities" element={<Opportunities />} />
-            <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
-            <Route path="/about-us" element={<Features />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/organisation" element={<OrganisationSettings />} />
-            <Route path="/reports" element={<PublicReports />} />
-            <Route path="/reports/:id" element={<ReportDetail />} />
-            <Route path="/subscription-success" element={<SubscriptionSuccess />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-              
-            {/* Protected routes with sidebar */}
-            <Route path="/dashboard" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Dashboard />
-                  </FinanceLayout>
-                )
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/install" element={<Install />} />
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />
+              <Route path="/login-investor" element={<LoginInvestor onLogin={handleLogin} />} />
+              <Route path="/login-crm" element={<LoginCRM onLogin={handleLogin} />} />
+              <Route path="/login-jenrate" element={<LoginJenrate onLogin={handleLogin} />} />
+              <Route path="/crm-standalone" element={
+                !isAuthenticated ? <Navigate to="/login-crm" replace /> : <CRMStandalone userEmail={userEmail} onLogout={handleLogout} />
               } />
-              
-              <Route path="/theodore" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Chat />
-                  </FinanceLayout>
-                )
+              <Route path="/jenrate" element={
+                !isAuthenticated ? <Navigate to="/login-jenrate" replace /> : <JenrateStandalone userEmail={userEmail} onLogout={handleLogout} />
               } />
-              
-              <Route path="/calendar" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Calendar />
-                  </FinanceLayout>
-                )
-              } />
-              
-              
-              <Route path="/market" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <MarketData />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/compliance" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Compliance />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/portfolio" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Portfolio />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/financial-planning" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinancialPlanning />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/goals" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <GoalPlanning />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/investments" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <InvestmentAnalysis />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/risk" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <RiskAssessment />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/scenario" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <ScenarioAnalysis />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/clients" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Clients />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/clients/:id" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <ClientProfile />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/onboarding" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <ClientOnboarding />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/practice" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <PracticeManagement />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/finance/reports" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Reports />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/analytics" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <AnalyticsDashboard />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/finance-payroll" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinancePayroll />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/finance-crm" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <CRM />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/finance-crm/:id" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <CRMContactDetail />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/chat" element={<Chat />} />
-              
-              <Route path="/financial-planning/new" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <CreateFinancialPlan />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/financial-planning/:id" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinancialPlanDetail />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/security" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Security />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/automation-center" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <AutomationCenter />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/settings" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <Settings />
-                  </FinanceLayout>
-                )
-              } />
-              
-              
-              
-              <Route path="/finance/commentary" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceMarketCommentary />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/portfolios" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceModelPortfolios />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/trends" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceBenchmarkingTrends />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/ai-analyst" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceAIAnalyst />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/watchlists" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceWatchlists />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/screeners" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceScreenersDiscovery />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/fund-database" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FundETFDatabase />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/opportunities" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <OpportunityIntelligence />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/opportunities/:id" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <OpportunityDetailPage />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/stocks-crypto" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <RealTimeMarketDatabase />
-                  </FinanceLayout>
-                )
-              } />
-              <Route path="/finance/stocks-crypto-admin" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <StocksCryptoDatabase />
-                  </FinanceLayout>
-                )
-              } />
-              
-              <Route path="/finance/languages" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceLanguages />
-                  </FinanceLayout>
-                )
-              } />
-              
+              <Route path="/opportunities" element={<Opportunities />} />
+              <Route path="/opportunities/:refNumber" element={<OpportunityDetail />} />
+              <Route path="/about-us" element={<Features />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/organisation" element={<OrganisationSettings />} />
+              <Route path="/reports" element={<PublicReports />} />
+              <Route path="/reports/:id" element={<ReportDetail />} />
+              <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+
+              {/* ============ FINANCE LAYOUT (persistent) ============ */}
+              <Route element={financeLayoutElement}>
+                <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+                <Route path="/theodore" element={<Suspense fallback={<PageLoader />}><Chat /></Suspense>} />
+                <Route path="/calendar" element={<Suspense fallback={<PageLoader />}><Calendar /></Suspense>} />
+                <Route path="/market" element={<Suspense fallback={<PageLoader />}><MarketData /></Suspense>} />
+                <Route path="/compliance" element={<Suspense fallback={<PageLoader />}><Compliance /></Suspense>} />
+                <Route path="/portfolio" element={<Suspense fallback={<PageLoader />}><Portfolio /></Suspense>} />
+                <Route path="/financial-planning" element={<Suspense fallback={<PageLoader />}><FinancialPlanning /></Suspense>} />
+                <Route path="/financial-planning/new" element={<Suspense fallback={<PageLoader />}><CreateFinancialPlan /></Suspense>} />
+                <Route path="/financial-planning/:id" element={<Suspense fallback={<PageLoader />}><FinancialPlanDetail /></Suspense>} />
+                <Route path="/goals" element={<Suspense fallback={<PageLoader />}><GoalPlanning /></Suspense>} />
+                <Route path="/investments" element={<Suspense fallback={<PageLoader />}><InvestmentAnalysis /></Suspense>} />
+                <Route path="/risk" element={<Suspense fallback={<PageLoader />}><RiskAssessment /></Suspense>} />
+                <Route path="/scenario" element={<Suspense fallback={<PageLoader />}><ScenarioAnalysis /></Suspense>} />
+                <Route path="/clients" element={<Suspense fallback={<PageLoader />}><Clients /></Suspense>} />
+                <Route path="/clients/:id" element={<Suspense fallback={<PageLoader />}><ClientProfile /></Suspense>} />
+                <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><ClientOnboarding /></Suspense>} />
+                <Route path="/practice" element={<Suspense fallback={<PageLoader />}><PracticeManagement /></Suspense>} />
+                <Route path="/finance/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
+                <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsDashboard /></Suspense>} />
+                <Route path="/finance-payroll" element={<Suspense fallback={<PageLoader />}><FinancePayroll /></Suspense>} />
+                <Route path="/finance-crm" element={<Suspense fallback={<PageLoader />}><CRM /></Suspense>} />
+                <Route path="/finance-crm/:id" element={<Suspense fallback={<PageLoader />}><CRMContactDetail /></Suspense>} />
+                <Route path="/security" element={<Suspense fallback={<PageLoader />}><Security /></Suspense>} />
+                <Route path="/automation-center" element={<Suspense fallback={<PageLoader />}><AutomationCenter /></Suspense>} />
+                <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+                <Route path="/finance/commentary" element={<Suspense fallback={<PageLoader />}><FinanceMarketCommentary /></Suspense>} />
+                <Route path="/finance/portfolios" element={<Suspense fallback={<PageLoader />}><FinanceModelPortfolios /></Suspense>} />
+                <Route path="/finance/trends" element={<Suspense fallback={<PageLoader />}><FinanceBenchmarkingTrends /></Suspense>} />
+                <Route path="/finance/ai-analyst" element={<Suspense fallback={<PageLoader />}><FinanceAIAnalyst /></Suspense>} />
+                <Route path="/finance/watchlists" element={<Suspense fallback={<PageLoader />}><FinanceWatchlists /></Suspense>} />
+                <Route path="/finance/screeners" element={<Suspense fallback={<PageLoader />}><FinanceScreenersDiscovery /></Suspense>} />
+                <Route path="/finance/fund-database" element={<Suspense fallback={<PageLoader />}><FundETFDatabase /></Suspense>} />
+                <Route path="/finance/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
+                <Route path="/finance/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
+                <Route path="/finance/stocks-crypto" element={<Suspense fallback={<PageLoader />}><RealTimeMarketDatabase /></Suspense>} />
+                <Route path="/finance/stocks-crypto-admin" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
+                <Route path="/finance/languages" element={<Suspense fallback={<PageLoader />}><FinanceLanguages /></Suspense>} />
+                <Route path="/finance/featured-picks" element={<Suspense fallback={<PageLoader />}><FinanceFeaturedPicks /></Suspense>} />
+                <Route path="/finance-ai-generator" element={<Suspense fallback={<PageLoader />}><FinanceAIGenerator /></Suspense>} />
+              </Route>
+
+              {/* Finance News has its own layout */}
               <Route path="/finance/news" element={<FinanceNews />} />
-              
-              <Route path="/finance/featured-picks" element={
-                !isAuthenticated ? <Navigate to="/login" replace /> : (
-                  <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <FinanceFeaturedPicks />
-                  </FinanceLayout>
-                )
+
+              <Route path="/chat" element={<Chat />} />
+
+              <Route path="/document-editor" element={
+                !isAuthenticated ? <Navigate to="/login" replace /> : <DocumentEditorPage />
               } />
-              
-              <Route path="/investor/featured-picks" element={
-                !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
-                  <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <InvestorFeaturedPicks />
-                  </InvestorLayout>
-                )
+
+              {/* ============ BUSINESS LAYOUT (persistent) ============ */}
+              <Route element={businessLayoutElement}>
+                <Route path="/business/dashboard" element={<Suspense fallback={<PageLoader />}><BusinessDashboard /></Suspense>} />
+                <Route path="/business/projects" element={<Suspense fallback={<PageLoader />}><Projects /></Suspense>} />
+                <Route path="/business/tasks" element={<Suspense fallback={<PageLoader />}><Tasks /></Suspense>} />
+                <Route path="/business/chat" element={<Suspense fallback={<PageLoader />}><Chat /></Suspense>} />
+                <Route path="/business/calendar" element={<Suspense fallback={<PageLoader />}><Calendar /></Suspense>} />
+                <Route path="/business/planning" element={<Suspense fallback={<PageLoader />}><BusinessPlanning /></Suspense>} />
+                <Route path="/business/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsDashboard /></Suspense>} />
+                <Route path="/business/reports" element={<Suspense fallback={<PageLoader />}><BusinessReports /></Suspense>} />
+                <Route path="/business/revenue" element={<Suspense fallback={<PageLoader />}><Revenue /></Suspense>} />
+                <Route path="/business/team/profile" element={<Suspense fallback={<PageLoader />}><TeamProfile /></Suspense>} />
+                <Route path="/business/team/chat" element={<Suspense fallback={<PageLoader />}><EnhancedTeamChat /></Suspense>} />
+                <Route path="/business/messages" element={<Suspense fallback={<PageLoader />}><Messages /></Suspense>} />
+                <Route path="/business/crm" element={<Suspense fallback={<PageLoader />}><CRM /></Suspense>} />
+                <Route path="/business/crm/:id" element={<Suspense fallback={<PageLoader />}><CRMContactDetail /></Suspense>} />
+                <Route path="/business/payroll" element={<Suspense fallback={<PageLoader />}><Payroll /></Suspense>} />
+                <Route path="/business/security" element={<Suspense fallback={<PageLoader />}><Security /></Suspense>} />
+                <Route path="/business/ai-generator" element={<Suspense fallback={<PageLoader />}><BusinessAIGenerator /></Suspense>} />
+                <Route path="/business/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+                <Route path="/business/languages" element={<Suspense fallback={<PageLoader />}><BusinessLanguages /></Suspense>} />
+                <Route path="/business/automation-center" element={<Suspense fallback={<PageLoader />}><AutomationCenter /></Suspense>} />
+              </Route>
+
+              <Route path="/business/team" element={
+                !isAuthenticated ? <Navigate to="/login-business" replace /> : <TeamManagement />
               } />
-              
-              <Route path="/investor/tasks" element={
-                !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
-                  <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <InvestorTasks />
-                  </InvestorLayout>
-                )
-              } />
-              
-            {/* Business Routes - All prefixed with /business */}
-            <Route path="/business/dashboard" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessDashboard /></BusinessLayout>
-            } />
-            <Route path="/business/projects" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Projects /></BusinessLayout>
-            } />
-            <Route path="/business/tasks" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Tasks /></BusinessLayout>
-            } />
-            <Route path="/business/chat" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Chat /></BusinessLayout>
-            } />
-            <Route path="/business/calendar" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Calendar /></BusinessLayout>
-            } />
-            <Route path="/business/planning" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessPlanning /></BusinessLayout>
-            } />
-            <Route path="/business/analytics" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AnalyticsDashboard /></BusinessLayout>
-            } />
-            <Route path="/business/reports" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessReports /></BusinessLayout>
-            } />
-            <Route path="/business/revenue" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Revenue /></BusinessLayout>
-            } />
-            <Route path="/business/team" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <TeamManagement />
-            } />
-            <Route path="/business/team/profile" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><TeamProfile /></BusinessLayout>
-            } />
-            <Route path="/business/team/chat" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><EnhancedTeamChat /></BusinessLayout>
-            } />
-            <Route path="/business/messages" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Messages /></BusinessLayout>
-            } />
-            <Route path="/business/crm" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><CRM /></BusinessLayout>
-            } />
-            <Route path="/business/crm/:id" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><CRMContactDetail /></BusinessLayout>
-            } />
-            <Route path="/business/payroll" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Payroll /></BusinessLayout>
-            } />
-            <Route path="/business/security" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Security /></BusinessLayout>
-            } />
-            <Route path="/business/ai-generator" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessAIGenerator /></BusinessLayout>
-            } />
-            <Route path="/business/settings" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><Settings /></BusinessLayout>
-            } />
-            <Route path="/business/languages" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><BusinessLanguages /></BusinessLayout>
-            } />
-            <Route path="/business/automation-center" element={
-              !isAuthenticated ? <Navigate to="/login-business" replace /> : <BusinessLayout userEmail={userEmail} onLogout={handleLogout}><AutomationCenter /></BusinessLayout>
-            } />
-            
-            <Route path="/finance-ai-generator" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <FinanceLayout userEmail={userEmail} onLogout={handleLogout}>
-                  <FinanceAIGenerator />
-                </FinanceLayout>
-              )
-            } />
-            
-            <Route path="/document-editor" element={
-              !isAuthenticated ? <Navigate to="/login" replace /> : (
-                <DocumentEditorPage />
-              )
-            } />
-            
-            {/* Investor Routes - All prefixed with /investor */}
-            <Route path="/investor/dashboard" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorDashboard /></InvestorLayout>
-            } />
-            <Route path="/investor/research" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><InvestorResearchReports /></InvestorLayout>
-            } />
-            <Route path="/investor/analysis" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><AnalysisReports /></InvestorLayout>
-            } />
-            <Route path="/investor/commentary" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><MarketCommentary /></InvestorLayout>
-            } />
-            <Route path="/investor/portfolios" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ModelPortfolios /></InvestorLayout>
-            } />
-            <Route path="/investor/alerts" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><SignalsAlerts /></InvestorLayout>
-            } />
-            <Route path="/investor/newsletters" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Newsletters /></InvestorLayout>
-            } />
-            <Route path="/investor/trends" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><BenchmarkingTrends /></InvestorLayout>
-            } />
-            <Route path="/investor/screeners" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ScreenersDiscovery /></InvestorLayout>
-            } />
-            <Route path="/investor/ai-analyst" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><AIAnalyst /></InvestorLayout>
-            } />
-            <Route path="/investor/learning" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><LearningHub /></InvestorLayout>
-            } />
-            <Route path="/investor/market-data" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><MarketDataHub /></InvestorLayout>
-            } />
-            <Route path="/investor/tools" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><ToolsCalculators /></InvestorLayout>
-            } />
-            <Route path="/investor/risk-compliance" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><RiskCompliance /></InvestorLayout>
-            } />
-            <Route path="/investor/watchlists" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Watchlists /></InvestorLayout>
-            } />
-            <Route path="/investor/languages" element={
-              !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><Languages /></InvestorLayout>
-            } />
-              <Route path="/investor/fund-database" element={
-                !isAuthenticated ? <Navigate to="/login-investor" replace /> : (
-                  <InvestorLayout userEmail={userEmail} onLogout={handleLogout}>
-                    <InvestorFundETFDatabase />
-                  </InvestorLayout>
-                )
-              } />
-              <Route path="/investor/opportunities" element={
-                !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityIntelligence /></InvestorLayout>
-              } />
-              <Route path="/investor/opportunities/:id" element={
-                !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><OpportunityDetailPage /></InvestorLayout>
-              } />
-              <Route path="/investor/stocks-crypto" element={
-                !isAuthenticated ? <Navigate to="/login-investor" replace /> : <InvestorLayout userEmail={userEmail} onLogout={handleLogout}><StocksCryptoDatabase /></InvestorLayout>
-              } />
+
+              {/* ============ INVESTOR LAYOUT (persistent) ============ */}
+              <Route element={investorLayoutElement}>
+                <Route path="/investor/dashboard" element={<Suspense fallback={<PageLoader />}><InvestorDashboard /></Suspense>} />
+                <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><InvestorResearchReports /></Suspense>} />
+                <Route path="/investor/analysis" element={<Suspense fallback={<PageLoader />}><AnalysisReports /></Suspense>} />
+                <Route path="/investor/commentary" element={<Suspense fallback={<PageLoader />}><MarketCommentary /></Suspense>} />
+                <Route path="/investor/portfolios" element={<Suspense fallback={<PageLoader />}><ModelPortfolios /></Suspense>} />
+                <Route path="/investor/alerts" element={<Suspense fallback={<PageLoader />}><SignalsAlerts /></Suspense>} />
+                <Route path="/investor/newsletters" element={<Suspense fallback={<PageLoader />}><Newsletters /></Suspense>} />
+                <Route path="/investor/trends" element={<Suspense fallback={<PageLoader />}><BenchmarkingTrends /></Suspense>} />
+                <Route path="/investor/screeners" element={<Suspense fallback={<PageLoader />}><ScreenersDiscovery /></Suspense>} />
+                <Route path="/investor/ai-analyst" element={<Suspense fallback={<PageLoader />}><AIAnalyst /></Suspense>} />
+                <Route path="/investor/learning" element={<Suspense fallback={<PageLoader />}><LearningHub /></Suspense>} />
+                <Route path="/investor/market-data" element={<Suspense fallback={<PageLoader />}><MarketDataHub /></Suspense>} />
+                <Route path="/investor/tools" element={<Suspense fallback={<PageLoader />}><ToolsCalculators /></Suspense>} />
+                <Route path="/investor/risk-compliance" element={<Suspense fallback={<PageLoader />}><RiskCompliance /></Suspense>} />
+                <Route path="/investor/watchlists" element={<Suspense fallback={<PageLoader />}><Watchlists /></Suspense>} />
+                <Route path="/investor/languages" element={<Suspense fallback={<PageLoader />}><Languages /></Suspense>} />
+                <Route path="/investor/fund-database" element={<Suspense fallback={<PageLoader />}><InvestorFundETFDatabase /></Suspense>} />
+                <Route path="/investor/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
+                <Route path="/investor/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
+                <Route path="/investor/stocks-crypto" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
+                <Route path="/investor/featured-picks" element={<Suspense fallback={<PageLoader />}><InvestorFeaturedPicks /></Suspense>} />
+                <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
+              </Route>
+
               <Route path="/investor/news" element={<InvestorNews />} />
-              
-              {/* Research Reports Page */}
+
+              {/* Research Reports */}
               <Route path="/research-reports" element={<ResearchReportsPage />} />
               <Route path="/report-generator" element={<OrchestratedReportsPage />} />
-              
+
+              {/* Admin */}
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/news" element={<AdminNews />} />
-              
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

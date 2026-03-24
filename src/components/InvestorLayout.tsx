@@ -1,4 +1,5 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, memo } from "react";
+import { Outlet } from "react-router-dom";
 import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 
 interface InvestorLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   userEmail: string;
   onLogout: () => void;
 }
@@ -27,7 +28,7 @@ const mobileNavItems = [
   { label: "AI Analyst", path: "/investor/ai-analyst", icon: Brain },
 ];
 
-export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
+export const InvestorLayout = memo(function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
 
@@ -55,7 +56,7 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
           </div>
 
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
-            {children}
+            {children || <Outlet />}
           </main>
           <PushNotificationBanner />
 
@@ -74,4 +75,4 @@ export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayout
       />
     </SidebarProvider>
   );
-}
+});

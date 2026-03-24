@@ -1,4 +1,5 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, memo } from "react";
+import { Outlet } from "react-router-dom";
 import { BusinessSidebar } from "./BusinessSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 
 interface BusinessLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   userEmail: string;
   onLogout: () => void;
   hideHeader?: boolean;
@@ -27,7 +28,7 @@ const mobileNavItems = [
   { label: "Chat", path: "/business/chat", icon: MessageSquare },
 ];
 
-export function BusinessLayout({ children, userEmail, onLogout, hideHeader = false }: BusinessLayoutProps) {
+export const BusinessLayout = memo(function BusinessLayout({ children, userEmail, onLogout, hideHeader = false }: BusinessLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
 
@@ -54,7 +55,7 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
           )}
           
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
-            {children}
+            {children || <Outlet />}
           </main>
           <PushNotificationBanner />
 
@@ -73,4 +74,4 @@ export function BusinessLayout({ children, userEmail, onLogout, hideHeader = fal
       />
     </SidebarProvider>
   );
-}
+});
