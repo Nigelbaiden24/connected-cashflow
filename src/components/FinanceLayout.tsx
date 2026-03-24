@@ -1,4 +1,5 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, memo } from "react";
+import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 
 interface FinanceLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   userEmail: string;
   onLogout: () => void;
   hideHeader?: boolean;
@@ -28,7 +29,7 @@ const mobileNavItems = [
   { label: "Chat", path: "/theodore", icon: MessageSquare },
 ];
 
-export function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
+export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
 
@@ -61,7 +62,9 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
             <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
           </div>
 
-          <main className="flex-1 overflow-auto pb-20 md:pb-0">{children}</main>
+          <main className="flex-1 overflow-auto pb-20 md:pb-0">
+            {children || <Outlet />}
+          </main>
           <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}
@@ -79,4 +82,4 @@ export function FinanceLayout({ children, userEmail, onLogout, hideHeader = fals
       />
     </SidebarProvider>
   );
-}
+});
