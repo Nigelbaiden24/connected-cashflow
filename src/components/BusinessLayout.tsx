@@ -55,7 +55,7 @@ export const BusinessLayout = memo(function BusinessLayout({ children, userEmail
           )}
           
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
-            {children}
+            {children || <Outlet />}
           </main>
           <PushNotificationBanner />
 
