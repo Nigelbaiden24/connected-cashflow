@@ -428,50 +428,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Clients We Serve Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                Trusted by Leading Industry Professionals
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                FlowPulse serves a diverse range of financial and business professionals across multiple sectors
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                "Family Offices",
-                "Angel Investor Networking",
-                "Investment Clubs",
-                "Holding Companies",
-                "Investors",
-                "Small Business Buyers",
-                "Entrepreneurs",
-                "Corporate Strategy Teams",
-                "Development Teams",
-                "Financial Content Creators",
-                "Introducers & Intermediaries",
-                "Venture Capital Analysts",
-                "Hedge Fund Analysts",
-                "Wealth Managers",
-                "Alternative Investment Brokers",
-                "Business Owners"
-              ].map((client, idx) => (
-                <div 
-                  key={idx}
-                  className="p-6 bg-background/80 backdrop-blur-sm rounded-lg border border-primary/20 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 transition-all text-center group"
-                >
-                  <Users className="h-8 w-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                  <p className="font-medium text-foreground">{client}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <ClientsWeServe />
 
       {/* CTA Section */}
       <section className="container mx-auto px-6 py-24">
