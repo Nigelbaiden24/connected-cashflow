@@ -208,10 +208,20 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
           {filteredNavGroups.map((group) => (
             <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
               {!collapsed && (
-                <SidebarGroupLabel className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-white/70">
-                  <TranslatedText>{group.label}</TranslatedText>
-                </SidebarGroupLabel>
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className="w-full flex items-center justify-between px-3 mb-1 group/label hover:bg-white/[0.04] rounded-md transition-colors"
+                >
+                  <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-white/70 p-0 m-0">
+                    <TranslatedText>{group.label}</TranslatedText>
+                  </SidebarGroupLabel>
+                  <ChevronDown className={cn(
+                    "h-3 w-3 text-white/40 transition-transform duration-200 group-hover/label:text-white/60",
+                    collapsedGroups[group.label] && "-rotate-90"
+                  )} />
+                </button>
               )}
+              {!collapsedGroups[group.label] && (
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-px">
                   {group.items.map((item) => {
