@@ -7,8 +7,6 @@ import { Check, ArrowLeft, Users, Building2, TrendingUp, Shield, CreditCard, Plu
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 const Pricing = () => {
   const navigate = useNavigate();
