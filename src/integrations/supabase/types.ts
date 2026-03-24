@@ -6996,7 +6996,12 @@ export type Database = {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
       }
+      get_calendar_token: {
+        Args: { _provider: string; _token_type: string; _user_id: string }
+        Returns: string
+      }
       get_user_organisation_id: { Args: { _user_id: string }; Returns: string }
+      get_vault_secret: { Args: { _name: string }; Returns: string }
       grant_platform_access: {
         Args: {
           _business?: boolean
@@ -7048,6 +7053,23 @@ export type Database = {
       owns_team_member: {
         Args: { _member_id: string; _user_id: string }
         Returns: boolean
+      }
+      store_calendar_token: {
+        Args: {
+          _access_token: string
+          _provider: string
+          _refresh_token: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      store_mfa_backup_codes: {
+        Args: { _codes: Json; _user_id: string }
+        Returns: undefined
+      }
+      store_vault_secret: {
+        Args: { _name: string; _secret: string }
+        Returns: string
       }
       update_tab_permissions: {
         Args: { _permissions: Json; _user_id: string }
