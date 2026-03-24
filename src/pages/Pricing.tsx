@@ -153,7 +153,7 @@ const Pricing = () => {
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Badge className="bg-gradient-to-r from-primary to-secondary text-white border-0 text-sm px-4 py-1.5">
                   <Users className="h-3.5 w-3.5 mr-1.5" />
-                  £{SEAT_PRICE}/seat/year — minimum {MIN_SEATS} seats
+                  £{MONTHLY_SEAT_PRICE}/seat/month (billed annually) — minimum {MIN_SEATS} seats
                 </Badge>
                 <Badge className="bg-primary/10 text-primary border-primary/30 text-sm px-4 py-1.5">
                   <Package className="h-3.5 w-3.5 mr-1.5" />
