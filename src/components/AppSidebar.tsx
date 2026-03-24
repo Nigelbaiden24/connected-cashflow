@@ -126,10 +126,22 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   });
   const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
 
-  const filteredNavGroups = navGroups.map(g => ({
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem("sidebar_collapsed_groups_finance") || "{}"); } catch { return {}; }
+  });
+
+  const toggleGroup = useCallback((label: string) => {
+    setCollapsedGroups(prev => {
+      const next = { ...prev, [label]: !prev[label] };
+      localStorage.setItem("sidebar_collapsed_groups_finance", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const filteredNavGroups = useMemo(() => navGroups.map(g => ({
     ...g,
     items: g.items.filter(item => !hiddenUrls.includes(item.url))
-  })).filter(g => g.items.length > 0);
+  })).filter(g => g.items.length > 0), [hiddenUrls]);
 
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
