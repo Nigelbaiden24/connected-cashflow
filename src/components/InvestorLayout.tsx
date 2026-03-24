@@ -1,4 +1,5 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, memo } from "react";
+import { Outlet } from "react-router-dom";
 import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 
 interface InvestorLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   userEmail: string;
   onLogout: () => void;
 }
@@ -27,7 +28,7 @@ const mobileNavItems = [
   { label: "AI Analyst", path: "/investor/ai-analyst", icon: Brain },
 ];
 
-export function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
+export const InvestorLayout = memo(function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
 
