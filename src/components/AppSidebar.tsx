@@ -273,6 +273,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
+              )}
             </SidebarGroup>
           ))}
         </ScrollArea>
