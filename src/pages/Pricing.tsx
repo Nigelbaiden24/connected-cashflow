@@ -296,7 +296,7 @@ const Pricing = () => {
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground text-right mt-1">
-                          That's £{Math.round(totalPrice / 12)}/month
+                          £{Math.round(totalPrice / 12).toLocaleString()}/month billed annually
                         </p>
                       </div>
 
