@@ -79,9 +79,10 @@ const Pricing = () => {
     { id: "distressed", name: "Distressed Assets", description: "Turnarounds, workouts & special situations" },
   ];
 
-  const BASE_PRICE = 1049;
-  const ADDON_PRICE = 250;
-  const INCLUDED_PRODUCTS = 5;
+  const SEAT_PRICE = 100;
+  const MIN_SEATS = 3;
+  const INCLUDED_PRODUCTS = 3;
+  const ADDON_PRICE = 1200;
 
   const toggleProduct = (id: string) => {
     setSelectedProducts(prev =>
