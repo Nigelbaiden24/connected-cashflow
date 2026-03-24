@@ -4450,6 +4450,13 @@ export type Database = {
             foreignKeyName: "organisation_invitations_organisation_id_fkey"
             columns: ["organisation_id"]
             isOneToOne: false
+            referencedRelation: "organisation_member_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organisation_invitations_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
             referencedRelation: "organisations"
             referencedColumns: ["id"]
           },
@@ -4481,6 +4488,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "organisation_members_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisation_member_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organisation_members_organisation_id_fkey"
             columns: ["organisation_id"]
@@ -6909,6 +6923,66 @@ export type Database = {
           token_expires_at?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      mfa_settings_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          mfa_enabled: boolean | null
+          mfa_method: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          mfa_enabled?: boolean | null
+          mfa_method?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          mfa_enabled?: boolean | null
+          mfa_method?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      organisation_member_view: {
+        Row: {
+          billing_email: string | null
+          created_at: string | null
+          id: string | null
+          logo_url: string | null
+          organisation_name: string | null
+          owner_user_id: string | null
+          subscription_plan: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_email?: never
+          created_at?: string | null
+          id?: string | null
+          logo_url?: string | null
+          organisation_name?: string | null
+          owner_user_id?: string | null
+          subscription_plan?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_email?: never
+          created_at?: string | null
+          id?: string | null
+          logo_url?: string | null
+          organisation_name?: string | null
+          owner_user_id?: string | null
+          subscription_plan?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
