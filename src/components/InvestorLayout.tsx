@@ -56,7 +56,7 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
           </div>
 
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
-            {children}
+            {children || <Outlet />}
           </main>
           <PushNotificationBanner />
 
