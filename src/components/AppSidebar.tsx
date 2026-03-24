@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { TranslatedText } from "./TranslatedText";
 import {
