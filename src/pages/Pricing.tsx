@@ -76,7 +76,8 @@ const Pricing = () => {
     { id: "distressed", name: "Distressed Assets", description: "Turnarounds, workouts & special situations" },
   ];
 
-  const SEAT_PRICE = 100;
+  const MONTHLY_SEAT_PRICE = 89;
+  const SEAT_PRICE = MONTHLY_SEAT_PRICE * 12; // £1,068/seat/year
   const MIN_SEATS = 3;
   const INCLUDED_PRODUCTS = 3;
   const ADDON_PRICE = 1200;
@@ -152,7 +153,7 @@ const Pricing = () => {
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Badge className="bg-gradient-to-r from-primary to-secondary text-white border-0 text-sm px-4 py-1.5">
                   <Users className="h-3.5 w-3.5 mr-1.5" />
-                  £{SEAT_PRICE}/seat/year — minimum {MIN_SEATS} seats
+                  £{MONTHLY_SEAT_PRICE}/seat/month (billed annually) — minimum {MIN_SEATS} seats
                 </Badge>
                 <Badge className="bg-primary/10 text-primary border-primary/30 text-sm px-4 py-1.5">
                   <Package className="h-3.5 w-3.5 mr-1.5" />
@@ -245,7 +246,7 @@ const Pricing = () => {
                         <div className="flex justify-between items-center mb-2">
                           <div>
                             <p className="font-medium text-sm">Team Seats</p>
-                            <p className="text-xs text-muted-foreground">£{SEAT_PRICE}/seat/year (min {MIN_SEATS})</p>
+                            <p className="text-xs text-muted-foreground">£{MONTHLY_SEAT_PRICE}/seat/month billed annually (min {MIN_SEATS})</p>
                           </div>
                           <span className="font-semibold">£{seatTotal.toLocaleString()}</span>
                         </div>
@@ -295,7 +296,7 @@ const Pricing = () => {
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground text-right mt-1">
-                          That's £{Math.round(totalPrice / 12)}/month
+                          £{Math.round(totalPrice / 12).toLocaleString()}/month billed annually
                         </p>
                       </div>
 
