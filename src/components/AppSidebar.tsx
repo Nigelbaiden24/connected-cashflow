@@ -24,6 +24,7 @@ import {
   Mail,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Moon,
   FolderKanban,
   Zap,
