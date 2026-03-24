@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import DOMPurify from "dompurify";
 import { useZoomScaleRef } from "@/contexts/ZoomScaleContext";
 import { Edit2, Trash2, Wand2, GripVertical, Palette, Type } from "lucide-react";
 import { SectionStyling } from "@/hooks/useDocumentSections";
