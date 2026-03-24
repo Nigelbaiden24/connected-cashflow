@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import DOMPurify from "dompurify";
 import { useZoomScaleRef } from "@/contexts/ZoomScaleContext";
 import { Edit2, Trash2, Wand2, GripVertical, Palette, Type } from "lucide-react";
 import { SectionStyling } from "@/hooks/useDocumentSections";
@@ -324,7 +325,7 @@ export function DraggableSection({
           <div className="max-w-full overflow-x-auto">
             <div
               className="min-w-full text-sm text-foreground/90"
-              dangerouslySetInnerHTML={{ __html: content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
             />
           </div>
         );
@@ -561,7 +562,7 @@ export function DraggableSection({
         <div
           className="prose max-w-none"
           style={{ color: textColor, fontFamily, fontSize: `${fontSize}px` }}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
         />
       );
     }

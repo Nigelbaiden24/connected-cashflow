@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -270,7 +271,7 @@ export default function ReportDetail() {
           {/* Teaser Content */}
           {report.teaser_content && (
             <div className="prose prose-lg prose-slate max-w-none mb-12">
-              <div dangerouslySetInnerHTML={{ __html: report.teaser_content.replace(/\n/g, '<br/>') }} />
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(report.teaser_content.replace(/\n/g, '<br/>')) }} />
             </div>
           )}
 

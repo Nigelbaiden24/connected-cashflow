@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -337,7 +338,7 @@ const Newsletters = () => {
           ) : (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <div 
-                dangerouslySetInnerHTML={{ __html: selectedNewsletter?.content || '' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedNewsletter?.content || '') }}
                 className="whitespace-pre-wrap"
               />
             </div>
