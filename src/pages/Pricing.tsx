@@ -76,7 +76,8 @@ const Pricing = () => {
     { id: "distressed", name: "Distressed Assets", description: "Turnarounds, workouts & special situations" },
   ];
 
-  const SEAT_PRICE = 100;
+  const MONTHLY_SEAT_PRICE = 89;
+  const SEAT_PRICE = MONTHLY_SEAT_PRICE * 12; // £1,068/seat/year
   const MIN_SEATS = 3;
   const INCLUDED_PRODUCTS = 3;
   const ADDON_PRICE = 1200;
