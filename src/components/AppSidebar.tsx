@@ -1,4 +1,4 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { TranslatedText } from "./TranslatedText";
 import {
@@ -24,6 +24,7 @@ import {
   Mail,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Moon,
   FolderKanban,
   Zap,
@@ -125,10 +126,22 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   });
   const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
 
-  const filteredNavGroups = navGroups.map(g => ({
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem("sidebar_collapsed_groups_finance") || "{}"); } catch { return {}; }
+  });
+
+  const toggleGroup = useCallback((label: string) => {
+    setCollapsedGroups(prev => {
+      const next = { ...prev, [label]: !prev[label] };
+      localStorage.setItem("sidebar_collapsed_groups_finance", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const filteredNavGroups = useMemo(() => navGroups.map(g => ({
     ...g,
     items: g.items.filter(item => !hiddenUrls.includes(item.url))
-  })).filter(g => g.items.length > 0);
+  })).filter(g => g.items.length > 0), [hiddenUrls]);
 
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
@@ -195,10 +208,20 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
           {filteredNavGroups.map((group) => (
             <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
               {!collapsed && (
-                <SidebarGroupLabel className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-white/70">
-                  <TranslatedText>{group.label}</TranslatedText>
-                </SidebarGroupLabel>
+                <button
+                  onClick={() => toggleGroup(group.label)}
+                  className="w-full flex items-center justify-between px-3 mb-1 group/label hover:bg-white/[0.04] rounded-md transition-colors"
+                >
+                  <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-white/70 p-0 m-0">
+                    <TranslatedText>{group.label}</TranslatedText>
+                  </SidebarGroupLabel>
+                  <ChevronDown className={cn(
+                    "h-3 w-3 text-white/40 transition-transform duration-200 group-hover/label:text-white/60",
+                    collapsedGroups[group.label] && "-rotate-90"
+                  )} />
+                </button>
               )}
+              {!collapsedGroups[group.label] && (
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-px">
                   {group.items.map((item) => {
@@ -250,6 +273,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
+              )}
             </SidebarGroup>
           ))}
         </ScrollArea>
