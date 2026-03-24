@@ -102,37 +102,7 @@ const Pricing = () => {
         Back
       </Button>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 pt-20 max-w-7xl">
-        {/* Hero Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-            <Sparkles className="h-3.5 w-3.5" />
-            Enterprise-Grade Financial Intelligence
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-5 font-space-grotesk tracking-tight">
-            <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-              Invest in Your
-            </span>
-            <br />
-            <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-              Competitive Edge
-            </span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-            Modular pricing that scales with your firm. Choose the investment verticals
-            you need — nothing more, nothing less.
-          </p>
-
-          {/* Trust metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {trustMetrics.map((metric, idx) => (
-              <div key={idx} className="text-center p-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/30">
-                <div className="text-2xl md:text-3xl font-bold text-foreground font-space-grotesk">{metric.value}</div>
-                <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wider font-medium">{metric.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="relative z-10 container mx-auto px-4 py-8 pt-16 max-w-7xl">
 
         {/* Tabs */}
         <Tabs defaultValue="finance" className="mb-16">
