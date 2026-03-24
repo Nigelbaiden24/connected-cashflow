@@ -338,7 +338,7 @@ const Newsletters = () => {
           ) : (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <div 
-                dangerouslySetInnerHTML={{ __html: selectedNewsletter?.content || '' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedNewsletter?.content || '') }}
                 className="whitespace-pre-wrap"
               />
             </div>

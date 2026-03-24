@@ -562,7 +562,7 @@ export function DraggableSection({
         <div
           className="prose max-w-none"
           style={{ color: textColor, fontFamily, fontSize: `${fontSize}px` }}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
         />
       );
     }
