@@ -15,8 +15,8 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
-  const [jenrateAnnual, setJenrateAnnual] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [seatCount, setSeatCount] = useState(3);
 
   const handleCheckout = async (
     priceId: string,
