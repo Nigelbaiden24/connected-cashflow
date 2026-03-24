@@ -91,7 +91,9 @@ const Pricing = () => {
   };
 
   const addonCount = Math.max(0, selectedProducts.length - INCLUDED_PRODUCTS);
-  const totalPrice = BASE_PRICE + addonCount * ADDON_PRICE;
+  const seatTotal = seatCount * SEAT_PRICE;
+  const addonTotal = addonCount * ADDON_PRICE;
+  const totalPrice = seatTotal + addonTotal;
 
 
   // Jenrate / Document Generator - Tiered plans
