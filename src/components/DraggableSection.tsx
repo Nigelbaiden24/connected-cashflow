@@ -325,7 +325,7 @@ export function DraggableSection({
           <div className="max-w-full overflow-x-auto">
             <div
               className="min-w-full text-sm text-foreground/90"
-              dangerouslySetInnerHTML={{ __html: content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
             />
           </div>
         );
