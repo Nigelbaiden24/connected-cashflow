@@ -7053,6 +7053,10 @@ export type Database = {
         Args: { _permissions: Json; _user_id: string }
         Returns: undefined
       }
+      verify_backup_code: {
+        Args: { _code: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       user_role:
