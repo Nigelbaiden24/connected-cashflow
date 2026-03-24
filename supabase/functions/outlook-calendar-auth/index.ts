@@ -152,19 +152,43 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      // Store connection in database
+      // Store connection in database (tokens stored as placeholder, vault stores real values)
       const { error: dbError } = await supabaseAdmin
         .from('calendar_connections')
         .upsert({
           user_id: stateData.userId,
           provider: 'outlook',
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
+          access_token: 'vault:pending',
+          refresh_token: 'vault:pending',
           token_expires_at: expiresAt.toISOString(),
           email: userInfo.mail || userInfo.userPrincipalName,
           is_active: true,
           last_synced_at: new Date().toISOString(),
         }, { onConflict: 'user_id,provider' });
+
+      // Store actual tokens securely in Supabase Vault
+      if (!dbError) {
+        try {
+          await supabaseAdmin.rpc('store_calendar_token', {
+            _user_id: stateData.userId,
+            _provider: 'outlook',
+            _access_token: tokens.access_token,
+            _refresh_token: tokens.refresh_token,
+          });
+          console.log('Tokens stored securely in vault');
+        } catch (vaultErr) {
+          console.error('Vault storage failed, tokens in DB as fallback:', vaultErr);
+          // Fallback: store directly (less secure but functional)
+          await supabaseAdmin
+            .from('calendar_connections')
+            .update({
+              access_token: tokens.access_token,
+              refresh_token: tokens.refresh_token,
+            })
+            .eq('user_id', stateData.userId)
+            .eq('provider', 'outlook');
+        }
+      }
 
       if (dbError) {
         console.error('Database error:', dbError);
