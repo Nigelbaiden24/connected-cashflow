@@ -228,7 +228,11 @@ export const SecuritySettings = () => {
 
       <Separator />
 
-      <MFASettings />
+      <MFAEnrollment />
+
+      <Separator />
+
+      <LoginActivityLog />
 
       <Card className="border-destructive">
         <CardHeader>
