@@ -32,7 +32,7 @@ export const SecuritySettings = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const form = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
