@@ -23,9 +23,9 @@ export const MFAEnrollment = () => {
   const [backupCodes] = useState<string[]>([]);
 
   // Check existing MFA status on mount
-  useState(() => {
+  useEffect(() => {
     checkMfaStatus();
-  });
+  }, []);
 
   async function checkMfaStatus() {
     setLoading(true);
