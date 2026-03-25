@@ -9,6 +9,7 @@ import { TrendingUp, Eye, EyeOff, Lock, Mail, CheckCircle2, User, Phone, Buildin
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MFAChallenge } from "@/components/auth/MFAChallenge";
+import { MFAEnrollment } from "@/components/auth/MFAEnrollment";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface LoginProps {
