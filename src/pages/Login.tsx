@@ -9,6 +9,7 @@ import { TrendingUp, Eye, EyeOff, Lock, Mail, CheckCircle2, User, Phone, Buildin
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MFAChallenge } from "@/components/auth/MFAChallenge";
+import { MFAEnrollment } from "@/components/auth/MFAEnrollment";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface LoginProps {
@@ -22,6 +23,7 @@ const Login = ({ onLogin }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showMfaChallenge, setShowMfaChallenge] = useState(false);
+  const [showMfaEnrollment, setShowMfaEnrollment] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
   const { toast } = useToast();
 
@@ -53,22 +55,21 @@ const Login = ({ onLogin }: LoginProps) => {
       }
 
       if (data.user) {
-        // Check if MFA is required
+        // Check if MFA is enrolled
         const { data: factors } = await supabase.auth.mfa.listFactors();
         const hasMfa = factors?.totp?.some((f) => f.status === "verified");
 
         if (hasMfa) {
+          // MFA exists - challenge user
           setPendingEmail(email);
           setShowMfaChallenge(true);
           return;
         }
 
-        toast({
-          title: "Login Successful",
-          description: `Welcome back! Logged in as ${email}`,
-        });
-        onLogin(email);
-        navigate("/dashboard");
+        // No MFA enrolled - force enrollment
+        setPendingEmail(email);
+        setShowMfaEnrollment(true);
+        return;
       }
     } catch (error: any) {
       toast({
@@ -93,8 +94,19 @@ const Login = ({ onLogin }: LoginProps) => {
 
   const handleMfaCancel = () => {
     setShowMfaChallenge(false);
+    setShowMfaEnrollment(false);
     setPendingEmail("");
     supabase.auth.signOut();
+  };
+
+  const handleMfaEnrollmentSuccess = () => {
+    setShowMfaEnrollment(false);
+    toast({
+      title: "MFA Activated",
+      description: "Authenticator set up successfully. Welcome!",
+    });
+    onLogin(pendingEmail);
+    navigate("/dashboard");
   };
 
   const handleEnquirySubmit = async (e: React.FormEvent) => {
@@ -133,6 +145,18 @@ const Login = ({ onLogin }: LoginProps) => {
       setIsSubmittingEnquiry(false);
     }
   };
+
+  // MFA Enrollment Screen (forced for users without MFA)
+  if (showMfaEnrollment) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
+        <MFAEnrollment
+          onSuccess={handleMfaEnrollmentSuccess}
+          onCancel={handleMfaCancel}
+        />
+      </div>
+    );
+  }
 
   // MFA Challenge Screen
   if (showMfaChallenge) {
