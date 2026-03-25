@@ -370,7 +370,7 @@ const Index = () => {
             </h1>
             
             <p className="text-base md:text-lg text-blue-50/90 max-w-2xl mx-auto drop-shadow-lg font-medium">
-              Enterprise platforms powered by AI for financial advisors and modern businesses
+              Receive institutional analyst grade investment insights delivered the moment they matter
             </p>
           </div>
         </div>
