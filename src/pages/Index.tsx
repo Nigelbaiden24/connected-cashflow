@@ -1,3 +1,5 @@
+import laptopNotificationImg from "@/assets/laptop-notification-alert.jpg";
+import iphoneSmsImg from "@/assets/iphone-sms-alert.jpg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
