@@ -55,22 +55,21 @@ const Login = ({ onLogin }: LoginProps) => {
       }
 
       if (data.user) {
-        // Check if MFA is required
+        // Check if MFA is enrolled
         const { data: factors } = await supabase.auth.mfa.listFactors();
         const hasMfa = factors?.totp?.some((f) => f.status === "verified");
 
         if (hasMfa) {
+          // MFA exists - challenge user
           setPendingEmail(email);
           setShowMfaChallenge(true);
           return;
         }
 
-        toast({
-          title: "Login Successful",
-          description: `Welcome back! Logged in as ${email}`,
-        });
-        onLogin(email);
-        navigate("/dashboard");
+        // No MFA enrolled - force enrollment
+        setPendingEmail(email);
+        setShowMfaEnrollment(true);
+        return;
       }
     } catch (error: any) {
       toast({
