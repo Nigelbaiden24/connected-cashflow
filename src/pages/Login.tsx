@@ -149,24 +149,20 @@ const Login = ({ onLogin }: LoginProps) => {
   // MFA Enrollment Screen (forced for users without MFA)
   if (showMfaEnrollment) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
-        <MFAEnrollment
-          onSuccess={handleMfaEnrollmentSuccess}
-          onCancel={handleMfaCancel}
-        />
-      </div>
+      <MFAEnrollment
+        onSuccess={handleMfaEnrollmentSuccess}
+        onCancel={handleMfaCancel}
+      />
     );
   }
 
   // MFA Challenge Screen
   if (showMfaChallenge) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
-        <MFAChallenge
-          onSuccess={handleMfaSuccess}
-          onCancel={handleMfaCancel}
-        />
-      </div>
+      <MFAChallenge
+        onSuccess={handleMfaSuccess}
+        onCancel={handleMfaCancel}
+      />
     );
   }
 
