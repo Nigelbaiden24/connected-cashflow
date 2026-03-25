@@ -32,6 +32,8 @@ export default function Auth() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showMfaChallenge, setShowMfaChallenge] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
   
   const [signUpData, setSignUpData] = useState({
     email: "",
