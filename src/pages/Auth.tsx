@@ -11,9 +11,14 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { z } from "zod";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
+import { MFAChallenge } from "@/components/auth/MFAChallenge";
+import { passwordSchema } from "@/utils/passwordValidation";
+import { logLoginActivity, logAuditEvent } from "@/utils/loginActivity";
+
 const signUpSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: passwordSchema,
   fullName: z.string().trim().min(1, "Name is required"),
 });
 
