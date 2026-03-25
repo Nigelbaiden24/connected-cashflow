@@ -66,6 +66,8 @@ export default function Auth() {
 
       if (error) throw error;
 
+      await logAuditEvent("signup_initiated", "auth", "info", { email: validatedData.email });
+
       toast({
         title: "Success!",
         description: "Please check your email to confirm your account.",
