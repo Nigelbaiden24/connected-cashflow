@@ -104,7 +104,7 @@ export default function BusinessReports() {
           </p>
         </div>
         <div className="flex gap-2">
-          {isAdmin && <AdminReportUpload platform="business" onUploadSuccess={fetchReports} />}
+          {isAdmin && <AdminReportUpload onUploadSuccess={fetchReports} />}
         </div>
       </div>
 
