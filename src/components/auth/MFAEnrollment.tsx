@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Shield, Smartphone, Copy, CheckCircle2 } from "lucide-react";
+import { Loader2, Shield, Smartphone, Copy, CheckCircle2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface MFAEnrollmentProps {
   onSuccess: () => void;
@@ -24,9 +25,19 @@ export function MFAEnrollment({ onSuccess, onCancel }: MFAEnrollmentProps) {
   const startEnrollment = async () => {
     setLoading(true);
     try {
+      // Clean up any existing unverified factors first
+      const { data: existingFactors } = await supabase.auth.mfa.listFactors();
+      if (existingFactors?.totp) {
+        for (const factor of existingFactors.totp) {
+          if (factor.status === "unverified") {
+            await supabase.auth.mfa.unenroll({ factorId: factor.id });
+          }
+        }
+      }
+
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: "totp",
-        friendlyName: "Authenticator App",
+        friendlyName: "FlowPulse Authenticator",
       });
 
       if (error) throw error;
@@ -65,7 +76,7 @@ export function MFAEnrollment({ onSuccess, onCancel }: MFAEnrollmentProps) {
 
       if (verifyError) throw verifyError;
 
-      toast.success("Authenticator set up successfully! MFA is now active.");
+      toast.success("Authenticator set up successfully!");
       onSuccess();
     } catch (error: any) {
       console.error("MFA verification error:", error);
@@ -79,142 +90,220 @@ export function MFAEnrollment({ onSuccess, onCancel }: MFAEnrollmentProps) {
   const copySecret = () => {
     navigator.clipboard.writeText(secret);
     setCopied(true);
-    toast.success("Secret copied to clipboard");
+    toast.success("Secret key copied");
     setTimeout(() => setCopied(false), 2000);
   };
 
   if (step === "intro") {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-2">
-            <Shield className="h-12 w-12 text-primary" />
+      <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-2">
+        {/* Left - Branding */}
+        <div className="flex flex-col justify-between p-8 lg:p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white lg:min-h-screen">
+          <div>
+            <img src={flowpulseLogo} alt="FlowPulse" className="h-12 mb-8" />
+            <h1 className="text-3xl font-bold mb-4">Secure Your Account</h1>
+            <p className="text-lg text-blue-100">
+              Two-factor authentication is required for all FlowPulse Finance accounts.
+            </p>
           </div>
-          <CardTitle className="text-xl">Two-Factor Authentication Required</CardTitle>
-          <CardDescription className="text-sm mt-2">
-            For your security, all FlowPulse Finance accounts require two-factor authentication. 
-            Set up Google Authenticator or Microsoft Authenticator to continue.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <Smartphone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+          <div className="hidden lg:block space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                <Smartphone className="h-6 w-6" />
+              </div>
               <div>
-                <p className="text-sm font-medium">Step 1</p>
-                <p className="text-xs text-muted-foreground">
-                  Download Google Authenticator or Microsoft Authenticator on your phone
-                </p>
+                <h3 className="font-semibold mb-1">Authenticator App</h3>
+                <p className="text-sm text-blue-100">Works with Google Authenticator & Microsoft Authenticator</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                <Shield className="h-6 w-6" />
+              </div>
               <div>
-                <p className="text-sm font-medium">Step 2</p>
-                <p className="text-xs text-muted-foreground">
-                  Scan the QR code with your authenticator app
-                </p>
+                <h3 className="font-semibold mb-1">Enterprise Security</h3>
+                <p className="text-sm text-blue-100">TOTP-based verification protects against unauthorized access</p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
+                <Lock className="h-6 w-6" />
+              </div>
               <div>
-                <p className="text-sm font-medium">Step 3</p>
-                <p className="text-xs text-muted-foreground">
-                  Enter the 6-digit code to verify and activate
-                </p>
+                <h3 className="font-semibold mb-1">One-Time Setup</h3>
+                <p className="text-sm text-blue-100">Set up once, then enter a code each time you sign in</p>
               </div>
             </div>
           </div>
+          <div className="hidden lg:block text-sm text-blue-100">
+            © 2024 FlowPulse Finance. All rights reserved.
+          </div>
+        </div>
 
-          <Button className="w-full" onClick={startEnrollment} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Set Up Authenticator
-          </Button>
-          {onCancel && (
-            <Button variant="ghost" className="w-full" onClick={onCancel}>
-              Sign Out
+        {/* Right - Setup */}
+        <div className="flex items-center justify-center p-8 bg-background flex-1">
+          <div className="w-full max-w-md space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Set Up Authenticator</h2>
+              <p className="text-muted-foreground mt-2">
+                Follow these steps to enable two-factor authentication
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex-shrink-0">1</div>
+                <div>
+                  <p className="text-sm font-medium">Download an authenticator app</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Install Google Authenticator or Microsoft Authenticator from your app store
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex-shrink-0">2</div>
+                <div>
+                  <p className="text-sm font-medium">Scan the QR code</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Use your authenticator app to scan the code we'll show you
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm flex-shrink-0">3</div>
+                <div>
+                  <p className="text-sm font-medium">Enter verification code</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Type the 6-digit code from your app to activate
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Button className="w-full h-11 text-base" onClick={startEnrollment} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Begin Setup
             </Button>
-          )}
-        </CardContent>
-      </Card>
+            {onCancel && (
+              <Button variant="ghost" className="w-full" onClick={onCancel}>
+                Sign Out
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (step === "setup") {
     return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-2">
-            <Smartphone className="h-10 w-10 text-primary" />
+      <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-2">
+        <div className="flex flex-col justify-center items-center p-8 lg:p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white lg:min-h-screen">
+          <img src={flowpulseLogo} alt="FlowPulse" className="h-10 mb-6" />
+          <div className="bg-white rounded-2xl p-6 shadow-2xl">
+            {qrCode && (
+              <img src={qrCode} alt="Scan this QR code with your authenticator app" className="w-56 h-56" />
+            )}
           </div>
-          <CardTitle>Scan QR Code</CardTitle>
-          <CardDescription>
-            Open Google Authenticator or Microsoft Authenticator and scan this QR code
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {qrCode && (
-            <div className="flex justify-center p-4 bg-white rounded-lg">
-              <img src={qrCode} alt="MFA QR Code" className="w-48 h-48" />
-            </div>
-          )}
+          <p className="text-blue-100 text-sm mt-6 text-center max-w-xs">
+            Point your authenticator app's camera at the QR code above
+          </p>
+        </div>
 
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">
-              Can't scan? Enter this key manually:
-            </p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs bg-muted p-2 rounded font-mono break-all">
-                {secret}
-              </code>
-              <Button variant="outline" size="sm" onClick={copySecret}>
-                {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </Button>
+        <div className="flex items-center justify-center p-8 bg-background flex-1">
+          <div className="w-full max-w-md space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Scan QR Code</h2>
+              <p className="text-muted-foreground mt-2">
+                Open your authenticator app and scan the QR code shown on the left
+              </p>
             </div>
+
+            <div className="space-y-3">
+              <div className="p-4 rounded-lg border bg-card">
+                <p className="text-xs text-muted-foreground mb-2 font-medium">Can't scan? Enter this key manually:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-xs bg-muted p-2.5 rounded font-mono break-all select-all">
+                    {secret}
+                  </code>
+                  <Button variant="outline" size="sm" onClick={copySecret} className="flex-shrink-0">
+                    {copied ? <CheckCircle2 className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <Button className="w-full h-11 text-base" onClick={() => setStep("verify")}>
+              I've Scanned the Code — Next
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setStep("intro")}>
+              Back
+            </Button>
           </div>
-
-          <Button className="w-full" onClick={() => setStep("verify")}>
-            I've Scanned the Code
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
+  // Verify step
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex justify-center mb-2">
-          <Shield className="h-10 w-10 text-primary" />
-        </div>
-        <CardTitle>Verify Authenticator</CardTitle>
-        <CardDescription>
-          Enter the 6-digit code from your authenticator app to complete setup
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-2">
+      <div className="flex flex-col justify-between p-8 lg:p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white lg:min-h-screen">
         <div>
-          <Label htmlFor="verify-code">Verification Code</Label>
-          <Input
-            id="verify-code"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            placeholder="000000"
-            maxLength={6}
-            className="font-mono text-lg tracking-widest text-center mt-2"
-            autoFocus
-            onKeyDown={(e) => e.key === "Enter" && verifyAndActivate()}
-          />
+          <img src={flowpulseLogo} alt="FlowPulse" className="h-12 mb-8" />
+          <h1 className="text-3xl font-bold mb-4">Almost There!</h1>
+          <p className="text-lg text-blue-100">
+            Enter the 6-digit code from your authenticator app to complete setup.
+          </p>
         </div>
-        <Button className="w-full" onClick={verifyAndActivate} disabled={loading || code.length !== 6}>
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Verify & Activate
-        </Button>
-        <Button variant="ghost" className="w-full" onClick={() => setStep("setup")}>
-          Back to QR Code
-        </Button>
-      </CardContent>
-    </Card>
+        <div className="hidden lg:flex items-center gap-4 p-4 bg-white/10 rounded-xl backdrop-blur-sm">
+          <Shield className="h-8 w-8 flex-shrink-0" />
+          <div>
+            <p className="font-semibold">Codes refresh every 30 seconds</p>
+            <p className="text-sm text-blue-100">Make sure to enter the current code shown in your app</p>
+          </div>
+        </div>
+        <div className="hidden lg:block text-sm text-blue-100">
+          © 2024 FlowPulse Finance. All rights reserved.
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center p-8 bg-background flex-1">
+        <div className="w-full max-w-md space-y-6">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Verify Code</h2>
+            <p className="text-muted-foreground mt-2">
+              Enter the 6-digit code from your authenticator app
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="verify-code" className="text-sm font-medium">Verification Code</Label>
+            <Input
+              id="verify-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="000000"
+              maxLength={6}
+              className="font-mono text-2xl tracking-[0.5em] text-center h-14"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && verifyAndActivate()}
+            />
+          </div>
+
+          <Button
+            className="w-full h-11 text-base"
+            onClick={verifyAndActivate}
+            disabled={loading || code.length !== 6}
+          >
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Verify & Activate
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={() => setStep("setup")}>
+            Back to QR Code
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -380,12 +380,7 @@ const Index = () => {
       <div className="bg-white py-20 md:py-32">
         <div className="container mx-auto px-6">
           <div className="flex flex-col items-center gap-12 lg:gap-16">
-            {/* Text Content */}
-            <div className="text-center max-w-4xl">
-              <p className="text-gray-600 text-lg md:text-xl font-medium tracking-wide">
-                Receive institutional analyst grade investment insights delivered the moment they matter
-              </p>
-            </div>
+            {/* Device Mockup Images - Full Width */}
 
             {/* Device Mockup Images - Full Width */}
             <div className="w-full flex items-end justify-center gap-8">
