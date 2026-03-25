@@ -403,24 +403,24 @@ const Index = () => {
 
             {/* Device Mockup Images */}
             <div className="lg:w-1/2 flex items-end justify-center gap-6">
-              <div className="relative w-[55%] rounded-xl overflow-hidden shadow-2xl">
+              <div className="relative w-[58%]">
                 <img
                   src={laptopNotificationImg}
                   alt="FlowPulse web notification showing a new deal alert on a laptop dashboard"
-                  className="w-full h-auto rounded-xl"
+                  className="w-full h-auto"
                   loading="lazy"
-                  width={1024}
-                  height={768}
+                  width={1920}
+                  height={1080}
                 />
               </div>
-              <div className="relative w-[30%] rounded-2xl overflow-hidden shadow-2xl -mb-4">
+              <div className="relative w-[28%] -mb-4">
                 <img
                   src={iphoneSmsImg}
                   alt="iPhone SMS alert from FlowPulse showing a new investment report notification"
-                  className="w-full h-auto rounded-2xl"
+                  className="w-full h-auto"
                   loading="lazy"
-                  width={640}
-                  height={960}
+                  width={1080}
+                  height={1920}
                 />
               </div>
             </div>
