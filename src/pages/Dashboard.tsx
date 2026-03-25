@@ -223,46 +223,57 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Market Overview & Deals - Top */}
-      <DashboardDealWidgets basePath="/finance" />
+      {/* Below-fold widgets - lazy loaded */}
+      <Suspense fallback={<WidgetLoader />}>
+        <DashboardDealWidgets basePath="/finance" />
+      </Suspense>
 
-      {/* AI Summary Panel */}
-      <AISummaryPanel />
+      <Suspense fallback={<WidgetLoader />}>
+        <AISummaryPanel />
+      </Suspense>
 
-      {/* Risk Assessment */}
-      <ClientRiskRadar />
+      <Suspense fallback={<WidgetLoader />}>
+        <ClientRiskRadar />
+      </Suspense>
 
-      {/* Pipeline Overview */}
-      <PipelineOverview />
+      <Suspense fallback={<WidgetLoader />}>
+        <PipelineOverview />
+      </Suspense>
 
-      {/* Featured Analyst Picks */}
-      <FeaturedAnalystPicksSection />
+      <Suspense fallback={<WidgetLoader />}>
+        <FeaturedAnalystPicksSection />
+      </Suspense>
 
-      {/* Revenue & Goals Row */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <AdvisoryRevenues />
+      <Suspense fallback={<WidgetLoader />}>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <AdvisoryRevenues />
+          </div>
+          <AdvisorGoals />
         </div>
-        <AdvisorGoals />
-      </div>
+      </Suspense>
 
-      {/* Tasks & Alerts Row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <AdvisorTasks />
-        <DynamicAlerts />
-      </div>
+      <Suspense fallback={<WidgetLoader />}>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <AdvisorTasks />
+          <DynamicAlerts />
+        </div>
+      </Suspense>
 
-      {/* Watchlist & Calendar Row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PortfolioWatchlist />
-        <CalendarSnapshot />
-      </div>
+      <Suspense fallback={<WidgetLoader />}>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PortfolioWatchlist />
+          <CalendarSnapshot />
+        </div>
+      </Suspense>
 
-      {/* Activity Overview */}
-      <ActivityOverview />
+      <Suspense fallback={<WidgetLoader />}>
+        <ActivityOverview />
+      </Suspense>
 
-      {/* Quick Links Panel */}
-      <QuickLinks />
+      <Suspense fallback={<WidgetLoader />}>
+        <QuickLinks />
+      </Suspense>
     </div>
   );
 };
