@@ -213,7 +213,8 @@ const Dashboard = () => {
                       stroke={metric.color}
                       strokeWidth={2}
                       fill={`url(#spark-${metric.sparkKey})`}
-                      animationDuration={1200}
+                      animationDuration={400}
+                      isAnimationActive={false}
                     />
                   </AreaChart>
                 </ResponsiveContainer>

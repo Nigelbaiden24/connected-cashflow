@@ -65,7 +65,7 @@ export function MFAChallenge({ onSuccess, onCancel }: MFAChallengeProps) {
         </div>
         <CardTitle>Two-Factor Authentication</CardTitle>
         <CardDescription>
-          Enter the 6-digit code from your authenticator app
+          Enter the 6-digit code from your Google Authenticator or Microsoft Authenticator app
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
