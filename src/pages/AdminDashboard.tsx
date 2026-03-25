@@ -186,6 +186,11 @@ export default function AdminDashboard() {
     sendVia: [] as string[]
   });
 
+  // Check admin access on mount
+  useEffect(() => {
+    checkAdminAccess();
+  }, []);
+
   // Load compliance data on mount
   useEffect(() => {
     loadComplianceData();
