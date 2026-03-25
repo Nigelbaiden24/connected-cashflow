@@ -100,13 +100,35 @@ export default function Auth() {
     try {
       const validatedData = signInSchema.parse(signInData);
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: validatedData.email,
         password: validatedData.password,
       });
 
-      if (error) throw error;
+      if (error) {
+        setFailedAttempts((prev) => prev + 1);
+        // Log failed attempt
+        await logAuditEvent("login_failed", "auth", "warning", { email: validatedData.email });
+        throw error;
+      }
 
+      // Log successful login
+      if (data.user) {
+        await logLoginActivity(data.user.id, "success");
+        await logAuditEvent("login_success", "auth", "info");
+      }
+
+      // Check if MFA is required
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const hasMfa = factors?.totp?.some((f) => f.status === "verified");
+      
+      if (hasMfa) {
+        setShowMfaChallenge(true);
+        setLoading(false);
+        return;
+      }
+
+      setFailedAttempts(0);
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
@@ -130,6 +152,16 @@ export default function Auth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMfaSuccess = () => {
+    setShowMfaChallenge(false);
+    setFailedAttempts(0);
+    toast({
+      title: "Welcome back!",
+      description: "You've successfully signed in with MFA.",
+    });
+    navigate("/finance");
   };
 
   return (
