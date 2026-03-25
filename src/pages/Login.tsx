@@ -23,6 +23,7 @@ const Login = ({ onLogin }: LoginProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showMfaChallenge, setShowMfaChallenge] = useState(false);
+  const [showMfaEnrollment, setShowMfaEnrollment] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
   const { toast } = useToast();
 
