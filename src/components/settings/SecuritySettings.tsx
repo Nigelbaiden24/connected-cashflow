@@ -113,41 +113,9 @@ export const SecuritySettings = () => {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setPasswordStrength(calculatePasswordStrength(e.target.value));
-                        }}
-                      />
+                      <Input type="password" {...field} />
                     </FormControl>
-                    {field.value && (
-                      <div className="space-y-1">
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <div
-                              key={i}
-                              className={`h-1 flex-1 rounded-full transition-colors ${
-                                i < passwordStrength
-                                  ? passwordStrength <= 2
-                                    ? 'bg-destructive'
-                                    : passwordStrength <= 3
-                                    ? 'bg-orange-500'
-                                    : 'bg-green-500'
-                                  : 'bg-muted'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {passwordStrength <= 2 && 'Weak password'}
-                          {passwordStrength === 3 && 'Medium strength'}
-                          {passwordStrength === 4 && 'Strong password'}
-                          {passwordStrength === 5 && 'Very strong password'}
-                        </p>
-                      </div>
-                    )}
+                    <PasswordRequirements password={field.value} />
                     <FormMessage />
                   </FormItem>
                 )}
