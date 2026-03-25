@@ -38,7 +38,6 @@ export const SecuritySettings = () => {
       confirmPassword: "",
     },
   });
-  };
 
   const onSubmit = async (values: PasswordFormValues) => {
     setLoading(true);
