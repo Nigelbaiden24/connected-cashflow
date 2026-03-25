@@ -3798,6 +3798,42 @@ export type Database = {
           },
         ]
       }
+      login_activity: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          failure_reason: string | null
+          id: string
+          ip_address: string | null
+          location: string | null
+          login_status: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          login_status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          failure_reason?: string | null
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          login_status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       market_commentary: {
         Row: {
           created_at: string | null
