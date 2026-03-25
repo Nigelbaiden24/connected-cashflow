@@ -2,27 +2,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Users, Clock, DollarSign, ArrowLeft, Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-import { ClientRiskRadar } from "@/components/dashboard/ClientRiskRadar";
-import { PipelineOverview } from "@/components/dashboard/PipelineOverview";
-import { AdvisorTasks } from "@/components/dashboard/AdvisorTasks";
-import { AdvisoryRevenues } from "@/components/dashboard/AdvisoryRevenues";
-import { PortfolioWatchlist } from "@/components/dashboard/PortfolioWatchlist";
-import { DynamicAlerts } from "@/components/dashboard/DynamicAlerts";
-
-import { ActivityOverview } from "@/components/dashboard/ActivityOverview";
-import { AISummaryPanel } from "@/components/dashboard/AISummaryPanel";
-import { QuickLinks } from "@/components/dashboard/QuickLinks";
-import { AdvisorGoals } from "@/components/dashboard/AdvisorGoals";
-import { CalendarSnapshot } from "@/components/dashboard/CalendarSnapshot";
 import { TranslatedText } from "@/components/TranslatedText";
-import { FeaturedAnalystPicksSection } from "@/components/market/FeaturedAnalystPicksSection";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { DashboardDealWidgets } from "@/components/dashboard/DashboardDealWidgets";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
+
+// Lazy load below-fold dashboard widgets
+const ClientRiskRadar = lazy(() => import("@/components/dashboard/ClientRiskRadar").then(m => ({ default: m.ClientRiskRadar })));
+const PipelineOverview = lazy(() => import("@/components/dashboard/PipelineOverview").then(m => ({ default: m.PipelineOverview })));
+const AdvisorTasks = lazy(() => import("@/components/dashboard/AdvisorTasks").then(m => ({ default: m.AdvisorTasks })));
+const AdvisoryRevenues = lazy(() => import("@/components/dashboard/AdvisoryRevenues").then(m => ({ default: m.AdvisoryRevenues })));
+const PortfolioWatchlist = lazy(() => import("@/components/dashboard/PortfolioWatchlist").then(m => ({ default: m.PortfolioWatchlist })));
+const DynamicAlerts = lazy(() => import("@/components/dashboard/DynamicAlerts").then(m => ({ default: m.DynamicAlerts })));
+const ActivityOverview = lazy(() => import("@/components/dashboard/ActivityOverview").then(m => ({ default: m.ActivityOverview })));
+const AISummaryPanel = lazy(() => import("@/components/dashboard/AISummaryPanel").then(m => ({ default: m.AISummaryPanel })));
+const QuickLinks = lazy(() => import("@/components/dashboard/QuickLinks").then(m => ({ default: m.QuickLinks })));
+const AdvisorGoals = lazy(() => import("@/components/dashboard/AdvisorGoals").then(m => ({ default: m.AdvisorGoals })));
+const CalendarSnapshot = lazy(() => import("@/components/dashboard/CalendarSnapshot").then(m => ({ default: m.CalendarSnapshot })));
+const FeaturedAnalystPicksSection = lazy(() => import("@/components/market/FeaturedAnalystPicksSection").then(m => ({ default: m.FeaturedAnalystPicksSection })));
+const DashboardDealWidgets = lazy(() => import("@/components/dashboard/DashboardDealWidgets").then(m => ({ default: m.DashboardDealWidgets })));
+
+const WidgetLoader = () => (
+  <div className="h-32 flex items-center justify-center">
+    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
 
 const Dashboard = () => {
   const navigate = useNavigate();
