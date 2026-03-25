@@ -412,6 +412,19 @@ const Index = () => {
                   width={1920}
                   height={1080}
                 />
+                {/* Clear alert overlay for laptop */}
+                <div className="absolute top-[12%] right-[4%] w-[52%] bg-white rounded-lg shadow-xl border border-gray-200 p-2.5 md:p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Zap className="w-3 h-3 md:w-3.5 md:h-3.5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[9px] md:text-xs font-bold text-gray-900 leading-tight">NEW DEAL ALERT</p>
+                      <p className="text-[8px] md:text-[11px] text-gray-700 leading-tight mt-0.5">Premium Corporate Bond — 6.2% Yield</p>
+                      <p className="text-[7px] md:text-[10px] text-gray-500 leading-tight mt-0.5">Min investment £50K · View Details →</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="relative w-[28%] -mb-4">
                 <img
@@ -422,6 +435,18 @@ const Index = () => {
                   width={1080}
                   height={1920}
                 />
+                {/* Clear alert overlay for mobile */}
+                <div className="absolute top-[18%] left-[8%] right-[8%] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 p-2 md:p-2.5">
+                  <div className="flex items-start gap-1.5">
+                    <div className="w-4 h-4 md:w-5 md:h-5 rounded-md bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-[7px] md:text-[9px] font-bold">FP</span>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[7px] md:text-[9px] font-semibold text-gray-900 leading-tight">FlowPulse Alerts</p>
+                      <p className="text-[6px] md:text-[8px] text-gray-700 leading-tight mt-0.5">NEW DEAL: UK Infrastructure Bond – 5.8% yield, min £25K. Tap to review.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
