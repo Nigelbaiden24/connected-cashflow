@@ -164,6 +164,20 @@ export default function Auth() {
     navigate("/finance");
   };
 
+  if (showMfaChallenge) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
+        <MFAChallenge
+          onSuccess={handleMfaSuccess}
+          onCancel={() => {
+            setShowMfaChallenge(false);
+            supabase.auth.signOut();
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
       <Card className="w-full max-w-md">
@@ -206,7 +220,7 @@ export default function Auth() {
                     <Input
                       id="signin-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="••••••••••"
                       value={signInData.password}
                       onChange={(e) =>
                         setSignInData({ ...signInData, password: e.target.value })
@@ -228,6 +242,11 @@ export default function Auth() {
                     </Button>
                   </div>
                 </div>
+                {failedAttempts >= 3 && (
+                  <p className="text-xs text-destructive">
+                    Too many failed attempts. Please verify you are not a bot.
+                  </p>
+                )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <>
@@ -275,7 +294,7 @@ export default function Auth() {
                     <Input
                       id="signup-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="••••••••••"
                       value={signUpData.password}
                       onChange={(e) =>
                         setSignUpData({ ...signUpData, password: e.target.value })
@@ -296,9 +315,7 @@ export default function Auth() {
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Must be at least 8 characters
-                  </p>
+                  <PasswordRequirements password={signUpData.password} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
