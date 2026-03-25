@@ -7037,6 +7037,7 @@ export type Database = {
         Returns: string
       }
       get_user_organisation_id: { Args: { _user_id: string }; Returns: string }
+      get_user_role: { Args: { _user_id: string }; Returns: string }
       get_vault_secret: { Args: { _name: string }; Returns: string }
       grant_platform_access: {
         Args: {
@@ -7049,6 +7050,10 @@ export type Database = {
       }
       has_platform_access: {
         Args: { _platform: string; _user_id: string }
+        Returns: boolean
+      }
+      has_role_text: {
+        Args: { _role: string; _user_id: string }
         Returns: boolean
       }
       increment_learning_content_views: {
