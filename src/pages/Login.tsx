@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Eye, EyeOff, Lock, Mail, CheckCircle2, User, Phone, Building, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { MFAChallenge } from "@/components/auth/MFAChallenge";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface LoginProps {
@@ -20,6 +21,8 @@ const Login = ({ onLogin }: LoginProps) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showMfaChallenge, setShowMfaChallenge] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   const { toast } = useToast();
 
   // Enquiry form state
@@ -50,6 +53,16 @@ const Login = ({ onLogin }: LoginProps) => {
       }
 
       if (data.user) {
+        // Check if MFA is required
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const hasMfa = factors?.totp?.some((f) => f.status === "verified");
+
+        if (hasMfa) {
+          setPendingEmail(email);
+          setShowMfaChallenge(true);
+          return;
+        }
+
         toast({
           title: "Login Successful",
           description: `Welcome back! Logged in as ${email}`,
@@ -66,6 +79,22 @@ const Login = ({ onLogin }: LoginProps) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMfaSuccess = () => {
+    setShowMfaChallenge(false);
+    toast({
+      title: "Login Successful",
+      description: "MFA verified. Welcome back!",
+    });
+    onLogin(pendingEmail);
+    navigate("/dashboard");
+  };
+
+  const handleMfaCancel = () => {
+    setShowMfaChallenge(false);
+    setPendingEmail("");
+    supabase.auth.signOut();
   };
 
   const handleEnquirySubmit = async (e: React.FormEvent) => {
@@ -89,7 +118,6 @@ const Login = ({ onLogin }: LoginProps) => {
         description: "Thank you! A member of our team will be in touch shortly.",
       });
 
-      // Reset form
       setEnquiryName("");
       setEnquiryEmail("");
       setEnquiryPhone("");
@@ -106,9 +134,21 @@ const Login = ({ onLogin }: LoginProps) => {
     }
   };
 
+  // MFA Challenge Screen
+  if (showMfaChallenge) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
+        <MFAChallenge
+          onSuccess={handleMfaSuccess}
+          onCancel={handleMfaCancel}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-2">
-      {/* Left Side - Branding (visible on both mobile and desktop) */}
+      {/* Left Side - Branding */}
       <div className="flex flex-col justify-between p-8 lg:p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white lg:min-h-screen">
         <div>
           <img 
