@@ -775,17 +775,16 @@ export default function AdminDashboard() {
                       General Reports Upload
                     </CardTitle>
                     <CardDescription className="text-slate-500">
-                      Upload reports for Finance, Business, or Investor platforms. Select platform, report type, and assign to specific users.
+                      Upload general finance reports and assign to specific users
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-slate-600">• Upload PDF reports for any FlowPulse platform</p>
-                        <p className="text-sm text-slate-600">• Select Finance, Business, or Investor platform</p>
+                        <p className="text-sm text-slate-600">• Upload PDF reports for FlowPulse Finance</p>
                         <p className="text-sm text-slate-600">• Choose report type and assign to specific users</p>
                       </div>
-                      <AdminReportUpload onUploadSuccess={fetchProfiles} />
+                      <AdminReportUpload section="finance_reports" onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
@@ -796,20 +795,20 @@ export default function AdminDashboard() {
                   <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
                     <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                       <FileBarChart className="h-6 w-6 text-secondary" />
-                      Investor Research Reports
+                      Research Reports
                     </CardTitle>
                     <CardDescription className="text-slate-500">
-                      Upload research reports that will appear in the FlowPulse Investor Research Reports tab
+                      Upload research reports for the Research Reports section
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-slate-600">• Upload PDF research reports for investors</p>
-                        <p className="text-sm text-slate-600">• Reports will appear in the Investor Research Reports section</p>
-                        <p className="text-sm text-slate-600">• Assign to specific users or make available to all investors</p>
+                        <p className="text-sm text-slate-600">• Upload PDF research reports</p>
+                        <p className="text-sm text-slate-600">• Reports will appear in the Research Reports section</p>
+                        <p className="text-sm text-slate-600">• Assign to specific users or make available to all</p>
                       </div>
-                      <AdminReportUpload platform="investor" section="investor_research" onUploadSuccess={fetchProfiles} />
+                      <AdminReportUpload section="research" onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>
@@ -820,20 +819,20 @@ export default function AdminDashboard() {
                   <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-primary/5 to-transparent">
                     <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
                       <FileBarChart className="h-6 w-6 text-primary" />
-                      Investor Analysis Reports
+                      Analysis Reports
                     </CardTitle>
                     <CardDescription className="text-slate-500">
-                      Upload analysis reports that will appear in the FlowPulse Investor Analysis Reports tab
+                      Upload analysis reports for the Analysis Reports section
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-center">
                       <div className="space-y-2">
-                        <p className="text-sm text-slate-600">• Upload PDF analysis reports for investors</p>
-                        <p className="text-sm text-slate-600">• Reports will appear in the Investor Analysis Reports section</p>
-                        <p className="text-sm text-slate-600">• Assign to specific users or make available to all investors</p>
+                        <p className="text-sm text-slate-600">• Upload PDF analysis reports</p>
+                        <p className="text-sm text-slate-600">• Reports will appear in the Analysis Reports section</p>
+                        <p className="text-sm text-slate-600">• Assign to specific users or make available to all</p>
                       </div>
-                      <AdminReportUpload platform="investor" section="investor_analysis" onUploadSuccess={fetchProfiles} />
+                      <AdminReportUpload section="analysis" onUploadSuccess={fetchProfiles} />
                     </div>
                   </CardContent>
                 </Card>

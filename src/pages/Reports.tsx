@@ -254,7 +254,7 @@ export default function Reports() {
             </p>
           </div>
           <div className="flex gap-2">
-            {isAdmin && <AdminReportUpload platform="finance" onUploadSuccess={fetchReports} />}
+            {isAdmin && <AdminReportUpload onUploadSuccess={fetchReports} />}
           </div>
         </div>
 

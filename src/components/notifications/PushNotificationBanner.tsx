@@ -77,7 +77,7 @@ export function PushNotificationBanner() {
                 Stay ahead of the market
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Get real-time deal alerts, market updates, and investor signals delivered instantly.
+                Get real-time deal alerts, market updates, and financial insights delivered instantly.
               </p>
               <div className="flex items-center gap-2">
                 <Button size="sm" onClick={handleEnable} className="gap-1.5" disabled={initializing}>

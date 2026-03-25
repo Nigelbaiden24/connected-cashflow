@@ -17,12 +17,11 @@ interface Profile {
 }
 
 interface AdminReportUploadProps {
-  platform?: "finance" | "business" | "investor";
-  section?: "finance_reports" | "investor_research" | "investor_analysis";
+  section?: "finance_reports" | "research" | "analysis";
   onUploadSuccess?: () => void;
 }
 
-export function AdminReportUpload({ platform: defaultPlatform, section, onUploadSuccess }: AdminReportUploadProps) {
+export function AdminReportUpload({ section, onUploadSuccess }: AdminReportUploadProps) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -32,10 +31,7 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
   const [description, setDescription] = useState("");
   const [reportType, setReportType] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("all");
-  const [selectedPlatform, setSelectedPlatform] = useState<string>(defaultPlatform || "finance");
-  const [platformSection, setPlatformSection] = useState<string>(
-    section || (defaultPlatform === "investor" ? "investor_research" : "finance_reports")
-  );
+  const [reportSection, setReportSection] = useState<string>(section || "finance_reports");
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const financeReportTypes = [
@@ -48,61 +44,14 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
     "Fund Research Reports",
     "ETF Research Reports",
     "Manager Research Reports",
-    "Strategy Research Reports",
-    "Parent / People / Process Reports",
-    "Sustainability / ESG Risk Reports",
-    "Portfolio Performance Reports",
-    "Portfolio Risk Reports",
-    "Performance Attribution Reports",
-    "Portfolio Style / Drift Reports",
-    "Portfolio Holdings Reports",
-    "Asset Allocation Reports",
-    "Scenario / Stress Testing Reports",
-    "Investment Committee Reports",
-    "Market Commentary Reports",
-    "Custom Fact Sheets",
-    "Fund Fact Sheets",
-    "Strategy Fact Sheets",
-    "Regulatory / Compliance Reports",
-    "Custom-Branded Client Reports",
-    "White-Label Reports",
-    "Investment Proposal Reports",
-    "Client Review Reports",
-    "Data Feed / API-Based Reports",
-    "Interactive Financial Model Reports",
-    "Custom Portfolio Analytics Packs",
-    "Peer Benchmarking Reports",
-    "Operational Due Diligence Reports",
-    "Semiliquid / Alternative Investment Reports",
-    "Multi-Asset Research Reports",
-    "Fixed Income Research Reports",
-    "Bond Analysis Reports",
-    "Manager Due Diligence Packs",
-    "Committee Meeting Packs",
-    "Custom Publishing System Reports",
-    "Thought Leadership Reports",
-    "Market Trends Reports",
-    "Asset Manager Reporting Packs",
-    "Advisor Performance Packs",
-    "Product Comparison Reports"
+    "Fixed Income Research",
+    "Alternative Investment Reports",
+    "Credit Ratings Reports",
+    "IPO Research Reports",
+    "Derivative Strategy Reports"
   ];
 
-  const businessReportTypes = [
-    "Benchmarking",
-    "Market Trends",
-    "Competitor Intelligence",
-    "Economic Outlook",
-    "Technology & Innovation",
-    "Customer Insights",
-    "Sales & Marketing Intelligence",
-    "Operational Efficiency",
-    "Workforce & Talent",
-    "ESG & Sustainability",
-    "Sector Spotlight",
-    "Executive Briefings"
-  ];
-
-  const investorReportTypes = [
+  const researchReportTypes = [
     "Research Reports",
     "Market Analysis",
     "Investment Strategy",
@@ -112,11 +61,19 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
     "ESG Reports"
   ];
 
+  const analysisReportTypes = [
+    "Technical Analysis",
+    "Fundamental Analysis",
+    "Sector Analysis",
+    "Macro Analysis",
+    "Quantitative Analysis",
+    "Valuation Reports"
+  ];
+
   const getReportTypes = () => {
-    const section = platformSection || "finance_reports";
-    if (section === "finance_reports" || selectedPlatform === "finance") return financeReportTypes;
-    if (selectedPlatform === "business") return businessReportTypes;
-    return investorReportTypes;
+    if (reportSection === "research") return researchReportTypes;
+    if (reportSection === "analysis") return analysisReportTypes;
+    return financeReportTypes;
   };
 
   useEffect(() => {
@@ -133,25 +90,7 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
         .order("email");
 
       if (error) throw error;
-      
-      // Ensure admin user is included
-      const allProfiles = data || [];
-      const hasAdmin = allProfiles.some(p => p.email === "nigelbaiden24@yahoo.com");
-      
-      if (!hasAdmin) {
-        // Fetch admin user specifically
-        const { data: adminData } = await supabase
-          .from("user_profiles")
-          .select("user_id, email, full_name")
-          .eq("email", "nigelbaiden24@yahoo.com")
-          .single();
-        
-        if (adminData) {
-          allProfiles.unshift(adminData);
-        }
-      }
-      
-      setProfiles(allProfiles);
+      setProfiles(data || []);
     } catch (error) {
       console.error("Error fetching profiles:", error);
       toast.error("Failed to load user profiles");
@@ -184,10 +123,9 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
     try {
       setUploading(true);
 
-      // Upload file to storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${selectedPlatform}/${fileName}`;
+      const filePath = `finance/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('reports')
@@ -215,28 +153,17 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
         }
       }
 
-      // Determine platform and category based on section
-      let finalPlatform: "finance" | "business" | "investor" = "finance";
+      // Determine report category based on section
       let reportCategory: string | null = null;
-
-      const effectiveSection = section || platformSection || "finance_reports";
-
-      if (effectiveSection === "finance_reports") {
-        finalPlatform = selectedPlatform === "business" ? "business" : "finance";
-      } else if (effectiveSection === "investor_research") {
-        finalPlatform = "investor";
+      if (reportSection === "research") {
         reportCategory = "research";
-      } else if (effectiveSection === "investor_analysis") {
-        finalPlatform = "investor";
+      } else if (reportSection === "analysis") {
         reportCategory = "analysis";
       }
 
-      // Get current Supabase user for audit / RLS
       const { data: authData } = await supabase.auth.getUser();
       const uploadedBy = authData?.user?.id ?? null;
 
-      // Insert report metadata
-      // Set target_user_id for user-specific access (null means universal for that platform)
       const targetUserId = selectedUserId && selectedUserId !== "all" ? selectedUserId : null;
       
       const { data: reportData, error: reportError } = await supabase
@@ -246,7 +173,7 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
           description,
           file_path: filePath,
           report_type: reportType,
-          platform: finalPlatform,
+          platform: "finance",
           uploaded_by: uploadedBy,
           thumbnail_url: thumbnailUrl,
           target_user_id: targetUserId,
@@ -282,12 +209,11 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
         }
       }
 
-      // Create notification for users about the new report
+      // Create notification for users
       await createReportNotification({
         reportId: reportData.id,
         title,
         reportType,
-        platform: finalPlatform,
         targetUserId: selectedUserId === "all" ? null : selectedUserId,
       });
 
@@ -313,10 +239,6 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
      setDescription("");
      setReportType("");
      setSelectedUserId("all");
-     setPlatformSection(section || (defaultPlatform === "investor" ? "investor_research" : "finance_reports"));
-     if (!defaultPlatform) {
-       setSelectedPlatform("finance");
-     }
    };
 
   return (
@@ -409,31 +331,15 @@ export function AdminReportUpload({ platform: defaultPlatform, section, onUpload
 
           {!section && (
             <div className="space-y-2">
-              <Label htmlFor="platformSection">Platform Section *</Label>
-              <Select value={platformSection} onValueChange={setPlatformSection}>
+              <Label htmlFor="reportSection">Report Section *</Label>
+              <Select value={reportSection} onValueChange={setReportSection}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select platform section" />
+                  <SelectValue placeholder="Select report section" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="finance_reports">FlowPulse Finance Reports</SelectItem>
-                  <SelectItem value="investor_research">FlowPulse Investor Research Reports</SelectItem>
-                  <SelectItem value="investor_analysis">FlowPulse Investor Analysis Reports</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {!defaultPlatform && (
-            <div className="space-y-2">
-              <Label htmlFor="platform">Platform *</Label>
-              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="finance">Finance</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                  <SelectItem value="investor">Investor</SelectItem>
+                  <SelectItem value="finance_reports">General Finance Reports</SelectItem>
+                  <SelectItem value="research">Research Reports</SelectItem>
+                  <SelectItem value="analysis">Analysis Reports</SelectItem>
                 </SelectContent>
               </Select>
             </div>
