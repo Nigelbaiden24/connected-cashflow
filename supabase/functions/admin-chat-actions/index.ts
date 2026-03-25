@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
           description,
           severity: severity || "info",
           published_date: new Date().toISOString(),
-          metadata: { posted_via: "ai_chatbot", platform },
+          metadata: { posted_via: "ai_chatbot", platform: "finance" },
         }).select().single();
 
         if (error) throw error;
