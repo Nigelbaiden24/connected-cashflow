@@ -9,8 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2, Shield, Key, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { MFASettings } from "../security/MFASettings";
+import { MFAEnrollment } from "../security/MFAEnrollment";
+import { LoginActivityLog } from "../auth/LoginActivityLog";
+import { PasswordRequirements } from "../auth/PasswordRequirements";
 import { Separator } from "@/components/ui/separator";
+import { passwordSchema } from "@/utils/passwordValidation";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(6, "Password must be at least 6 characters"),
