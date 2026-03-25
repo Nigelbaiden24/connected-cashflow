@@ -1,4 +1,5 @@
 import { useState } from "react";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -226,8 +227,8 @@ const Pricing = () => {
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
                     
                     <CardHeader className="pt-8 pb-4 text-center">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-3 mx-auto shadow-lg shadow-primary/25">
-                        <TrendingUp className="h-7 w-7 text-primary-foreground" />
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 mx-auto">
+                        <img src={flowpulseLogo} alt="FlowPulse" className="h-10 w-auto" />
                       </div>
                       <CardTitle className="text-lg font-space-grotesk">Your Subscription</CardTitle>
                       <CardDescription className="text-xs">Annual billing — cancel anytime</CardDescription>
