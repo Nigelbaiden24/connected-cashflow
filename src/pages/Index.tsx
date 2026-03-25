@@ -375,24 +375,55 @@ const Index = () => {
       </section>
 
       {/* White Space Separator */}
-      <div className="bg-white py-20 md:py-32 text-center">
-        <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold">
-          <span className="relative inline-block">
-            <span className="bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent animate-pulse bg-[length:200%_auto]" style={{ animation: 'shimmer 3s ease-in-out infinite' }}>
-              Where Smart Capital
-            </span>
-            <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent blur-sm opacity-50" />
-          </span>{" "}
-          <span className="relative inline-block">
-            <span className="bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent" style={{ animation: 'shimmer 3s ease-in-out infinite', animationDelay: '0.5s' }}>
-              Finds Smarter Opportunities
-            </span>
-            <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent blur-sm opacity-50" />
-          </span>
-        </h2>
-        <p className="mt-6 text-gray-600 text-lg md:text-xl font-medium tracking-wide">
-          Institutional-Grade Deal Intelligence for Independent Investors and Advisors
-        </p>
+      <div className="bg-white py-20 md:py-32">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+            {/* Text Content */}
+            <div className="lg:w-1/2 text-center lg:text-left">
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold">
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent animate-pulse bg-[length:200%_auto]" style={{ animation: 'shimmer 3s ease-in-out infinite' }}>
+                    Where Smart Capital
+                  </span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent blur-sm opacity-50" />
+                </span>{" "}
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent" style={{ animation: 'shimmer 3s ease-in-out infinite', animationDelay: '0.5s' }}>
+                    Finds Smarter Opportunities
+                  </span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent blur-sm opacity-50" />
+                </span>
+              </h2>
+              <p className="mt-6 text-gray-600 text-lg md:text-xl font-medium tracking-wide">
+                Receive institutional analyst grade investment insights delivered the moment they matter
+              </p>
+            </div>
+
+            {/* Device Mockup Images */}
+            <div className="lg:w-1/2 flex items-end justify-center gap-6">
+              <div className="relative w-[55%] rounded-xl overflow-hidden shadow-2xl">
+                <img
+                  src={laptopNotificationImg}
+                  alt="FlowPulse web notification showing a new deal alert on a laptop dashboard"
+                  className="w-full h-auto rounded-xl"
+                  loading="lazy"
+                  width={1024}
+                  height={768}
+                />
+              </div>
+              <div className="relative w-[30%] rounded-2xl overflow-hidden shadow-2xl -mb-4">
+                <img
+                  src={iphoneSmsImg}
+                  alt="iPhone SMS alert from FlowPulse showing a new investment report notification"
+                  className="w-full h-auto rounded-2xl"
+                  loading="lazy"
+                  width={640}
+                  height={960}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
 
