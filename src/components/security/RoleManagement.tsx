@@ -171,6 +171,7 @@ export const RoleManagement = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="client">Client</SelectItem>
                     <SelectItem value="analyst">Analyst</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
