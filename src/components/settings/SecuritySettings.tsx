@@ -28,7 +28,6 @@ type PasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export const SecuritySettings = () => {
   const [loading, setLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const form = useForm<PasswordFormValues>({
@@ -39,15 +38,6 @@ export const SecuritySettings = () => {
       confirmPassword: "",
     },
   });
-
-  const calculatePasswordStrength = (password: string) => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (password.length >= 12) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/\d/.test(password)) strength++;
-    if (/[^a-zA-Z0-9]/.test(password)) strength++;
-    return strength;
   };
 
   const onSubmit = async (values: PasswordFormValues) => {
