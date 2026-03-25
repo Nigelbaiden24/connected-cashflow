@@ -11,9 +11,14 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { z } from "zod";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
+import { PasswordRequirements } from "@/components/auth/PasswordRequirements";
+import { MFAChallenge } from "@/components/auth/MFAChallenge";
+import { passwordSchema } from "@/utils/passwordValidation";
+import { logLoginActivity, logAuditEvent } from "@/utils/loginActivity";
+
 const signUpSchema = z.object({
   email: z.string().trim().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: passwordSchema,
   fullName: z.string().trim().min(1, "Name is required"),
 });
 
@@ -27,6 +32,8 @@ export default function Auth() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showMfaChallenge, setShowMfaChallenge] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
   
   const [signUpData, setSignUpData] = useState({
     email: "",
@@ -58,6 +65,8 @@ export default function Auth() {
       });
 
       if (error) throw error;
+
+      await logAuditEvent("signup_initiated", "auth", "info", { email: validatedData.email });
 
       toast({
         title: "Success!",
@@ -91,13 +100,35 @@ export default function Auth() {
     try {
       const validatedData = signInSchema.parse(signInData);
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: validatedData.email,
         password: validatedData.password,
       });
 
-      if (error) throw error;
+      if (error) {
+        setFailedAttempts((prev) => prev + 1);
+        // Log failed attempt
+        await logAuditEvent("login_failed", "auth", "warning", { email: validatedData.email });
+        throw error;
+      }
 
+      // Log successful login
+      if (data.user) {
+        await logLoginActivity(data.user.id, "success");
+        await logAuditEvent("login_success", "auth", "info");
+      }
+
+      // Check if MFA is required
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const hasMfa = factors?.totp?.some((f) => f.status === "verified");
+      
+      if (hasMfa) {
+        setShowMfaChallenge(true);
+        setLoading(false);
+        return;
+      }
+
+      setFailedAttempts(0);
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
@@ -122,6 +153,30 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  const handleMfaSuccess = () => {
+    setShowMfaChallenge(false);
+    setFailedAttempts(0);
+    toast({
+      title: "Welcome back!",
+      description: "You've successfully signed in with MFA.",
+    });
+    navigate("/finance");
+  };
+
+  if (showMfaChallenge) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
+        <MFAChallenge
+          onSuccess={handleMfaSuccess}
+          onCancel={() => {
+            setShowMfaChallenge(false);
+            supabase.auth.signOut();
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
@@ -165,7 +220,7 @@ export default function Auth() {
                     <Input
                       id="signin-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="••••••••••"
                       value={signInData.password}
                       onChange={(e) =>
                         setSignInData({ ...signInData, password: e.target.value })
@@ -187,6 +242,11 @@ export default function Auth() {
                     </Button>
                   </div>
                 </div>
+                {failedAttempts >= 3 && (
+                  <p className="text-xs text-destructive">
+                    Too many failed attempts. Please verify you are not a bot.
+                  </p>
+                )}
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <>
@@ -234,7 +294,7 @@ export default function Auth() {
                     <Input
                       id="signup-password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••"
+                      placeholder="••••••••••"
                       value={signUpData.password}
                       onChange={(e) =>
                         setSignUpData({ ...signUpData, password: e.target.value })
@@ -255,9 +315,7 @@ export default function Auth() {
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Must be at least 8 characters
-                  </p>
+                  <PasswordRequirements password={signUpData.password} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (

@@ -123,6 +123,8 @@ export const RoleManagement = () => {
         return "bg-blue-500/10 text-blue-700 border-blue-200";
       case "analyst":
         return "bg-purple-500/10 text-purple-700 border-purple-200";
+      case "client":
+        return "bg-emerald-500/10 text-emerald-700 border-emerald-200";
       default:
         return "bg-gray-500/10 text-gray-700 border-gray-200";
     }
@@ -171,6 +173,7 @@ export const RoleManagement = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="client">Client</SelectItem>
                     <SelectItem value="analyst">Analyst</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>

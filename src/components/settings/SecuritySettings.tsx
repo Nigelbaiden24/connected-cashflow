@@ -9,43 +9,35 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2, Shield, Key, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { MFASettings } from "../security/MFASettings";
+import { MFAEnrollment } from "../security/MFAEnrollment";
+import { LoginActivityLog } from "../auth/LoginActivityLog";
+import { PasswordRequirements } from "../auth/PasswordRequirements";
 import { Separator } from "@/components/ui/separator";
+import { passwordSchema } from "@/utils/passwordValidation";
 
-const passwordSchema = z.object({
+const changePasswordSchema = z.object({
   currentPassword: z.string().min(6, "Password must be at least 6 characters"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  newPassword: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+type PasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export const SecuritySettings = () => {
   const [loading, setLoading] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const form = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
   });
-
-  const calculatePasswordStrength = (password: string) => {
-    let strength = 0;
-    if (password.length >= 8) strength++;
-    if (password.length >= 12) strength++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-    if (/\d/.test(password)) strength++;
-    if (/[^a-zA-Z0-9]/.test(password)) strength++;
-    return strength;
-  };
 
   const onSubmit = async (values: PasswordFormValues) => {
     setLoading(true);
@@ -121,41 +113,9 @@ export const SecuritySettings = () => {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setPasswordStrength(calculatePasswordStrength(e.target.value));
-                        }}
-                      />
+                      <Input type="password" {...field} />
                     </FormControl>
-                    {field.value && (
-                      <div className="space-y-1">
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <div
-                              key={i}
-                              className={`h-1 flex-1 rounded-full transition-colors ${
-                                i < passwordStrength
-                                  ? passwordStrength <= 2
-                                    ? 'bg-destructive'
-                                    : passwordStrength <= 3
-                                    ? 'bg-orange-500'
-                                    : 'bg-green-500'
-                                  : 'bg-muted'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {passwordStrength <= 2 && 'Weak password'}
-                          {passwordStrength === 3 && 'Medium strength'}
-                          {passwordStrength === 4 && 'Strong password'}
-                          {passwordStrength === 5 && 'Very strong password'}
-                        </p>
-                      </div>
-                    )}
+                    <PasswordRequirements password={field.value} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -225,7 +185,11 @@ export const SecuritySettings = () => {
 
       <Separator />
 
-      <MFASettings />
+      <MFAEnrollment />
+
+      <Separator />
+
+      <LoginActivityLog />
 
       <Card className="border-destructive">
         <CardHeader>
