@@ -94,8 +94,19 @@ const Login = ({ onLogin }: LoginProps) => {
 
   const handleMfaCancel = () => {
     setShowMfaChallenge(false);
+    setShowMfaEnrollment(false);
     setPendingEmail("");
     supabase.auth.signOut();
+  };
+
+  const handleMfaEnrollmentSuccess = () => {
+    setShowMfaEnrollment(false);
+    toast({
+      title: "MFA Activated",
+      description: "Authenticator set up successfully. Welcome!",
+    });
+    onLogin(pendingEmail);
+    navigate("/dashboard");
   };
 
   const handleEnquirySubmit = async (e: React.FormEvent) => {
