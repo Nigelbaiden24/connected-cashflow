@@ -15,16 +15,16 @@ import { PasswordRequirements } from "../auth/PasswordRequirements";
 import { Separator } from "@/components/ui/separator";
 import { passwordSchema } from "@/utils/passwordValidation";
 
-const passwordSchema = z.object({
+const changePasswordSchema = z.object({
   currentPassword: z.string().min(6, "Password must be at least 6 characters"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  newPassword: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
-type PasswordFormValues = z.infer<typeof passwordSchema>;
+type PasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export const SecuritySettings = () => {
   const [loading, setLoading] = useState(false);
