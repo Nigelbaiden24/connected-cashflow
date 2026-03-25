@@ -382,21 +382,7 @@ const Index = () => {
           <div className="flex flex-col items-center gap-12 lg:gap-16">
             {/* Text Content */}
             <div className="text-center max-w-4xl">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold">
-                <span className="relative inline-block">
-                  <span className="bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent animate-pulse bg-[length:200%_auto]" style={{ animation: 'shimmer 3s ease-in-out infinite' }}>
-                    Where Smart Capital
-                  </span>
-                  <span className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-400 bg-clip-text text-transparent blur-sm opacity-50" />
-                </span>{" "}
-                <span className="relative inline-block">
-                  <span className="bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent" style={{ animation: 'shimmer 3s ease-in-out infinite', animationDelay: '0.5s' }}>
-                    Finds Smarter Opportunities
-                  </span>
-                  <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500 bg-clip-text text-transparent blur-sm opacity-50" />
-                </span>
-              </h2>
-              <p className="mt-6 text-gray-600 text-lg md:text-xl font-medium tracking-wide">
+              <p className="text-gray-600 text-lg md:text-xl font-medium tracking-wide">
                 Receive institutional analyst grade investment insights delivered the moment they matter
               </p>
             </div>
