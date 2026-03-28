@@ -32,6 +32,7 @@ import {
   Radar,
   Calculator,
   Zap,
+  Globe,
 } from "lucide-react";
 
 interface AdminSidebarProps {
