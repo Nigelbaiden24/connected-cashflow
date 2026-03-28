@@ -647,6 +647,183 @@ export type Database = {
           },
         ]
       }
+      api_clients: {
+        Row: {
+          api_key: string
+          company_name: string
+          contact_email: string | null
+          created_at: string
+          description: string | null
+          id: string
+          plan: string
+          rate_limit_per_day: number
+          rate_limit_per_minute: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string
+          company_name: string
+          contact_email?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          plan?: string
+          rate_limit_per_day?: number
+          rate_limit_per_minute?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          company_name?: string
+          contact_email?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          plan?: string
+          rate_limit_per_day?: number
+          rate_limit_per_minute?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      api_permissions: {
+        Row: {
+          access_level: string
+          api_client_id: string
+          created_at: string
+          endpoint_group: string
+          endpoint_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          access_level?: string
+          api_client_id: string
+          created_at?: string
+          endpoint_group: string
+          endpoint_name: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          access_level?: string
+          api_client_id?: string
+          created_at?: string
+          endpoint_group?: string
+          endpoint_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_permissions_api_client_id_fkey"
+            columns: ["api_client_id"]
+            isOneToOne: false
+            referencedRelation: "api_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_usage_logs: {
+        Row: {
+          api_client_id: string
+          api_key: string
+          created_at: string
+          endpoint: string
+          id: string
+          ip_address: string | null
+          method: string
+          request_params: Json | null
+          response_status: number | null
+          response_time_ms: number | null
+          user_agent: string | null
+        }
+        Insert: {
+          api_client_id: string
+          api_key: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          ip_address?: string | null
+          method?: string
+          request_params?: Json | null
+          response_status?: number | null
+          response_time_ms?: number | null
+          user_agent?: string | null
+        }
+        Update: {
+          api_client_id?: string
+          api_key?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip_address?: string | null
+          method?: string
+          request_params?: Json | null
+          response_status?: number | null
+          response_time_ms?: number | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_api_client_id_fkey"
+            columns: ["api_client_id"]
+            isOneToOne: false
+            referencedRelation: "api_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_webhooks: {
+        Row: {
+          api_client_id: string
+          created_at: string
+          event_type: string
+          failure_count: number
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          api_client_id: string
+          created_at?: string
+          event_type: string
+          failure_count?: number
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          api_client_id?: string
+          created_at?: string
+          event_type?: string
+          failure_count?: number
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          secret?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_webhooks_api_client_id_fkey"
+            columns: ["api_client_id"]
+            isOneToOne: false
+            referencedRelation: "api_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_research_reports: {
         Row: {
           asset_id: string
@@ -7028,6 +7205,10 @@ export type Database = {
         Args: { cron_expr: string; tz?: string }
         Returns: string
       }
+      check_api_permission: {
+        Args: { _client_id: string; _endpoint: string }
+        Returns: boolean
+      }
       check_user_permission: {
         Args: { _permission: string; _user_id: string }
         Returns: boolean
@@ -7116,6 +7297,7 @@ export type Database = {
         Args: { _permissions: Json; _user_id: string }
         Returns: undefined
       }
+      validate_api_key: { Args: { _api_key: string }; Returns: Json }
       verify_backup_code: {
         Args: { _code: string; _user_id: string }
         Returns: boolean

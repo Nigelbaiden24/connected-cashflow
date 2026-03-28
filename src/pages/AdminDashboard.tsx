@@ -42,6 +42,7 @@ import { useAdminTimeTracking } from "@/hooks/useAdminTimeTracking";
 import { useAdminAutoLogout } from "@/hooks/useAdminAutoLogout";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminPushNotifications } from "@/components/admin/AdminPushNotifications";
+import { ApiManagementPanel } from "@/components/admin/api-management/ApiManagementPanel";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
 import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
@@ -1609,6 +1610,10 @@ export default function AdminDashboard() {
 
           {activeTab === 'push-notifications' && (
             <AdminPushNotifications />
+          )}
+
+          {activeTab === 'api-management' && (
+            <ApiManagementPanel />
           )}
 
           {activeTab === 'settings' && (
