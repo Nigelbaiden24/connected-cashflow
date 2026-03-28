@@ -82,6 +82,7 @@ const navItems: NavItem[] = [
   { id: "payroll", label: "Payroll", icon: Calculator, gradient: "from-teal-500 to-teal-600" },
   { id: "security", label: "Security", icon: Shield, gradient: "from-red-500 to-red-600" },
   { id: "automation-center", label: "Automation Center", icon: Zap, gradient: "from-violet-500 to-purple-600" },
+  { id: "api-management", label: "API Management", icon: Globe, gradient: "from-emerald-500 to-teal-600" },
   { id: "push-notifications", label: "Push Notifications", icon: Bell, gradient: "from-rose-500 to-orange-600" },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700" },
 ];

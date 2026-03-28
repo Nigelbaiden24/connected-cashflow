@@ -1612,6 +1612,10 @@ export default function AdminDashboard() {
             <AdminPushNotifications />
           )}
 
+          {activeTab === 'api-management' && (
+            <ApiManagementPanel />
+          )}
+
           {activeTab === 'settings' && (
             <AdminSettings onSettingsChange={handleSettingsChange} />
           )}
