@@ -67,12 +67,33 @@ export default defineConfig(({ mode }) => ({
             type: 'image/png',
             form_factor: 'narrow'
           }
+        ],
+        shortcuts: [
+          {
+            name: 'Finance Dashboard',
+            short_name: 'Finance',
+            url: '/dashboard',
+            icons: [{ src: '/flowpulse-logo.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Business Dashboard',
+            short_name: 'Business',
+            url: '/business/dashboard',
+            icons: [{ src: '/flowpulse-logo.png', sizes: '192x192' }]
+          },
+          {
+            name: 'Investor Portal',
+            short_name: 'Investor',
+            url: '/investor/dashboard',
+            icons: [{ src: '/flowpulse-logo.png', sizes: '192x192' }]
+          }
         ]
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff,woff2}'],
         globIgnores: ['**/templates/**'],
-        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024, // 15 MB limit
+        maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -81,7 +102,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -95,11 +116,26 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'gstatic-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
               }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              networkTimeoutSeconds: 10
             }
           }
         ],
