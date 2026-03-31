@@ -1401,3 +1401,144 @@ All colors MUST be HSL.
     opacity: 1;
   }
 }
+
+/* ============================================
+   PWA STANDALONE MODE — NATIVE APP FEEL
+   ============================================ */
+
+/* When running as installed PWA */
+@media (display-mode: standalone) {
+  /* Prevent overscroll bounce (rubber-banding) */
+  html {
+    overscroll-behavior: none;
+  }
+
+  body {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Prevent pull-to-refresh in standalone */
+    overflow: auto;
+  }
+
+  /* Status bar safe area padding */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Prevent text selection on navigation elements */
+  nav,
+  header,
+  [data-sidebar],
+  button,
+  a {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Allow text selection in content areas */
+  main p,
+  main span,
+  main h1,
+  main h2,
+  main h3,
+  main h4,
+  main h5,
+  main h6,
+  main td,
+  main th,
+  main li,
+  input,
+  textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Disable long-press context menu on interactive elements */
+  button,
+  a,
+  img {
+    -webkit-touch-callout: none;
+  }
+
+  /* Smooth momentum scrolling everywhere */
+  .overflow-auto,
+  .overflow-y-auto,
+  .overflow-x-auto,
+  [class*="scroll"] {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide scrollbars for native feel on mobile */
+  @media (max-width: 767px) {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    * {
+      scrollbar-width: none;
+    }
+  }
+}
+
+/* Fallback safe area classes (work outside standalone too) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* PWA standalone class set via JS */
+html.pwa-standalone {
+  /* Prevent overscroll globally */
+  overscroll-behavior: none;
+}
+
+html.pwa-standalone body {
+  /* Fixed viewport — no rubber band */
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+html.pwa-standalone #root {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Touch interaction optimizations for PWA */
+@media (hover: none) and (pointer: coarse) {
+  /* Faster touch response */
+  * {
+    touch-action: manipulation;
+  }
+  
+  /* Larger interactive areas */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover states that cause sticky on mobile */
+  .hover\:bg-accent:active {
+    background-color: hsl(var(--accent));
+  }
+}
