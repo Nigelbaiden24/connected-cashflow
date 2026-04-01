@@ -65,12 +65,8 @@ serve(async (req: Request): Promise<Response> => {
       .eq("user_id", caller.id);
 
     const isAdmin = callerRoles?.some(r => r.role === "admin") || false;
-    
-    // Allow if email is admin email (for initial setup)
-    const isAdminEmail = caller.email === "theodore.humphrey@flowpulse.co.uk" || 
-                         caller.email === "admin@flowpulse.com";
 
-    if (!isAdmin && !isAdminEmail) {
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Admin access required" }), {
         status: 403,
         headers: { "Content-Type": "application/json", ...corsHeaders },
