@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, FileText, Edit, Trash2, Eye, TrendingUp, Calendar, Target, ArrowLeft, Search, Filter, Grid3x3, List, Download, Upload, Copy, LayoutGrid, MoreVertical, CheckSquare, Square, Sparkles, Clock, Users, DollarSign, X } from "lucide-react";
+import { EnterpriseSearch, enterpriseFuzzyMatch, type ActiveFilters } from "@/components/enterprise/EnterpriseSearch";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -418,42 +420,55 @@ export default function FinancialPlanning() {
           </Card>
         </div>
 
-        {/* Filters and Actions */}
+        {/* Enterprise Search & Filters */}
+        <EnterpriseSearch
+          placeholder="Search financial plans... (fuzzy matching)"
+          storageKey="financial_plans_search"
+          filterFields={[
+            { key: "type", label: "Plan Type", type: "select", options: [
+              { value: "comprehensive", label: "Comprehensive" },
+              { value: "retirement", label: "Retirement" },
+              { value: "investment", label: "Investment" },
+              { value: "estate", label: "Estate" },
+            ]},
+            { key: "status", label: "Status", type: "select", options: [
+              { value: "draft", label: "Draft" },
+              { value: "active", label: "Active" },
+              { value: "completed", label: "Completed" },
+            ]},
+            { key: "risk", label: "Risk Tolerance", type: "select", options: [
+              { value: "conservative", label: "Conservative" },
+              { value: "moderate", label: "Moderate" },
+              { value: "aggressive", label: "Aggressive" },
+            ]},
+            { key: "net_worth", label: "Net Worth (£)", type: "range", prefix: "£" },
+            { key: "created", label: "Created Date", type: "date-range" },
+          ]}
+          onSearch={(query, filters) => {
+            setSearchQuery(query);
+            setFilterType((filters.type as string) || "all");
+            setFilterStatus((filters.status as string) || "all");
+          }}
+          resultCount={filteredPlans.length}
+        />
+
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="flex flex-1 gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search plans..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-40">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="comprehensive">Comprehensive</SelectItem>
-                <SelectItem value="retirement">Retirement</SelectItem>
-                <SelectItem value="investment">Investment</SelectItem>
-                <SelectItem value="estate">Estate</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
+            <ClientReportGenerator
+              context={{
+                moduleName: "Financial Planning",
+                sections: [
+                  { id: "summary", title: "Plans Summary", content: `Total Plans: ${plans.length}\nActive: ${plans.filter(p => p.status === 'active').length}\nDraft: ${plans.filter(p => p.status === 'draft').length}\nCompleted: ${plans.filter(p => p.status === 'completed').length}` },
+                  { id: "plans", title: "Plan Details", content: plans.map(p => `**${p.plan_name}**\nType: ${p.plan_type} | Status: ${p.status}\nCurrent Worth: £${(p.current_net_worth || 0).toLocaleString()}\nTarget Worth: £${(p.target_net_worth || 0).toLocaleString()}\nRisk: ${p.risk_tolerance || 'N/A'} | Horizon: ${p.time_horizon || 'N/A'} years\n`).join('\n---\n') },
+                  { id: "objectives", title: "Primary Objectives", content: plans.map(p => `${p.plan_name}:\n${(p.primary_objectives || []).map((o: string) => `• ${o}`).join('\n') || 'None specified'}`).join('\n\n') },
+                ],
+                metadata: {
+                  total_plans: plans.length,
+                  total_aum: plans.reduce((sum, p) => sum + (p.current_net_worth || 0), 0),
+                  avg_time_horizon: plans.length > 0 ? Math.round(plans.reduce((sum, p) => sum + (p.time_horizon || 0), 0) / plans.length) : 0,
+                },
+              }}
+            />
           </div>
           <div className="flex gap-2">
             {selectedPlans.size > 0 && (
