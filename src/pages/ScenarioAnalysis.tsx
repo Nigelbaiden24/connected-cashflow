@@ -27,6 +27,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { useToast } from "@/hooks/use-toast";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import MonteCarloSimulations from "@/components/scenario/MonteCarloSimulations";
@@ -435,7 +436,20 @@ export default function ScenarioAnalysis() {
             <p className="text-muted-foreground">Advanced portfolio projections and stress testing</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <ClientReportGenerator
+            clientName={clients.find(c => c.id === selectedClient)?.name}
+            context={{
+              moduleName: "Scenario Analysis",
+              clientName: clients.find(c => c.id === selectedClient)?.name,
+              sections: [
+                { id: "scenarios", title: "Market Scenarios", content: scenarioData.map(s => `${s.name}: ${s.percentage > 0 ? '+' : ''}${s.percentage}% (${s.probability}% probability)\nImpact: ${formatCurrency(s.impact)}`).join('\n\n') },
+                { id: "stress", title: "Stress Test Results", content: stressTestData.map(s => `${s.scenario}: ${s.impact}% over ${s.duration}\nCurrent Portfolio Impact: ${s.currentPortfolio}%`).join('\n\n') },
+                { id: "goals", title: "Goal Achievement Analysis", content: goalScenarios.map(g => `${g.goal}: £${g.target.toLocaleString()} target\nCurrent: £${g.current.toLocaleString()} | Monthly: £${g.monthlySavings.toLocaleString()}\nProbability: ${g.probability}%\nConservative: ${g.scenarios.conservative.probability}% | Moderate: ${g.scenarios.moderate.probability}% | Aggressive: ${g.scenarios.aggressive.probability}%`).join('\n\n') },
+                { id: "cashflow", title: "Cash Flow Projections", content: cashFlowData.map(d => `${d.year}: Income £${d.income.toLocaleString()} | Expenses £${d.expenses.toLocaleString()} | Savings £${d.savings.toLocaleString()}`).join('\n') },
+              ],
+            }}
+          />
           <Button 
             variant="outline" 
             size="sm"

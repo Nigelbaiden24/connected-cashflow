@@ -12,7 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, ComposedChart } from "recharts";
-import { Users, DollarSign, TrendingUp, Calendar, Briefcase, Target, Filter, Download, Plus, Phone, Mail, Clock, ArrowLeft, Activity, Shield, PieChart as PieChartIcon, Check, Trash2, Eye, RefreshCw, Loader2 } from "lucide-react";
+import { Users, DollarSign, TrendingUp, Calendar, Briefcase, Target, Filter, Download, Plus, Phone, Mail, Clock, ArrowLeft, Activity, Shield, PieChart as PieChartIcon, Check, Trash2, Eye, RefreshCw, Loader2, FileText } from "lucide-react";
+import { EnterpriseSearch, enterpriseFuzzyMatch } from "@/components/enterprise/EnterpriseSearch";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { PracticeMetricCard } from "@/components/practice/PracticeMetricCard";
 import { ActivityFeedCard } from "@/components/practice/ActivityFeedCard";
 import { cn } from "@/lib/utils";
@@ -538,6 +540,19 @@ export default function PracticeManagement() {
           </div>
           
           <div className="flex flex-wrap gap-2">
+            <ClientReportGenerator
+              context={{
+                moduleName: "Practice Management",
+                sections: [
+                  { id: "overview", title: "Practice Overview", content: `Total Clients: ${metrics.totalClients}\nTotal AUM: ${formatCurrency(metrics.totalAUM)}\nMonthly Revenue: ${formatCurrency(metrics.monthlyRevenue)}\nClient Retention: ${metrics.clientRetention}%\nGrowth Rate: ${metrics.growthRate}%` },
+                  { id: "tasks", title: "Task Management", content: `Pending Tasks: ${pendingTasks.length}\nHigh Priority: ${highPriorityTasks.length}\nDue This Week: ${dueThisWeek.length}\nCompletion Rate: ${completionRate}%\n\nPending:\n${pendingTasks.map(t => `• ${t.title} (${t.priority || 'normal'}) — Due: ${t.due_date ? format(new Date(t.due_date), 'dd/MM/yyyy') : 'No date'}`).join('\n')}` },
+                  { id: "revenue", title: "Revenue Analysis", content: revenueData.map(r => `${r.month}: £${r.revenue.toLocaleString()} (Fees: £${r.fees.toLocaleString()}, Commissions: £${r.commissions.toLocaleString()})`).join('\n') },
+                  { id: "performance", title: "Performance Metrics", content: performanceMetrics.map(p => `${p.metric}: ${p.value}${p.unit} (Target: ${p.target}${p.unit})`).join('\n') },
+                  { id: "segmentation", title: "Client Segmentation", content: clientSegmentation.map(s => `${s.segment}: ${s.clients} clients, AUM: ${formatCurrency(s.aum)} (${s.value}%)`).join('\n') },
+                ],
+                metadata: { total_clients: metrics.totalClients, total_aum: metrics.totalAUM, monthly_revenue: metrics.monthlyRevenue },
+              }}
+            />
             <Button variant="outline" size="sm" onClick={fetchPracticeData} className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Refresh
