@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ScatterChart, Scatter, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 import { Search, TrendingUp, TrendingDown, BarChart3, PieChart as PieChartIcon, Star, AlertTriangle, Info, Download, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { EnterpriseSearch, enterpriseFuzzyMatch } from "@/components/enterprise/EnterpriseSearch";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { toast } from "@/hooks/use-toast";
 import { CreateWatchlistDialog } from "@/components/investor/CreateWatchlistDialog";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
@@ -251,32 +253,27 @@ export default function InvestmentAnalysis() {
             variant="outline" 
             size="sm"
             className="flex-1 sm:flex-none"
-            onClick={() => {
-              if (!selectedInvestment) {
-                toast({
-                  title: "No Investment Selected",
-                  description: "Please select an investment first.",
-                  variant: "destructive",
-                });
-                return;
-              }
-              
-              toast({
-                title: "Exporting Report",
-                description: "Generating investment analysis report...",
-              });
-              
-              setTimeout(() => {
-                toast({
-                  title: "Report Ready",
-                  description: `Investment analysis report for ${selectedInvestment.symbol} downloaded successfully.`,
-                });
-              }, 1500);
-            }}
           >
             <Download className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Export Report</span>
           </Button>
+          <ClientReportGenerator
+            context={{
+              moduleName: "Investment Analysis",
+              sections: [
+                { id: "screener", title: "Investment Screener Results", content: investments.map(i => `${i.symbol} — ${i.name}\nPrice: $${i.price} | Change: ${i.changePercent}%\nP/E: ${i.pe} | Dividend: ${i.dividend}% | Beta: ${i.beta}\nSector: ${i.sector} | Rating: ${i.rating} | Risk: ${i.risk}`).join('\n\n---\n\n') },
+                { id: "sectors", title: "Sector Analysis", content: sectorAnalysis.map(s => `${s.sector}: ${s.allocation}% allocation\nPerformance: ${s.performance} | Risk: ${s.risk} | Outlook: ${s.outlook}`).join('\n') },
+                { id: "performance", title: "Performance Comparison", content: `Period returns:\n${performanceData.map(p => `${p.period}: AAPL ${p.AAPL}% | MSFT ${p.MSFT}% | GOOGL ${p.GOOGL}% | S&P500 ${p.SP500}%`).join('\n')}` },
+              ],
+              metadata: { total_investments: investments.length },
+            }}
+            trigger={
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">PDF Report</span>
+              </Button>
+            }
+          />
           <Button 
             size="sm"
             onClick={() => setWatchlistDialogOpen(true)}
@@ -298,16 +295,32 @@ export default function InvestmentAnalysis() {
         </TabsList>
 
         <TabsContent value="screener" className="space-y-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search investments by symbol or name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+          <EnterpriseSearch
+            placeholder="Search investments by symbol, name, or sector... (fuzzy matching)"
+            storageKey="investment_analysis_search"
+            filterFields={[
+              { key: "sector", label: "Sector", type: "select", options: [
+                { value: "Technology", label: "Technology" },
+                { value: "Healthcare", label: "Healthcare" },
+                { value: "Financial Services", label: "Financial Services" },
+                { value: "Consumer Discretionary", label: "Consumer Discretionary" },
+                { value: "Industrials", label: "Industrials" },
+              ]},
+              { key: "risk", label: "Risk Level", type: "select", options: [
+                { value: "Low", label: "Low" },
+                { value: "Medium", label: "Medium" },
+                { value: "High", label: "High" },
+              ]},
+              { key: "rating", label: "Rating", type: "select", options: [
+                { value: "Strong Buy", label: "Strong Buy" },
+                { value: "Buy", label: "Buy" },
+                { value: "Hold", label: "Hold" },
+              ]},
+            ]}
+            onSearch={(query, filters) => {
+              setSearchTerm(query);
+            }}
+          />
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Sort by..." />
