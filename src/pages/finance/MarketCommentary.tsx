@@ -3,7 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, MessageSquare, Send, Loader2, ExternalLink, Download } from "lucide-react";
+import { Sparkles, MessageSquare, Send, Loader2, ExternalLink, Download, FileText } from "lucide-react";
+import { EnterpriseSearch, enterpriseFuzzyMatch } from "@/components/enterprise/EnterpriseSearch";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { toast } from "sonner";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { supabase } from "@/integrations/supabase/client";

@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Area, AreaChart } from "recharts";
-import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield, Building2, Rocket, Gem, Award } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Filter, Download, RefreshCw, ArrowLeft, Wallet, PieChart, Activity, Shield, Building2, Rocket, Gem, Award, FileText } from "lucide-react";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { AssetAllocationChart } from "@/components/AssetAllocationChart";
@@ -226,6 +227,25 @@ export default function Portfolio() {
               <Filter className="h-4 w-4" />
               Filter
             </Button>
+            <ClientReportGenerator
+              clientName={selectedClientData?.name}
+              context={{
+                moduleName: "Portfolio Management",
+                clientName: selectedClientData?.name,
+                sections: [
+                  { id: "overview", title: "Portfolio Overview", content: `Total Value: £${totalPortfolioValue.toLocaleString()}\nDay Change: £${dayChange.toFixed(0)} (${dayChangePercent}%)\nYTD Return: £${ytdChange.toFixed(0)} (${ytdChangePercent}%)\n\nHoldings: ${portfolioHoldings.length} positions` },
+                  { id: "allocation", title: "Asset Allocation", content: sectorAllocation.map(s => `${s.name}: ${s.allocation.toFixed(1)}% (£${s.value.toLocaleString()})`).join('\n') },
+                  { id: "risk", title: "Risk Metrics", content: riskMetrics.map(r => `${r.metric}: ${r.value}\n${r.description}`).join('\n\n') },
+                  { id: "holdings", title: "Holdings Detail", content: portfolioHoldings.map(h => `${h.asset_name || h.ticker || 'Unknown'}: £${(h.current_value || 0).toLocaleString()} (${h.asset_type || 'Other'})`).join('\n') },
+                ],
+                metadata: {
+                  portfolio_value: totalPortfolioValue,
+                  total_holdings: portfolioHoldings.length,
+                  day_change_percent: dayChangePercent,
+                  ytd_return_percent: ytdChangePercent,
+                },
+              }}
+            />
             <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="gap-2">
               <Download className="h-4 w-4" />
               PDF

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { AlertTriangle, Shield, TrendingUp, Target, CheckCircle2, Info, Calculator, Download, ArrowLeft } from "lucide-react";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { toast } from "@/hooks/use-toast";
 import { generateFinancialReport } from "@/utils/pdfGenerator";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
@@ -219,7 +220,19 @@ export default function RiskAssessment() {
             <p className="text-muted-foreground">Evaluate and manage investment risk exposure</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <ClientReportGenerator
+            context={{
+              moduleName: "Risk Assessment",
+              sections: [
+                { id: "profile", title: "Risk Profile", content: `Risk Score: ${riskScore}%\nRisk Level: ${getRiskLevel(riskScore).level}\nRisk Tolerance: ${riskTolerance[0]}%` },
+                { id: "metrics", title: "Risk Metrics", content: riskMetrics.map(m => `${m.metric}: ${m.value} (Target: ${m.target})`).join('\n') },
+                { id: "allocation", title: "Recommended Allocation", content: riskScore < 40 ? 'Stocks: 30% | Bonds: 60% | Alternatives: 10%' : riskScore >= 70 ? 'Stocks: 80% | Bonds: 10% | Alternatives: 10%' : 'Stocks: 60% | Bonds: 30% | Alternatives: 10%' },
+                { id: "stress", title: "Stress Test Results", content: stressTestScenarios.map(s => `${s.scenario}: ${s.impact}% impact over ${s.duration}\nRecovery: ${s.recovery}`).join('\n\n') },
+              ],
+              metadata: { risk_score: riskScore, risk_tolerance: riskTolerance[0] },
+            }}
+          />
           <Button 
             variant="outline" 
             size="sm"

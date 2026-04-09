@@ -13,7 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit, Building2, Crown } from "lucide-react";
+import { Target, Plus, Calendar as CalendarIcon, DollarSign, TrendingUp, CheckCircle2, Clock, AlertCircle, Users, ArrowLeft, Edit, Building2, Crown, FileText } from "lucide-react";
+import { ClientReportGenerator } from "@/components/enterprise/ClientReportGenerator";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
@@ -337,6 +338,20 @@ export default function GoalPlanning() {
             <p className="text-muted-foreground">Track and manage financial goals</p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <ClientReportGenerator
+            clientName={selectedClient.name}
+            context={{
+              moduleName: "Goal Planning",
+              clientName: selectedClient.name,
+              sections: [
+                { id: "summary", title: "Goals Summary", content: `Total Goals: ${clientGoals.length}\nTotal Target: £${totalGoalAmount.toLocaleString()}\nCurrent Progress: £${totalCurrentAmount.toLocaleString()}\nMonthly Contributions: £${totalMonthlyContributions.toLocaleString()}\nOverall Progress: ${totalGoalAmount > 0 ? ((totalCurrentAmount / totalGoalAmount) * 100).toFixed(1) : 0}%` },
+                { id: "goals", title: "Individual Goals", content: clientGoals.map(g => `**${g.goal_name}** (${g.goal_type})\nTarget: £${(g.target_amount || 0).toLocaleString()} | Current: £${(g.current_amount || 0).toLocaleString()}\nPriority: ${g.priority || 'Medium'} | Status: ${g.status || 'Active'}\nMonthly: £${(g.monthly_contribution || 0).toLocaleString()}`).join('\n\n---\n\n') },
+                { id: "projections", title: "Goal Projections", content: clientGoals.map(g => { const months = g.monthly_contribution && g.monthly_contribution > 0 ? Math.ceil(((g.target_amount || 0) - (g.current_amount || 0)) / g.monthly_contribution) : Infinity; return `${g.goal_name}: ${months === Infinity ? 'No monthly contribution set' : `Estimated ${months} months to completion`}`; }).join('\n') },
+              ],
+              metadata: { total_goals: clientGoals.length, total_target: totalGoalAmount, total_current: totalCurrentAmount },
+            }}
+          />
         <Dialog open={isAddingGoal || !!editingGoal} onOpenChange={(open) => {
           if (!open) {
             setIsAddingGoal(false);
@@ -476,6 +491,7 @@ export default function GoalPlanning() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="client-goals" className="space-y-4">

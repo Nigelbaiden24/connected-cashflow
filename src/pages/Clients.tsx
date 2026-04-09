@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, DollarSign, TrendingUp, Filter, Phone, Mail, ArrowLeft, Trash2 } from "lucide-react";
+import { Search, Users, DollarSign, TrendingUp, Filter, Phone, Mail, ArrowLeft, Trash2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { EnterpriseSearch, enterpriseFuzzyMatch, type FilterField, type ActiveFilters } from "@/components/enterprise/EnterpriseSearch";
+import { ClientReportGenerator, type ReportContext } from "@/components/enterprise/ClientReportGenerator";
 import { toast } from "@/hooks/use-toast";
 import { MeetingScheduler } from "@/components/MeetingScheduler";
 import {
@@ -208,28 +210,51 @@ const Clients = () => {
         </Badge>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex gap-4 items-center">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, email, or client ID..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <select
-          value={filterBy}
-          onChange={(e) => setFilterBy(e.target.value)}
-          className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-        >
-          <option value="all">All Clients</option>
-          <option value="conservative">Conservative</option>
-          <option value="moderate">Moderate</option>
-          <option value="aggressive">Aggressive</option>
-          <option value="needs_review">Needs Review</option>
-        </select>
+      {/* Enterprise Search */}
+      <EnterpriseSearch
+        placeholder="Search by name, email, client ID... (fuzzy matching)"
+        storageKey="clients_search"
+        filterFields={[
+          { key: "risk_profile", label: "Risk Profile", type: "select", options: [
+            { value: "conservative", label: "Conservative" },
+            { value: "moderate", label: "Moderate" },
+            { value: "aggressive", label: "Aggressive" },
+          ]},
+          { key: "status", label: "Status", type: "select", options: [
+            { value: "active", label: "Active" },
+            { value: "needs_review", label: "Needs Review" },
+          ]},
+          { key: "aum", label: "AUM (£)", type: "range", prefix: "£" },
+          { key: "last_contact", label: "Last Contact", type: "date-range" },
+        ]}
+        onSearch={(query, filters) => {
+          setSearchQuery(query);
+          setFilterBy(
+            (filters.risk_profile as string) || 
+            (filters.status as string) || 
+            "all"
+          );
+        }}
+        resultCount={filteredClients.length}
+      />
+
+      {/* Report Generator */}
+      <div className="flex justify-end">
+        <ClientReportGenerator
+          context={{
+            moduleName: "Client Management",
+            sections: [
+              { id: "overview", title: "Client Overview", content: `Total clients: ${clients.length}\nActive: ${clients.filter(c => c.status === 'active').length}\nNeeds Review: ${clients.filter(c => c.status === 'needs_review').length}` },
+              { id: "risk", title: "Risk Profile Distribution", content: `Conservative: ${clients.filter(c => c.risk_profile?.toLowerCase() === 'conservative').length}\nModerate: ${clients.filter(c => c.risk_profile?.toLowerCase() === 'moderate').length}\nAggressive: ${clients.filter(c => c.risk_profile?.toLowerCase() === 'aggressive').length}` },
+              { id: "aum", title: "Assets Under Management", content: `Total AUM: £${clients.reduce((sum, c) => sum + (c.aum || 0), 0).toLocaleString()}\n\nClient Details:\n${clients.map(c => `• ${c.name}: £${(c.aum || 0).toLocaleString()} (${c.risk_profile})`).join('\n')}` },
+              { id: "contacts", title: "Contact Summary", content: clients.map(c => `• ${c.name} — ${c.email} — ${c.phone}`).join('\n') },
+            ],
+            metadata: {
+              total_clients: clients.length,
+              total_aum: clients.reduce((sum, c) => sum + (c.aum || 0), 0),
+            },
+          }}
+        />
       </div>
 
       <Tabs defaultValue="clients" className="space-y-6">
