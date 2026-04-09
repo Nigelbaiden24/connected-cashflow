@@ -491,6 +491,7 @@ export default function GoalPlanning() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="client-goals" className="space-y-4">
