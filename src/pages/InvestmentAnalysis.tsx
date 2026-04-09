@@ -321,6 +321,7 @@ export default function InvestmentAnalysis() {
               setSearchTerm(query);
             }}
           />
+          <div className="flex flex-col sm:flex-row gap-4">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Sort by..." />
