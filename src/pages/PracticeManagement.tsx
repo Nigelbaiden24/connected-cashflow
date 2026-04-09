@@ -544,13 +544,13 @@ export default function PracticeManagement() {
               context={{
                 moduleName: "Practice Management",
                 sections: [
-                  { id: "overview", title: "Practice Overview", content: `Total Clients: ${metrics.totalClients}\nTotal AUM: ${formatCurrency(metrics.totalAUM)}\nMonthly Revenue: ${formatCurrency(metrics.monthlyRevenue)}\nClient Retention: ${metrics.clientRetention}%\nGrowth Rate: ${metrics.growthRate}%` },
+                  { id: "overview", title: "Practice Overview", content: `Total Clients: ${metrics.totalClients}\nTotal AUM: ${formatCurrency(metrics.assetsUnderManagement)}\nMonthly Revenue: ${formatCurrency(metrics.monthlyRevenue)}\nClient Retention: ${metrics.clientRetention}%\nGrowth Rate: ${metrics.growthRate}%` },
                   { id: "tasks", title: "Task Management", content: `Pending Tasks: ${pendingTasks.length}\nHigh Priority: ${highPriorityTasks.length}\nDue This Week: ${dueThisWeek.length}\nCompletion Rate: ${completionRate}%\n\nPending:\n${pendingTasks.map(t => `• ${t.title} (${t.priority || 'normal'}) — Due: ${t.due_date ? format(new Date(t.due_date), 'dd/MM/yyyy') : 'No date'}`).join('\n')}` },
                   { id: "revenue", title: "Revenue Analysis", content: revenueData.map(r => `${r.month}: £${r.revenue.toLocaleString()} (Fees: £${r.fees.toLocaleString()}, Commissions: £${r.commissions.toLocaleString()})`).join('\n') },
                   { id: "performance", title: "Performance Metrics", content: performanceMetrics.map(p => `${p.metric}: ${p.value}${p.unit} (Target: ${p.target}${p.unit})`).join('\n') },
                   { id: "segmentation", title: "Client Segmentation", content: clientSegmentation.map(s => `${s.segment}: ${s.clients} clients, AUM: ${formatCurrency(s.aum)} (${s.value}%)`).join('\n') },
                 ],
-                metadata: { total_clients: metrics.totalClients, total_aum: metrics.totalAUM, monthly_revenue: metrics.monthlyRevenue },
+                metadata: { total_clients: metrics.totalClients, total_aum: metrics.assetsUnderManagement, monthly_revenue: metrics.monthlyRevenue },
               }}
             />
             <Button variant="outline" size="sm" onClick={fetchPracticeData} className="gap-2">

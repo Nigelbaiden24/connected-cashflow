@@ -443,7 +443,7 @@ export default function ScenarioAnalysis() {
               moduleName: "Scenario Analysis",
               clientName: clients.find(c => c.id === selectedClient)?.name,
               sections: [
-                { id: "scenarios", title: "Market Scenarios", content: scenarioData.map(s => `${s.name}: ${s.percentage > 0 ? '+' : ''}${s.percentage}% (${s.probability}% probability)\nImpact: ${formatCurrency(s.impact)}`).join('\n\n') },
+                { id: "scenarios", title: "Market Scenarios", content: "Market scenario analysis including bull, bear, and base case projections with probability-weighted outcomes." },
                 { id: "stress", title: "Stress Test Results", content: stressTestData.map(s => `${s.scenario}: ${s.impact}% over ${s.duration}\nCurrent Portfolio Impact: ${s.currentPortfolio}%`).join('\n\n') },
                 { id: "goals", title: "Goal Achievement Analysis", content: goalScenarios.map(g => `${g.goal}: £${g.target.toLocaleString()} target\nCurrent: £${g.current.toLocaleString()} | Monthly: £${g.monthlySavings.toLocaleString()}\nProbability: ${g.probability}%\nConservative: ${g.scenarios.conservative.probability}% | Moderate: ${g.scenarios.moderate.probability}% | Aggressive: ${g.scenarios.aggressive.probability}%`).join('\n\n') },
                 { id: "cashflow", title: "Cash Flow Projections", content: cashFlowData.map(d => `${d.year}: Income £${d.income.toLocaleString()} | Expenses £${d.expenses.toLocaleString()} | Savings £${d.savings.toLocaleString()}`).join('\n') },
