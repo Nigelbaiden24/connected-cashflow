@@ -165,7 +165,16 @@ export default function Features() {
                   >
                     FlowPulse Finance
                   </Button>
-                  {/* FlowPulse Investor link hidden - kept for future resurgence */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start font-semibold"
+                    onClick={() => {
+                      navigate("/login-investor");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    FlowPulse Investor
+                  </Button>
                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
@@ -219,7 +228,12 @@ export default function Features() {
               FlowPulse Finance
             </button>
 
-            {/* FlowPulse Investor nav link hidden - kept for future resurgence */}
+            <button 
+              onClick={() => navigate('/login-investor')}
+              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
+            >
+              FlowPulse Investor
+            </button>
 
             <button 
               onClick={() => navigate('/reports')}
@@ -515,7 +529,15 @@ export default function Features() {
               <Briefcase className="mr-2 h-5 w-5" />
               FlowPulse Finance
             </Button>
-            {/* FlowPulse Investor CTA hidden - kept for future resurgence */}
+            <Button 
+              size="lg" 
+              variant="secondary"
+              onClick={() => navigate("/login-investor")}
+              className="bg-white/80 text-purple-600 hover:bg-white/90 text-lg px-8 py-6"
+            >
+              <TrendingUp className="mr-2 h-5 w-5" />
+              FlowPulse Investor
+            </Button>
           </div>
         </div>
       </section>
