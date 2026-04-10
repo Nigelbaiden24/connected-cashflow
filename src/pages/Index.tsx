@@ -190,7 +190,16 @@ const Index = () => {
                   >
                     FlowPulse Finance
                   </Button>
-                  {/* FlowPulse Investor link hidden - kept for future resurgence */}
+                   <Button
+                    variant="ghost"
+                    className="w-full justify-start font-semibold"
+                    onClick={() => {
+                      navigate("/login-investor");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    FlowPulse Investor
+                  </Button>
                    <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
@@ -234,7 +243,12 @@ const Index = () => {
               FlowPulse Finance
             </button>
 
-            {/* FlowPulse Investor nav link hidden - kept for future resurgence */}
+            <button 
+              onClick={() => navigate('/login-investor')}
+              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
+            >
+              FlowPulse Investor
+            </button>
 
             <button
               onClick={() => navigate('/pricing')}
