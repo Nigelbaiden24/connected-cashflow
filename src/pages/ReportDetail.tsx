@@ -322,7 +322,14 @@ export default function ReportDetail() {
                       <TrendingUp className="h-5 w-5 mr-2" />
                       FlowPulse Finance
                     </Button>
-                    {/* FlowPulse Investor button hidden - kept for future resurgence */}
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl"
+                      onClick={() => navigate("/login-investor")}
+                    >
+                      <TrendingUp className="h-5 w-5 mr-2" />
+                      FlowPulse Investor
+                    </Button>
                   </div>
 
                   <p className="text-sm text-slate-400 mt-6">
