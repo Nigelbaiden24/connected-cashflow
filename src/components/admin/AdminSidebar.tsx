@@ -83,6 +83,7 @@ const navItems: NavItem[] = [
   { id: "automation-center", label: "Automation Center", icon: Zap, gradient: "from-violet-500 to-purple-600" },
   { id: "api-management", label: "API Management", icon: Globe, gradient: "from-emerald-500 to-teal-600" },
   { id: "push-notifications", label: "Push Notifications", icon: Bell, gradient: "from-rose-500 to-orange-600" },
+  { id: "investor-finder", label: "Investor Finder", icon: Users, gradient: "from-violet-500 to-purple-600" },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700" },
 ];
 

@@ -48,6 +48,7 @@ const LearningHub = lazy(() => import("./pages/investor/LearningHub"));
 const MarketDataHub = lazy(() => import("./pages/investor/MarketDataHub"));
 const ToolsCalculators = lazy(() => import("./pages/investor/ToolsCalculators"));
 const RiskCompliance = lazy(() => import("./pages/investor/RiskCompliance"));
+const InvestorFinderPage = lazy(() => import("./pages/finance/InvestorFinder"));
 const Watchlists = lazy(() => import("./pages/investor/Watchlists"));
 const Languages = lazy(() => import("./pages/investor/Languages"));
 const BusinessLanguages = lazy(() => import("./pages/business/Languages"));
@@ -264,6 +265,7 @@ const App = () => {
                 <Route path="/finance/languages" element={<Suspense fallback={<PageLoader />}><FinanceLanguages /></Suspense>} />
                 <Route path="/finance/featured-picks" element={<Suspense fallback={<PageLoader />}><FinanceFeaturedPicks /></Suspense>} />
                 <Route path="/finance-ai-generator" element={<Suspense fallback={<PageLoader />}><FinanceAIGenerator /></Suspense>} />
+                <Route path="/finance/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderPage /></Suspense>} />
               </Route>
 
               {/* Finance News has its own layout */}
@@ -327,6 +329,7 @@ const App = () => {
                 <Route path="/investor/stocks-crypto" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
                 <Route path="/investor/featured-picks" element={<Suspense fallback={<PageLoader />}><InvestorFeaturedPicks /></Suspense>} />
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
+                <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderPage /></Suspense>} />
               </Route>
 
               <Route path="/investor/news" element={<InvestorNews />} />

@@ -563,7 +563,25 @@ export default function PublicReports() {
                 </div>
               </Card>
               
-              {/* FlowPulse Investor card hidden - kept for future resurgence */}
+              <Card className="relative overflow-hidden border-2 border-purple-500/30 hover:border-purple-500/60 transition-all duration-300 bg-gradient-to-br from-purple-500/5 to-violet-500/5">
+                <div className="p-8 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600">
+                      <TrendingUp className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold">FlowPulse Investor</h3>
+                  </div>
+                  <p className="text-muted-foreground">
+                    Access advanced research, market intelligence, and investment tools.
+                  </p>
+                  <div className="pt-2">
+                    <Button onClick={() => navigate("/login-investor")} className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700">
+                      Get Started
+                      <ChevronRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
             </div>
           </div>
         </div>
