@@ -3722,6 +3722,99 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_finder_profiles: {
+        Row: {
+          actively_investing: boolean | null
+          avg_cheque_max: number | null
+          avg_cheque_min: number | null
+          contact_email: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          dry_powder: number | null
+          fund_size: number | null
+          fundraising_status: string | null
+          geography_focus: string[] | null
+          id: string
+          investor_name: string
+          investor_type: string
+          keywords: string[] | null
+          last_investment_date: string | null
+          linkedin_url: string | null
+          location: string | null
+          logo_url: string | null
+          notes: string | null
+          portfolio_companies: string[] | null
+          recent_deals: Json | null
+          sectors: string[] | null
+          stage_focus: string[] | null
+          total_deals: number | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          actively_investing?: boolean | null
+          avg_cheque_max?: number | null
+          avg_cheque_min?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          dry_powder?: number | null
+          fund_size?: number | null
+          fundraising_status?: string | null
+          geography_focus?: string[] | null
+          id?: string
+          investor_name: string
+          investor_type?: string
+          keywords?: string[] | null
+          last_investment_date?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          logo_url?: string | null
+          notes?: string | null
+          portfolio_companies?: string[] | null
+          recent_deals?: Json | null
+          sectors?: string[] | null
+          stage_focus?: string[] | null
+          total_deals?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          actively_investing?: boolean | null
+          avg_cheque_max?: number | null
+          avg_cheque_min?: number | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          dry_powder?: number | null
+          fund_size?: number | null
+          fundraising_status?: string | null
+          geography_focus?: string[] | null
+          id?: string
+          investor_name?: string
+          investor_type?: string
+          keywords?: string[] | null
+          last_investment_date?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          logo_url?: string | null
+          notes?: string | null
+          portfolio_companies?: string[] | null
+          recent_deals?: Json | null
+          sectors?: string[] | null
+          stage_focus?: string[] | null
+          total_deals?: number | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       investor_videos: {
         Row: {
           category: string | null
