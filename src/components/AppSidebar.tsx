@@ -112,6 +112,7 @@ const navGroups: NavGroup[] = [
       { title: "Analyst Reports", url: "/finance/reports", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
       { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
       { title: "Investor Finder", url: "/finance/investor-finder", icon: Users, gradient: "from-violet-500 to-purple-600" },
+      { title: "Company Intelligence", url: "/finance/company-intelligence", icon: Briefcase, gradient: "from-teal-500 to-emerald-600" },
     ],
   },
 ];
