@@ -32,6 +32,7 @@ import {
   Radar,
   Calculator,
   Zap,
+  Briefcase,
 } from "lucide-react";
 
 interface AdminSidebarProps {
