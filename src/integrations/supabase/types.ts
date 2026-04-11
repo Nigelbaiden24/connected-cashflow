@@ -2315,6 +2315,87 @@ export type Database = {
         }
         Relationships: []
       }
+      company_intelligence: {
+        Row: {
+          company_name: string
+          competitors: string[] | null
+          country: string | null
+          created_at: string
+          description: string | null
+          employee_count: number | null
+          exits: Json | null
+          founded_year: number | null
+          funding_rounds: Json | null
+          fundraising_history: Json | null
+          id: string
+          industry: string | null
+          location: string | null
+          logo_url: string | null
+          ma_transactions: Json | null
+          ownership_type: string | null
+          revenue_currency: string | null
+          revenue_estimate: number | null
+          sector: string | null
+          status: string | null
+          ticker: string | null
+          updated_at: string
+          valuations: Json | null
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          competitors?: string[] | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          employee_count?: number | null
+          exits?: Json | null
+          founded_year?: number | null
+          funding_rounds?: Json | null
+          fundraising_history?: Json | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          ma_transactions?: Json | null
+          ownership_type?: string | null
+          revenue_currency?: string | null
+          revenue_estimate?: number | null
+          sector?: string | null
+          status?: string | null
+          ticker?: string | null
+          updated_at?: string
+          valuations?: Json | null
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          competitors?: string[] | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          employee_count?: number | null
+          exits?: Json | null
+          founded_year?: number | null
+          funding_rounds?: Json | null
+          fundraising_history?: Json | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          ma_transactions?: Json | null
+          ownership_type?: string | null
+          revenue_currency?: string | null
+          revenue_estimate?: number | null
+          sector?: string | null
+          status?: string | null
+          ticker?: string | null
+          updated_at?: string
+          valuations?: Json | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       compliance_audit_trail: {
         Row: {
           action: string
@@ -6377,6 +6458,93 @@ export type Database = {
           policy_type?: string
           status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      startup_discovery: {
+        Row: {
+          buyer_signals: Json | null
+          campaign_url: string | null
+          company_name: string
+          country: string | null
+          created_at: string
+          crowdfunding_platform: string | null
+          description: string | null
+          founders: string[] | null
+          founding_year: number | null
+          funding_currency: string | null
+          funding_stage: string | null
+          funding_total: number | null
+          growth_indicators: Json | null
+          headcount: number | null
+          id: string
+          industry: string | null
+          last_funding_date: string | null
+          lead_score: number | null
+          location: string | null
+          logo_url: string | null
+          pitch_deck_url: string | null
+          prospect_tags: string[] | null
+          sector: string | null
+          status: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          buyer_signals?: Json | null
+          campaign_url?: string | null
+          company_name: string
+          country?: string | null
+          created_at?: string
+          crowdfunding_platform?: string | null
+          description?: string | null
+          founders?: string[] | null
+          founding_year?: number | null
+          funding_currency?: string | null
+          funding_stage?: string | null
+          funding_total?: number | null
+          growth_indicators?: Json | null
+          headcount?: number | null
+          id?: string
+          industry?: string | null
+          last_funding_date?: string | null
+          lead_score?: number | null
+          location?: string | null
+          logo_url?: string | null
+          pitch_deck_url?: string | null
+          prospect_tags?: string[] | null
+          sector?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          buyer_signals?: Json | null
+          campaign_url?: string | null
+          company_name?: string
+          country?: string | null
+          created_at?: string
+          crowdfunding_platform?: string | null
+          description?: string | null
+          founders?: string[] | null
+          founding_year?: number | null
+          funding_currency?: string | null
+          funding_stage?: string | null
+          funding_total?: number | null
+          growth_indicators?: Json | null
+          headcount?: number | null
+          id?: string
+          industry?: string | null
+          last_funding_date?: string | null
+          lead_score?: number | null
+          location?: string | null
+          logo_url?: string | null
+          pitch_deck_url?: string | null
+          prospect_tags?: string[] | null
+          sector?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }

@@ -32,6 +32,7 @@ import {
   Radar,
   Calculator,
   Zap,
+  Briefcase,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -84,6 +85,8 @@ const navItems: NavItem[] = [
   { id: "api-management", label: "API Management", icon: Globe, gradient: "from-emerald-500 to-teal-600" },
   { id: "push-notifications", label: "Push Notifications", icon: Bell, gradient: "from-rose-500 to-orange-600" },
   { id: "investor-finder", label: "Investor Finder", icon: Users, gradient: "from-violet-500 to-purple-600" },
+  { id: "company-intelligence", label: "Company Intelligence", icon: Briefcase, gradient: "from-teal-500 to-teal-600" },
+  { id: "startup-discovery", label: "Startup Discovery", icon: Sparkles, gradient: "from-emerald-500 to-emerald-600" },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700" },
 ];
 

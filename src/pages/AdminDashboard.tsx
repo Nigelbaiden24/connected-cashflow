@@ -43,6 +43,8 @@ import { useAdminAutoLogout } from "@/hooks/useAdminAutoLogout";
 import { AdminSettings } from "@/components/admin/AdminSettings";
 import { AdminPushNotifications } from "@/components/admin/AdminPushNotifications";
 import { ApiManagementPanel } from "@/components/admin/api-management/ApiManagementPanel";
+import { AdminCompanyIntelligence } from "@/components/admin/AdminCompanyIntelligence";
+import { AdminStartupDiscovery } from "@/components/admin/AdminStartupDiscovery";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
 import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
@@ -1618,6 +1620,14 @@ export default function AdminDashboard() {
 
           {activeTab === 'settings' && (
             <AdminSettings onSettingsChange={handleSettingsChange} />
+          )}
+
+          {activeTab === 'company-intelligence' && (
+            <AdminCompanyIntelligence />
+          )}
+
+          {activeTab === 'startup-discovery' && (
+            <AdminStartupDiscovery />
           )}
         </div>
       </main>

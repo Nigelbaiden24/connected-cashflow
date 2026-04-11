@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, Eye, EyeOff, Globe, Coins, Building, User, Phone, Mail, Send } from "lucide-react";
+import { TrendingUp, Eye, EyeOff, Globe, Coins, Building, User, Phone, Mail, Send, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { MFAChallenge } from "@/components/auth/MFAChallenge";
+import { MFAEnrollment } from "@/components/auth/MFAEnrollment";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 interface LoginInvestorProps {
@@ -20,6 +22,9 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showMfaChallenge, setShowMfaChallenge] = useState(false);
+  const [showMfaEnrollment, setShowMfaEnrollment] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   const { toast } = useToast();
 
   // Enquiry form state
@@ -50,12 +55,21 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
       }
 
       if (data.user) {
-        toast({
-          title: "Login Successful",
-          description: `Welcome back! Logged in as ${email}`,
-        });
-        onLogin(email);
-        navigate("/investor/dashboard");
+        // Check if MFA is enrolled
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const hasMfa = factors?.totp?.some((f) => f.status === "verified");
+
+        if (hasMfa) {
+          // MFA exists - challenge user
+          setPendingEmail(email);
+          setShowMfaChallenge(true);
+          return;
+        }
+
+        // No MFA enrolled - force enrollment
+        setPendingEmail(email);
+        setShowMfaEnrollment(true);
+        return;
       }
     } catch (error: any) {
       toast({
@@ -66,6 +80,33 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMfaSuccess = () => {
+    setShowMfaChallenge(false);
+    toast({
+      title: "Login Successful",
+      description: "MFA verified. Welcome back!",
+    });
+    onLogin(pendingEmail);
+    navigate("/investor/dashboard");
+  };
+
+  const handleMfaCancel = () => {
+    setShowMfaChallenge(false);
+    setShowMfaEnrollment(false);
+    setPendingEmail("");
+    supabase.auth.signOut();
+  };
+
+  const handleMfaEnrollmentSuccess = () => {
+    setShowMfaEnrollment(false);
+    toast({
+      title: "MFA Activated",
+      description: "Authenticator set up successfully. Welcome!",
+    });
+    onLogin(pendingEmail);
+    navigate("/investor/dashboard");
   };
 
   const handleEnquirySubmit = async (e: React.FormEvent) => {
@@ -89,7 +130,6 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
         description: "Thank you! A member of our team will be in touch shortly.",
       });
 
-      // Reset form
       setEnquiryName("");
       setEnquiryEmail("");
       setEnquiryPhone("");
@@ -105,6 +145,26 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
       setIsSubmittingEnquiry(false);
     }
   };
+
+  // MFA Enrollment Screen (forced for users without MFA)
+  if (showMfaEnrollment) {
+    return (
+      <MFAEnrollment
+        onSuccess={handleMfaEnrollmentSuccess}
+        onCancel={handleMfaCancel}
+      />
+    );
+  }
+
+  // MFA Challenge Screen
+  if (showMfaChallenge) {
+    return (
+      <MFAChallenge
+        onSuccess={handleMfaSuccess}
+        onCancel={handleMfaCancel}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -135,11 +195,11 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
           </div>
           <div className="flex items-start gap-4">
             <div className="bg-purple-500/30 p-3 rounded-lg">
-              <Coins className="h-6 w-6" />
+              <Lock className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg mb-1">Digital Assets</h3>
-              <p className="text-purple-100">Cryptocurrency analysis and investment insights</p>
+              <h3 className="font-semibold text-lg mb-1">Bank-Level Security</h3>
+              <p className="text-purple-100">Mandatory MFA with enterprise-grade TOTP authentication</p>
             </div>
           </div>
           <div className="flex items-start gap-4">
@@ -172,25 +232,31 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="investor@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="investor@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10"
                       required
                     />
                     <Button
@@ -205,9 +271,13 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={isLoading}>
+                <Button type="submit" className="w-full h-11 bg-purple-600 hover:bg-purple-700" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
+
+                <p className="text-xs text-center text-muted-foreground">
+                  Protected by mandatory multi-factor authentication (MFA)
+                </p>
               </form>
             </TabsContent>
 
@@ -224,91 +294,38 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
                   <Label htmlFor="enquiry-name">Full Name *</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="enquiry-name"
-                      type="text"
-                      placeholder="John Smith"
-                      value={enquiryName}
-                      onChange={(e) => setEnquiryName(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
+                    <Input id="enquiry-name" type="text" placeholder="John Smith" value={enquiryName} onChange={(e) => setEnquiryName(e.target.value)} className="pl-10" required />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="enquiry-email">Email Address *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="enquiry-email"
-                      type="email"
-                      placeholder="john@company.com"
-                      value={enquiryEmail}
-                      onChange={(e) => setEnquiryEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
+                    <Input id="enquiry-email" type="email" placeholder="john@company.com" value={enquiryEmail} onChange={(e) => setEnquiryEmail(e.target.value)} className="pl-10" required />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="enquiry-phone">Phone</Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="enquiry-phone"
-                        type="tel"
-                        placeholder="+44 7123..."
-                        value={enquiryPhone}
-                        onChange={(e) => setEnquiryPhone(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input id="enquiry-phone" type="tel" placeholder="+44 7123..." value={enquiryPhone} onChange={(e) => setEnquiryPhone(e.target.value)} className="pl-10" />
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="enquiry-company">Company</Label>
                     <div className="relative">
                       <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="enquiry-company"
-                        type="text"
-                        placeholder="Company Ltd"
-                        value={enquiryCompany}
-                        onChange={(e) => setEnquiryCompany(e.target.value)}
-                        className="pl-10"
-                      />
+                      <Input id="enquiry-company" type="text" placeholder="Company Ltd" value={enquiryCompany} onChange={(e) => setEnquiryCompany(e.target.value)} className="pl-10" />
                     </div>
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="enquiry-message">Message *</Label>
-                  <Textarea
-                    id="enquiry-message"
-                    placeholder="Tell us about your investment interests and goals..."
-                    value={enquiryMessage}
-                    onChange={(e) => setEnquiryMessage(e.target.value)}
-                    className="min-h-[100px]"
-                    required
-                  />
+                  <Textarea id="enquiry-message" placeholder="Tell us about your investment interests and goals..." value={enquiryMessage} onChange={(e) => setEnquiryMessage(e.target.value)} className="min-h-[100px]" required />
                 </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-purple-600 hover:bg-purple-700"
-                  disabled={isSubmittingEnquiry}
-                >
-                  {isSubmittingEnquiry ? (
-                    "Submitting..."
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Submit Enquiry
-                    </>
-                  )}
+                <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={isSubmittingEnquiry}>
+                  {isSubmittingEnquiry ? "Submitting..." : <><Send className="h-4 w-4 mr-2" /> Submit Enquiry</>}
                 </Button>
               </form>
             </TabsContent>
