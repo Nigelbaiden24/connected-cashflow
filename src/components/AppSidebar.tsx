@@ -1,5 +1,6 @@
 import { memo, useState, useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
 import {
   LayoutDashboard,
@@ -30,6 +31,7 @@ import {
   Zap,
   Globe,
   Lightbulb,
+  Search,
 } from "lucide-react";
 import {
   Sidebar,
@@ -122,6 +124,8 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { profile } = useUserProfile();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRoutes = useMemo(() => buildSearchableRoutes(navGroups), []);
 
   const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_finance") || "[]"); } catch { return []; }
@@ -199,12 +203,29 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
         </div>
       </SidebarHeader>
 
+      <PlatformSearch routes={searchRoutes} open={searchOpen} onOpenChange={setSearchOpen} />
+
       {/* Navigation */}
       <SidebarContent className="flex-1 relative z-10 overflow-hidden">
         <ScrollArea className="h-full px-2 py-2">
           {!collapsed && (
-            <div className="flex justify-end mb-1 px-1">
+            <div className="flex items-center justify-between mb-1 px-1 gap-1">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white/90 text-xs transition-all"
+              >
+                <Search className="h-3.5 w-3.5" />
+                <span>Search...</span>
+                <kbd className="ml-auto hidden sm:inline-flex rounded border border-white/10 bg-white/[0.04] px-1 py-0.5 font-mono text-[9px]">⌘K</kbd>
+              </button>
               <SidebarTabFilter platform="finance" navGroups={navGroups} onFilterChange={handleFilterChange} />
+            </div>
+          )}
+          {collapsed && (
+            <div className="flex justify-center mb-1">
+              <button onClick={() => setSearchOpen(true)} className="p-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/60 hover:text-white/90 transition-all">
+                <Search className="h-4 w-4" />
+              </button>
             </div>
           )}
           {filteredNavGroups.map((group) => (
