@@ -243,7 +243,7 @@ export default function StartupDiscovery() {
           <p className="text-muted-foreground mt-1">Discover startups & private companies on crowdfunding platforms — lead scoring, buyer signals & prospect lists</p>
         </div>
         <div className="flex gap-2">
-          <Button variant={listMode ? "default" : "outline"} size="sm" onClick={() => setListMode(!listMode)} className="gap-1.5">
+          <Button variant={listMode ? "default" : "outline"} size="sm" onClick={() => { setListMode(!listMode); if (listMode) setSelectedIds([]); }} className="gap-1.5">
             <ListChecks className="h-4 w-4" /> {listMode ? "Exit List Mode" : "Build Prospect List"}
           </Button>
           {selectedIds.length > 0 && (
@@ -253,6 +253,31 @@ export default function StartupDiscovery() {
           )}
         </div>
       </div>
+
+      {/* List mode banner */}
+      {listMode && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2 text-sm">
+            <ListChecks className="h-4 w-4 text-primary" />
+            <span className="font-medium text-primary">Prospect List Mode</span>
+            <span className="text-muted-foreground">— Click cards to select startups for your list</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary">{selectedIds.length} selected</Badge>
+            {selectedIds.length > 0 && (
+              <>
+                <Button size="sm" variant="outline" onClick={() => setSelectedIds([])} className="h-7 text-xs">Clear</Button>
+                <Button size="sm" onClick={exportProspectList} className="h-7 text-xs gap-1">
+                  <Download className="h-3 w-3" /> Export CSV
+                </Button>
+              </>
+            )}
+            {selectedIds.length === 0 && filtered.length > 0 && (
+              <Button size="sm" variant="outline" onClick={() => setSelectedIds(filtered.map(s => s.id))} className="h-7 text-xs">Select All ({filtered.length})</Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
