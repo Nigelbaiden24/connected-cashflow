@@ -124,6 +124,8 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { profile } = useUserProfile();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRoutes = useMemo(() => buildSearchableRoutes(navGroups), []);
 
   const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_finance") || "[]"); } catch { return []; }
