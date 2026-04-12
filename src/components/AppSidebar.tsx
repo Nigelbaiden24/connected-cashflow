@@ -1,5 +1,6 @@
 import { memo, useState, useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
 import {
   LayoutDashboard,
@@ -30,6 +31,7 @@ import {
   Zap,
   Globe,
   Lightbulb,
+  Search,
 } from "lucide-react";
 import {
   Sidebar,
