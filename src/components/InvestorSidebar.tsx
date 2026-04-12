@@ -1,5 +1,6 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
 import { 
   FileText,
@@ -130,15 +131,17 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRoutes = useMemo(() => buildSearchableRoutes(navGroups), []);
   const [hiddenUrls, setHiddenUrls] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_investor") || "[]"); } catch { return []; }
   });
   const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
 
-  const filteredNavGroups = navGroups.map(g => ({
+  const filteredNavGroups = useMemo(() => navGroups.map(g => ({
     ...g,
     items: g.items.filter(item => !hiddenUrls.includes(item.url))
-  })).filter(g => g.items.length > 0);
+  })).filter(g => g.items.length > 0), [hiddenUrls]);
 
   const isActive = (path: string) => location.pathname === path;
 
