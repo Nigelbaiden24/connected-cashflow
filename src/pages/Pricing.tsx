@@ -18,6 +18,7 @@ const Pricing = () => {
   // Finance state
   const [selectedFinanceProducts, setSelectedFinanceProducts] = useState<string[]>([]);
   const [financeSeatCount, setFinanceSeatCount] = useState(3);
+  const [financeBillingAnnual, setFinanceBillingAnnual] = useState(true);
 
   // Investor state
   const [selectedInvestorProducts, setSelectedInvestorProducts] = useState<string[]>([]);
@@ -67,11 +68,13 @@ const Pricing = () => {
   ];
 
   // Finance pricing constants
-  const FINANCE_MONTHLY_SEAT_PRICE = 89;
-  const FINANCE_SEAT_PRICE = FINANCE_MONTHLY_SEAT_PRICE * 12;
+  const FINANCE_ANNUAL_SEAT_PRICE_MONTHLY = 89; // per seat per month when billed annually
+  const FINANCE_MONTHLY_SEAT_PRICE_MONTHLY = Math.ceil(89 * 1.2); // 20% more = £107/seat/month
+  const FINANCE_SEAT_PRICE_MONTHLY = financeBillingAnnual ? FINANCE_ANNUAL_SEAT_PRICE_MONTHLY : FINANCE_MONTHLY_SEAT_PRICE_MONTHLY;
   const FINANCE_MIN_SEATS = 3;
   const FINANCE_INCLUDED_PRODUCTS = 3;
-  const FINANCE_ADDON_PRICE = 1200;
+  const FINANCE_ADDON_PRICE_ANNUAL = 1200; // per year
+  const FINANCE_ADDON_PRICE_MONTHLY = Math.ceil(1200 / 12 * 1.2); // 20% more = £120/month
 
   // Investor pricing constants
   const INVESTOR_MONTHLY_PRICE = 50;
@@ -94,9 +97,15 @@ const Pricing = () => {
 
   // Finance calculations
   const financeAddonCount = Math.max(0, selectedFinanceProducts.length - FINANCE_INCLUDED_PRODUCTS);
-  const financeSeatTotal = financeSeatCount * FINANCE_SEAT_PRICE;
-  const financeAddonTotal = financeAddonCount * FINANCE_ADDON_PRICE;
+  const financeAddonPrice = financeBillingAnnual ? FINANCE_ADDON_PRICE_ANNUAL : FINANCE_ADDON_PRICE_MONTHLY;
+  const financeSeatTotal = financeBillingAnnual
+    ? financeSeatCount * FINANCE_SEAT_PRICE_MONTHLY * 12
+    : financeSeatCount * FINANCE_SEAT_PRICE_MONTHLY;
+  const financeAddonTotal = financeBillingAnnual
+    ? financeAddonCount * FINANCE_ADDON_PRICE_ANNUAL
+    : financeAddonCount * FINANCE_ADDON_PRICE_MONTHLY;
   const financeTotalPrice = financeSeatTotal + financeAddonTotal;
+  const financeBillingLabel = financeBillingAnnual ? "/yr" : "/mo";
 
   // Investor calculations
   const investorAddonCount = Math.max(0, selectedInvestorProducts.length - INVESTOR_INCLUDED_PRODUCTS);
