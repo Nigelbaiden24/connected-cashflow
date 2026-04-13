@@ -18,6 +18,7 @@ const Pricing = () => {
   // Finance state
   const [selectedFinanceProducts, setSelectedFinanceProducts] = useState<string[]>([]);
   const [financeSeatCount, setFinanceSeatCount] = useState(3);
+  const [financeBillingAnnual, setFinanceBillingAnnual] = useState(true);
 
   // Investor state
   const [selectedInvestorProducts, setSelectedInvestorProducts] = useState<string[]>([]);
@@ -67,11 +68,13 @@ const Pricing = () => {
   ];
 
   // Finance pricing constants
-  const FINANCE_MONTHLY_SEAT_PRICE = 89;
-  const FINANCE_SEAT_PRICE = FINANCE_MONTHLY_SEAT_PRICE * 12;
+  const FINANCE_ANNUAL_SEAT_PRICE_MONTHLY = 89; // per seat per month when billed annually
+  const FINANCE_MONTHLY_SEAT_PRICE_MONTHLY = Math.ceil(89 * 1.2); // 20% more = £107/seat/month
+  const FINANCE_SEAT_PRICE_MONTHLY = financeBillingAnnual ? FINANCE_ANNUAL_SEAT_PRICE_MONTHLY : FINANCE_MONTHLY_SEAT_PRICE_MONTHLY;
   const FINANCE_MIN_SEATS = 3;
   const FINANCE_INCLUDED_PRODUCTS = 3;
-  const FINANCE_ADDON_PRICE = 1200;
+  const FINANCE_ADDON_PRICE_ANNUAL = 1200; // per year
+  const FINANCE_ADDON_PRICE_MONTHLY = Math.ceil(1200 / 12 * 1.2); // 20% more = £120/month
 
   // Investor pricing constants
   const INVESTOR_MONTHLY_PRICE = 50;
@@ -94,9 +97,15 @@ const Pricing = () => {
 
   // Finance calculations
   const financeAddonCount = Math.max(0, selectedFinanceProducts.length - FINANCE_INCLUDED_PRODUCTS);
-  const financeSeatTotal = financeSeatCount * FINANCE_SEAT_PRICE;
-  const financeAddonTotal = financeAddonCount * FINANCE_ADDON_PRICE;
+  const financeAddonPrice = financeBillingAnnual ? FINANCE_ADDON_PRICE_ANNUAL : FINANCE_ADDON_PRICE_MONTHLY;
+  const financeSeatTotal = financeBillingAnnual
+    ? financeSeatCount * FINANCE_SEAT_PRICE_MONTHLY * 12
+    : financeSeatCount * FINANCE_SEAT_PRICE_MONTHLY;
+  const financeAddonTotal = financeBillingAnnual
+    ? financeAddonCount * FINANCE_ADDON_PRICE_ANNUAL
+    : financeAddonCount * FINANCE_ADDON_PRICE_MONTHLY;
   const financeTotalPrice = financeSeatTotal + financeAddonTotal;
+  const financeBillingLabel = financeBillingAnnual ? "/yr" : "/mo";
 
   // Investor calculations
   const investorAddonCount = Math.max(0, selectedInvestorProducts.length - INVESTOR_INCLUDED_PRODUCTS);
@@ -211,19 +220,20 @@ const Pricing = () => {
                   <div className="flex items-center gap-3 px-5 py-3 rounded-xl bg-primary/10 border border-primary/20">
                     <CreditCard className="h-5 w-5 text-primary" />
                     <div>
-                      <span className="text-2xl font-bold text-foreground font-space-grotesk">£{FINANCE_MONTHLY_SEAT_PRICE}</span>
+                      <span className="text-2xl font-bold text-foreground font-space-grotesk">£{FINANCE_SEAT_PRICE_MONTHLY}</span>
                       <span className="text-muted-foreground text-sm">/seat/month</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Badge variant="outline" className="border-border/50 font-normal">Billed Annually</Badge>
+                    {financeBillingAnnual && <Badge className="bg-primary/10 text-primary border-primary/20 font-normal">20% off annual</Badge>}
                     <Badge variant="outline" className="border-border/50 font-normal">Min {FINANCE_MIN_SEATS} seats</Badge>
                     <Badge variant="outline" className="border-border/50 font-normal">{FINANCE_INCLUDED_PRODUCTS} products included</Badge>
                   </div>
                 </div>
-                <div className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <Plus className="h-3.5 w-3.5" />
-                  Add-ons: £{FINANCE_ADDON_PRICE.toLocaleString()}/yr each
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-medium ${!financeBillingAnnual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
+                  <Switch checked={financeBillingAnnual} onCheckedChange={setFinanceBillingAnnual} />
+                  <span className={`text-sm font-medium ${financeBillingAnnual ? "text-foreground" : "text-muted-foreground"}`}>Annual</span>
                 </div>
               </div>
             </div>
@@ -253,7 +263,7 @@ const Pricing = () => {
                       selectedProducts={selectedFinanceProducts}
                       toggleProduct={toggleFinanceProduct}
                       includedCount={FINANCE_INCLUDED_PRODUCTS}
-                      addonPriceLabel={`£${FINANCE_ADDON_PRICE.toLocaleString()}/yr`}
+                      addonPriceLabel={financeBillingAnnual ? `£${FINANCE_ADDON_PRICE_ANNUAL.toLocaleString()}/yr` : `£${FINANCE_ADDON_PRICE_MONTHLY}/mo`}
                     />
                   </CardContent>
                 </Card>
@@ -268,7 +278,7 @@ const Pricing = () => {
                         <img src={flowpulseLogo} alt="FlowPulse" className="h-10 w-auto" />
                       </div>
                       <CardTitle className="text-lg font-space-grotesk">Finance Subscription</CardTitle>
-                      <CardDescription className="text-xs">Annual billing — cancel anytime</CardDescription>
+                      <CardDescription className="text-xs">{financeBillingAnnual ? "Annual" : "Monthly"} billing — cancel anytime</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 px-6">
                       {/* Seat selector */}
@@ -276,9 +286,9 @@ const Pricing = () => {
                         <div className="flex justify-between items-center mb-3">
                           <div>
                             <p className="font-semibold text-sm">Team Seats</p>
-                            <p className="text-[11px] text-muted-foreground">£{FINANCE_MONTHLY_SEAT_PRICE}/seat/mo · min {FINANCE_MIN_SEATS}</p>
+                            <p className="text-[11px] text-muted-foreground">£{FINANCE_SEAT_PRICE_MONTHLY}/seat/mo · min {FINANCE_MIN_SEATS}</p>
                           </div>
-                          <span className="font-bold text-foreground font-space-grotesk">£{financeSeatTotal.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">/yr</span></span>
+                          <span className="font-bold text-foreground font-space-grotesk">£{financeSeatTotal.toLocaleString()}<span className="text-xs font-normal text-muted-foreground">{financeBillingLabel}</span></span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Button variant="outline" size="icon" className="h-9 w-9 rounded-lg border-border/50"
@@ -312,7 +322,7 @@ const Pricing = () => {
                           <div className="flex justify-between items-center">
                             <div>
                               <p className="font-semibold text-sm text-warning">Add-on Products</p>
-                              <p className="text-[11px] text-muted-foreground">{financeAddonCount} × £{FINANCE_ADDON_PRICE.toLocaleString()}/year</p>
+                              <p className="text-[11px] text-muted-foreground">{financeAddonCount} × £{financeAddonPrice.toLocaleString()}{financeBillingLabel}</p>
                             </div>
                             <span className="font-bold text-warning font-space-grotesk">+£{financeAddonTotal.toLocaleString()}</span>
                           </div>
@@ -321,15 +331,22 @@ const Pricing = () => {
 
                       <div className="p-5 rounded-xl bg-gradient-to-br from-primary/10 via-muted/30 to-secondary/10 border border-primary/15 mt-2">
                         <div className="flex justify-between items-baseline">
-                          <span className="font-semibold text-sm text-muted-foreground">Annual Total</span>
+                          <span className="font-semibold text-sm text-muted-foreground">{financeBillingAnnual ? "Annual" : "Monthly"} Total</span>
                           <div className="text-right">
                             <span className="text-3xl font-bold font-space-grotesk text-foreground">£{financeTotalPrice.toLocaleString()}</span>
-                            <span className="text-muted-foreground text-xs">/yr</span>
+                            <span className="text-muted-foreground text-xs">{financeBillingLabel}</span>
                           </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground text-right mt-1">
-                          ≈ £{Math.round(financeTotalPrice / 12).toLocaleString()}/month
-                        </p>
+                        {financeBillingAnnual && (
+                          <p className="text-[11px] text-muted-foreground text-right mt-1">
+                            ≈ £{Math.round(financeTotalPrice / 12).toLocaleString()}/month
+                          </p>
+                        )}
+                        {!financeBillingAnnual && (
+                          <p className="text-[11px] text-muted-foreground text-right mt-1">
+                            Save 20% with annual billing
+                          </p>
+                        )}
                       </div>
                     </CardContent>
                     <CardFooter className="pb-8 pt-4 flex-col gap-3 px-6">
