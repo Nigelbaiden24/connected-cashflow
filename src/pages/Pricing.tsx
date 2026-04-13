@@ -348,7 +348,6 @@ const Pricing = () => {
                           </p>
                         )}
                       </div>
-                      </div>
                     </CardContent>
                     <CardFooter className="pb-8 pt-4 flex-col gap-3 px-6">
                       <Button
