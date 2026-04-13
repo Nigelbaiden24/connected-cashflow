@@ -46,6 +46,7 @@ import { ApiManagementPanel } from "@/components/admin/api-management/ApiManagem
 import { AdminCompanyIntelligence } from "@/components/admin/AdminCompanyIntelligence";
 import { AdminStartupDiscovery } from "@/components/admin/AdminStartupDiscovery";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { UKInvestorScanner } from "@/components/admin/UKInvestorScanner";
 import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
 import { RuleEngineManager } from "@/components/compliance/RuleEngineManager";
 import { CaseManagement } from "@/components/compliance/CaseManagement";
@@ -1628,6 +1629,10 @@ export default function AdminDashboard() {
 
           {activeTab === 'startup-discovery' && (
             <AdminStartupDiscovery />
+          )}
+
+          {activeTab === 'investor-finder' && (
+            <UKInvestorScanner />
           )}
         </div>
       </main>
