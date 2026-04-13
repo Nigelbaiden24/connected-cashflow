@@ -347,7 +347,7 @@ const Pricing = () => {
                             Save 20% with annual billing
                           </p>
                         )}
-                        </p>
+                      </div>
                       </div>
                     </CardContent>
                     <CardFooter className="pb-8 pt-4 flex-col gap-3 px-6">
