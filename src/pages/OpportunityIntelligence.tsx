@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { OpportunityShowcase } from "@/components/opportunities/OpportunityShowcase";
 import { SectorFolderGrid } from "@/components/opportunities/SectorFolderGrid";
 import { AdvancedFilters, type FilterState } from "@/components/opportunities/AdvancedFilters";
+import { OpportunityWorldMap } from "@/components/opportunities/OpportunityWorldMap";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
@@ -88,7 +89,7 @@ export default function OpportunityIntelligence() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "showcase">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "showcase" | "map">("grid");
   const [showFolders, setShowFolders] = useState(true);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
@@ -330,6 +331,7 @@ export default function OpportunityIntelligence() {
                 <ToggleGroupItem value="showcase"><Presentation className="h-4 w-4" /></ToggleGroupItem>
                 <ToggleGroupItem value="grid"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
                 <ToggleGroupItem value="list"><List className="h-4 w-4" /></ToggleGroupItem>
+                <ToggleGroupItem value="map"><Globe className="h-4 w-4" /></ToggleGroupItem>
               </ToggleGroup>
               {viewMode === "list" && (
                 <Button variant={compareMode ? "default" : "outline"} size="sm" onClick={() => { setCompareMode(!compareMode); setCompareIds([]); }} className="gap-1.5">
@@ -367,6 +369,8 @@ export default function OpportunityIntelligence() {
                       <p className="text-muted-foreground">{searchQuery ? "Try adjusting your search criteria" : "New opportunities will be added soon. Check back later!"}</p>
                     </div>
                   </Card>
+                ) : viewMode === "map" ? (
+                  <OpportunityWorldMap opportunities={filteredOpportunities} />
                 ) : viewMode === "showcase" ? (
                   <OpportunityShowcase opportunities={filteredOpportunities} categoryConfig={categoryConfig} detailBasePath={detailBasePath} />
                 ) : viewMode === "grid" ? (
