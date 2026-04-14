@@ -181,12 +181,13 @@ const Sidebar = React.forwardRef<
     >
       <div
         className={cn(
-          "relative hidden h-svh w-[--sidebar-width] transition-[width] duration-200 ease-linear md:block",
+          "relative hidden h-svh w-[--sidebar-width] shrink-0 overflow-hidden bg-sidebar transition-[width] duration-200 ease-linear md:block",
           "group-data-[collapsible=offcanvas]:w-0",
           side === "right" && "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
             ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
             : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+          className,
         )}
         aria-hidden="true"
       />
