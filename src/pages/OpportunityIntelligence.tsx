@@ -290,8 +290,8 @@ export default function OpportunityIntelligence() {
   const handleBackToFolders = () => { setActiveCategory("all"); setShowFolders(true); };
 
   return (
-    <StarryBackground className="min-h-screen w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <StarryBackground className="min-h-screen w-full !rounded-none">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 min-h-screen">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">Live Deal Alerts</h1>
