@@ -204,8 +204,8 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
       <PlatformSearch routes={searchRoutes} open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Navigation */}
-      <SidebarContent className="flex-1 relative z-10 overflow-hidden">
-        <ScrollArea className="h-full px-2 py-2">
+      <SidebarContent className="flex-1 relative z-10 overflow-hidden min-h-0">
+        <div className="h-full overflow-y-auto overflow-x-hidden px-2 py-2 scrollbar-thin scrollbar-track-transparent">
           {!collapsed && (
             <div className="flex items-center justify-between mb-1 px-1 gap-1">
               <button
@@ -297,7 +297,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               )}
             </SidebarGroup>
           ))}
-        </ScrollArea>
+        </div>
       </SidebarContent>
 
       {/* Footer */}
