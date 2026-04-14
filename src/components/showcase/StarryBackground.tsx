@@ -105,7 +105,7 @@ export function StarryBackground({ children, className }: StarryBackgroundProps)
   }, []);
 
   return (
-    <div className={cn("relative overflow-hidden rounded-xl", className)}>
+    <div className={cn("relative overflow-hidden", className)}>
       {/* Canvas – only visible in dark mode */}
       <canvas
         ref={canvasRef}
