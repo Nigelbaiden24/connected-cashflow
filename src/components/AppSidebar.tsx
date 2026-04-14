@@ -49,7 +49,7 @@ import {
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { ScrollArea } from "./ui/scroll-area";
+
 import { cn } from "@/lib/utils";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { SidebarTabFilter } from "./SidebarTabFilter";
