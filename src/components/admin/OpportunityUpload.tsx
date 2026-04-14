@@ -117,6 +117,11 @@ interface OpportunityForm {
   price_currency: string;
   location: string;
   country: string;
+  city: string;
+  region: string;
+  postcode: string;
+  latitude: string;
+  longitude: string;
   
   // Ratings
   analyst_rating: string;
@@ -201,6 +206,11 @@ const initialForm: OpportunityForm = {
   price_currency: "GBP",
   location: "",
   country: "United Kingdom",
+  city: "",
+  region: "",
+  postcode: "",
+  latitude: "",
+  longitude: "",
   analyst_rating: "",
   quality_score: 3,
   value_score: 3,
@@ -321,6 +331,11 @@ export function OpportunityUpload() {
         price_currency: form.price_currency,
         location: form.location,
         country: form.country,
+        city: form.city || null,
+        region: form.region || null,
+        postcode: form.postcode || null,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        longitude: form.longitude ? parseFloat(form.longitude) : null,
         thumbnail_url: thumbnailUrl || null,
         analyst_rating: form.analyst_rating || null,
         quality_score: form.quality_score,
@@ -531,13 +546,44 @@ export function OpportunityUpload() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location">Location / Address</Label>
                     <Input
                       id="location"
                       value={form.location}
                       onChange={(e) => updateForm("location", e.target.value)}
-                      placeholder="e.g., London, UK"
+                      placeholder="e.g., 10 Downing Street, Westminster"
                     />
+                  </div>
+                </div>
+
+                {/* Precise Location Fields */}
+                <div className="rounded-lg border border-border/40 p-4 space-y-3 bg-muted/20">
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    📍 Precise Location Details
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="city" className="text-xs">City</Label>
+                      <Input id="city" value={form.city} onChange={(e) => updateForm("city", e.target.value)} placeholder="e.g., London" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="region" className="text-xs">Region / State</Label>
+                      <Input id="region" value={form.region} onChange={(e) => updateForm("region", e.target.value)} placeholder="e.g., Greater London" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="postcode" className="text-xs">Postcode / ZIP</Label>
+                      <Input id="postcode" value={form.postcode} onChange={(e) => updateForm("postcode", e.target.value)} placeholder="e.g., SW1A 2AA" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="latitude" className="text-xs">Latitude</Label>
+                      <Input id="latitude" type="number" step="any" value={form.latitude} onChange={(e) => updateForm("latitude", e.target.value)} placeholder="e.g., 51.5074" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="longitude" className="text-xs">Longitude</Label>
+                      <Input id="longitude" type="number" step="any" value={form.longitude} onChange={(e) => updateForm("longitude", e.target.value)} placeholder="e.g., -0.1278" />
+                    </div>
                   </div>
                 </div>
 
