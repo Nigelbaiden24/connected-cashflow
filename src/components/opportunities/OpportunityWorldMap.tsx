@@ -247,11 +247,23 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
               {/* Equator */}
               <line x1="0" y1="250" x2="960" y2="250" stroke="hsl(var(--primary) / 0.08)" strokeDasharray="6,4" />
 
-              {/* Continents with elegant fill */}
+              {/* Continents with geographic colours */}
               <g>
-                {CONTINENT_PATHS.map((path, i) => (
-                  <path key={i} d={path} fill="hsl(var(--foreground) / 0.06)" stroke="hsl(var(--foreground) / 0.1)" strokeWidth="0.8" />
-                ))}
+                {CONTINENT_PATHS.map((path, i) => {
+                  const fills = [
+                    { fill: "rgba(76, 153, 76, 0.35)", stroke: "rgba(60, 130, 60, 0.5)" },   // North America – green
+                    { fill: "rgba(180, 160, 60, 0.30)", stroke: "rgba(150, 130, 40, 0.45)" }, // South America – olive/yellow-green
+                    { fill: "rgba(100, 140, 180, 0.35)", stroke: "rgba(80, 120, 160, 0.5)" }, // Europe – steel blue
+                    { fill: "rgba(210, 170, 90, 0.35)", stroke: "rgba(180, 140, 60, 0.5)" },  // Africa – sandy gold
+                    { fill: "rgba(190, 120, 130, 0.30)", stroke: "rgba(160, 100, 110, 0.45)" }, // Asia – rose/terracotta
+                    { fill: "rgba(200, 140, 60, 0.35)", stroke: "rgba(170, 110, 40, 0.5)" },  // Oceania – burnt orange
+                    { fill: "rgba(200, 210, 230, 0.40)", stroke: "rgba(170, 185, 210, 0.55)" }, // Greenland – icy blue-white
+                  ];
+                  const c = fills[i] || fills[0];
+                  return (
+                    <path key={i} d={path} fill={c.fill} stroke={c.stroke} strokeWidth="1" />
+                  );
+                })}
               </g>
 
               {/* Connection lines between active regions */}
