@@ -117,6 +117,11 @@ interface OpportunityForm {
   price_currency: string;
   location: string;
   country: string;
+  city: string;
+  region: string;
+  postcode: string;
+  latitude: string;
+  longitude: string;
   
   // Ratings
   analyst_rating: string;
