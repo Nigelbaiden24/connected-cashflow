@@ -35,10 +35,10 @@ export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, 
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background items-stretch">
+      <div className="flex h-screen min-h-screen w-full items-stretch overflow-hidden bg-background">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
 
-        <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        <div className="flex h-screen min-h-0 flex-1 flex-col min-w-0 overflow-hidden">
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
@@ -58,11 +58,11 @@ export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, 
           )}
 
           {/* Desktop notification bell */}
-          <div className="hidden md:flex items-center justify-end px-4 py-1">
+          <div className="hidden shrink-0 items-center justify-end px-4 py-1 md:flex">
             <FinanceNotificationsDropdown variant="finance" className="text-foreground hover:bg-muted" />
           </div>
 
-          <main className="flex-1 overflow-auto pb-20 md:pb-0">
+          <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0">
             {children || <Outlet />}
           </main>
           <PushNotificationBanner />

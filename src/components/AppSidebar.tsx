@@ -164,7 +164,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     <Sidebar
       collapsible="icon"
       className={cn(
-        "relative flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
+        "relative flex h-screen min-h-screen flex-col overflow-hidden border-r transition-all duration-300 ease-in-out",
         "bg-gradient-to-b from-[hsl(221,83%,42%)] via-[hsl(221,83%,32%)] to-[hsl(221,83%,22%)]",
         "backdrop-blur-xl",
         "border-white/10",
