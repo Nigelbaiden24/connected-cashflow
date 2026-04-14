@@ -267,8 +267,6 @@ const App = () => {
                 <Route path="/finance/languages" element={<Suspense fallback={<PageLoader />}><FinanceLanguages /></Suspense>} />
                 <Route path="/finance/featured-picks" element={<Suspense fallback={<PageLoader />}><FinanceFeaturedPicks /></Suspense>} />
                 <Route path="/finance-ai-generator" element={<Suspense fallback={<PageLoader />}><FinanceAIGenerator /></Suspense>} />
-                <Route path="/finance/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderPage /></Suspense>} />
-                <Route path="/finance/company-intelligence" element={<Suspense fallback={<PageLoader />}><CompanyIntelligence /></Suspense>} />
               </Route>
 
               {/* Finance News has its own layout */}
@@ -332,8 +330,6 @@ const App = () => {
                 <Route path="/investor/stocks-crypto" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
                 <Route path="/investor/featured-picks" element={<Suspense fallback={<PageLoader />}><InvestorFeaturedPicks /></Suspense>} />
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
-                <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderPage /></Suspense>} />
-                <Route path="/investor/startup-discovery" element={<Suspense fallback={<PageLoader />}><StartupDiscovery /></Suspense>} />
               </Route>
 
               <Route path="/investor/news" element={<InvestorNews />} />

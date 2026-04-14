@@ -1011,15 +1011,96 @@ export const CRMBoard = ({ initialStage }: CRMBoardProps = {}) => {
             </SelectContent>
           </Select>
           {selectedContacts.length > 0 && (
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              onClick={deleteSelected}
-              className="shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete ({selectedContacts.length})
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const selected = contacts.filter(c => selectedContacts.includes(c.id));
+                  const emails = selected.map(c => c.email).filter(Boolean);
+                  if (emails.length === 0) { toast.error("No email addresses found for selected contacts"); return; }
+                  const mailto = `mailto:?bcc=${emails.join(",")}`;
+                  window.open(mailto, "_blank");
+                  toast.success(`Opening email client for ${emails.length} contacts`);
+                }}
+                className="shadow-sm hover:shadow-md transition-all duration-200 gap-1.5"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+                Email ({selectedContacts.length})
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="shadow-sm hover:shadow-md transition-all duration-200 gap-1.5">
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    Shortlist ({selectedContacts.length})
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-background">
+                  <DropdownMenuItem onClick={() => {
+                    const listName = prompt("Enter shortlist name:");
+                    if (!listName) return;
+                    const selected = contacts.filter(c => selectedContacts.includes(c.id));
+                    const existing = JSON.parse(localStorage.getItem("crm_shortlists") || "[]");
+                    existing.push({ id: Date.now().toString(), name: listName, contactIds: selectedContacts, contacts: selected.map(c => ({ id: c.id, name: c.name, email: c.email, company: c.company })), created: new Date().toISOString() });
+                    localStorage.setItem("crm_shortlists", JSON.stringify(existing));
+                    toast.success(`Shortlist "${listName}" created with ${selectedContacts.length} contacts`);
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" /> Create New Shortlist
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {(() => {
+                    const lists = JSON.parse(localStorage.getItem("crm_shortlists") || "[]");
+                    if (lists.length === 0) return <DropdownMenuItem disabled>No shortlists yet</DropdownMenuItem>;
+                    return lists.map((list: any) => (
+                      <DropdownMenuItem key={list.id} onClick={() => {
+                        const selected = contacts.filter(c => selectedContacts.includes(c.id));
+                        const updated = JSON.parse(localStorage.getItem("crm_shortlists") || "[]").map((l: any) => {
+                          if (l.id === list.id) {
+                            const newIds = [...new Set([...l.contactIds, ...selectedContacts])];
+                            const newContacts = [...l.contacts, ...selected.filter((s: any) => !l.contactIds.includes(s.id)).map((c: any) => ({ id: c.id, name: c.name, email: c.email, company: c.company }))];
+                            return { ...l, contactIds: newIds, contacts: newContacts };
+                          }
+                          return l;
+                        });
+                        localStorage.setItem("crm_shortlists", JSON.stringify(updated));
+                        toast.success(`Added ${selectedContacts.length} contacts to "${list.name}"`);
+                      }}>
+                        Add to "{list.name}" ({list.contactIds?.length || 0})
+                      </DropdownMenuItem>
+                    ));
+                  })()}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const selected = contacts.filter(c => selectedContacts.includes(c.id));
+                  const csv = ["Name,Email,Phone,Company,Position,Status,Priority",
+                    ...selected.map(c => `"${c.name || ""}","${c.email || ""}","${c.phone || ""}","${c.company || ""}","${c.position || ""}","${c.status || ""}","${c.priority || ""}"`)
+                  ].join("\n");
+                  const blob = new Blob([csv], { type: "text/csv" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = `crm-export-${Date.now()}.csv`; a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success(`Exported ${selected.length} contacts`);
+                }}
+                className="shadow-sm hover:shadow-md transition-all duration-200 gap-1.5"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={deleteSelected}
+                className="shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete ({selectedContacts.length})
+              </Button>
+            </div>
           )}
           <Dialog open={showAddContact} onOpenChange={setShowAddContact}>
             <DialogTrigger asChild>
