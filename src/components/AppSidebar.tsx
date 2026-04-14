@@ -49,7 +49,7 @@ import {
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-
+import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { SidebarTabFilter } from "./SidebarTabFilter";
@@ -147,8 +147,6 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     items: g.items.filter(item => !hiddenUrls.includes(item.url))
   })).filter(g => g.items.length > 0), [hiddenUrls]);
 
-  const visibleNavGroups = filteredNavGroups.length > 0 ? filteredNavGroups : navGroups;
-
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
       const [pathname, query] = path.split("?");
@@ -156,23 +154,6 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     }
     return location.pathname === path;
   };
-
-  const activeGroupLabel = useMemo(
-    () => visibleNavGroups.find((group) => group.items.some((item) => isActive(item.url)))?.label,
-    [visibleNavGroups, location.pathname, location.search]
-  );
-
-  const allGroupsCollapsed = !collapsed && visibleNavGroups.length > 0 && visibleNavGroups.every((group) => collapsedGroups[group.label]);
-
-  const isGroupExpanded = useCallback(
-    (label: string) => {
-      if (collapsed) return true;
-      if (label === activeGroupLabel) return true;
-      if (allGroupsCollapsed) return label === visibleNavGroups[0]?.label;
-      return !collapsedGroups[label];
-    },
-    [activeGroupLabel, allGroupsCollapsed, collapsed, collapsedGroups, visibleNavGroups]
-  );
 
   const getUserInitials = (value: string) =>
     value.split("@")[0].split(/[.\s_-]+/).filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -183,7 +164,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     <Sidebar
       collapsible="icon"
       className={cn(
-        "relative flex h-screen min-h-screen flex-col overflow-hidden border-r transition-all duration-300 ease-in-out",
+        "relative flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
         "bg-gradient-to-b from-[hsl(221,83%,42%)] via-[hsl(221,83%,32%)] to-[hsl(221,83%,22%)]",
         "backdrop-blur-xl",
         "border-white/10",
@@ -223,8 +204,8 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
       <PlatformSearch routes={searchRoutes} open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Navigation */}
-      <SidebarContent className="flex-1 relative z-10 overflow-hidden min-h-0">
-        <div className="h-full overflow-y-auto overflow-x-hidden px-2 py-2 scrollbar-thin scrollbar-track-transparent">
+      <SidebarContent className="flex-1 relative z-10 overflow-hidden">
+        <ScrollArea className="h-full px-2 py-2">
           {!collapsed && (
             <div className="flex items-center justify-between mb-1 px-1 gap-1">
               <button
@@ -245,7 +226,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </button>
             </div>
           )}
-          {visibleNavGroups.map((group) => (
+          {filteredNavGroups.map((group) => (
             <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
               {!collapsed && (
                 <button
@@ -261,7 +242,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
                   )} />
                 </button>
               )}
-              {isGroupExpanded(group.label) && (
+              {!collapsedGroups[group.label] && (
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-px">
                   {group.items.map((item) => {
@@ -316,7 +297,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               )}
             </SidebarGroup>
           ))}
-        </div>
+        </ScrollArea>
       </SidebarContent>
 
       {/* Footer */}
