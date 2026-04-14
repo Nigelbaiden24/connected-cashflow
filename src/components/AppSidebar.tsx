@@ -147,6 +147,8 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     items: g.items.filter(item => !hiddenUrls.includes(item.url))
   })).filter(g => g.items.length > 0), [hiddenUrls]);
 
+  const visibleNavGroups = filteredNavGroups.length > 0 ? filteredNavGroups : navGroups;
+
   const isActive = (path: string) => {
     if (path.includes("?tab=")) {
       const [pathname, query] = path.split("?");
@@ -154,6 +156,23 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
     }
     return location.pathname === path;
   };
+
+  const activeGroupLabel = useMemo(
+    () => visibleNavGroups.find((group) => group.items.some((item) => isActive(item.url)))?.label,
+    [visibleNavGroups, location.pathname, location.search]
+  );
+
+  const allGroupsCollapsed = !collapsed && visibleNavGroups.length > 0 && visibleNavGroups.every((group) => collapsedGroups[group.label]);
+
+  const isGroupExpanded = useCallback(
+    (label: string) => {
+      if (collapsed) return true;
+      if (label === activeGroupLabel) return true;
+      if (allGroupsCollapsed) return label === visibleNavGroups[0]?.label;
+      return !collapsedGroups[label];
+    },
+    [activeGroupLabel, allGroupsCollapsed, collapsed, collapsedGroups, visibleNavGroups]
+  );
 
   const getUserInitials = (value: string) =>
     value.split("@")[0].split(/[.\s_-]+/).filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -226,7 +245,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
               </button>
             </div>
           )}
-          {filteredNavGroups.map((group) => (
+          {visibleNavGroups.map((group) => (
             <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
               {!collapsed && (
                 <button
@@ -242,7 +261,7 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
                   )} />
                 </button>
               )}
-              {!collapsedGroups[group.label] && (
+              {isGroupExpanded(group.label) && (
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-px">
                   {group.items.map((item) => {
