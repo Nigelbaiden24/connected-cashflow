@@ -35,10 +35,10 @@ export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, 
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="flex min-h-screen w-full bg-background items-stretch">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-screen">
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
