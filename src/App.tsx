@@ -226,6 +226,10 @@ const App = () => {
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
+              {/* Opportunity Intelligence - standalone (no sidebar) */}
+              <Route path="/finance/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
+              <Route path="/finance/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
+
               {/* ============ FINANCE LAYOUT (persistent) ============ */}
               <Route element={financeLayoutElement}>
                 <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
