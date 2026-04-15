@@ -36,7 +36,7 @@ export const BusinessLayout = memo(function BusinessLayout({ children, userEmail
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full business-theme">
         <BusinessSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col min-w-0 md:pl-64 peer-data-[state=collapsed]:md:pl-16 transition-[padding] duration-200">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
