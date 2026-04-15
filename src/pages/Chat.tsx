@@ -1710,7 +1710,7 @@ const Chat = () => {
 
       {/* Input - Fixed at bottom with glass effect */}
       <div className="fixed bottom-0 left-0 right-0 p-4 z-20 md:left-64">
-        <div className="ai-glass-card rounded-2xl p-4 shadow-2xl border border-primary/20 ai-glow-border max-w-3xl mx-auto">
+        <div className="ai-glass-card rounded-2xl p-4 shadow-2xl border border-primary/20 ai-glow-border max-w-3xl">
           <div className="flex gap-3 mb-3 relative z-10">
             <VoiceRecorder onTranscription={handleVoiceTranscription} />
             <DocumentUpload onTextExtracted={handleDocumentText} />
