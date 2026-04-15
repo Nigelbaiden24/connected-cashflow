@@ -161,243 +161,254 @@ export const AppSidebar = memo(function AppSidebar({ userEmail, onLogout }: AppS
   const displayName = profile.full_name || profile.first_name || userEmail;
 
   return (
-    <Sidebar
-      collapsible="icon"
-      className={cn(
-        "relative flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
-        "bg-gradient-to-b from-[hsl(221,83%,42%)] via-[hsl(221,83%,32%)] to-[hsl(221,83%,22%)]",
-        "backdrop-blur-xl",
-        "border-white/10",
-        "shadow-[4px_0_24px_-2px_rgba(0,0,0,0.3)]"
-      )}
-    >
-      {/* Ambient glow overlay */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white/[0.06] to-transparent" />
-        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/20 to-transparent" />
-      </div>
-
-      {/* Header */}
-      <SidebarHeader className="relative border-b border-white/10 p-4 shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.04] via-transparent to-white/[0.04]" />
-        <div className="relative flex items-center justify-center gap-3">
-          <div className={cn(
-            "shrink-0 p-2 rounded-xl bg-gradient-to-br from-white/25 to-white/10 shadow-lg shadow-black/20",
-            "ring-2 ring-white/20"
-          )}>
-            <img src={flowpulseLogo} alt="FlowPulse" className="h-6 w-6" />
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent truncate">
-                FlowPulse
-              </h2>
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-blue-300" />
-                <p className="text-xs text-white/50 truncate">Finance Platform</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
-      <PlatformSearch routes={searchRoutes} open={searchOpen} onOpenChange={setSearchOpen} />
-
-      {/* Navigation */}
-      <SidebarContent className="flex-1 relative z-10 overflow-hidden">
-        <ScrollArea className="h-full px-2 py-2">
-          {!collapsed && (
-            <div className="flex items-center justify-between mb-1 px-1 gap-1">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white/90 text-xs transition-all"
-              >
-                <Search className="h-3.5 w-3.5" />
-                <span>Search...</span>
-                <kbd className="ml-auto hidden sm:inline-flex rounded border border-white/10 bg-white/[0.04] px-1 py-0.5 font-mono text-[9px]">⌘K</kbd>
-              </button>
-              <SidebarTabFilter platform="finance" navGroups={navGroups} onFilterChange={handleFilterChange} />
-            </div>
-          )}
-          {collapsed && (
-            <div className="flex justify-center mb-1">
-              <button onClick={() => setSearchOpen(true)} className="p-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/60 hover:text-white/90 transition-all">
-                <Search className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          {filteredNavGroups.map((group) => (
-            <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
-              {!collapsed && (
-                <button
-                  onClick={() => toggleGroup(group.label)}
-                  className="w-full flex items-center justify-between px-3 mb-1 group/label hover:bg-white/[0.04] rounded-md transition-colors"
-                >
-                  <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-white/70 p-0 m-0">
-                    <TranslatedText>{group.label}</TranslatedText>
-                  </SidebarGroupLabel>
-                  <ChevronDown className={cn(
-                    "h-3 w-3 text-white/40 transition-transform duration-200 group-hover/label:text-white/60",
-                    collapsedGroups[group.label] && "-rotate-90"
-                  )} />
-                </button>
-              )}
-              {!collapsedGroups[group.label] && (
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-px">
-                  {group.items.map((item) => {
-                    const Icon = item.icon;
-                    const active = isActive(item.url);
-
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild tooltip={item.title} size="default">
-                          <NavLink
-                            to={item.url}
-                            className={cn(
-                              "w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200",
-                              "group/nav relative overflow-hidden",
-                              collapsed ? "justify-center p-0" : "px-3 py-2",
-                              active
-                                ? cn(
-                                    "bg-gradient-to-r text-white shadow-lg",
-                                    item.gradient,
-                                    "shadow-blue-500/20",
-                                    "ring-1 ring-white/25"
-                                  )
-                                : cn(
-                                    "text-white/85 hover:text-white",
-                                    "hover:bg-white/[0.08]",
-                                    "hover:shadow-sm hover:ring-1 hover:ring-white/10"
-                                  )
-                            )}
-                          >
-                            {active && (
-                              <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/10 pointer-events-none" />
-                            )}
-                            <Icon className={cn(
-                              "h-4 w-4 shrink-0",
-                              active ? "text-white" : "text-white/75 group-hover/nav:text-white"
-                            )} />
-                            {!collapsed && (
-                              <span className="relative truncate">
-                                <TranslatedText>{item.title}</TranslatedText>
-                              </span>
-                            )}
-                            {active && !collapsed && (
-                              <div className="absolute right-2 w-2 h-2 rounded-full bg-white/60 shadow-inner" />
-                            )}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-              )}
-            </SidebarGroup>
-          ))}
-        </ScrollArea>
-      </SidebarContent>
-
-      {/* Footer */}
-      <SidebarFooter className="relative border-t border-white/10 p-3 shrink-0 mt-auto">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
-          <Avatar className={cn(
-            "h-9 w-9 shrink-0 ring-2 ring-white/20 shadow-lg",
-            "bg-gradient-to-br from-blue-400 to-blue-600"
-          )}>
-            <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
-            <AvatarFallback className="bg-transparent text-white font-semibold text-sm">
-              {getUserInitials(displayName)}
-            </AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <>
-              <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-medium text-white truncate">{displayName}</p>
-                <p className="text-xs text-white/40 truncate">{userEmail}</p>
-              </div>
-              <div className="flex gap-1 shrink-0">
-                <Button asChild variant="ghost" size="icon"
-                  className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white/70 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-200"
-                  title="Settings"
-                >
-                  <NavLink to="/settings"><Settings className="h-4 w-4" /></NavLink>
-                </Button>
-                <Button variant="ghost" size="icon"
-                  className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-amber-400 hover:text-amber-300 border border-white/10 hover:border-amber-500/30 transition-all duration-200"
-                  onClick={() => {
-                    const html = document.documentElement;
-                    const isDark = html.classList.contains("dark");
-                    if (isDark) { html.classList.remove("dark", "gold-theme"); }
-                    else { html.classList.add("dark", "gold-theme"); }
-                    window.dispatchEvent(new Event("darkmode-toggle"));
-                  }}
-                  title="Toggle theme"
-                >
-                  <Moon className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon"
-                  className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-red-500/20 text-white/70 hover:text-red-400 border border-white/10 hover:border-red-500/30 transition-all duration-200"
-                  onClick={onLogout}
-                  title="Sign Out"
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
-        {collapsed && (
-          <div className="flex flex-col items-center gap-1.5 mt-2">
-            <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white/70 hover:text-white transition-all duration-200" title="Settings">
-              <NavLink to="/settings"><Settings className="h-4 w-4" /></NavLink>
-            </Button>
-            <Button variant="ghost" size="icon"
-              className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-amber-400 hover:text-amber-300 transition-all duration-200"
-              onClick={() => {
-                const html = document.documentElement;
-                const isDark = html.classList.contains("dark");
-                if (isDark) { html.classList.remove("dark", "gold-theme"); }
-                else { html.classList.add("dark", "gold-theme"); }
-                window.dispatchEvent(new Event("darkmode-toggle"));
-              }}
-              title="Toggle theme"
-            >
-              <Moon className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon"
-              className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-all duration-200"
-              onClick={onLogout}
-              title="Sign Out"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </SidebarFooter>
-
-      {/* Collapse toggle — floating pill */}
-      <button
-        onClick={toggleSidebar}
+    <>
+      <div
+        aria-hidden="true"
         className={cn(
-          "absolute -right-3 top-20 z-10",
-          "w-6 h-6 rounded-full",
-          "bg-[hsl(221,83%,35%)] border border-white/20 shadow-lg",
-          "flex items-center justify-center",
-          "hover:bg-[hsl(221,83%,45%)] hover:border-white/30",
-          "transition-all duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+          "hidden md:block shrink-0 self-stretch border-r transition-all duration-300 ease-in-out",
+          collapsed ? "w-16" : "w-64",
+          "bg-gradient-to-b from-[hsl(221,83%,42%)] via-[hsl(221,83%,32%)] to-[hsl(221,83%,22%)]",
+          "border-white/10"
+        )}
+      />
+      <Sidebar
+        collapsible="icon"
+        className={cn(
+          "relative flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
+          "bg-gradient-to-b from-[hsl(221,83%,42%)] via-[hsl(221,83%,32%)] to-[hsl(221,83%,22%)]",
+          "backdrop-blur-xl",
+          "border-white/10",
+          "shadow-[4px_0_24px_-2px_rgba(0,0,0,0.3)]"
         )}
       >
-        {collapsed ? (
-          <ChevronRight className="h-3.5 w-3.5 text-white/80" />
-        ) : (
-          <ChevronLeft className="h-3.5 w-3.5 text-white/80" />
-        )}
-      </button>
-    </Sidebar>
+        {/* Ambient glow overlay */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white/[0.06] to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/20 to-transparent" />
+        </div>
+
+        {/* Header */}
+        <SidebarHeader className="relative border-b border-white/10 p-4 shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-white/[0.04] via-transparent to-white/[0.04]" />
+          <div className="relative flex items-center justify-center gap-3">
+            <div className={cn(
+              "shrink-0 p-2 rounded-xl bg-gradient-to-br from-white/25 to-white/10 shadow-lg shadow-black/20",
+              "ring-2 ring-white/20"
+            )}>
+              <img src={flowpulseLogo} alt="FlowPulse" className="h-6 w-6" />
+            </div>
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent truncate">
+                  FlowPulse
+                </h2>
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3 text-blue-300" />
+                  <p className="text-xs text-white/50 truncate">Finance Platform</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </SidebarHeader>
+
+        <PlatformSearch routes={searchRoutes} open={searchOpen} onOpenChange={setSearchOpen} />
+
+        {/* Navigation */}
+        <SidebarContent className="flex-1 relative z-10 overflow-hidden">
+          <ScrollArea className="h-full px-2 py-2">
+            {!collapsed && (
+              <div className="flex items-center justify-between mb-1 px-1 gap-1">
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/60 hover:text-white/90 text-xs transition-all"
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <span>Search...</span>
+                  <kbd className="ml-auto hidden sm:inline-flex rounded border border-white/10 bg-white/[0.04] px-1 py-0.5 font-mono text-[9px]">⌘K</kbd>
+                </button>
+                <SidebarTabFilter platform="finance" navGroups={navGroups} onFilterChange={handleFilterChange} />
+              </div>
+            )}
+            {collapsed && (
+              <div className="flex justify-center mb-1">
+                <button onClick={() => setSearchOpen(true)} className="p-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/60 hover:text-white/90 transition-all">
+                  <Search className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            {filteredNavGroups.map((group) => (
+              <SidebarGroup key={group.label} className={cn("mb-1 p-0.5", collapsed && "px-0")}>
+                {!collapsed && (
+                  <button
+                    onClick={() => toggleGroup(group.label)}
+                    className="w-full flex items-center justify-between px-3 mb-1 group/label hover:bg-white/[0.04] rounded-md transition-colors"
+                  >
+                    <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-wider text-white/70 p-0 m-0">
+                      <TranslatedText>{group.label}</TranslatedText>
+                    </SidebarGroupLabel>
+                    <ChevronDown className={cn(
+                      "h-3 w-3 text-white/40 transition-transform duration-200 group-hover/label:text-white/60",
+                      collapsedGroups[group.label] && "-rotate-90"
+                    )} />
+                  </button>
+                )}
+                {!collapsedGroups[group.label] && (
+                <SidebarGroupContent>
+                  <SidebarMenu className="space-y-px">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const active = isActive(item.url);
+
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton asChild tooltip={item.title} size="default">
+                            <NavLink
+                              to={item.url}
+                              className={cn(
+                                "w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200",
+                                "group/nav relative overflow-hidden",
+                                collapsed ? "justify-center p-0" : "px-3 py-2",
+                                active
+                                  ? cn(
+                                      "bg-gradient-to-r text-white shadow-lg",
+                                      item.gradient,
+                                      "shadow-blue-500/20",
+                                      "ring-1 ring-white/25"
+                                    )
+                                  : cn(
+                                      "text-white/85 hover:text-white",
+                                      "hover:bg-white/[0.08]",
+                                      "hover:shadow-sm hover:ring-1 hover:ring-white/10"
+                                    )
+                              )}
+                            >
+                              {active && (
+                                <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/10 pointer-events-none" />
+                              )}
+                              <Icon className={cn(
+                                "h-4 w-4 shrink-0",
+                                active ? "text-white" : "text-white/75 group-hover/nav:text-white"
+                              )} />
+                              {!collapsed && (
+                                <span className="relative truncate">
+                                  <TranslatedText>{item.title}</TranslatedText>
+                                </span>
+                              )}
+                              {active && !collapsed && (
+                                <div className="absolute right-2 w-2 h-2 rounded-full bg-white/60 shadow-inner" />
+                              )}
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+                )}
+              </SidebarGroup>
+            ))}
+          </ScrollArea>
+        </SidebarContent>
+
+        {/* Footer */}
+        <SidebarFooter className="relative border-t border-white/10 p-3 shrink-0 mt-auto">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          <div className={cn("flex items-center", collapsed ? "justify-center" : "gap-3")}>
+            <Avatar className={cn(
+              "h-9 w-9 shrink-0 ring-2 ring-white/20 shadow-lg",
+              "bg-gradient-to-br from-blue-400 to-blue-600"
+            )}>
+              <AvatarImage src={profile.avatar_url || undefined} alt={displayName} />
+              <AvatarFallback className="bg-transparent text-white font-semibold text-sm">
+                {getUserInitials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+            {!collapsed && (
+              <>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                  <p className="text-xs text-white/40 truncate">{userEmail}</p>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  <Button asChild variant="ghost" size="icon"
+                    className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white/70 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-200"
+                    title="Settings"
+                  >
+                    <NavLink to="/settings"><Settings className="h-4 w-4" /></NavLink>
+                  </Button>
+                  <Button variant="ghost" size="icon"
+                    className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-amber-400 hover:text-amber-300 border border-white/10 hover:border-amber-500/30 transition-all duration-200"
+                    onClick={() => {
+                      const html = document.documentElement;
+                      const isDark = html.classList.contains("dark");
+                      if (isDark) { html.classList.remove("dark", "gold-theme"); }
+                      else { html.classList.add("dark", "gold-theme"); }
+                      window.dispatchEvent(new Event("darkmode-toggle"));
+                    }}
+                    title="Toggle theme"
+                  >
+                    <Moon className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon"
+                    className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-red-500/20 text-white/70 hover:text-red-400 border border-white/10 hover:border-red-500/30 transition-all duration-200"
+                    onClick={onLogout}
+                    title="Sign Out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+          {collapsed && (
+            <div className="flex flex-col items-center gap-1.5 mt-2">
+              <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-white/70 hover:text-white transition-all duration-200" title="Settings">
+                <NavLink to="/settings"><Settings className="h-4 w-4" /></NavLink>
+              </Button>
+              <Button variant="ghost" size="icon"
+                className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 text-amber-400 hover:text-amber-300 transition-all duration-200"
+                onClick={() => {
+                  const html = document.documentElement;
+                  const isDark = html.classList.contains("dark");
+                  if (isDark) { html.classList.remove("dark", "gold-theme"); }
+                  else { html.classList.add("dark", "gold-theme"); }
+                  window.dispatchEvent(new Event("darkmode-toggle"));
+                }}
+                title="Toggle theme"
+              >
+                <Moon className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon"
+                className="h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-red-500/20 text-white/70 hover:text-red-400 transition-all duration-200"
+                onClick={onLogout}
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </SidebarFooter>
+
+        {/* Collapse toggle — floating pill */}
+        <button
+          onClick={toggleSidebar}
+          className={cn(
+            "absolute -right-3 top-20 z-10",
+            "w-6 h-6 rounded-full",
+            "bg-[hsl(221,83%,35%)] border border-white/20 shadow-lg",
+            "flex items-center justify-center",
+            "hover:bg-[hsl(221,83%,45%)] hover:border-white/30",
+            "transition-all duration-200",
+            "focus:outline-none focus:ring-2 focus:ring-blue-400/50"
+          )}
+        >
+          {collapsed ? (
+            <ChevronRight className="h-3.5 w-3.5 text-white/80" />
+          ) : (
+            <ChevronLeft className="h-3.5 w-3.5 text-white/80" />
+          )}
+        </button>
+      </Sidebar>
+    </>
   );
 });
