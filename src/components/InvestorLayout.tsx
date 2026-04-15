@@ -34,9 +34,9 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full bg-background investor-theme">
+      <div className="flex min-h-screen w-full investor-theme">
         <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />
-        <div className="flex-1 flex flex-col min-w-0 bg-background">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Enterprise Mobile Header */}
           <MobileHeader
             title={profile.first_name ? `Welcome back, ${profile.first_name}` : "FlowPulse Investor"}
@@ -55,7 +55,7 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
             <InvestorNotificationsDropdown variant="investor" className="text-foreground hover:bg-muted" />
           </div>
 
-          <main className="sidebar-layout-main flex flex-1 flex-col pb-20 md:pb-0">
+          <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
             {children || <Outlet />}
           </main>
           <PushNotificationBanner />
