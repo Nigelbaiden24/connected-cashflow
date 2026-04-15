@@ -293,9 +293,14 @@ export default function OpportunityIntelligence() {
     <StarryBackground className="min-h-screen w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Live Deal Alerts</h1>
-            <p className="text-muted-foreground">Real-time investment opportunities across multiple asset classes</p>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="shrink-0">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold tracking-tight">Live Deal Alerts</h1>
+              <p className="text-muted-foreground">Real-time investment opportunities across multiple asset classes</p>
+            </div>
           </div>
           {!showFolders && (
             <Button variant="outline" onClick={handleBackToFolders} className="gap-2">
