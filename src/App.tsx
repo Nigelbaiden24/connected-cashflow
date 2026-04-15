@@ -226,6 +226,10 @@ const App = () => {
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
+              {/* Opportunity Intelligence - standalone (no sidebar) */}
+              <Route path="/finance/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
+              <Route path="/finance/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
+
               {/* ============ FINANCE LAYOUT (persistent) ============ */}
               <Route element={financeLayoutElement}>
                 <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
@@ -260,8 +264,6 @@ const App = () => {
                 <Route path="/finance/watchlists" element={<Suspense fallback={<PageLoader />}><FinanceWatchlists /></Suspense>} />
                 <Route path="/finance/screeners" element={<Suspense fallback={<PageLoader />}><FinanceScreenersDiscovery /></Suspense>} />
                 <Route path="/finance/fund-database" element={<Suspense fallback={<PageLoader />}><FundETFDatabase /></Suspense>} />
-                <Route path="/finance/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
-                <Route path="/finance/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
                 <Route path="/finance/stocks-crypto" element={<Suspense fallback={<PageLoader />}><RealTimeMarketDatabase /></Suspense>} />
                 <Route path="/finance/stocks-crypto-admin" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
                 <Route path="/finance/languages" element={<Suspense fallback={<PageLoader />}><FinanceLanguages /></Suspense>} />
