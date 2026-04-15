@@ -38,7 +38,7 @@ export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, 
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar userEmail={userEmail} onLogout={onLogout} />
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 md:ml-[var(--sidebar-width)] peer-data-[collapsible=icon]:md:ml-[var(--sidebar-width-icon)] transition-[margin-left] duration-200 ease-linear">
           {/* Enterprise Mobile Header */}
           {!hideHeader && (
             <MobileHeader
