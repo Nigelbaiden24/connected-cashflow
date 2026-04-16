@@ -152,7 +152,7 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
     <Sidebar 
       collapsible="icon" 
       className={cn(
-        "relative flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
+        "sticky top-0 flex flex-col h-screen border-r transition-all duration-300 ease-in-out",
         "bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950",
         "backdrop-blur-xl",
         "border-slate-700/50",
