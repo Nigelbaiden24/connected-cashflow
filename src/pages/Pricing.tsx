@@ -91,7 +91,7 @@ const Pricing = () => {
   const FINANCE_ANNUAL_SEAT_PRICE_MONTHLY = 89; // per seat per month when billed annually
   const FINANCE_MONTHLY_SEAT_PRICE_MONTHLY = Math.ceil(89 * 1.2); // 20% more = £107/seat/month
   const FINANCE_SEAT_PRICE_MONTHLY = financeBillingAnnual ? FINANCE_ANNUAL_SEAT_PRICE_MONTHLY : FINANCE_MONTHLY_SEAT_PRICE_MONTHLY;
-  const FINANCE_MIN_SEATS = 3;
+  const FINANCE_MIN_SEATS = financeBillingAnnual ? 1 : 3;
   const FINANCE_INCLUDED_PRODUCTS = 3;
   const FINANCE_ADDON_PRICE_ANNUAL = 1200; // per year
   const FINANCE_ADDON_PRICE_MONTHLY = Math.ceil(1200 / 12 * 1.2); // 20% more = £120/month
