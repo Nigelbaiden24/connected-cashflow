@@ -213,13 +213,13 @@ const MarketData = () => {
         <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Gold</p>
-                <p className="text-xl font-bold">$2,031.40</p>
-              </div>
-              <div className="flex items-center gap-1 text-destructive">
-                <ArrowDownRight className="h-4 w-4" />
-                <span className="text-sm font-medium">-0.50%</span>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Gold</p>
+                  <p className="text-xl font-bold">£1,605.12</p>
+                </div>
+                <div className="flex items-center gap-1 text-destructive">
+                  <ArrowDownRight className="h-4 w-4" />
+                  <span className="text-sm font-medium">-0.50%</span>
               </div>
             </div>
           </CardContent>
