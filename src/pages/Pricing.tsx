@@ -49,7 +49,25 @@ const Pricing = () => {
     toast({ title: "Contact Sales", description: "Our team will be in touch shortly to discuss your custom requirements." });
   };
 
-  const investmentProducts = [
+  const financeProducts = [
+    { id: "stocks", name: "Stocks & Equities", description: "Listed equities, IPOs & secondary offerings", icon: "📈" },
+    { id: "crypto", name: "Crypto & Digital Assets", description: "Cryptocurrency and blockchain investments", icon: "₿" },
+    { id: "real-estate", name: "Real Estate", description: "Commercial & residential property deals", icon: "🏢" },
+    { id: "fixed-income", name: "Fixed Income & Bonds", description: "Government & corporate bonds", icon: "📊" },
+    { id: "commodities", name: "Commodities", description: "Gold, oil, agriculture & natural resources", icon: "⛏️" },
+    { id: "forex", name: "Foreign Exchange", description: "FX opportunities & currency markets", icon: "💱" },
+    { id: "funds-etfs", name: "Funds & ETFs", description: "Fund analysis, scoring & selection", icon: "📋" },
+    { id: "alternatives", name: "Alternative Investments", description: "Hedge funds, art, wine & collectibles", icon: "🎨" },
+    { id: "esg-impact", name: "ESG & Impact Investing", description: "Sustainable & socially responsible opportunities", icon: "🌱" },
+    { id: "private-equity", name: "Private Equity", description: "Buyouts, growth equity & PE fund opportunities", icon: "🏛️" },
+    { id: "venture-capital", name: "Venture Capital", description: "Early & growth-stage startup investments", icon: "🚀" },
+    { id: "infrastructure", name: "Infrastructure", description: "Energy, transport & digital infrastructure assets", icon: "🛠️" },
+    { id: "sme-acquisitions", name: "SME Acquisitions", description: "Small & mid-cap business acquisition deals", icon: "🤝" },
+    { id: "distressed-assets", name: "Distressed Assets", description: "Special situations & distressed opportunities", icon: "⚠️" },
+    { id: "debt-lending", name: "Debt & Lending", description: "Private credit, direct lending & debt facilities", icon: "🏦" },
+  ];
+
+  const investorProducts = [
     { id: "stocks", name: "Stocks & Equities", description: "Listed equities, IPOs & secondary offerings", icon: "📈" },
     { id: "crypto", name: "Crypto & Digital Assets", description: "Cryptocurrency and blockchain investments", icon: "₿" },
     { id: "real-estate", name: "Real Estate", description: "Commercial & residential property deals", icon: "🏢" },
