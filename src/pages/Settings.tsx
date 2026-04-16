@@ -109,7 +109,7 @@ const Settings = () => {
           </TabsTrigger>
           <TabsTrigger value="preferences" className="gap-2">
             <Settings2 className="h-4 w-4" />
-            Preferences
+            Language
           </TabsTrigger>
           <TabsTrigger value="account" className="gap-2">
             <Shield className="h-4 w-4" />

@@ -98,7 +98,6 @@ const financeNavGroups: NavGroup[] = [
       { title: "Clients", url: "/clients", icon: Users },
       { title: "Compliance", url: "/compliance", icon: Shield },
       { title: "Analyst Reports", url: "/finance/reports", icon: FileText },
-      { title: "Languages", url: "/finance/languages", icon: Globe },
     ],
   },
 ];
