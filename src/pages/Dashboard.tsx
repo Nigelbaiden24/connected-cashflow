@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Users, Clock, DollarSign, ArrowLeft, Sparkles } from "lucide-react";
+import { TrendingUp, TrendingDown, Users, Clock, PoundSterling, ArrowLeft, Sparkles } from "lucide-react";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
