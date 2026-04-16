@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, TrendingUp, DollarSign, ArrowLeft, Upload, Building2, LayoutGrid, Sparkles, Activity, FileText } from "lucide-react";
+import { Users, TrendingUp, PoundSterling, ArrowLeft, Upload, Building2, LayoutGrid, Sparkles, Activity, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 import { useNavigate, useSearchParams } from "react-router-dom";
