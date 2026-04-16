@@ -218,7 +218,7 @@ export default function FundETFDatabase() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-chart-4/20 to-chart-4/10 flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-chart-4" />
+                    <PoundSterling className="h-5 w-5 text-chart-4" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Avg. OCF</p>
