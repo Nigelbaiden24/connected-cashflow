@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, TrendingUp, DollarSign, ArrowLeft, Upload, Building2, LayoutGrid, Sparkles, Activity, FileText } from "lucide-react";
+import { Users, TrendingUp, PoundSterling, ArrowLeft, Upload, Building2, LayoutGrid, Sparkles, Activity, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CRMBoard } from "@/components/CRMBoard";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -172,7 +172,7 @@ const CRM = () => {
                   <TranslatedText>Pipeline Value</TranslatedText>
                 </CardTitle>
                 <div className="p-2.5 rounded-xl bg-chart-2/10 group-hover:bg-chart-2/15 transition-colors duration-300 group-hover:scale-110 transform">
-                  <DollarSign className="h-5 w-5 text-chart-2" />
+                  <PoundSterling className="h-5 w-5 text-chart-2" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 relative">
