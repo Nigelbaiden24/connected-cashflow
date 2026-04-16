@@ -2,6 +2,7 @@ import { memo, useState, useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
+import { prefetchHandlers } from "@/lib/routePrefetch";
 import { 
   FileText,
   BarChart3,
@@ -229,6 +230,7 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
                         >
                           <NavLink
                             to={item.url}
+                            {...prefetchHandlers(item.url)}
                             className={cn(
                               "w-full flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200",
                               "group/nav relative overflow-hidden",
