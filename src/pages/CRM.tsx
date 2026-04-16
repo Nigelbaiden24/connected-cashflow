@@ -172,7 +172,7 @@ const CRM = () => {
                   <TranslatedText>Pipeline Value</TranslatedText>
                 </CardTitle>
                 <div className="p-2.5 rounded-xl bg-chart-2/10 group-hover:bg-chart-2/15 transition-colors duration-300 group-hover:scale-110 transform">
-                  <DollarSign className="h-5 w-5 text-chart-2" />
+                  <PoundSterling className="h-5 w-5 text-chart-2" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 relative">
