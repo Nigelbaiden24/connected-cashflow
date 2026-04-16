@@ -160,6 +160,7 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
   if (showMfaChallenge) {
     return (
       <MFAChallenge
+        variant="investor"
         onSuccess={handleMfaSuccess}
         onCancel={handleMfaCancel}
       />

@@ -10,11 +10,17 @@ import flowpulseLogo from "@/assets/flowpulse-logo.png";
 interface MFAChallengeProps {
   onSuccess: () => void;
   onCancel?: () => void;
+  variant?: "finance" | "investor";
 }
 
-export function MFAChallenge({ onSuccess, onCancel }: MFAChallengeProps) {
+export function MFAChallenge({ onSuccess, onCancel, variant = "finance" }: MFAChallengeProps) {
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const isInvestor = variant === "investor";
+  const heroGradient = isInvestor
+    ? "bg-gradient-to-br from-violet-700 via-purple-700 to-fuchsia-700"
+    : "bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700";
+  const heroCopy = isInvestor ? "text-purple-100" : "text-blue-100";
 
   async function handleVerify() {
     if (code.length !== 6) {
@@ -60,11 +66,11 @@ export function MFAChallenge({ onSuccess, onCancel }: MFAChallengeProps) {
   return (
     <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-2 w-full">
       {/* Left - Branding */}
-      <div className="flex flex-col justify-between p-8 lg:p-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white lg:min-h-screen">
+      <div className={`flex flex-col justify-between p-8 lg:p-12 text-white lg:min-h-screen ${heroGradient}`}>
         <div>
           <img src={flowpulseLogo} alt="FlowPulse" className="h-12 mb-8" />
           <h1 className="text-3xl font-bold mb-4">Identity Verification</h1>
-          <p className="text-lg text-blue-100">
+          <p className={`text-lg ${heroCopy}`}>
             Enter your authenticator code to access your account securely.
           </p>
         </div>
@@ -75,7 +81,7 @@ export function MFAChallenge({ onSuccess, onCancel }: MFAChallengeProps) {
             </div>
             <div>
               <h3 className="font-semibold mb-1">Two-Factor Protected</h3>
-              <p className="text-sm text-blue-100">Your account is secured with TOTP authentication</p>
+              <p className={`text-sm ${heroCopy}`}>Your account is secured with TOTP authentication</p>
             </div>
           </div>
           <div className="flex items-start gap-4">
@@ -84,11 +90,11 @@ export function MFAChallenge({ onSuccess, onCancel }: MFAChallengeProps) {
             </div>
             <div>
               <h3 className="font-semibold mb-1">Time-Based Codes</h3>
-              <p className="text-sm text-blue-100">Codes refresh every 30 seconds for maximum security</p>
+              <p className={`text-sm ${heroCopy}`}>Codes refresh every 30 seconds for maximum security</p>
             </div>
           </div>
         </div>
-        <div className="hidden lg:block text-sm text-blue-100">
+        <div className={`hidden lg:block text-sm ${heroCopy}`}>
           © 2024 FlowPulse Finance. All rights reserved.
         </div>
       </div>
