@@ -81,7 +81,6 @@ const navGroups: NavGroup[] = [
       { title: "Calendar", url: "/calendar", icon: Calendar, gradient: "from-emerald-500 to-emerald-600" },
       { title: "CRM", url: "/finance-crm", icon: Users, gradient: "from-cyan-500 to-cyan-600" },
       { title: "Market Data", url: "/market", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
-      { title: "Languages", url: "/finance/languages", icon: Globe, gradient: "from-sky-500 to-sky-600" },
     ],
   },
   {
