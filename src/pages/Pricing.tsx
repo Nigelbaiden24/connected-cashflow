@@ -91,7 +91,7 @@ const Pricing = () => {
   const FINANCE_ANNUAL_SEAT_PRICE_MONTHLY = 89; // per seat per month when billed annually
   const FINANCE_MONTHLY_SEAT_PRICE_MONTHLY = Math.ceil(89 * 1.2); // 20% more = £107/seat/month
   const FINANCE_SEAT_PRICE_MONTHLY = financeBillingAnnual ? FINANCE_ANNUAL_SEAT_PRICE_MONTHLY : FINANCE_MONTHLY_SEAT_PRICE_MONTHLY;
-  const FINANCE_MIN_SEATS = 3;
+  const FINANCE_MIN_SEATS = financeBillingAnnual ? 1 : 3;
   const FINANCE_INCLUDED_PRODUCTS = 3;
   const FINANCE_ADDON_PRICE_ANNUAL = 1200; // per year
   const FINANCE_ADDON_PRICE_MONTHLY = Math.ceil(1200 / 12 * 1.2); // 20% more = £120/month
@@ -246,13 +246,13 @@ const Pricing = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {financeBillingAnnual && <Badge className="bg-primary/10 text-primary border-primary/20 font-normal">20% off annual</Badge>}
-                    <Badge variant="outline" className="border-border/50 font-normal">Min {FINANCE_MIN_SEATS} seats</Badge>
+                    <Badge variant="outline" className="border-border/50 font-normal">{financeBillingAnnual ? "Min 1 seat (annual)" : "Min 3 seats (monthly)"}</Badge>
                     <Badge variant="outline" className="border-border/50 font-normal">{FINANCE_INCLUDED_PRODUCTS} products included</Badge>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-sm font-medium ${!financeBillingAnnual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
-                  <Switch checked={financeBillingAnnual} onCheckedChange={setFinanceBillingAnnual} />
+                  <Switch checked={financeBillingAnnual} onCheckedChange={(v) => { setFinanceBillingAnnual(v); if (!v && financeSeatCount < 3) setFinanceSeatCount(3); }} />
                   <span className={`text-sm font-medium ${financeBillingAnnual ? "text-foreground" : "text-muted-foreground"}`}>Annual</span>
                 </div>
               </div>
