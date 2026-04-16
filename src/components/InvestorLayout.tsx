@@ -1,17 +1,17 @@
 import { ReactNode, useState, memo } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
 import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
 import { InvestorNotificationsDropdown } from "@/components/notifications";
 import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { 
-  LayoutDashboard, 
-  FileText, 
-  TrendingUp, 
-  Eye, 
-  Brain 
+import {
+  LayoutDashboard,
+  FileText,
+  TrendingUp,
+  Eye,
+  Brain
 } from "lucide-react";
 
 interface InvestorLayoutProps {
@@ -31,11 +31,13 @@ const mobileNavItems = [
 export const InvestorLayout = memo(function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
+  const location = useLocation();
+  const hideSidebar = location.pathname === "/investor/opportunities";
 
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full investor-theme">
-        <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />
+        {!hideSidebar && <InvestorSidebar userEmail={userEmail} onLogout={onLogout} />}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Enterprise Mobile Header */}
           <MobileHeader
@@ -49,7 +51,7 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
             notificationCount={0}
             rightContent={<InvestorNotificationsDropdown variant="investor" />}
           />
-          
+
           {/* Desktop notification bell */}
           <div className="hidden md:flex items-center justify-end px-4 py-2">
             <InvestorNotificationsDropdown variant="investor" className="text-foreground hover:bg-muted" />
