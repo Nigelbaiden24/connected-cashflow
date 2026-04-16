@@ -246,7 +246,7 @@ const Pricing = () => {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {financeBillingAnnual && <Badge className="bg-primary/10 text-primary border-primary/20 font-normal">20% off annual</Badge>}
-                    <Badge variant="outline" className="border-border/50 font-normal">Min {FINANCE_MIN_SEATS} seats</Badge>
+                    <Badge variant="outline" className="border-border/50 font-normal">{financeBillingAnnual ? "Min 1 seat (annual)" : "Min 3 seats (monthly)"}</Badge>
                     <Badge variant="outline" className="border-border/50 font-normal">{FINANCE_INCLUDED_PRODUCTS} products included</Badge>
                   </div>
                 </div>
