@@ -58,11 +58,11 @@ export default function Opportunities() {
               <span className="text-xl font-bold">FlowPulse</span>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+              <Button variant="ghost" onClick={() => navigate("/investor/dashboard")} className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
-              <Button variant="ghost" onClick={() => navigate("/")}>
+              <Button variant="ghost" onClick={() => navigate("/investor/dashboard")}>
                 Home
               </Button>
             </div>
