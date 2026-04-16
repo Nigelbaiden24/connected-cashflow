@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Database, Search, Scale, Sparkles, TrendingUp, DollarSign, BarChart3, Globe, Download, Bookmark, Star, Building2, Landmark, ShieldCheck } from "lucide-react";
+import { Database, Search, Scale, Sparkles, TrendingUp, PoundSterling, BarChart3, Globe, Download, Bookmark, Star, Building2, Landmark, ShieldCheck } from "lucide-react";
 import { fundDatabase } from "@/data/fundDatabase";
 import { propertyFunds as propertyFundsData } from "@/data/funds";
 import { FundSearchFilters } from "@/components/fund-database/FundSearchFilters";
