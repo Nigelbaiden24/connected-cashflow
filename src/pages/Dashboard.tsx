@@ -111,7 +111,7 @@ const Dashboard = () => {
       value: formatCurrencyShort(totalAUM),
       change: "+3%",
       trend: "up" as const,
-      icon: DollarSign,
+      icon: PoundSterling,
       color: "hsl(142, 71%, 45%)",
       sparkKey: "aum",
     },
