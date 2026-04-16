@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ClientsWeServe } from "@/components/home/ClientsWeServe";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
@@ -670,6 +671,11 @@ const Index = () => {
                 <strong>Important Notice:</strong> FlowPulse is a technology platform providing software tools for information, research, and workflow management purposes only. FlowPulse is not authorised or regulated by the Financial Conduct Authority (FCA) or any other financial regulatory body. We do not provide financial advice, investment advice, or any other regulated financial services. Nothing on this platform constitutes a personal recommendation or advice on the merits of any transaction or investment. Any information provided is for general informational purposes only and should not be relied upon when making investment decisions. You should seek independent financial advice from a suitably qualified and FCA-authorised adviser before making any investment decisions. Past performance is not indicative of future results. The value of investments can go down as well as up, and you may get back less than you invest.
               </p>
             </div>
+          </div>
+
+          {/* Theme toggle */}
+          <div className="flex justify-center pt-6">
+            <ThemeToggle />
           </div>
         </div>
       </footer>
