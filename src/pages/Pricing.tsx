@@ -252,7 +252,7 @@ const Pricing = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-sm font-medium ${!financeBillingAnnual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
-                  <Switch checked={financeBillingAnnual} onCheckedChange={setFinanceBillingAnnual} />
+                  <Switch checked={financeBillingAnnual} onCheckedChange={(v) => { setFinanceBillingAnnual(v); if (!v && financeSeatCount < 3) setFinanceSeatCount(3); }} />
                   <span className={`text-sm font-medium ${financeBillingAnnual ? "text-foreground" : "text-muted-foreground"}`}>Annual</span>
                 </div>
               </div>
