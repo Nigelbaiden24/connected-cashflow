@@ -142,7 +142,7 @@ const Pricing = () => {
   ];
 
   const ProductGrid = ({ products, selectedProducts, toggleProduct, includedCount, addonPriceLabel }: {
-    products: typeof investmentProducts;
+    products: typeof financeProducts;
     selectedProducts: string[];
     toggleProduct: (id: string) => void;
     includedCount: number;
@@ -279,7 +279,7 @@ const Pricing = () => {
                   </CardHeader>
                   <CardContent>
                     <ProductGrid
-                      products={investmentProducts}
+                      products={financeProducts}
                       selectedProducts={selectedFinanceProducts}
                       toggleProduct={toggleFinanceProduct}
                       includedCount={FINANCE_INCLUDED_PRODUCTS}
@@ -437,7 +437,7 @@ const Pricing = () => {
                   </CardHeader>
                   <CardContent>
                     <ProductGrid
-                      products={investmentProducts}
+                      products={investorProducts}
                       selectedProducts={selectedInvestorProducts}
                       toggleProduct={toggleInvestorProduct}
                       includedCount={INVESTOR_INCLUDED_PRODUCTS}
@@ -505,7 +505,7 @@ const Pricing = () => {
                           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest px-1">Selected</p>
                           <div className="max-h-36 overflow-y-auto space-y-1 pr-1 scrollbar-thin scrollbar-thumb-muted-foreground/20">
                             {selectedInvestorProducts.map((id, idx) => {
-                              const product = investmentProducts.find(p => p.id === id);
+                              const product = investorProducts.find(p => p.id === id);
                               const isAddonItem = idx >= INVESTOR_INCLUDED_PRODUCTS;
                               return (
                                 <div key={id} className="flex items-center gap-2 text-xs py-1 px-2 rounded-md bg-muted/20">
