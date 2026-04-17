@@ -319,14 +319,8 @@ const Index = () => {
 
           <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
             <DialogTrigger asChild>
-              <button className="hidden lg:flex items-center gap-2 relative group px-6 py-2.5 rounded-lg font-semibold text-sm text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]">
-                <span className="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-emerald-500 transition-opacity duration-500" />
-                <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-blue-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-primary/90 via-blue-600/90 to-emerald-600/90" />
-                <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.15)_50%,transparent_75%)] bg-[length:250%_100%] group-hover:animate-[shimmer_1.5s_ease-in-out]" />
-                <Video className="relative z-10 h-4 w-4" />
-                <span className="relative z-10 tracking-wide">Book Demo</span>
-                <span className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              <button className="hidden lg:flex items-center px-6 py-2.5 rounded-lg font-semibold text-sm text-white drop-shadow transition-all duration-500 hover:-translate-y-0.5 bg-white/15 border border-white/30 backdrop-blur-sm hover:bg-white/25">
+                <span className="tracking-wide">Book Demo</span>
               </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
