@@ -344,10 +344,14 @@ const Index = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">
-                    Work Email{(formData.platform === "investor" || formData.platform === "both") ? " *" : " (optional)"}
+                    {formData.platform === "finance" || formData.platform === "both"
+                      ? "Work Email *"
+                      : formData.platform === "investor"
+                      ? "Email *"
+                      : "Email (optional)"}
                   </Label>
                   <Input id="email" type="email"
-                    required={formData.platform === "investor" || formData.platform === "both"}
+                    required={formData.platform !== "investor" ? formData.platform === "finance" || formData.platform === "both" : true}
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
                 </div>
@@ -430,21 +434,31 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16 pt-20 md:pt-32">
               <button
                 onClick={() => setDemoDialogOpen(true)}
-                className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
+                className="relative group px-8 py-3 rounded-lg font-semibold text-base overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-emerald-500" />
-                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-primary/90 via-blue-600/90 to-emerald-600/90" />
-                <Video className="relative z-10 h-5 w-5" />
-                <span className="relative z-10 tracking-wide">Book Demo</span>
+                {/* Gradient outline */}
+                <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary via-blue-500 to-emerald-500" />
+                {/* Transparent inner */}
+                <span className="absolute inset-[2px] rounded-[6px] bg-transparent backdrop-blur-sm" />
+                <span className="relative z-10 flex items-center gap-2">
+                  <Video className="h-5 w-5 text-white drop-shadow" />
+                  <span className="tracking-wide bg-gradient-to-r from-blue-200 via-white to-emerald-200 bg-clip-text text-transparent drop-shadow">
+                    Book Demo
+                  </span>
+                </span>
               </button>
 
               <button
                 onClick={() => setTrialDialogOpen(true)}
-                className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(88,28,135,0.5),0_0_60px_rgba(161,98,7,0.3)]"
+                className="relative group px-8 py-3 rounded-lg font-semibold text-base overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(234,179,8,0.2)]"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-purple-900 via-purple-700 to-amber-600" />
-                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-purple-900/95 via-purple-800/95 to-amber-700/95" />
-                <span className="relative z-10 tracking-wide">Request Free Trial</span>
+                {/* Gradient outline */}
+                <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-600 via-fuchsia-500 to-yellow-400" />
+                {/* Transparent inner */}
+                <span className="absolute inset-[2px] rounded-[6px] bg-transparent backdrop-blur-sm" />
+                <span className="relative z-10 tracking-wide bg-gradient-to-r from-purple-200 via-fuchsia-100 to-yellow-200 bg-clip-text text-transparent drop-shadow">
+                  Request Free Trial
+                </span>
               </button>
             </div>
           </div>
@@ -468,10 +482,14 @@ const Index = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="trial-email">
-                Work Email{(formData.platform === "investor" || formData.platform === "both") ? " *" : " (optional)"}
+                {formData.platform === "finance" || formData.platform === "both"
+                  ? "Work Email *"
+                  : formData.platform === "investor"
+                  ? "Email *"
+                  : "Email (optional)"}
               </Label>
               <Input id="trial-email" type="email"
-                required={formData.platform === "investor" || formData.platform === "both"}
+                required={formData.platform === "finance" || formData.platform === "both" || formData.platform === "investor"}
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
             </div>
