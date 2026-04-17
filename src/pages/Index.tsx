@@ -53,12 +53,14 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
+  const [trialDialogOpen, setTrialDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     company: "",
     phone: "",
-    message: ""
+    message: "",
+    platform: "both" as "finance" | "investor" | "both",
   });
 
   // Validation schema for demo request
@@ -85,22 +87,25 @@ const Index = () => {
       .optional(),
   });
 
-  const handleDemoSubmit = async (e: React.FormEvent) => {
+  const submitRequest = async (
+    e: React.FormEvent,
+    requestType: "demo" | "trial",
+  ) => {
     e.preventDefault();
-    
+
     try {
-      // Validate input
       const validatedData = demoRequestSchema.parse(formData);
-      
-      // Prepare data for database insertion
+
       const dataToInsert = {
         name: validatedData.name,
         email: validatedData.email,
         company: validatedData.company || null,
         phone: validatedData.phone || null,
         message: validatedData.message || null,
+        request_type: requestType,
+        platform_interest: formData.platform,
       };
-      
+
       const { error } = await supabase
         .from('demo_requests')
         .insert([dataToInsert]);
@@ -108,12 +113,13 @@ const Index = () => {
       if (error) throw error;
 
       toast({
-        title: "Demo Request Received!",
-        description: "Our team will contact you within 24 hours to schedule your demo.",
+        title: requestType === "trial" ? "Free Trial Request Received!" : "Demo Request Received!",
+        description: "Our team will contact you within 24 hours.",
       });
-      
-      setDemoDialogOpen(false);
-      setFormData({ name: "", email: "", company: "", phone: "", message: "" });
+
+      if (requestType === "trial") setTrialDialogOpen(false);
+      else setDemoDialogOpen(false);
+      setFormData({ name: "", email: "", company: "", phone: "", message: "", platform: "both" });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
