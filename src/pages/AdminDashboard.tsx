@@ -45,6 +45,7 @@ import { AdminPushNotifications } from "@/components/admin/AdminPushNotification
 import { ApiManagementPanel } from "@/components/admin/api-management/ApiManagementPanel";
 import { AdminCompanyIntelligence } from "@/components/admin/AdminCompanyIntelligence";
 import { AdminStartupDiscovery } from "@/components/admin/AdminStartupDiscovery";
+import { AdminDealFlowIntelligence } from "@/components/admin/AdminDealFlowIntelligence";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { UKInvestorScanner } from "@/components/admin/UKInvestorScanner";
 import { ComplianceDashboard } from "@/components/compliance/ComplianceDashboard";
@@ -1633,6 +1634,22 @@ export default function AdminDashboard() {
 
           {activeTab === 'investor-finder' && (
             <UKInvestorScanner />
+          )}
+
+          {activeTab === 'deal-flow' && (
+            <AdminDealFlowIntelligence />
+          )}
+
+          {(activeTab === 'company-registry' || activeTab === 'funding-signals') && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Coming in Phase 4</CardTitle>
+                <CardDescription>
+                  This module surfaces data captured by the Deal Flow Intelligence pipeline.
+                  Run the pipeline first from the <strong>Deal Flow Intelligence</strong> tab.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           )}
         </div>
       </main>
