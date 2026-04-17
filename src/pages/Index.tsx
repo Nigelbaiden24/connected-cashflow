@@ -63,7 +63,7 @@ const Index = () => {
     platform: "both" as "finance" | "investor" | "both",
   });
 
-  // Validation schema for demo request
+  // Validation schema for demo request — email only required when platform includes investor
   const demoRequestSchema = z.object({
     name: z.string()
       .trim()
@@ -71,8 +71,9 @@ const Index = () => {
       .max(100, "Name must be less than 100 characters"),
     email: z.string()
       .trim()
-      .email("Invalid email address")
-      .max(255, "Email must be less than 255 characters"),
+      .max(255, "Email must be less than 255 characters")
+      .optional()
+      .or(z.literal("")),
     company: z.string()
       .trim()
       .max(200, "Company name must be less than 200 characters")
@@ -95,6 +96,26 @@ const Index = () => {
 
     try {
       const validatedData = demoRequestSchema.parse(formData);
+
+      // Email is mandatory only when the user wants FlowPulse Investor (or both)
+      const needsEmail = formData.platform === "investor" || formData.platform === "both";
+      if (needsEmail) {
+        const emailCheck = z.string().trim().email().safeParse(validatedData.email || "");
+        if (!emailCheck.success) {
+          toast({
+            title: "Work email required",
+            description: "A valid work email is required for FlowPulse Investor access.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (validatedData.email) {
+        const emailCheck = z.string().trim().email().safeParse(validatedData.email);
+        if (!emailCheck.success) {
+          toast({ title: "Invalid email", description: "Please enter a valid email or leave it blank.", variant: "destructive" });
+          return;
+        }
+      }
 
       const dataToInsert = {
         name: validatedData.name,
@@ -305,8 +326,12 @@ const Index = () => {
                     onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="John Smith" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Work Email *</Label>
-                  <Input id="email" type="email" required value={formData.email}
+                  <Label htmlFor="email">
+                    Work Email{(formData.platform === "investor" || formData.platform === "both") ? " *" : " (optional)"}
+                  </Label>
+                  <Input id="email" type="email"
+                    required={formData.platform === "investor" || formData.platform === "both"}
+                    value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
                 </div>
                 <div className="space-y-2">
@@ -385,7 +410,7 @@ const Index = () => {
               Receive institutional analyst grade investment insights delivered the moment they matter
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-20 md:pt-32">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16 pt-20 md:pt-32">
               <button
                 onClick={() => setDemoDialogOpen(true)}
                 className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
@@ -398,10 +423,10 @@ const Index = () => {
 
               <button
                 onClick={() => setTrialDialogOpen(true)}
-                className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(234,179,8,0.2)]"
+                className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(88,28,135,0.5),0_0_60px_rgba(161,98,7,0.3)]"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-purple-600 via-fuchsia-500 to-yellow-400" />
-                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-purple-600/90 via-fuchsia-500/90 to-yellow-500/90" />
+                <span className="absolute inset-0 bg-gradient-to-r from-purple-900 via-purple-700 to-amber-600" />
+                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-purple-900/95 via-purple-800/95 to-amber-700/95" />
                 <span className="relative z-10 tracking-wide">Request Free Trial</span>
               </button>
             </div>
@@ -425,8 +450,12 @@ const Index = () => {
                 onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="John Smith" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="trial-email">Work Email *</Label>
-              <Input id="trial-email" type="email" required value={formData.email}
+              <Label htmlFor="trial-email">
+                Work Email{(formData.platform === "investor" || formData.platform === "both") ? " *" : " (optional)"}
+              </Label>
+              <Input id="trial-email" type="email"
+                required={formData.platform === "investor" || formData.platform === "both"}
+                value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
             </div>
             <div className="space-y-2">
