@@ -434,12 +434,15 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16 pt-20 md:pt-32">
               <button
                 onClick={() => setDemoDialogOpen(true)}
-                className="relative group px-8 py-3 rounded-lg font-semibold text-base overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
+                className="relative group px-8 py-3 rounded-lg font-semibold text-base bg-transparent transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
+                style={{
+                  border: "2px solid transparent",
+                  backgroundImage:
+                    "linear-gradient(transparent, transparent), linear-gradient(to right, hsl(var(--primary)), #3b82f6, #10b981)",
+                  backgroundOrigin: "border-box",
+                  backgroundClip: "padding-box, border-box",
+                }}
               >
-                {/* Gradient outline only */}
-                <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary via-blue-500 to-emerald-500" />
-                {/* Fully transparent interior */}
-                <span className="absolute inset-[2px] rounded-[6px] bg-transparent" />
                 <span className="relative z-10 flex items-center gap-2">
                   <Video className="h-5 w-5 text-white drop-shadow" />
                   <span className="tracking-wide text-white drop-shadow">Book Demo</span>
@@ -448,12 +451,15 @@ const Index = () => {
 
               <button
                 onClick={() => setTrialDialogOpen(true)}
-                className="relative group px-8 py-3 rounded-lg font-semibold text-base overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(234,179,8,0.2)]"
+                className="relative group px-8 py-3 rounded-lg font-semibold text-base bg-transparent transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(234,179,8,0.2)]"
+                style={{
+                  border: "2px solid transparent",
+                  backgroundImage:
+                    "linear-gradient(transparent, transparent), linear-gradient(to right, #9333ea, #d946ef, #facc15)",
+                  backgroundOrigin: "border-box",
+                  backgroundClip: "padding-box, border-box",
+                }}
               >
-                {/* Gradient outline only */}
-                <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-600 via-fuchsia-500 to-yellow-400" />
-                {/* Fully transparent interior */}
-                <span className="absolute inset-[2px] rounded-[6px] bg-transparent" />
                 <span className="relative z-10 tracking-wide text-white drop-shadow">
                   Request Free Trial
                 </span>
