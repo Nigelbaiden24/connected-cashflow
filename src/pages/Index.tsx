@@ -97,20 +97,37 @@ const Index = () => {
     try {
       const validatedData = demoRequestSchema.parse(formData);
 
-      // Email is mandatory only when the user wants FlowPulse Investor (or both)
-      const needsEmail = formData.platform === "investor" || formData.platform === "both";
-      if (needsEmail) {
-        const emailCheck = z.string().trim().email().safeParse(validatedData.email || "");
+      // Finance (or Both) requires a WORK email; Investor accepts any valid email
+      const needsWorkEmail = formData.platform === "finance" || formData.platform === "both";
+      const needsAnyEmail = formData.platform === "investor";
+      const freeEmailDomains = ["gmail.com","yahoo.com","hotmail.com","outlook.com","icloud.com","aol.com","live.com","msn.com","proton.me","protonmail.com","gmx.com","yandex.com","mail.com"];
+      const emailValue = (validatedData.email || "").trim();
+
+      if (needsWorkEmail || needsAnyEmail) {
+        const emailCheck = z.string().trim().email().safeParse(emailValue);
         if (!emailCheck.success) {
           toast({
-            title: "Work email required",
-            description: "A valid work email is required for FlowPulse Investor access.",
+            title: needsWorkEmail ? "Work email required" : "Email required",
+            description: needsWorkEmail
+              ? "A valid work email is required for FlowPulse Finance access."
+              : "A valid email is required for FlowPulse Investor access.",
             variant: "destructive",
           });
           return;
         }
-      } else if (validatedData.email) {
-        const emailCheck = z.string().trim().email().safeParse(validatedData.email);
+        if (needsWorkEmail) {
+          const domain = emailValue.split("@")[1]?.toLowerCase() || "";
+          if (freeEmailDomains.includes(domain)) {
+            toast({
+              title: "Work email required",
+              description: "Please use your company work email for FlowPulse Finance.",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+      } else if (emailValue) {
+        const emailCheck = z.string().trim().email().safeParse(emailValue);
         if (!emailCheck.success) {
           toast({ title: "Invalid email", description: "Please enter a valid email or leave it blank.", variant: "destructive" });
           return;
