@@ -436,15 +436,13 @@ const Index = () => {
                 onClick={() => setDemoDialogOpen(true)}
                 className="relative group px-8 py-3 rounded-lg font-semibold text-base overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
               >
-                {/* Gradient outline */}
+                {/* Gradient outline only */}
                 <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-primary via-blue-500 to-emerald-500" />
-                {/* Transparent inner */}
-                <span className="absolute inset-[2px] rounded-[6px] bg-transparent backdrop-blur-sm" />
+                {/* Fully transparent interior */}
+                <span className="absolute inset-[2px] rounded-[6px] bg-transparent" />
                 <span className="relative z-10 flex items-center gap-2">
                   <Video className="h-5 w-5 text-white drop-shadow" />
-                  <span className="tracking-wide bg-gradient-to-r from-blue-200 via-white to-emerald-200 bg-clip-text text-transparent drop-shadow">
-                    Book Demo
-                  </span>
+                  <span className="tracking-wide text-white drop-shadow">Book Demo</span>
                 </span>
               </button>
 
@@ -452,11 +450,11 @@ const Index = () => {
                 onClick={() => setTrialDialogOpen(true)}
                 className="relative group px-8 py-3 rounded-lg font-semibold text-base overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(234,179,8,0.2)]"
               >
-                {/* Gradient outline */}
+                {/* Gradient outline only */}
                 <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-600 via-fuchsia-500 to-yellow-400" />
-                {/* Transparent inner */}
-                <span className="absolute inset-[2px] rounded-[6px] bg-transparent backdrop-blur-sm" />
-                <span className="relative z-10 tracking-wide bg-gradient-to-r from-purple-200 via-fuchsia-100 to-yellow-200 bg-clip-text text-transparent drop-shadow">
+                {/* Fully transparent interior */}
+                <span className="absolute inset-[2px] rounded-[6px] bg-transparent" />
+                <span className="relative z-10 tracking-wide text-white drop-shadow">
                   Request Free Trial
                 </span>
               </button>
