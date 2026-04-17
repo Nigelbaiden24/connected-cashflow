@@ -134,3 +134,12 @@ verify_jwt = true
 
 [functions.api-gateway]
 verify_jwt = false
+
+[functions.intel-ingest-firecrawl]
+verify_jwt = false
+
+[functions.intel-validate]
+verify_jwt = false
+
+[functions.intel-orchestrate]
+verify_jwt = false
