@@ -97,6 +97,26 @@ const Index = () => {
     try {
       const validatedData = demoRequestSchema.parse(formData);
 
+      // Email is mandatory only when the user wants FlowPulse Investor (or both)
+      const needsEmail = formData.platform === "investor" || formData.platform === "both";
+      if (needsEmail) {
+        const emailCheck = z.string().trim().email().safeParse(validatedData.email || "");
+        if (!emailCheck.success) {
+          toast({
+            title: "Work email required",
+            description: "A valid work email is required for FlowPulse Investor access.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (validatedData.email) {
+        const emailCheck = z.string().trim().email().safeParse(validatedData.email);
+        if (!emailCheck.success) {
+          toast({ title: "Invalid email", description: "Please enter a valid email or leave it blank.", variant: "destructive" });
+          return;
+        }
+      }
+
       const dataToInsert = {
         name: validatedData.name,
         email: validatedData.email,
