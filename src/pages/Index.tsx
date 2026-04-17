@@ -385,7 +385,7 @@ const Index = () => {
               Receive institutional analyst grade investment insights delivered the moment they matter
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-20 md:pt-32">
               <button
                 onClick={() => setDemoDialogOpen(true)}
                 className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
@@ -398,10 +398,11 @@ const Index = () => {
 
               <button
                 onClick={() => setTrialDialogOpen(true)}
-                className="flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-500 hover:-translate-y-0.5"
+                className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(234,179,8,0.2)]"
               >
-                <Sparkles className="h-5 w-5" />
-                <span className="tracking-wide">Request Free Trial</span>
+                <span className="absolute inset-0 bg-gradient-to-r from-purple-600 via-fuchsia-500 to-yellow-400" />
+                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-purple-600/90 via-fuchsia-500/90 to-yellow-500/90" />
+                <span className="relative z-10 tracking-wide">Request Free Trial</span>
               </button>
             </div>
           </div>
