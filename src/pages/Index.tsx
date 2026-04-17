@@ -351,7 +351,7 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden h-[75vh] md:h-[80vh]">
+      <section className="relative overflow-hidden min-h-[80vh] md:min-h-[85vh]">
         {/* Background Image with Lighter Overlay */}
         <div className="absolute inset-0">
           <img 
