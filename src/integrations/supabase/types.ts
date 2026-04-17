@@ -3648,6 +3648,519 @@ export type Database = {
           },
         ]
       }
+      intel_alerts: {
+        Row: {
+          alert_type: string
+          company_id: string | null
+          created_at: string
+          description: string | null
+          event_id: string | null
+          id: string
+          metadata: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          status: string
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          metadata?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          metadata?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "intel_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intel_alerts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "intel_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_companies: {
+        Row: {
+          confidence_score: number
+          country: string | null
+          created_at: string
+          description: string | null
+          employee_count_estimate: number | null
+          first_seen_at: string
+          founded_date: string | null
+          id: string
+          last_seen_at: string
+          merged_into_id: string | null
+          metadata: Json
+          name: string
+          normalized_name: string
+          region: string | null
+          registry_id: string | null
+          registry_source: string | null
+          sector: string | null
+          status: string
+          sub_sector: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          confidence_score?: number
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          employee_count_estimate?: number | null
+          first_seen_at?: string
+          founded_date?: string | null
+          id?: string
+          last_seen_at?: string
+          merged_into_id?: string | null
+          metadata?: Json
+          name: string
+          normalized_name: string
+          region?: string | null
+          registry_id?: string | null
+          registry_source?: string | null
+          sector?: string | null
+          status?: string
+          sub_sector?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          confidence_score?: number
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          employee_count_estimate?: number | null
+          first_seen_at?: string
+          founded_date?: string | null
+          id?: string
+          last_seen_at?: string
+          merged_into_id?: string | null
+          metadata?: Json
+          name?: string
+          normalized_name?: string
+          region?: string | null
+          registry_id?: string | null
+          registry_source?: string | null
+          sector?: string | null
+          status?: string
+          sub_sector?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_companies_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "intel_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_company_aliases: {
+        Row: {
+          alias: string
+          company_id: string
+          created_at: string
+          id: string
+          normalized_alias: string
+          source: string | null
+        }
+        Insert: {
+          alias: string
+          company_id: string
+          created_at?: string
+          id?: string
+          normalized_alias: string
+          source?: string | null
+        }
+        Update: {
+          alias?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          normalized_alias?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_company_aliases_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "intel_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_company_people: {
+        Row: {
+          appointed_on: string | null
+          company_id: string
+          created_at: string
+          id: string
+          person_id: string
+          resigned_on: string | null
+          role: string
+          source: string | null
+        }
+        Insert: {
+          appointed_on?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          person_id: string
+          resigned_on?: string | null
+          role: string
+          source?: string | null
+        }
+        Update: {
+          appointed_on?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          person_id?: string
+          resigned_on?: string | null
+          role?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_company_people_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "intel_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intel_company_people_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "intel_people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_event_investors: {
+        Row: {
+          amount_value: number | null
+          created_at: string
+          event_id: string
+          id: string
+          investor_id: string
+          is_lead: boolean
+        }
+        Insert: {
+          amount_value?: number | null
+          created_at?: string
+          event_id: string
+          id?: string
+          investor_id: string
+          is_lead?: boolean
+        }
+        Update: {
+          amount_value?: number | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          investor_id?: string
+          is_lead?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_event_investors_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "intel_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intel_event_investors_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "intel_investors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_events: {
+        Row: {
+          amount_currency: string | null
+          amount_value: number | null
+          company_id: string | null
+          confidence: string
+          confidence_score: number
+          created_at: string
+          cross_verified_count: number
+          event_date: string | null
+          event_subtype: string | null
+          event_type: string
+          funding_stage: string | null
+          id: string
+          raw_data: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          signal_tier: string
+          source_id: string | null
+          source_url: string | null
+          status: string
+          structured_data: Json
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amount_currency?: string | null
+          amount_value?: number | null
+          company_id?: string | null
+          confidence?: string
+          confidence_score?: number
+          created_at?: string
+          cross_verified_count?: number
+          event_date?: string | null
+          event_subtype?: string | null
+          event_type: string
+          funding_stage?: string | null
+          id?: string
+          raw_data?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          signal_tier?: string
+          source_id?: string | null
+          source_url?: string | null
+          status?: string
+          structured_data?: Json
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amount_currency?: string | null
+          amount_value?: number | null
+          company_id?: string | null
+          confidence?: string
+          confidence_score?: number
+          created_at?: string
+          cross_verified_count?: number
+          event_date?: string | null
+          event_subtype?: string | null
+          event_type?: string
+          funding_stage?: string | null
+          id?: string
+          raw_data?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          signal_tier?: string
+          source_id?: string | null
+          source_url?: string | null
+          status?: string
+          structured_data?: Json
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "intel_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intel_events_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "intel_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_investors: {
+        Row: {
+          country: string | null
+          created_at: string
+          id: string
+          investor_type: string | null
+          metadata: Json
+          name: string
+          normalized_name: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          investor_type?: string | null
+          metadata?: Json
+          name: string
+          normalized_name: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          id?: string
+          investor_type?: string | null
+          metadata?: Json
+          name?: string
+          normalized_name?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      intel_people: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          linkedin_url: string | null
+          metadata: Json
+          normalized_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          linkedin_url?: string | null
+          metadata?: Json
+          normalized_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          linkedin_url?: string | null
+          metadata?: Json
+          normalized_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      intel_source_runs: {
+        Row: {
+          errors: Json | null
+          finished_at: string | null
+          id: string
+          items_found: number
+          items_inserted: number
+          items_updated: number
+          source_id: string
+          started_at: string
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string
+          items_found?: number
+          items_inserted?: number
+          items_updated?: number
+          source_id: string
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string
+          items_found?: number
+          items_inserted?: number
+          items_updated?: number
+          source_id?: string
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intel_source_runs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "intel_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intel_sources: {
+        Row: {
+          base_url: string | null
+          config: Json | null
+          created_at: string
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          name: string
+          priority_weight: number
+          source_key: string
+          source_type: string
+          updated_at: string
+        }
+        Insert: {
+          base_url?: string | null
+          config?: Json | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          name: string
+          priority_weight?: number
+          source_key: string
+          source_type: string
+          updated_at?: string
+        }
+        Update: {
+          base_url?: string | null
+          config?: Json | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          priority_weight?: number
+          source_key?: string
+          source_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investment_watchlists: {
         Row: {
           category: string | null
