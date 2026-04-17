@@ -63,7 +63,7 @@ const Index = () => {
     platform: "both" as "finance" | "investor" | "both",
   });
 
-  // Validation schema for demo request
+  // Validation schema for demo request — email only required when platform includes investor
   const demoRequestSchema = z.object({
     name: z.string()
       .trim()
@@ -71,8 +71,9 @@ const Index = () => {
       .max(100, "Name must be less than 100 characters"),
     email: z.string()
       .trim()
-      .email("Invalid email address")
-      .max(255, "Email must be less than 255 characters"),
+      .max(255, "Email must be less than 255 characters")
+      .optional()
+      .or(z.literal("")),
     company: z.string()
       .trim()
       .max(200, "Company name must be less than 200 characters")
