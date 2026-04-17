@@ -53,12 +53,14 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { toast } = useToast();
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
+  const [trialDialogOpen, setTrialDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     company: "",
     phone: "",
-    message: ""
+    message: "",
+    platform: "both" as "finance" | "investor" | "both",
   });
 
   // Validation schema for demo request
@@ -85,22 +87,25 @@ const Index = () => {
       .optional(),
   });
 
-  const handleDemoSubmit = async (e: React.FormEvent) => {
+  const submitRequest = async (
+    e: React.FormEvent,
+    requestType: "demo" | "trial",
+  ) => {
     e.preventDefault();
-    
+
     try {
-      // Validate input
       const validatedData = demoRequestSchema.parse(formData);
-      
-      // Prepare data for database insertion
+
       const dataToInsert = {
         name: validatedData.name,
         email: validatedData.email,
         company: validatedData.company || null,
         phone: validatedData.phone || null,
         message: validatedData.message || null,
+        request_type: requestType,
+        platform_interest: formData.platform,
       };
-      
+
       const { error } = await supabase
         .from('demo_requests')
         .insert([dataToInsert]);
@@ -108,12 +113,13 @@ const Index = () => {
       if (error) throw error;
 
       toast({
-        title: "Demo Request Received!",
-        description: "Our team will contact you within 24 hours to schedule your demo.",
+        title: requestType === "trial" ? "Free Trial Request Received!" : "Demo Request Received!",
+        description: "Our team will contact you within 24 hours.",
       });
-      
-      setDemoDialogOpen(false);
-      setFormData({ name: "", email: "", company: "", phone: "", message: "" });
+
+      if (requestType === "trial") setTrialDialogOpen(false);
+      else setDemoDialogOpen(false);
+      setFormData({ name: "", email: "", company: "", phone: "", message: "", platform: "both" });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -292,57 +298,48 @@ const Index = () => {
                   Fill out the form below and our team will contact you within 24 hours to schedule your personalized demo.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleDemoSubmit} className="space-y-4 mt-4">
+              <form onSubmit={(e) => submitRequest(e, "demo")} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="John Smith"
-                  />
+                  <Input id="name" required value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="John Smith" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Work Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    placeholder="john@company.com"
-                  />
+                  <Input id="email" type="email" required value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company Name *</Label>
-                  <Input
-                    id="company"
-                    required
-                    value={formData.company}
-                    onChange={(e) => setFormData({...formData, company: e.target.value})}
-                    placeholder="Acme Corp"
-                  />
+                  <Label htmlFor="company">Company Name</Label>
+                  <Input id="company" value={formData.company}
+                    onChange={(e) => setFormData({...formData, company: e.target.value})} placeholder="Acme Corp (optional)" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    placeholder="+44 20 1234 5678"
-                  />
+                  <Input id="phone" type="tel" value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="+44 20 1234 5678" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Which FlowPulse platform are you interested in? *</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["finance", "investor", "both"] as const).map((p) => (
+                      <button key={p} type="button"
+                        onClick={() => setFormData({ ...formData, platform: p })}
+                        className={`px-3 py-2 rounded-md border text-sm font-medium capitalize transition-all ${
+                          formData.platform === p
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background hover:border-primary/50"
+                        }`}>
+                        {p === "both" ? "Both" : `FlowPulse ${p}`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">What would you like to see in the demo?</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
+                  <Textarea id="message" value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    placeholder="Tell us about your needs..."
-                    rows={3}
-                  />
+                    placeholder="Tell us about your needs..." rows={3} />
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
                   Request Demo
@@ -387,9 +384,88 @@ const Index = () => {
             <p className="text-base md:text-lg text-blue-50/90 max-w-2xl mx-auto drop-shadow-lg font-medium">
               Receive institutional analyst grade investment insights delivered the moment they matter
             </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+              <button
+                onClick={() => setDemoDialogOpen(true)}
+                className="flex items-center gap-2 relative group px-8 py-3 rounded-lg font-semibold text-base text-white overflow-hidden transition-all duration-500 hover:-translate-y-0.5 hover:shadow-[0_0_30px_hsl(var(--primary)/0.4),0_0_60px_hsl(var(--primary)/0.2)]"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-primary via-blue-500 to-emerald-500" />
+                <span className="absolute inset-[1px] rounded-[7px] bg-gradient-to-r from-primary/90 via-blue-600/90 to-emerald-600/90" />
+                <Video className="relative z-10 h-5 w-5" />
+                <span className="relative z-10 tracking-wide">Book Demo</span>
+              </button>
+
+              <button
+                onClick={() => setTrialDialogOpen(true)}
+                className="flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-base text-white border border-white/40 bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all duration-500 hover:-translate-y-0.5"
+              >
+                <Sparkles className="h-5 w-5" />
+                <span className="tracking-wide">Request Free Trial</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Free Trial Dialog */}
+      <Dialog open={trialDialogOpen} onOpenChange={setTrialDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-space-grotesk">Request Your Free Trial</DialogTitle>
+            <DialogDescription>
+              Tell us a bit about yourself and our team will set up your free trial within 24 hours.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => submitRequest(e, "trial")} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="trial-name">Full Name *</Label>
+              <Input id="trial-name" required value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="John Smith" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trial-email">Work Email *</Label>
+              <Input id="trial-email" type="email" required value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trial-company">Company Name</Label>
+              <Input id="trial-company" value={formData.company}
+                onChange={(e) => setFormData({...formData, company: e.target.value})} placeholder="Acme Corp (optional)" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trial-phone">Phone Number</Label>
+              <Input id="trial-phone" type="tel" value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="+44 20 1234 5678" />
+            </div>
+            <div className="space-y-2">
+              <Label>Which FlowPulse platform do you want to trial? *</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {(["finance", "investor", "both"] as const).map((p) => (
+                  <button key={p} type="button"
+                    onClick={() => setFormData({ ...formData, platform: p })}
+                    className={`px-3 py-2 rounded-md border text-sm font-medium capitalize transition-all ${
+                      formData.platform === p
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-background hover:border-primary/50"
+                    }`}>
+                    {p === "both" ? "Both" : `FlowPulse ${p}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trial-message">Anything specific you'd like access to?</Label>
+              <Textarea id="trial-message" value={formData.message}
+                onChange={(e) => setFormData({...formData, message: e.target.value})}
+                placeholder="Tell us about your needs..." rows={3} />
+            </div>
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+              Request Free Trial
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* White Space Separator */}
       <div className="bg-white py-20 md:py-32">

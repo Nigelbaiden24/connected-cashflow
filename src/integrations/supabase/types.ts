@@ -3153,6 +3153,8 @@ export type Database = {
           message: string | null
           name: string
           phone: string | null
+          platform_interest: string | null
+          request_type: string | null
           status: string | null
           updated_at: string | null
           user_id: string | null
@@ -3165,6 +3167,8 @@ export type Database = {
           message?: string | null
           name: string
           phone?: string | null
+          platform_interest?: string | null
+          request_type?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -3177,6 +3181,8 @@ export type Database = {
           message?: string | null
           name?: string
           phone?: string | null
+          platform_interest?: string | null
+          request_type?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
