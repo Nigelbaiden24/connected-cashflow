@@ -298,57 +298,48 @@ const Index = () => {
                   Fill out the form below and our team will contact you within 24 hours to schedule your personalized demo.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleDemoSubmit} className="space-y-4 mt-4">
+              <form onSubmit={(e) => submitRequest(e, "demo")} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="John Smith"
-                  />
+                  <Input id="name" required value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="John Smith" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Work Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    placeholder="john@company.com"
-                  />
+                  <Input id="email" type="email" required value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="john@company.com" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="company">Company Name *</Label>
-                  <Input
-                    id="company"
-                    required
-                    value={formData.company}
-                    onChange={(e) => setFormData({...formData, company: e.target.value})}
-                    placeholder="Acme Corp"
-                  />
+                  <Label htmlFor="company">Company Name</Label>
+                  <Input id="company" value={formData.company}
+                    onChange={(e) => setFormData({...formData, company: e.target.value})} placeholder="Acme Corp (optional)" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    placeholder="+44 20 1234 5678"
-                  />
+                  <Input id="phone" type="tel" value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} placeholder="+44 20 1234 5678" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Which FlowPulse platform are you interested in? *</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["finance", "investor", "both"] as const).map((p) => (
+                      <button key={p} type="button"
+                        onClick={() => setFormData({ ...formData, platform: p })}
+                        className={`px-3 py-2 rounded-md border text-sm font-medium capitalize transition-all ${
+                          formData.platform === p
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background hover:border-primary/50"
+                        }`}>
+                        {p === "both" ? "Both" : `FlowPulse ${p}`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">What would you like to see in the demo?</Label>
-                  <Textarea
-                    id="message"
-                    value={formData.message}
+                  <Textarea id="message" value={formData.message}
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    placeholder="Tell us about your needs..."
-                    rows={3}
-                  />
+                    placeholder="Tell us about your needs..." rows={3} />
                 </div>
                 <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
                   Request Demo
