@@ -361,8 +361,8 @@ const Index = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Which FlowPulse platform are you interested in? *</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {(["finance", "investor", "both"] as const).map((p) => (
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["finance", "investor"] as const).map((p) => (
                       <button key={p} type="button"
                         onClick={() => setFormData({ ...formData, platform: p })}
                         className={`px-3 py-2 rounded-md border text-sm font-medium capitalize transition-all ${
@@ -370,7 +370,7 @@ const Index = () => {
                             ? "border-primary bg-primary/10 text-primary"
                             : "border-border bg-background hover:border-primary/50"
                         }`}>
-                        {p === "both" ? "Both" : `FlowPulse ${p}`}
+                        {`FlowPulse ${p}`}
                       </button>
                     ))}
                   </div>
