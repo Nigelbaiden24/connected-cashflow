@@ -69,11 +69,6 @@ export default function PublicReports() {
   const [pendingReportId, setPendingReportId] = useState<string | undefined>();
   const [pendingReportTitle, setPendingReportTitle] = useState<string | undefined>();
 
-  // Open gate immediately for new visitors
-  useEffect(() => {
-    if (!unlocked) setGateOpen(true);
-  }, [unlocked]);
-
   // Read ?category= from URL (used by homepage Insights dropdown)
   useEffect(() => {
     const cat = searchParams.get("category");
@@ -471,14 +466,7 @@ export default function PublicReports() {
 
       <InsightAccessGate
         open={gateOpen}
-        onOpenChange={(o) => {
-          // If the user dismisses the gate without unlocking, send them home.
-          if (!o && !unlocked) {
-            navigate("/");
-            return;
-          }
-          setGateOpen(o);
-        }}
+        onOpenChange={setGateOpen}
         onUnlocked={() => {
           setUnlocked(true);
           if (pendingReportId) {
