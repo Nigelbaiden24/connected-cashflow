@@ -25,14 +25,12 @@ interface PurchasableReport {
   featured: boolean | null;
 }
 
-const categories = [
-  { value: "Market Commentary", label: "Market Commentary" },
-  { value: "Research & Analysis", label: "Research & Analysis" },
-  { value: "Sector & Industry", label: "Sector & Industry" },
-  { value: "Portfolio & Performance", label: "Portfolio & Performance" },
-  { value: "Risk & Compliance", label: "Risk & Compliance" },
-  { value: "Strategic Planning", label: "Strategic Planning" },
-];
+import { INSIGHT_CATEGORIES } from "@/lib/insightCategories";
+
+const categories = INSIGHT_CATEGORIES.map((c) => ({
+  value: c.value,
+  label: `${c.emoji} ${c.label}`,
+}));
 
 export function PurchasableReportUpload() {
   const [reports, setReports] = useState<PurchasableReport[]>([]);
