@@ -41,10 +41,11 @@ const loadImageDataURL = (src: string): Promise<string | null> =>
     img.src = src;
   });
 
-const palette = (platform: "finance" | "investor") =>
+type RGB = [number, number, number];
+const palette = (platform: "finance" | "investor"): { primary: RGB; accent: RGB; soft: RGB } =>
   platform === "investor"
-    ? { primary: [124, 58, 237] as const, accent: [217, 70, 239] as const, soft: [243, 232, 255] as const }
-    : { primary: [37, 99, 235] as const, accent: [14, 165, 233] as const, soft: [219, 234, 254] as const };
+    ? { primary: [124, 58, 237], accent: [217, 70, 239], soft: [243, 232, 255] }
+    : { primary: [37, 99, 235], accent: [14, 165, 233], soft: [219, 234, 254] };
 
 export const generateEliteReport = async (report: EliteReport, opts: Options): Promise<void> => {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
