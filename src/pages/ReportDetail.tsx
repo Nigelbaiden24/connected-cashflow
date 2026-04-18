@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,12 @@ export default function ReportDetail() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { unlocked, setUnlocked } = useInsightAccess();
+  const [gateOpen, setGateOpen] = useState<boolean>(!unlocked);
+
+  useEffect(() => {
+    if (!unlocked) setGateOpen(true);
+  }, [unlocked]);
 
   useEffect(() => {
     if (id) {
