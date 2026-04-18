@@ -24,6 +24,7 @@ const PageLoader = () => (
 // ============ Lazy-loaded pages ============
 import Index from "./pages/Index";
 const Login = lazy(() => import("./pages/Login"));
+const EnterpriseDataCategory = lazy(() => import("./pages/EnterpriseDataCategory"));
 const LoginBusiness = lazy(() => import("./pages/LoginBusiness"));
 const LoginInvestor = lazy(() => import("./pages/LoginInvestor"));
 const LoginCRM = lazy(() => import("./pages/LoginCRM"));
@@ -219,6 +220,7 @@ const App = () => {
               <Route path="/features" element={<Features />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/enterprise-data/:slug" element={<Suspense fallback={<PageLoader />}><EnterpriseDataCategory /></Suspense>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/organisation" element={<OrganisationSettings />} />
               <Route path="/reports" element={<PublicReports />} />

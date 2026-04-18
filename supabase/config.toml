@@ -143,3 +143,6 @@ verify_jwt = false
 
 [functions.intel-orchestrate]
 verify_jwt = false
+
+[functions.enterprise-category-explainer]
+verify_jwt = false

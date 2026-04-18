@@ -41,6 +41,7 @@ import { z } from "zod";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ClientsWeServe } from "@/components/home/ClientsWeServe";
+import { EnterpriseDataStrip } from "@/components/home/EnterpriseDataStrip";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import heroBackground from "@/assets/business-presentation-hero.jpg";
 import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
@@ -618,6 +619,8 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Enterprise Data Categories Carousel */}
+      <EnterpriseDataStrip />
 
       {/* Benefits Section */}
       <section className="relative py-20 overflow-hidden">
