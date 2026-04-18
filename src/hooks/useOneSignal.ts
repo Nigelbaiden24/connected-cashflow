@@ -111,6 +111,24 @@ const ensureOneSignalInitialized = async () => {
         return;
       }
 
+      // Skip OneSignal in iframes / Lovable preview hosts — push won't work there
+      // and registering a second SW conflicts with the PWA Workbox SW.
+      const isInIframe = (() => {
+        try { return window.self !== window.top; } catch { return true; }
+      })();
+      const isPreviewHost =
+        window.location.hostname.includes("id-preview--") ||
+        window.location.hostname.includes("lovableproject.com");
+      if (isInIframe || isPreviewHost) {
+        updateSharedState((state) => ({
+          ...state,
+          initialized: true,
+          initializing: false,
+          configError: "Push notifications are disabled in preview/iframe environments.",
+        }));
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke("get-onesignal-config");
       if (error || !data?.appId) {
         throw new Error("OneSignal app ID is unavailable.");
@@ -124,8 +142,12 @@ const ensureOneSignalInitialized = async () => {
           autoPrompt: false,
           autoRegister: false,
           notifyButton: { enable: false },
-          serviceWorkerParam: { scope: "/" },
+          serviceWorkerParam: { scope: "/onesignal/" },
           serviceWorkerPath: "/OneSignalSDKWorker.js",
+          notificationClickHandlerMatch: "origin",
+          notificationClickHandlerAction: "focus",
+          allowLocalhostAsSecureOrigin: true,
+          welcomeNotification: { disable: true },
         });
 
         updateSharedState((state) => ({
