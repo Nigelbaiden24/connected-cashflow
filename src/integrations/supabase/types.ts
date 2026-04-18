@@ -6500,6 +6500,66 @@ export type Database = {
         }
         Relationships: []
       }
+      report_access_requests: {
+        Row: {
+          category: string | null
+          company: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          ip_address: string | null
+          job_title: string | null
+          notes: string | null
+          phone: string | null
+          reason: string | null
+          report_id: string | null
+          report_title: string | null
+          source_page: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          category?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          ip_address?: string | null
+          job_title?: string | null
+          notes?: string | null
+          phone?: string | null
+          reason?: string | null
+          report_id?: string | null
+          report_title?: string | null
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          category?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          ip_address?: string | null
+          job_title?: string | null
+          notes?: string | null
+          phone?: string | null
+          reason?: string | null
+          report_id?: string | null
+          report_title?: string | null
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       report_purchases: {
         Row: {
           amount_paid: number

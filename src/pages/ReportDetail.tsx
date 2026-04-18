@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,12 @@ export default function ReportDetail() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { unlocked, setUnlocked } = useInsightAccess();
+  const [gateOpen, setGateOpen] = useState<boolean>(!unlocked);
+
+  useEffect(() => {
+    if (!unlocked) setGateOpen(true);
+  }, [unlocked]);
 
   useEffect(() => {
     if (id) {
@@ -130,7 +137,24 @@ export default function ReportDetail() {
   const config = getCategoryConfig(report.category);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className={`min-h-screen bg-white ${!unlocked ? "overflow-hidden max-h-screen" : ""}`}>
+      {!unlocked && (
+        <InsightAccessGate
+          open={gateOpen}
+          onOpenChange={(o) => {
+            if (!o && !unlocked) {
+              navigate("/reports");
+              return;
+            }
+            setGateOpen(o);
+          }}
+          onUnlocked={() => setUnlocked(true)}
+          reportId={report.id}
+          reportTitle={report.title}
+          category={report.category ?? undefined}
+          sourcePage={`/reports/${report.id}`}
+        />
+      )}
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
