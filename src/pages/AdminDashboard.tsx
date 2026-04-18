@@ -27,6 +27,7 @@ import { DemoRequests } from "@/components/admin/DemoRequests";
 import { AdminReportUpload } from "@/components/reports/AdminReportUpload";
 import { PurchasableReportUpload } from "@/components/admin/PurchasableReportUpload";
 import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
+import { InsightsAccessRequests } from "@/components/admin/InsightsAccessRequests";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
@@ -758,6 +759,8 @@ export default function AdminDashboard() {
           {activeTab === 'flowpulse-scraper' && <FlowPulseScraperHub />}
           
           {activeTab === 'enquiries' && <PlatformEnquiries />}
+
+          {activeTab === 'insights-requests' && <InsightsAccessRequests />}
           
           {activeTab === 'demo-requests' && <DemoRequests />}
           

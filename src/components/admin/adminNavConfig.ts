@@ -50,6 +50,7 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "risk-compliance", label: "Risk & Compliance", icon: Shield, gradient: "from-amber-500 to-amber-600", platforms: ["finance"] },
   { id: "market-trends", label: "Market Trends", icon: TrendingUp, gradient: "from-lime-500 to-lime-600", platforms: ["finance"] },
   { id: "purchasable-reports", label: "Lead Magnet Reports", icon: ShoppingBag, gradient: "from-emerald-500 to-emerald-600", platforms: ["finance"] },
+  { id: "insights-requests", label: "Insights Access Requests", icon: Sparkles, gradient: "from-indigo-500 to-blue-600", platforms: ["finance"] },
   { id: "fund-scoring", label: "Fund Scoring", icon: Star, gradient: "from-amber-500 to-amber-600", platforms: ["finance"] },
   { id: "fund-analyst", label: "Fund Analyst", icon: TrendingUp, gradient: "from-teal-500 to-teal-600", platforms: ["finance"] },
   { id: "document-generator", label: "Document Generator", icon: Sparkles, gradient: "from-violet-500 to-violet-600", platforms: ["finance"] },
