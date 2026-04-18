@@ -8,6 +8,7 @@ import { UKInvestorScanner } from "./UKInvestorScanner";
 import { OpportunityResearchEngine } from "./OpportunityResearchEngine";
 import { AIAutoScanner } from "./AIAutoScanner";
 import { InvestorResearchScraper } from "./InvestorResearchScraper";
+import { EliteScraperAnalyst } from "./EliteScraperAnalyst";
 
 type AdminPlatform = "finance" | "investor";
 
@@ -129,6 +130,8 @@ export function FlowPulseScraperHub() {
           </TabsContent>
         </Tabs>
       )}
+
+      <EliteScraperAnalyst platform={isFinance ? "finance" : "investor"} />
     </div>
   );
 }

@@ -212,9 +212,9 @@ export const generateEliteReport = async (report: EliteReport, opts: Options): P
     const cx = margin + 90, cy = y + 70, rOuter = 60, rInner = 32;
     const total = data.reduce((s, d) => s + d.value, 0) || 1;
     let start = -Math.PI / 2;
-    const segColors: [number, number, number][] = [
-      colors.primary as unknown as [number, number, number],
-      colors.accent as unknown as [number, number, number],
+    const segColors: RGB[] = [
+      colors.primary,
+      colors.accent,
       [148, 163, 184], [251, 191, 36], [16, 185, 129], [239, 68, 68],
     ];
     data.forEach((d, i) => {
