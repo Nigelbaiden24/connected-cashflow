@@ -24,6 +24,7 @@ export interface AdminNavItem {
 export const adminNavItems: AdminNavItem[] = [
   // ── Shared (operational) ──────────────────────────────────────────────
   { id: "planner", label: "Planner", icon: ClipboardList, gradient: "from-indigo-500 to-purple-600", platforms: ["finance", "investor"] },
+  { id: "flowpulse-scraper", label: "FlowPulse Scraper", icon: Crosshair, gradient: "from-fuchsia-500 to-rose-600", platforms: ["finance", "investor"] },
   { id: "users", label: "Users", icon: Users, gradient: "from-blue-500 to-blue-600", platforms: ["finance", "investor"] },
   { id: "enquiries", label: "Enquiries", icon: MessageSquare, gradient: "from-orange-500 to-orange-600", platforms: ["finance", "investor"] },
   { id: "demo-requests", label: "Demo Requests", icon: Calendar, gradient: "from-slate-500 to-slate-600", platforms: ["finance", "investor"] },
