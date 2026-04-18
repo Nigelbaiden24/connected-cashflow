@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   TrendingUp, 
   Building2, 
@@ -54,6 +55,7 @@ const Index = () => {
   const { toast } = useToast();
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
   const [trialDialogOpen, setTrialDialogOpen] = useState(false);
+  const [demoTabs, setDemoTabs] = useState<{ finance: string[]; investor: string[] }>({ finance: [], investor: [] });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -62,6 +64,34 @@ const Index = () => {
     message: "",
     platform: "both" as "finance" | "investor" | "both",
   });
+
+  const FINANCE_TABS = [
+    "Dashboard", "AI Chatbot", "Calendar", "CRM", "Market Data", "Languages",
+    "Client Management", "Client Onboarding", "Financial Planning", "Portfolio Management",
+    "Goal Planning", "Investment Analysis", "Risk Assessment", "Scenario Analysis",
+    "Fund & ETF Database", "Practice Management",
+    "Featured Picks", "Market Commentary", "Model Portfolios", "Benchmarking & Trends",
+    "AI Analyst", "Watchlists", "Screeners & Discovery", "Stocks & Crypto",
+    "Analyst Reports", "Opportunity Intelligence",
+  ];
+  const INVESTOR_TABS = [
+    "Dashboard", "Featured Picks", "Analyst Reports", "Analysis Reports",
+    "Market Commentary", "AI Analyst", "News", "Signals & Alerts",
+    "Benchmarking & Trends", "Opportunity Intelligence", "Model Portfolios",
+    "Fund & ETF Database", "Stocks & Crypto", "Watchlists", "Screeners & Discovery",
+    "Market Data Hub", "Tools & Calculators", "Learning Hub", "Newsletters",
+    "Risk & Compliance", "Tasks", "Languages",
+  ];
+
+  const toggleDemoTab = (platform: "finance" | "investor", tab: string) => {
+    setDemoTabs((prev) => {
+      const list = prev[platform];
+      return {
+        ...prev,
+        [platform]: list.includes(tab) ? list.filter((t) => t !== tab) : [...list, tab],
+      };
+    });
+  };
 
   // Validation schema for demo request — email only required when platform includes investor
   const demoRequestSchema = z.object({
@@ -134,12 +164,26 @@ const Index = () => {
         }
       }
 
+      let composedMessage = validatedData.message || "";
+      if (requestType === "demo") {
+        const parts: string[] = [];
+        if ((formData.platform === "finance" || formData.platform === "both") && demoTabs.finance.length) {
+          parts.push(`FlowPulse Finance tabs: ${demoTabs.finance.join(", ")}`);
+        }
+        if ((formData.platform === "investor" || formData.platform === "both") && demoTabs.investor.length) {
+          parts.push(`FlowPulse Investor tabs: ${demoTabs.investor.join(", ")}`);
+        }
+        if (parts.length) {
+          composedMessage = [composedMessage, parts.join(" | ")].filter(Boolean).join("\n\n");
+        }
+      }
+
       const dataToInsert = {
         name: validatedData.name,
         email: validatedData.email,
         company: validatedData.company || null,
         phone: validatedData.phone || null,
-        message: validatedData.message || null,
+        message: composedMessage || null,
         request_type: requestType,
         platform_interest: formData.platform,
       };
@@ -158,6 +202,7 @@ const Index = () => {
       if (requestType === "trial") setTrialDialogOpen(false);
       else setDemoDialogOpen(false);
       setFormData({ name: "", email: "", company: "", phone: "", message: "", platform: "both" });
+      setDemoTabs({ finance: [], investor: [] });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -370,6 +415,40 @@ const Index = () => {
                     ))}
                   </div>
                 </div>
+
+                {(formData.platform === "finance" || formData.platform === "both") && (
+                  <div className="space-y-2">
+                    <Label>Which FlowPulse Finance tabs would you like a demo of?</Label>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-md border border-border p-3 bg-muted/30">
+                      {FINANCE_TABS.map((tab) => (
+                        <label key={`fin-${tab}`} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={demoTabs.finance.includes(tab)}
+                            onCheckedChange={() => toggleDemoTab("finance", tab)}
+                          />
+                          <span>{tab}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(formData.platform === "investor" || formData.platform === "both") && (
+                  <div className="space-y-2">
+                    <Label>Which FlowPulse Investor tabs would you like a demo of?</Label>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-md border border-border p-3 bg-muted/30">
+                      {INVESTOR_TABS.map((tab) => (
+                        <label key={`inv-${tab}`} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={demoTabs.investor.includes(tab)}
+                            onCheckedChange={() => toggleDemoTab("investor", tab)}
+                          />
+                          <span>{tab}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="message">What would you like to see in the demo?</Label>
                   <Textarea id="message" value={formData.message}
