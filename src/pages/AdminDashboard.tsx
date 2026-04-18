@@ -34,6 +34,7 @@ import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
 import { AIAutoScanner } from "@/components/admin/AIAutoScanner";
+import { FlowPulseScraperHub } from "@/components/admin/FlowPulseScraperHub";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
@@ -753,6 +754,8 @@ export default function AdminDashboard() {
         <div className="p-6 space-y-6">
           {/* Content based on active tab */}
           {activeTab === 'users' && <UserManagement />}
+
+          {activeTab === 'flowpulse-scraper' && <FlowPulseScraperHub />}
           
           {activeTab === 'enquiries' && <PlatformEnquiries />}
           
