@@ -90,9 +90,8 @@ export function AdminCalendar() {
     if (!user) return;
 
     const { data } = await supabase
-      .from("calendar_connections")
+      .from("calendar_connections_safe")
       .select("provider")
-      .eq("user_id", user.id)
       .eq("is_active", true);
 
     if (data) {
