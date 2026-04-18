@@ -455,7 +455,7 @@ const Index = () => {
                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                     placeholder="Tell us about your needs..." rows={3} />
                 </div>
-                <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                <Button type="submit" className="w-full bg-gradient-to-b from-slate-200/80 via-slate-300/70 to-slate-400/80 text-slate-900 border border-white/40 backdrop-blur-xl shadow-lg hover:from-slate-100/90 hover:via-slate-200/80 hover:to-slate-300/90 hover:shadow-xl transition-all">
                   Request Demo
                 </Button>
               </form>
