@@ -164,12 +164,26 @@ const Index = () => {
         }
       }
 
+      let composedMessage = validatedData.message || "";
+      if (requestType === "demo") {
+        const parts: string[] = [];
+        if ((formData.platform === "finance" || formData.platform === "both") && demoTabs.finance.length) {
+          parts.push(`FlowPulse Finance tabs: ${demoTabs.finance.join(", ")}`);
+        }
+        if ((formData.platform === "investor" || formData.platform === "both") && demoTabs.investor.length) {
+          parts.push(`FlowPulse Investor tabs: ${demoTabs.investor.join(", ")}`);
+        }
+        if (parts.length) {
+          composedMessage = [composedMessage, parts.join(" | ")].filter(Boolean).join("\n\n");
+        }
+      }
+
       const dataToInsert = {
         name: validatedData.name,
         email: validatedData.email,
         company: validatedData.company || null,
         phone: validatedData.phone || null,
-        message: validatedData.message || null,
+        message: composedMessage || null,
         request_type: requestType,
         platform_interest: formData.platform,
       };
@@ -188,6 +202,7 @@ const Index = () => {
       if (requestType === "trial") setTrialDialogOpen(false);
       else setDemoDialogOpen(false);
       setFormData({ name: "", email: "", company: "", phone: "", message: "", platform: "both" });
+      setDemoTabs({ finance: [], investor: [] });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
