@@ -39,7 +39,7 @@ export function PurchasableReportUpload() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "Market Commentary",
+    category: "Stocks & Equities",
     pageCount: "",
     readingTime: "",
     authorName: "FlowPulse Research Team",
@@ -160,7 +160,7 @@ export function PurchasableReportUpload() {
 
       toast.success("Report uploaded successfully!");
       setFormData({ 
-        title: "", description: "", category: "Market Commentary", pageCount: "", readingTime: "",
+        title: "", description: "", category: "Stocks & Equities", pageCount: "", readingTime: "",
         authorName: "FlowPulse Research Team", authorTitle: "", teaserContent: "",
         keyInsights: "", tags: "", file: null, thumbnail: null, contentImages: []
       });
