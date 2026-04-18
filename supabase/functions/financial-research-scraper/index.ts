@@ -622,6 +622,7 @@ Extract 3-8 opportunityCandidates where the source material genuinely surfaces a
         marketSentiment: 'See summary for analysis',
         topStories: ['Multiple stories analyzed - see summary'],
         recommendations: ['Review the full summary for detailed recommendations'],
+        opportunityCandidates: [],
       };
     }
 
