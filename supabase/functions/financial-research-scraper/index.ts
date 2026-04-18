@@ -531,10 +531,21 @@ Provide your analysis in the following JSON format:
   "keyInsights": ["insight1", "insight2", "insight3", "insight4", "insight5"],
   "marketSentiment": "Bullish/Bearish/Neutral with brief explanation and key drivers",
   "topStories": ["story1 with relevant tickers", "story2", "story3", "story4", "story5"],
-  "recommendations": ["actionable recommendation 1", "actionable recommendation 2", "actionable recommendation 3"]
+  "recommendations": ["actionable recommendation 1", "actionable recommendation 2", "actionable recommendation 3"],
+  "opportunityCandidates": [
+    {
+      "title": "Concise opportunity name (e.g. 'Acme Corp Series B', 'Brent Crude long', 'XYZ Distressed Bond')",
+      "category": "One of: Stocks & Equities | Crypto & Digital Assets | Real Estate | Fixed Income & Bonds | Commodities | Foreign Exchange | Funds & ETFs | Alternative Investments | ESG & Impact Investing | Private Equity | Venture Capital | Infrastructure | SME Acquisitions | Distressed Assets | Debt & Lending",
+      "asset": "Ticker, fund name, property, or instrument identifier if available",
+      "thesis": "1-2 sentence investment thesis",
+      "key_data": "Headline number(s): price, yield, deal size, valuation, raise amount, etc.",
+      "confidence": "high | medium | low",
+      "source_url": "The most relevant source URL from the scraped data"
+    }
+  ]
 }
 
-Respond ONLY with valid JSON, no markdown formatting.`;
+Extract 3-8 opportunityCandidates where the source material genuinely surfaces an investable idea, deal, or actionable signal. If no genuine opportunities are present, return an empty array. Respond ONLY with valid JSON, no markdown formatting.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
