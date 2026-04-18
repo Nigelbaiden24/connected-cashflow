@@ -484,13 +484,7 @@ export default function PublicReports() {
     </div>
   );
 
-  function handleOpenReport(id: string, title: string) {
-    if (!unlocked) {
-      setPendingReportId(id);
-      setPendingReportTitle(title);
-      setGateOpen(true);
-      return;
-    }
+  function handleOpenReport(id: string, _title: string) {
     navigate(`/reports/${id}`);
   }
 }
