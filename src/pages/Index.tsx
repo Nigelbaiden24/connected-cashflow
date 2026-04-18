@@ -311,16 +311,34 @@ const Index = () => {
                   >
                     Pricing
                   </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-semibold"
-                    onClick={() => {
-                      navigate("/reports");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Insights
-                  </Button>
+                  <div className="px-3 py-2">
+                    <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Insights</p>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start font-semibold"
+                      onClick={() => {
+                        navigate("/reports");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Browse all Insights
+                    </Button>
+                    <div className="max-h-64 overflow-y-auto pl-2">
+                      {INSIGHT_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.value}
+                          onClick={() => {
+                            navigate(`/reports?category=${encodeURIComponent(cat.value)}`);
+                            setMobileMenuOpen(false);
+                          }}
+                          className="w-full text-left px-2 py-1.5 text-sm text-gray-600 hover:text-primary flex items-center gap-2"
+                        >
+                          <span>{cat.emoji}</span>
+                          <span>{cat.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
@@ -358,12 +376,42 @@ const Index = () => {
               Pricing
             </button>
 
-            <button 
-              onClick={() => navigate('/reports')}
-              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
-            >
-              Insights
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)] flex items-center gap-1 outline-none">
+                Insights
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="w-[640px] max-w-[92vw] bg-white border border-slate-200 shadow-2xl rounded-xl p-3 z-50"
+              >
+                <DropdownMenuLabel className="flex items-center justify-between px-2 py-1">
+                  <span className="text-sm font-semibold text-slate-700">Browse by category</span>
+                  <button
+                    onClick={() => navigate('/reports')}
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    View all Insights →
+                  </button>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="grid grid-cols-2 gap-1 max-h-[60vh] overflow-y-auto">
+                  {INSIGHT_CATEGORIES.map((cat) => (
+                    <DropdownMenuItem
+                      key={cat.value}
+                      onClick={() => navigate(`/reports?category=${encodeURIComponent(cat.value)}`)}
+                      className="cursor-pointer rounded-md px-2.5 py-2 hover:bg-slate-50 focus:bg-slate-50"
+                    >
+                      <span className="text-lg mr-2 leading-none">{cat.emoji}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-medium text-slate-900 truncate">{cat.label}</span>
+                        <span className="text-xs text-slate-500 truncate">{cat.description}</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <button 
               onClick={() => navigate('/contact')}
