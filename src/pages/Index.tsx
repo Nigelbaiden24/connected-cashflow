@@ -318,11 +318,6 @@ const Index = () => {
           </nav>
 
           <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
-            <DialogTrigger asChild>
-              <button className="hidden lg:flex items-center px-6 py-2.5 rounded-lg font-semibold text-sm text-white drop-shadow transition-all duration-500 hover:-translate-y-0.5 bg-white/15 border border-white/30 backdrop-blur-sm hover:bg-white/25">
-                <span className="tracking-wide">Book Demo</span>
-              </button>
-            </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-space-grotesk">Book Your Demo</DialogTitle>
