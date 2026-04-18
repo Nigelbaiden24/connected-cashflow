@@ -99,13 +99,149 @@ const PLATFORM_RESEARCH_URLS: Record<string, string[]> = {
   ]
 };
 
+// Curated investment-category sources (mirrors src/components/admin/investmentCategories.ts).
+const INVESTMENT_CATEGORY_URLS: Record<string, string[]> = {
+  "stocks-equities": [
+    "https://www.marketwatch.com/markets",
+    "https://finance.yahoo.com/topic/stock-market-news/",
+    "https://www.cnbc.com/markets/",
+    "https://seekingalpha.com/market-news",
+    "https://www.investing.com/news/stock-market-news",
+    "https://www.nasdaq.com/market-activity/ipos",
+  ],
+  "crypto-digital": [
+    "https://www.coindesk.com/markets",
+    "https://cointelegraph.com/category/markets",
+    "https://www.theblock.co/latest",
+    "https://decrypt.co/news",
+    "https://messari.io/news",
+    "https://coinmarketcap.com/headlines/news/",
+  ],
+  "real-estate": [
+    "https://www.bisnow.com/national",
+    "https://commercialobserver.com",
+    "https://www.propertyweek.com",
+    "https://www.costar.com/article",
+    "https://www.globest.com",
+    "https://reactnews.com",
+  ],
+  "fixed-income": [
+    "https://www.reuters.com/markets/rates-bonds/",
+    "https://www.ft.com/capital-markets",
+    "https://www.bloomberg.com/markets/rates-bonds",
+    "https://www.marketwatch.com/investing/bonds",
+    "https://www.investing.com/rates-bonds/",
+  ],
+  "commodities": [
+    "https://www.mining.com/news/",
+    "https://oilprice.com/Latest-Energy-News/World-News/",
+    "https://www.kitco.com/news/",
+    "https://www.reuters.com/markets/commodities/",
+    "https://www.agweb.com/markets",
+  ],
+  "fx": [
+    "https://www.fxstreet.com/news",
+    "https://www.dailyfx.com/market-news",
+    "https://www.investing.com/news/forex-news",
+    "https://www.reuters.com/markets/currencies/",
+    "https://www.fxempire.com/news",
+  ],
+  "funds-etfs": [
+    "https://www.morningstar.com/news",
+    "https://www.etf.com/sections/news",
+    "https://citywire.com/funds-insider/news",
+    "https://www.trustnet.com/news",
+    "https://www.ftadviser.com/investments.html",
+  ],
+  "alternatives": [
+    "https://www.hfr.com/news",
+    "https://www.institutionalinvestor.com/category/Alternatives",
+    "https://news.artnet.com/market",
+    "https://www.liv-ex.com/news-insights/",
+    "https://robbreport.com/lifestyle/auctions/",
+  ],
+  "esg": [
+    "https://www.esgtoday.com",
+    "https://impactalpha.com/feed-2/",
+    "https://www.responsible-investor.com",
+    "https://www.greenbiz.com/topics/finance",
+    "https://sustainablebrands.com/news_and_views",
+  ],
+  "private-equity": [
+    "https://www.penews.com",
+    "https://www.privateequitywire.co.uk/news/",
+    "https://pitchbook.com/news",
+    "https://www.buyoutsinsider.com",
+    "https://realdeals.eu.com",
+  ],
+  "venture-capital": [
+    "https://techcrunch.com/category/venture/",
+    "https://news.crunchbase.com",
+    "https://sifted.eu/news",
+    "https://pitchbook.com/news/venture-capital",
+    "https://venturebeat.com/category/venture/",
+    "https://www.uktech.news/funding",
+  ],
+  "infrastructure": [
+    "https://www.infrastructureinvestor.com",
+    "https://ijglobal.com/news",
+    "https://www.reuters.com/business/energy/",
+    "https://www.powermag.com/news/",
+    "https://www.datacenterdynamics.com/en/news/",
+  ],
+  "sme-acquisitions": [
+    "https://www.bizbuysell.com/learning-center/",
+    "https://www.axial.net/forum/",
+    "https://www.dealstreetasia.com/category/sme",
+    "https://www.insidermedia.com/news/national/all",
+    "https://www.business-sale.com/insights",
+  ],
+  "distressed": [
+    "https://www.debtwire.com/intelligence",
+    "https://reorg.com/insights/",
+    "https://restructuring-newswire.com",
+    "https://distressed-debt-investing.com",
+    "https://www.bloomberg.com/markets/fixed-income",
+  ],
+  "debt-lending": [
+    "https://www.privatedebtinvestor.com",
+    "https://www.withintelligence.com/altcredit/news",
+    "https://www.creditflux.com",
+    "https://www.globalcapital.com/loans",
+    "https://www.reuters.com/markets/rates-bonds/",
+  ],
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  "stocks-equities": "Stocks & Equities",
+  "crypto-digital": "Crypto & Digital Assets",
+  "real-estate": "Real Estate",
+  "fixed-income": "Fixed Income & Bonds",
+  "commodities": "Commodities",
+  "fx": "Foreign Exchange",
+  "funds-etfs": "Funds & ETFs",
+  "alternatives": "Alternative Investments",
+  "esg": "ESG & Impact Investing",
+  "private-equity": "Private Equity",
+  "venture-capital": "Venture Capital",
+  "infrastructure": "Infrastructure",
+  "sme-acquisitions": "SME Acquisitions",
+  "distressed": "Distressed Assets",
+  "debt-lending": "Debt & Lending",
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { url, platformName, action, scrapedData, customPrompt, scrapeAll } = await req.json();
+    const { url, platformName, action, scrapedData, customPrompt, scrapeAll, categoryKey } = await req.json();
+
+    // Sweep an entire investment category's curated sources
+    if (categoryKey) {
+      return await scrapeCategoryUrls(categoryKey);
+    }
 
     // If scrapeAll is true, scrape all research URLs for the platform
     if (scrapeAll && platformName) {
@@ -127,6 +263,83 @@ serve(async (req) => {
     );
   }
 });
+
+async function scrapeCategoryUrls(categoryKey: string) {
+  const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+  if (!firecrawlApiKey) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Firecrawl connector not configured' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const urls = INVESTMENT_CATEGORY_URLS[categoryKey];
+  const label = CATEGORY_LABELS[categoryKey] ?? categoryKey;
+  if (!urls || urls.length === 0) {
+    return new Response(
+      JSON.stringify({ success: false, error: `No sources configured for category "${categoryKey}"` }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  console.log(`[category:${categoryKey}] scraping ${urls.length} sources`);
+
+  let combinedContent = '';
+  const scrapedUrls: string[] = [];
+  const errors: string[] = [];
+
+  for (const u of urls) {
+    try {
+      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${firecrawlApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: u,
+          formats: ['markdown'],
+          onlyMainContent: true,
+          waitFor: 3000,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const markdown = data.data?.markdown || data.markdown || '';
+        if (markdown && markdown.length > 100) {
+          combinedContent += `\n\n### Source: ${u}\n\n${markdown.slice(0, 12000)}`;
+          scrapedUrls.push(u);
+        }
+      } else {
+        errors.push(`Failed ${u}: ${response.status}`);
+      }
+    } catch (err) {
+      errors.push(`Error ${u}: ${err instanceof Error ? err.message : 'unknown'}`);
+    }
+  }
+
+  if (!combinedContent) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'No content extracted', errors, category: categoryKey }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  return new Response(
+    JSON.stringify({
+      success: true,
+      categoryKey,
+      categoryLabel: label,
+      platform: label, // compat with existing UI render path
+      content: combinedContent,
+      scrapedUrls,
+      totalUrls: urls.length,
+      errors: errors.length > 0 ? errors : undefined,
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
 
 async function scrapeAllPlatformUrls(platformName: string) {
   const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
