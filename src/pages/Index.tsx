@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   TrendingUp, 
   Building2, 
@@ -54,6 +55,7 @@ const Index = () => {
   const { toast } = useToast();
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
   const [trialDialogOpen, setTrialDialogOpen] = useState(false);
+  const [demoTabs, setDemoTabs] = useState<{ finance: string[]; investor: string[] }>({ finance: [], investor: [] });
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -62,6 +64,34 @@ const Index = () => {
     message: "",
     platform: "both" as "finance" | "investor" | "both",
   });
+
+  const FINANCE_TABS = [
+    "Dashboard", "AI Chatbot", "Calendar", "CRM", "Market Data", "Languages",
+    "Client Management", "Client Onboarding", "Financial Planning", "Portfolio Management",
+    "Goal Planning", "Investment Analysis", "Risk Assessment", "Scenario Analysis",
+    "Fund & ETF Database", "Practice Management",
+    "Featured Picks", "Market Commentary", "Model Portfolios", "Benchmarking & Trends",
+    "AI Analyst", "Watchlists", "Screeners & Discovery", "Stocks & Crypto",
+    "Analyst Reports", "Opportunity Intelligence",
+  ];
+  const INVESTOR_TABS = [
+    "Dashboard", "Featured Picks", "Analyst Reports", "Analysis Reports",
+    "Market Commentary", "AI Analyst", "News", "Signals & Alerts",
+    "Benchmarking & Trends", "Opportunity Intelligence", "Model Portfolios",
+    "Fund & ETF Database", "Stocks & Crypto", "Watchlists", "Screeners & Discovery",
+    "Market Data Hub", "Tools & Calculators", "Learning Hub", "Newsletters",
+    "Risk & Compliance", "Tasks", "Languages",
+  ];
+
+  const toggleDemoTab = (platform: "finance" | "investor", tab: string) => {
+    setDemoTabs((prev) => {
+      const list = prev[platform];
+      return {
+        ...prev,
+        [platform]: list.includes(tab) ? list.filter((t) => t !== tab) : [...list, tab],
+      };
+    });
+  };
 
   // Validation schema for demo request — email only required when platform includes investor
   const demoRequestSchema = z.object({
