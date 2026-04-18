@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +63,22 @@ export default function PublicReports() {
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { unlocked, setUnlocked } = useInsightAccess();
+  const [gateOpen, setGateOpen] = useState<boolean>(false);
+  const [pendingReportId, setPendingReportId] = useState<string | undefined>();
+  const [pendingReportTitle, setPendingReportTitle] = useState<string | undefined>();
+
+  // Open gate immediately for new visitors
+  useEffect(() => {
+    if (!unlocked) setGateOpen(true);
+  }, [unlocked]);
+
+  // Read ?category= from URL (used by homepage Insights dropdown)
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    if (cat) setSelectedCategory(cat);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchReports();
