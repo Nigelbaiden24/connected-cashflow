@@ -397,6 +397,7 @@ export function FinancialResearchScraper() {
         marketSentiment: data.marketSentiment || "Neutral",
         topStories: data.topStories || [],
         recommendations: data.recommendations || [],
+        opportunityCandidates: Array.isArray(data.opportunityCandidates) ? data.opportunityCandidates : [],
         generatedAt: new Date().toISOString(),
       });
 
