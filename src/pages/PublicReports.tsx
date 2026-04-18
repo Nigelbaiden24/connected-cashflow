@@ -435,7 +435,7 @@ export default function PublicReports() {
               <ReportGridCard
                 key={r.id}
                 report={r}
-                onClick={() => navigate(`/reports/${r.id}`)}
+                onClick={() => handleOpenReport(r.id, r.title)}
                 formatDate={formatDate}
               />
             ))}
@@ -446,7 +446,7 @@ export default function PublicReports() {
               <ReportListRow
                 key={r.id}
                 report={r}
-                onClick={() => navigate(`/reports/${r.id}`)}
+                onClick={() => handleOpenReport(r.id, r.title)}
                 formatDate={formatDate}
               />
             ))}
@@ -468,8 +468,43 @@ export default function PublicReports() {
           </div>
         </div>
       </footer>
+
+      <InsightAccessGate
+        open={gateOpen}
+        onOpenChange={(o) => {
+          // If the user dismisses the gate without unlocking, send them home.
+          if (!o && !unlocked) {
+            navigate("/");
+            return;
+          }
+          setGateOpen(o);
+        }}
+        onUnlocked={() => {
+          setUnlocked(true);
+          if (pendingReportId) {
+            const id = pendingReportId;
+            setPendingReportId(undefined);
+            setPendingReportTitle(undefined);
+            navigate(`/reports/${id}`);
+          }
+        }}
+        reportId={pendingReportId}
+        reportTitle={pendingReportTitle}
+        category={selectedCategory !== "all" ? selectedCategory : undefined}
+        sourcePage="/reports"
+      />
     </div>
   );
+
+  function handleOpenReport(id: string, title: string) {
+    if (!unlocked) {
+      setPendingReportId(id);
+      setPendingReportTitle(title);
+      setGateOpen(true);
+      return;
+    }
+    navigate(`/reports/${id}`);
+  }
 }
 
 function ReportGridCard({
