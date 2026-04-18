@@ -93,7 +93,7 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff,woff2}'],
         globIgnores: ['**/templates/**'],
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/enterprise-data/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
