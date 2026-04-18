@@ -38,7 +38,7 @@ export function EnterpriseDataStrip() {
   };
 
   return (
-    <section className="relative bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 md:py-16 border-y border-white/5">
+    <section className="relative bg-gradient-to-b from-white via-blue-50/40 to-white py-12 md:py-16 border-y border-blue-100/60">
       <div className="container mx-auto px-6">
         <div className="text-center mb-8">
           <p className="text-xs uppercase tracking-[0.2em] text-blue-400/80 font-semibold mb-2">
