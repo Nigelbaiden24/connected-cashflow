@@ -187,6 +187,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function FinancialResearchScraper() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [scrapedData, setScrapedData] = useState<ScrapedData[]>([]);
   const [aiReport, setAiReport] = useState<AIReport | null>(null);
   const [isScrapingInProgress, setIsScrapingInProgress] = useState(false);
@@ -194,6 +195,80 @@ export function FinancialResearchScraper() {
   const [customPrompt, setCustomPrompt] = useState("");
   const [activeTab, setActiveTab] = useState("platforms");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const toggleCategory = (id: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  };
+
+  const scrapeCategories = async () => {
+    if (selectedCategories.length === 0) {
+      toast.error("Select at least one investment category");
+      return;
+    }
+    setIsScrapingInProgress(true);
+    setActiveTab("results");
+
+    const cats = INVESTMENT_CATEGORIES.filter((c) => selectedCategories.includes(c.id));
+
+    setScrapedData((prev) => [
+      ...prev,
+      ...cats.map((c) => ({
+        platform: `${c.emoji} ${c.label}`,
+        content: "",
+        scrapedAt: new Date().toISOString(),
+        status: "pending" as const,
+      })),
+    ]);
+
+    for (const cat of cats) {
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "financial-research-scraper",
+          { body: { categoryKey: cat.id } }
+        );
+        if (error) throw error;
+
+        setScrapedData((prev) =>
+          prev.map((item) =>
+            item.platform === `${cat.emoji} ${cat.label}`
+              ? {
+                  ...item,
+                  content: data.content || "No content extracted",
+                  status: data.success ? ("success" as const) : ("error" as const),
+                  scrapedAt: new Date().toISOString(),
+                  error: data.success ? undefined : data.error,
+                  scrapedUrls: data.scrapedUrls || [],
+                  totalUrls: data.totalUrls || 0,
+                }
+              : item
+          )
+        );
+
+        if (data?.success) {
+          toast.success(
+            `${cat.label}: scraped ${data.scrapedUrls?.length || 0}/${data.totalUrls || 0} sources`
+          );
+        }
+      } catch (err) {
+        setScrapedData((prev) =>
+          prev.map((item) =>
+            item.platform === `${cat.emoji} ${cat.label}`
+              ? {
+                  ...item,
+                  status: "error" as const,
+                  error: err instanceof Error ? err.message : "Failed to scrape category",
+                }
+              : item
+          )
+        );
+      }
+    }
+
+    setIsScrapingInProgress(false);
+    toast.success("Category sweep complete");
+  };
 
   const handleCopy = useCallback(async (text: string, id?: string) => {
     try {
