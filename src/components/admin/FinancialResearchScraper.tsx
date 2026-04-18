@@ -61,12 +61,23 @@ interface ScrapedData {
   totalUrls?: number;
 }
 
+interface OpportunityCandidate {
+  title: string;
+  category?: string;
+  asset?: string;
+  thesis?: string;
+  key_data?: string;
+  confidence?: "high" | "medium" | "low" | string;
+  source_url?: string;
+}
+
 interface AIReport {
   summary: string;
   keyInsights: string[];
   marketSentiment: string;
   topStories: string[];
   recommendations: string[];
+  opportunityCandidates: OpportunityCandidate[];
   generatedAt: string;
 }
 
