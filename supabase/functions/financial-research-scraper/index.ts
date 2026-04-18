@@ -210,6 +210,63 @@ const INVESTMENT_CATEGORY_URLS: Record<string, string[]> = {
     "https://www.globalcapital.com/loans",
     "https://www.reuters.com/markets/rates-bonds/",
   ],
+  "fractional-pe-vc": [
+    "https://www.crowdcube.com/explore",
+    "https://www.seedrs.com/invest",
+    "https://republic.com/invest",
+    "https://www.angellist.com/syndicates",
+    "https://wefunder.com/explore/all",
+    "https://www.moonfare.com/insights",
+  ],
+  "private-market-platforms": [
+    "https://forgeglobal.com/insights/",
+    "https://equityzen.com/knowledge-center/",
+    "https://www.hiive.com/insights",
+    "https://www.nasdaqprivatemarket.com/insights/",
+    "https://carta.com/blog/category/private-markets/",
+  ],
+  "derivatives": [
+    "https://www.cmegroup.com/education/articles-and-reports.html",
+    "https://www.cboe.com/insights/",
+    "https://www.risk.net/derivatives",
+    "https://www.optionsplay.com/blog/",
+    "https://www.tastylive.com/news-insights",
+  ],
+  "capital-protected-notes": [
+    "https://www.structuredretailproducts.com/news",
+    "https://www.investmentweek.co.uk/category/structured-products",
+    "https://www.ftadviser.com/investments/structured-products.html",
+    "https://www.lowes.co.uk/news",
+    "https://www.meteoram.com/news-insights/",
+  ],
+  "savings-cash-yield": [
+    "https://www.moneysavingexpert.com/savings/",
+    "https://moneyfacts.co.uk/news/savings/",
+    "https://www.bankrate.com/banking/savings/",
+    "https://www.nerdwallet.com/h/category/savings-accounts",
+    "https://www.thisismoney.co.uk/money/saving/index.html",
+  ],
+  "pensions-tax-wrappers": [
+    "https://www.hl.co.uk/news",
+    "https://www.ajbell.co.uk/investment-articles",
+    "https://www.ii.co.uk/analysis-commentary",
+    "https://www.pensionsage.com/pa/news.php",
+    "https://www.moneymarketing.co.uk/news/pensions/",
+  ],
+  "thematics-packaged": [
+    "https://www.ark-invest.com/research",
+    "https://www.globalxetfs.com/research/",
+    "https://www.ishares.com/uk/individual/en/insights",
+    "https://www.wisdomtree.eu/en-gb/blog",
+    "https://www.etfstream.com/topic/thematic",
+  ],
+  "copy-trading": [
+    "https://www.etoro.com/news-and-analysis/",
+    "https://blog.zulutrade.com/",
+    "https://blog.naga.com/",
+    "https://pepperstone.com/en/learn-to-trade/social-trading/",
+    "https://www.duplitrade.com/news/",
+  ],
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -228,6 +285,14 @@ const CATEGORY_LABELS: Record<string, string> = {
   "sme-acquisitions": "SME Acquisitions",
   "distressed": "Distressed Assets",
   "debt-lending": "Debt & Lending",
+  "fractional-pe-vc": "Fractional Private Equity / VC",
+  "private-market-platforms": "Private Market Platforms",
+  "derivatives": "Derivatives",
+  "capital-protected-notes": "Capital-Protected & Income Notes",
+  "savings-cash-yield": "Savings, Cash & Yield Products",
+  "pensions-tax-wrappers": "Pensions & Tax Wrappers",
+  "thematics-packaged": "Thematics & Packaged Investing",
+  "copy-trading": "Copy Trading",
 };
 
 serve(async (req) => {

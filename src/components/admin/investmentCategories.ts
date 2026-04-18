@@ -212,5 +212,144 @@ export const INVESTMENT_CATEGORIES: InvestmentCategory[] = [
   },
 ];
 
+// Investor-platform-only categories (consumer/retail investing focus).
+export const INVESTOR_ONLY_CATEGORIES: InvestmentCategory[] = [
+  {
+    id: "fractional-pe-vc",
+    label: "Fractional Private Equity / VC",
+    emoji: "💎",
+    description: "Crowdfunding, syndicates & fractional deals",
+    sources: [
+      { name: "Crowdcube", url: "https://www.crowdcube.com/explore" },
+      { name: "Seedrs", url: "https://www.seedrs.com/invest" },
+      { name: "Republic", url: "https://republic.com/invest" },
+      { name: "AngelList — Syndicates", url: "https://www.angellist.com/syndicates" },
+      { name: "Wefunder", url: "https://wefunder.com/explore/all" },
+      { name: "Moonfare — Insights", url: "https://www.moonfare.com/insights" },
+    ],
+  },
+  {
+    id: "private-market-platforms",
+    label: "Private Market Platforms",
+    emoji: "🔁",
+    description: "Secondary shares & pre-IPO marketplaces",
+    sources: [
+      { name: "Forge Global — Insights", url: "https://forgeglobal.com/insights/" },
+      { name: "EquityZen — Knowledge Center", url: "https://equityzen.com/knowledge-center/" },
+      { name: "Hiive — Insights", url: "https://www.hiive.com/insights" },
+      { name: "Nasdaq Private Market", url: "https://www.nasdaqprivatemarket.com/insights/" },
+      { name: "SecondMarket / Carta X", url: "https://carta.com/blog/category/private-markets/" },
+    ],
+  },
+  {
+    id: "derivatives",
+    label: "Derivatives",
+    emoji: "📐",
+    description: "Options, futures, swaps & structured derivatives",
+    sources: [
+      { name: "CME Group — News", url: "https://www.cmegroup.com/education/articles-and-reports.html" },
+      { name: "Cboe — Insights", url: "https://www.cboe.com/insights/" },
+      { name: "Risk.net — Derivatives", url: "https://www.risk.net/derivatives" },
+      { name: "OptionsPlay — Blog", url: "https://www.optionsplay.com/blog/" },
+      { name: "tastylive — News", url: "https://www.tastylive.com/news-insights" },
+    ],
+  },
+  {
+    id: "capital-protected-notes",
+    label: "Capital-Protected & Income Notes",
+    emoji: "🛡️",
+    description: "Structured notes with capital protection or income",
+    sources: [
+      { name: "StructuredRetailProducts", url: "https://www.structuredretailproducts.com/news" },
+      { name: "Investment Week — Structured", url: "https://www.investmentweek.co.uk/category/structured-products" },
+      { name: "FT Adviser — Structured Products", url: "https://www.ftadviser.com/investments/structured-products.html" },
+      { name: "Lowes Financial — Structured Products", url: "https://www.lowes.co.uk/news" },
+      { name: "MeteorAM — Insights", url: "https://www.meteoram.com/news-insights/" },
+    ],
+  },
+  {
+    id: "savings-cash-yield",
+    label: "Savings, Cash & Yield Products",
+    emoji: "💰",
+    description: "High-yield savings, money market & cash equivalents",
+    sources: [
+      { name: "MoneySavingExpert — Savings", url: "https://www.moneysavingexpert.com/savings/" },
+      { name: "Moneyfacts — Savings News", url: "https://moneyfacts.co.uk/news/savings/" },
+      { name: "Bankrate — Savings", url: "https://www.bankrate.com/banking/savings/" },
+      { name: "NerdWallet — Savings", url: "https://www.nerdwallet.com/h/category/savings-accounts" },
+      { name: "This is Money — Saving", url: "https://www.thisismoney.co.uk/money/saving/index.html" },
+    ],
+  },
+  {
+    id: "pensions-tax-wrappers",
+    label: "Pensions & Tax Wrappers",
+    emoji: "🧾",
+    description: "SIPPs, ISAs & tax-efficient investment vehicles",
+    sources: [
+      { name: "Hargreaves Lansdown — Insights", url: "https://www.hl.co.uk/news" },
+      { name: "AJ Bell — Investment Insights", url: "https://www.ajbell.co.uk/investment-articles" },
+      { name: "Interactive Investor — News", url: "https://www.ii.co.uk/analysis-commentary" },
+      { name: "Pensions Age", url: "https://www.pensionsage.com/pa/news.php" },
+      { name: "Money Marketing — Pensions", url: "https://www.moneymarketing.co.uk/news/pensions/" },
+    ],
+  },
+  {
+    id: "thematics-packaged",
+    label: "Thematics & Packaged Investing",
+    emoji: "📦",
+    description: "Thematic baskets & packaged investment products",
+    sources: [
+      { name: "ARK Invest — Research", url: "https://www.ark-invest.com/research" },
+      { name: "Global X — Research", url: "https://www.globalxetfs.com/research/" },
+      { name: "iShares — Insights", url: "https://www.ishares.com/uk/individual/en/insights" },
+      { name: "WisdomTree — Blog", url: "https://www.wisdomtree.eu/en-gb/blog" },
+      { name: "ETF Stream — Themes", url: "https://www.etfstream.com/topic/thematic" },
+    ],
+  },
+  {
+    id: "copy-trading",
+    label: "Copy Trading",
+    emoji: "👥",
+    description: "Mirror & social trading strategies",
+    sources: [
+      { name: "eToro — News", url: "https://www.etoro.com/news-and-analysis/" },
+      { name: "ZuluTrade — Blog", url: "https://blog.zulutrade.com/" },
+      { name: "NAGA — Blog", url: "https://blog.naga.com/" },
+      { name: "Pepperstone — Copy Trading", url: "https://pepperstone.com/en/learn-to-trade/social-trading/" },
+      { name: "DupliTrade — News", url: "https://www.duplitrade.com/news/" },
+    ],
+  },
+];
+
+// Ordered investor category IDs to match the requested investor scraper UI.
+export const INVESTOR_CATEGORY_IDS: string[] = [
+  "stocks-equities",
+  "crypto-digital",
+  "real-estate",
+  "fixed-income",
+  "commodities",
+  "fx",
+  "funds-etfs",
+  "alternatives",
+  "esg",
+  "fractional-pe-vc",
+  "private-market-platforms",
+  "derivatives",
+  "capital-protected-notes",
+  "savings-cash-yield",
+  "pensions-tax-wrappers",
+  "thematics-packaged",
+  "copy-trading",
+];
+
+export const ALL_CATEGORIES: InvestmentCategory[] = [
+  ...INVESTMENT_CATEGORIES,
+  ...INVESTOR_ONLY_CATEGORIES,
+];
+
+export const INVESTOR_CATEGORIES: InvestmentCategory[] = INVESTOR_CATEGORY_IDS
+  .map((id) => ALL_CATEGORIES.find((c) => c.id === id))
+  .filter((c): c is InvestmentCategory => Boolean(c));
+
 export const getCategoryById = (id: string) =>
-  INVESTMENT_CATEGORIES.find((c) => c.id === id);
+  ALL_CATEGORIES.find((c) => c.id === id);
