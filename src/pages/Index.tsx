@@ -415,6 +415,40 @@ const Index = () => {
                     ))}
                   </div>
                 </div>
+
+                {(formData.platform === "finance" || formData.platform === "both") && (
+                  <div className="space-y-2">
+                    <Label>Which FlowPulse Finance tabs would you like a demo of?</Label>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-md border border-border p-3 bg-muted/30">
+                      {FINANCE_TABS.map((tab) => (
+                        <label key={`fin-${tab}`} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={demoTabs.finance.includes(tab)}
+                            onCheckedChange={() => toggleDemoTab("finance", tab)}
+                          />
+                          <span>{tab}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(formData.platform === "investor" || formData.platform === "both") && (
+                  <div className="space-y-2">
+                    <Label>Which FlowPulse Investor tabs would you like a demo of?</Label>
+                    <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto rounded-md border border-border p-3 bg-muted/30">
+                      {INVESTOR_TABS.map((tab) => (
+                        <label key={`inv-${tab}`} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={demoTabs.investor.includes(tab)}
+                            onCheckedChange={() => toggleDemoTab("investor", tab)}
+                          />
+                          <span>{tab}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="message">What would you like to see in the demo?</Label>
                   <Textarea id="message" value={formData.message}
