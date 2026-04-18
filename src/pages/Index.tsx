@@ -363,7 +363,7 @@ const Index = () => {
           </nav>
 
           <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-space-grotesk">Book Your Demo</DialogTitle>
                 <DialogDescription>
