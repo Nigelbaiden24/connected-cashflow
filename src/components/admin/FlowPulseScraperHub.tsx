@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Radar, Globe, Building2, Brain, Zap, Briefcase } from "lucide-react";
+import { Radar, Globe, Building2, Brain, Zap, Briefcase, TrendingUp } from "lucide-react";
 import { FinancialResearchScraper } from "./FinancialResearchScraper";
 import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
 import { UKInvestorScanner } from "./UKInvestorScanner";
 import { OpportunityResearchEngine } from "./OpportunityResearchEngine";
 import { AIAutoScanner } from "./AIAutoScanner";
+import { InvestorResearchScraper } from "./InvestorResearchScraper";
 
 type AdminPlatform = "finance" | "investor";
 
