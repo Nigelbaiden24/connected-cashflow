@@ -754,6 +754,8 @@ export default function AdminDashboard() {
         <div className="p-6 space-y-6">
           {/* Content based on active tab */}
           {activeTab === 'users' && <UserManagement />}
+
+          {activeTab === 'flowpulse-scraper' && <FlowPulseScraperHub />}
           
           {activeTab === 'enquiries' && <PlatformEnquiries />}
           
