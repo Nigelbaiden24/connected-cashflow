@@ -91,9 +91,9 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff,woff2}'],
-        globIgnores: ['**/templates/**'],
+        globIgnores: ['**/templates/**', '**/OneSignalSDKWorker.js', '**/OneSignalSDK*.js'],
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/enterprise-data/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/enterprise-data/, /^\/OneSignalSDKWorker\.js/, /^\/OneSignalSDK/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
