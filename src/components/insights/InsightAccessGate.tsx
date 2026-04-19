@@ -30,7 +30,7 @@ export function getStoredInsightAccess(): StoredAccess | null {
 const accessSchema = z.object({
   fullName: z.string().trim().min(2, "Please enter your full name").max(100),
   email: z.string().trim().email("Please enter a valid email").max(255),
-  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  phone: z.string().trim().min(5, "Please enter your phone number").max(40),
   company: z.string().trim().max(150).optional().or(z.literal("")),
   jobTitle: z.string().trim().max(150).optional().or(z.literal("")),
   reason: z.string().trim().max(500).optional().or(z.literal("")),
@@ -153,8 +153,8 @@ export function InsightAccessGate({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="phone">Phone (optional)</Label>
-            <Input id="phone" value={form.phone}
+            <Label htmlFor="phone">Phone *</Label>
+            <Input id="phone" required value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="+44 ..." />
           </div>
