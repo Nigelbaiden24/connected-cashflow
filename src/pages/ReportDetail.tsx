@@ -346,8 +346,7 @@ export default function ReportDetail() {
         category={report.category ?? undefined}
         sourcePage={typeof window !== "undefined" ? window.location.pathname : undefined}
       />
-        </div>
-      </section>
+
 
       {/* Related content CTA */}
       <section className="bg-slate-50 py-16 border-t border-slate-200">
