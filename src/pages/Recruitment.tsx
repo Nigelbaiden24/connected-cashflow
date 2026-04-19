@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Features from "./Features";
+import { AboutFlowpulse } from "@/components/recruitment/AboutFlowpulse";
 
 export default function Recruitment() {
   const navigate = useNavigate();
@@ -151,7 +152,12 @@ export default function Recruitment() {
   ];
 
   if (currentSection === "about") {
-    return <Features />;
+    return (
+      <div className="min-h-screen bg-background">
+        <RecruitmentHeader onNavigate={handleNavigate} currentSection={currentSection} />
+        <AboutFlowpulse onNavigate={handleNavigate} />
+      </div>
+    );
   }
 
   if (currentSection === "tech") {
