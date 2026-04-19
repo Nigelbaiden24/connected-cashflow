@@ -59,7 +59,8 @@ export default function ReportDetail() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const unlocked = true;
+  const { unlocked, setUnlocked } = useInsightAccess();
+  const [gateOpen, setGateOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
