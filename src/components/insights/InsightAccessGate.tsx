@@ -130,7 +130,7 @@ export function InsightAccessGate({
                 placeholder="Jane Smith" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Work email *</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input id="email" type="email" required value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="jane@firm.com" />
