@@ -59,7 +59,8 @@ export default function ReportDetail() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const unlocked = true;
+  const { unlocked, setUnlocked } = useInsightAccess();
+  const [gateOpen, setGateOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -270,15 +271,15 @@ export default function ReportDetail() {
             </div>
           )}
 
-          {/* Teaser Content */}
-          {report.teaser_content && (
+          {/* Teaser Content - locked behind contact form */}
+          {report.teaser_content && unlocked && (
             <div className="prose prose-lg prose-slate max-w-none mb-12">
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(report.teaser_content.replace(/\n/g, '<br/>')) }} />
             </div>
           )}
 
-          {/* Content Images */}
-          {report.content_images && report.content_images.length > 0 && (
+          {/* Content Images - locked behind contact form */}
+          {report.content_images && report.content_images.length > 0 && unlocked && (
             <div className="space-y-8 mb-12">
               {report.content_images.map((imageUrl, idx) => (
                 <div key={idx}>
@@ -292,57 +293,60 @@ export default function ReportDetail() {
             </div>
           )}
 
-          {/* Lock Gate */}
-          <div className="relative mt-16">
-            {/* Fade overlay */}
-            <div className="absolute -top-32 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-white pointer-events-none z-10" />
-            
-            {/* Locked content card */}
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-0 overflow-hidden relative">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%20fill-rule%3D%22evenodd%22%3E%3Ccircle%20cx%3D%223%22%20cy%3D%223%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
-              
-              <CardContent className="p-8 md:p-12 relative z-10">
-                <div className="text-center max-w-2xl mx-auto">
-                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Lock className="h-8 w-8 text-white" />
-                  </div>
-                  
-                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                    Unlock the Full Report
-                  </h3>
-                  
-                  <p className="text-slate-300 mb-8 text-lg">
-                    Sign up for FlowPulse to access the complete analysis, detailed charts, and actionable recommendations.
-                  </p>
+          {/* Lock Gate - shown when not unlocked */}
+          {!unlocked && (
+            <div className="relative mt-16">
+              <div className="absolute -top-32 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-white pointer-events-none z-10" />
 
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button 
-                      size="lg"
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-                      onClick={() => navigate("/login")}
-                    >
-                      <TrendingUp className="h-5 w-5 mr-2" />
-                      FlowPulse Finance
-                    </Button>
-                    <Button 
-                      size="lg" 
-                      className="bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800 text-white rounded-xl"
-                      onClick={() => navigate("/login-investor")}
-                    >
-                      <TrendingUp className="h-5 w-5 mr-2" />
-                      FlowPulse Investor
-                    </Button>
-                  </div>
+              <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-0 overflow-hidden relative">
+                <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%20fill-rule%3D%22evenodd%22%3E%3Ccircle%20cx%3D%223%22%20cy%3D%223%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
 
-                  <p className="text-sm text-slate-400 mt-6">
-                    Already a member? <a href="/login" className="text-blue-400 hover:text-blue-300 underline">Sign in here</a>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                <CardContent className="p-8 md:p-12 relative z-10">
+                  <div className="text-center max-w-2xl mx-auto">
+                    <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Lock className="h-8 w-8 text-white" />
+                    </div>
+
+                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+                      Unlock the Full Report
+                    </h3>
+
+                    <p className="text-slate-300 mb-8 text-lg">
+                      Enter your details to access the complete analysis, detailed charts, and actionable recommendations. No account required.
+                    </p>
+
+                    <div className="flex justify-center">
+                      <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8"
+                        onClick={() => setGateOpen(true)}
+                      >
+                        <Lock className="h-5 w-5 mr-2" />
+                        Get Full Access
+                      </Button>
+                    </div>
+
+                    <p className="text-sm text-slate-400 mt-6">
+                      Your details go directly to the FlowPulse research team.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </section>
+
+      <InsightAccessGate
+        open={gateOpen}
+        onOpenChange={setGateOpen}
+        onUnlocked={() => setUnlocked(true)}
+        reportId={report.id}
+        reportTitle={report.title}
+        category={report.category ?? undefined}
+        sourcePage={typeof window !== "undefined" ? window.location.pathname : undefined}
+      />
+
 
       {/* Related content CTA */}
       <section className="bg-slate-50 py-16 border-t border-slate-200">
