@@ -25,15 +25,16 @@ const Pricing = () => {
   const [investorBillingAnnual, setInvestorBillingAnnual] = useState(true);
 
   const handleCheckout = async (
-    priceId: string,
-    mode: 'subscription' | 'payment',
     planName: string,
     platform: 'investor' | 'finance'
   ) => {
     setLoading(`${platform}-${planName}`);
     try {
+      const billingAnnual = platform === 'finance' ? financeBillingAnnual : investorBillingAnnual;
+      const productCount = platform === 'finance' ? selectedFinanceProducts.length : selectedInvestorProducts.length;
+      const seatCount = platform === 'finance' ? financeSeatCount : 1;
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { priceId, mode, planName, platform },
+        body: { planName, platform, billingAnnual, productCount, seatCount },
       });
       if (error) throw error;
       if (data?.url) window.open(data.url, '_blank');
@@ -374,7 +375,7 @@ const Pricing = () => {
                         className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground border-0 text-base py-6 rounded-xl shadow-lg shadow-primary/20 font-semibold"
                         size="lg"
                         disabled={selectedFinanceProducts.length < 1 || loading === 'finance-FlowPulse Finance'}
-                        onClick={() => handleCheckout('price_finance_modular', 'subscription', 'FlowPulse Finance', 'finance')}
+                        onClick={() => handleCheckout('FlowPulse Finance', 'finance')}
                       >
                         {loading === 'finance-FlowPulse Finance' ? 'Loading...' : selectedFinanceProducts.length < 1 ? 'Select at least 1 product' : 'Get Started Now'}
                       </Button>
@@ -550,7 +551,7 @@ const Pricing = () => {
                         className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-90 text-white border-0 text-base py-6 rounded-xl shadow-lg shadow-emerald-500/20 font-semibold"
                         size="lg"
                         disabled={selectedInvestorProducts.length < 1 || loading === 'investor-FlowPulse Investor'}
-                        onClick={() => handleCheckout('price_investor_modular', 'subscription', 'FlowPulse Investor', 'investor')}
+                        onClick={() => handleCheckout('FlowPulse Investor', 'investor')}
                       >
                         {loading === 'investor-FlowPulse Investor' ? 'Loading...' : selectedInvestorProducts.length < 1 ? 'Select at least 1 product' : 'Subscribe Now'}
                       </Button>
