@@ -172,8 +172,8 @@ export function InsightAccessGate({
           </div>
 
           <Button type="submit" disabled={submitting}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white h-11">
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+            className="w-full h-11 bg-white/10 hover:bg-white/20 text-foreground backdrop-blur-md border border-white/20 shadow-lg">
+            {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             Get instant access
           </Button>
         </form>
