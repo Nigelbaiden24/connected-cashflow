@@ -413,6 +413,13 @@ const Index = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            <button
+              onClick={() => navigate('/recruitment?section=about')}
+              className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
+            >
+              About
+            </button>
+
             <button 
               onClick={() => navigate('/contact')}
               className="text-gray-600 text-base font-medium tracking-wide transition-all duration-300 hover:text-primary hover:[text-shadow:0_0_10px_hsl(var(--primary)/0.5),0_0_20px_hsl(var(--primary)/0.3)]"
