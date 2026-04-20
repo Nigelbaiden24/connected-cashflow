@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { RecruitmentHeader } from "@/components/recruitment/RecruitmentHeader";
 import { RecruitmentHero } from "@/components/recruitment/RecruitmentHero";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Features from "./Features";
@@ -24,8 +24,14 @@ import { AboutFlowpulse } from "@/components/recruitment/AboutFlowpulse";
 
 export default function Recruitment() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const [currentSection, setCurrentSection] = useState("home");
+  const [currentSection, setCurrentSection] = useState(searchParams.get("section") || "home");
+
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section) setCurrentSection(section);
+  }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState("");
   const [heroImage, setHeroImage] = useState<string>("");
   const [imageLoading, setImageLoading] = useState(true);
