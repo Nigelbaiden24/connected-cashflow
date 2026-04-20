@@ -115,6 +115,7 @@ const Messages = lazy(() => import("./pages/Messages"));
 const Settings = lazy(() => import("./pages/Settings"));
 const CRM = lazy(() => import("./pages/CRM"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Recruitment = lazy(() => import("./pages/Recruitment"));
 const DocumentEditorPage = lazy(() => import("./pages/DocumentEditorPage"));
 const AutomationCenter = lazy(() => import("./pages/AutomationCenter"));
 const AnalyticsDashboard = lazy(() => import("./pages/AnalyticsDashboard"));
@@ -346,6 +347,8 @@ const App = () => {
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/news" element={<AdminNews />} />
+
+              <Route path="/recruitment" element={<Suspense fallback={<PageLoader />}><Recruitment /></Suspense>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
