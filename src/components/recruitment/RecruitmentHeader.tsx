@@ -160,6 +160,24 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <button
+              onClick={() => onNavigate("about")}
+              className={`flex items-center gap-2 text-base font-bold transition-colors hover:text-primary ${
+                currentSection === "about" ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              About
+            </button>
+
+            <button
+              onClick={() => onNavigate("contact")}
+              className={`flex items-center gap-2 text-base font-bold transition-colors hover:text-primary ${
+                currentSection === "contact" ? "text-primary" : "text-muted-foreground"
+              }`}
+            >
+              Contact
+            </button>
           </nav>
 
           {/* Right Side Actions */}
