@@ -188,22 +188,6 @@ export function RecruitmentHeader({ onNavigate, currentSection }: RecruitmentHea
                 Admin
               </Button>
             )}
-            <Button size="sm" onClick={handleCandidatesClick}>
-              <User className="h-4 w-4 mr-2" />
-              Candidates
-            </Button>
-            <Button size="sm" onClick={handleEmployersClick}>
-              <Building2 className="h-4 w-4 mr-2" />
-              Employers
-            </Button>
-            <Button size="sm" onClick={handleAboutClick}>
-              <User className="h-4 w-4 mr-2" />
-              About Us
-            </Button>
-            <Button size="sm" onClick={handleContactClick}>
-              <Phone className="h-4 w-4 mr-2" />
-              Contact Us
-            </Button>
           </div>
 
           {/* Mobile Menu Button */}
