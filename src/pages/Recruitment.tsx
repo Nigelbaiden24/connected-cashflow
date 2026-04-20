@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { RecruitmentHeader } from "@/components/recruitment/RecruitmentHeader";
 import { RecruitmentHero } from "@/components/recruitment/RecruitmentHero";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Features from "./Features";
