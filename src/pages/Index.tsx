@@ -343,6 +343,16 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
+                      navigate("/recruitment?section=about");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    About
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start font-semibold"
+                    onClick={() => {
                       navigate("/contact");
                       setMobileMenuOpen(false);
                     }}
