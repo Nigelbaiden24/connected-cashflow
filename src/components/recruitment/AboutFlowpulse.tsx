@@ -140,7 +140,7 @@ export function AboutFlowpulse({ onNavigate }: Props) {
           <div className="max-w-4xl">
             <Badge className="bg-white/5 border border-white/10 text-white/80 backdrop-blur-md hover:bg-white/10">
               <Sparkles className="w-3.5 h-3.5 mr-2 text-sky-300" />
-              About The Flowpulse Group
+              About Flowpulse
             </Badge>
 
             <h1 className="mt-6 text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">

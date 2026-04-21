@@ -30,8 +30,12 @@ export default function Recruitment() {
 
   useEffect(() => {
     const section = searchParams.get("section");
+    if (section === "about") {
+      navigate("/about", { replace: true });
+      return;
+    }
     if (section) setCurrentSection(section);
-  }, [searchParams]);
+  }, [searchParams, navigate]);
   const [searchQuery, setSearchQuery] = useState("");
   const [heroImage, setHeroImage] = useState<string>("");
   const [imageLoading, setImageLoading] = useState(true);
