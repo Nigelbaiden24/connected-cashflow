@@ -123,7 +123,7 @@ export function AboutFlowpulse({ onNavigate }: Props) {
   ];
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background text-foreground">
+    <div ref={containerRef} className="min-h-screen bg-[hsl(222,47%,5%)] text-white">
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
