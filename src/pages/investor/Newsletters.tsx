@@ -89,8 +89,22 @@ const Newsletters = () => {
     }
   };
 
-  const handleReadMore = (newsletter: Newsletter) => {
+  const [signedFileUrl, setSignedFileUrl] = useState<string | null>(null);
+
+  const handleReadMore = async (newsletter: Newsletter) => {
     setSelectedNewsletter(newsletter);
+    setSignedFileUrl(null);
+    if (newsletter.file_path) {
+      const { data, error } = await supabase
+        .storage
+        .from('newsletters')
+        .createSignedUrl(newsletter.file_path, 3600);
+      if (error) {
+        toast.error('You need an active newsletter subscription to view this PDF');
+        return;
+      }
+      setSignedFileUrl(data.signedUrl);
+    }
   };
 
   const handleReadFullRoadmap = async () => {
@@ -329,11 +343,17 @@ const Newsletters = () => {
           </DialogHeader>
           {selectedNewsletter?.file_path ? (
             <div className="w-full h-[70vh]">
-              <iframe
-                src={`https://wlsmdcdfyudtvbnbqfmn.supabase.co/storage/v1/object/public/newsletters/${selectedNewsletter.file_path}`}
-                className="w-full h-full border rounded-lg"
-                title={selectedNewsletter.title}
-              />
+              {signedFileUrl ? (
+                <iframe
+                  src={signedFileUrl}
+                  className="w-full h-full border rounded-lg"
+                  title={selectedNewsletter.title}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading secure document…
+                </div>
+              )}
             </div>
           ) : (
             <div className="prose prose-sm dark:prose-invert max-w-none">
