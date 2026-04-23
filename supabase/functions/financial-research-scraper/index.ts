@@ -708,50 +708,55 @@ async function generateAIReport(scrapedData: any[], customPrompt?: string) {
     );
   }
 
-  // Combine all scraped content
+  // Combine all scraped content – give the model substantially more context per source
   const combinedContent = scrapedData
-    .map(d => `### ${d.platform}\n${d.content?.slice(0, 8000) || 'No content'}`)
+    .map((d) => `### ${d.platform ?? d.categoryLabel ?? 'Source'}\n${d.content?.slice(0, 20000) || 'No content'}`)
     .join('\n\n---\n\n');
 
-  const systemPrompt = `You are an elite financial research analyst working for a top-tier investment firm. Your role is to synthesize information from multiple financial data sources and provide actionable intelligence.
+  const systemPrompt = `You are a Managing Director-level investment research analyst at a tier-1 institutional firm (think Goldman Sachs Global Investment Research, BlackRock Investment Institute, Pitchbook). You produce sell-side / buy-side grade research notes that PMs, family offices and sophisticated allocators read before making capital decisions.
 
-Your analysis must be:
-- Data-driven and objective
-- Focused on actionable insights
-- Clear about risks and opportunities
-- Professional and concise
-- Include specific stock tickers when mentioned
+Standards you MUST hit:
+- Cite SPECIFIC numbers from the source data (prices, yields, valuations, raise sizes, multiples, returns, dates) — never vague "strong performance".
+- Name specific companies, tickers, funds, deals, sponsors, lead investors, regions.
+- Quantify risk and upside (base/bull/bear targets where reasonable).
+- Distinguish hard facts from interpretation.
+- Plain English but institutional rigour — no fluff, no marketing tone, no hedging like "could potentially".
+- If the source data is thin, say so explicitly and lower confidence — do not fabricate.`;
 
-You will receive scraped content from various financial platforms. Analyze this data and provide a comprehensive report.`;
-
-  const userPrompt = `Analyze the following scraped financial research data and provide a comprehensive report.
+  const userPrompt = `Produce a deep institutional-grade research note from the scraped data below.
 
 ${customPrompt ? `SPECIAL INSTRUCTIONS: ${customPrompt}\n\n` : ''}
 
-SCRAPED DATA:
-${combinedContent.slice(0, 80000)}
+SCRAPED DATA (multiple sources, opportunity-level articles included):
+${combinedContent.slice(0, 180000)}
 
-Provide your analysis in the following JSON format:
+Return STRICT JSON ONLY (no markdown, no prose outside JSON) with this schema:
 {
-  "summary": "A 2-3 paragraph executive summary of the key findings, including market direction and notable movements",
-  "keyInsights": ["insight1", "insight2", "insight3", "insight4", "insight5"],
-  "marketSentiment": "Bullish/Bearish/Neutral with brief explanation and key drivers",
-  "topStories": ["story1 with relevant tickers", "story2", "story3", "story4", "story5"],
-  "recommendations": ["actionable recommendation 1", "actionable recommendation 2", "actionable recommendation 3"],
+  "summary": "4-6 paragraph executive summary. First paragraph: market regime + direction. Following paragraphs: themes, capital flows, deal activity, valuation context, what's changed this week. Cite specific numbers and names.",
+  "keyInsights": ["8-12 sharp, numerically-grounded insights — each 1-3 sentences"],
+  "marketSentiment": "Bullish | Bearish | Neutral — followed by 2-3 sentence rationale citing specific drivers",
+  "topStories": ["8-12 stories, each formatted as 'Headline — 2-sentence why-it-matters incl. tickers/numbers/sources'"],
+  "recommendations": ["6-10 specific, actionable recommendations for an allocator (e.g. 'Add 50bps to short-duration IG credit via VCSH given 5.1% YTW and falling reinvestment risk')"],
   "opportunityCandidates": [
     {
-      "title": "Concise opportunity name (e.g. 'Acme Corp Series B', 'Brent Crude long', 'XYZ Distressed Bond')",
+      "title": "Specific opportunity name (e.g. 'Anthropic Series F at $61.5B post', 'Brent crude long via USO', 'Blackstone BREIT secondary at 12% discount to NAV')",
       "category": "One of: Stocks & Equities | Crypto & Digital Assets | Real Estate | Fixed Income & Bonds | Commodities | Foreign Exchange | Funds & ETFs | Alternative Investments | ESG & Impact Investing | Private Equity | Venture Capital | Infrastructure | SME Acquisitions | Distressed Assets | Debt & Lending",
-      "asset": "Ticker, fund name, property, or instrument identifier if available",
-      "thesis": "1-2 sentence investment thesis",
-      "key_data": "Headline number(s): price, yield, deal size, valuation, raise amount, etc.",
+      "asset": "Ticker, ISIN, fund code, deal name, property address, instrument identifier",
+      "thesis": "3-5 sentence investment thesis — entry rationale, catalyst, time horizon",
+      "key_data": "Headline numbers as a single string: price, yield, multiple, deal size, valuation, raise, IRR target, etc.",
+      "metrics": { "price": "string|null", "yield": "string|null", "deal_size": "string|null", "valuation": "string|null", "expected_return": "string|null", "horizon": "string|null" },
+      "catalysts": ["2-4 specific upcoming catalysts (earnings date, Fed meeting, deal close, regulatory decision)"],
+      "risks": ["2-4 specific downside risks with severity"],
       "confidence": "high | medium | low",
+      "conviction_score": 1-10,
       "source_url": "The most relevant source URL from the scraped data"
     }
-  ]
+  ],
+  "themes": ["4-8 cross-cutting themes (e.g. 'AI capex re-rating', 'Sterling weakness vs USD', 'PE secondaries discount widening')"],
+  "data_gaps": ["What you'd need to make this an actionable trade (e.g. 'cap table for Acme Series B', 'duration profile of XYZ ETF')"]
 }
 
-Extract 3-8 opportunityCandidates where the source material genuinely surfaces an investable idea, deal, or actionable signal. If no genuine opportunities are present, return an empty array. Respond ONLY with valid JSON, no markdown formatting.`;
+Extract 6-15 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Skip generic news. If only 2 are real, return 2 — do not pad. Respond ONLY with valid JSON.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -761,13 +766,12 @@ Extract 3-8 opportunityCandidates where the source material genuinely surfaces a
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt },
         ],
-        temperature: 0.3,
-        max_tokens: 4000,
+        response_format: { type: 'json_object' },
       }),
     });
 
