@@ -329,6 +329,47 @@ serve(async (req) => {
   }
 });
 
+// Firecrawl v2 search — discovers fresh, opportunity-level articles across the
+// open web for a given category, then returns full markdown for each hit.
+async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, limit = 8) {
+  const queries = [
+    `${categoryLabel} investment opportunities this week`,
+    `${categoryLabel} new deal OR funding round OR acquisition`,
+    `${categoryLabel} top picks analyst rating price target`,
+  ];
+  const allHits: Array<{ url: string; title?: string; description?: string; markdown?: string }> = [];
+  for (const q of queries) {
+    try {
+      const res = await fetch('https://api.firecrawl.dev/v2/search', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: q,
+          limit,
+          tbs: 'qdr:w',
+          scrapeOptions: { formats: ['markdown'], onlyMainContent: true },
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`[search] "${q}" failed ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      const arr = data?.data?.web ?? data?.web ?? data?.data ?? [];
+      if (Array.isArray(arr)) allHits.push(...arr);
+    } catch (e) {
+      console.warn(`[search] "${q}" error`, e);
+    }
+  }
+  // Dedupe by URL
+  const seen = new Set<string>();
+  return allHits.filter((h) => {
+    if (!h?.url || seen.has(h.url)) return false;
+    seen.add(h.url);
+    return true;
+  });
+}
+
 async function scrapeCategoryUrls(categoryKey: string) {
   const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
   if (!firecrawlApiKey) {
@@ -347,23 +388,22 @@ async function scrapeCategoryUrls(categoryKey: string) {
     );
   }
 
-  console.log(`[category:${categoryKey}] scraping ${urls.length} sources`);
+  console.log(`[category:${categoryKey}] deep-scraping ${urls.length} curated sources + web search`);
 
   let combinedContent = '';
   const scrapedUrls: string[] = [];
   const errors: string[] = [];
+  const articleHits: Array<{ url: string; title?: string }> = [];
 
+  // PHASE 1 – curated sources: scrape index page AND extract links to deep-scrape top stories
   for (const u of urls) {
     try {
-      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlApiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: u,
-          formats: ['markdown'],
+          formats: ['markdown', 'links'],
           onlyMainContent: true,
           waitFor: 3000,
         }),
@@ -371,16 +411,80 @@ async function scrapeCategoryUrls(categoryKey: string) {
 
       if (response.ok) {
         const data = await response.json();
-        const markdown = data.data?.markdown || data.markdown || '';
+        const root = data.data ?? data;
+        const markdown: string = root?.markdown || '';
+        const links: string[] = root?.links || [];
         if (markdown && markdown.length > 100) {
-          combinedContent += `\n\n### Source: ${u}\n\n${markdown.slice(0, 12000)}`;
+          combinedContent += `\n\n### Curated source: ${u}\n\n${markdown.slice(0, 8000)}`;
           scrapedUrls.push(u);
         }
+        // Heuristically pick article-style links from the same domain
+        try {
+          const host = new URL(u).hostname.replace(/^www\./, '');
+          const candidates = (Array.isArray(links) ? links : [])
+            .filter((l) => typeof l === 'string')
+            .filter((l) => {
+              try {
+                const lh = new URL(l).hostname.replace(/^www\./, '');
+                if (lh !== host) return false;
+                // Looks like article (has slug with hyphens or numeric date)
+                return /[a-z0-9]-[a-z0-9]/i.test(new URL(l).pathname) && new URL(l).pathname.length > 20;
+              } catch {
+                return false;
+              }
+            })
+            .slice(0, 4);
+          candidates.forEach((c) => articleHits.push({ url: c }));
+        } catch {}
       } else {
         errors.push(`Failed ${u}: ${response.status}`);
       }
     } catch (err) {
       errors.push(`Error ${u}: ${err instanceof Error ? err.message : 'unknown'}`);
+    }
+  }
+
+  // PHASE 2 – web search for opportunity-grade articles (Firecrawl returns full markdown)
+  try {
+    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 6);
+    console.log(`[category:${categoryKey}] search returned ${hits.length} hits`);
+    for (const h of hits.slice(0, 12)) {
+      const md = (h as any).markdown || (h as any).content || '';
+      if (md && md.length > 300) {
+        combinedContent += `\n\n### Article: ${h.title ?? h.url}\nURL: ${h.url}\n\n${md.slice(0, 9000)}`;
+        scrapedUrls.push(h.url);
+      } else {
+        articleHits.push({ url: h.url, title: h.title });
+      }
+    }
+  } catch (e) {
+    errors.push(`Search phase failed: ${e instanceof Error ? e.message : 'unknown'}`);
+  }
+
+  // PHASE 3 – deep scrape any remaining article candidates that lack markdown
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  for (const art of dedupeArticles) {
+    try {
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: art.url,
+          formats: ['markdown'],
+          onlyMainContent: true,
+          waitFor: 2500,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const md = (data.data ?? data)?.markdown || '';
+        if (md && md.length > 400) {
+          combinedContent += `\n\n### Deep article: ${art.title ?? art.url}\nURL: ${art.url}\n\n${md.slice(0, 10000)}`;
+          scrapedUrls.push(art.url);
+        }
+      }
+    } catch (e) {
+      // Non-fatal
     }
   }
 
@@ -391,6 +495,8 @@ async function scrapeCategoryUrls(categoryKey: string) {
     );
   }
 
+  console.log(`[category:${categoryKey}] total chars: ${combinedContent.length} from ${scrapedUrls.length} sources`);
+
   return new Response(
     JSON.stringify({
       success: true,
@@ -398,7 +504,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
       categoryLabel: label,
       platform: label, // compat with existing UI render path
       content: combinedContent,
-      scrapedUrls,
+      scrapedUrls: Array.from(new Set(scrapedUrls)),
       totalUrls: urls.length,
       errors: errors.length > 0 ? errors : undefined,
     }),
