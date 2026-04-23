@@ -650,6 +650,7 @@ export type Database = {
       api_clients: {
         Row: {
           api_key: string
+          api_key_hash: string | null
           company_name: string
           contact_email: string | null
           created_at: string
@@ -663,6 +664,7 @@ export type Database = {
         }
         Insert: {
           api_key?: string
+          api_key_hash?: string | null
           company_name: string
           contact_email?: string | null
           created_at?: string
@@ -676,6 +678,7 @@ export type Database = {
         }
         Update: {
           api_key?: string
+          api_key_hash?: string | null
           company_name?: string
           contact_email?: string | null
           created_at?: string
@@ -787,6 +790,7 @@ export type Database = {
           is_active: boolean
           last_triggered_at: string | null
           secret: string | null
+          secret_hash: string | null
           updated_at: string
           url: string
         }
@@ -799,6 +803,7 @@ export type Database = {
           is_active?: boolean
           last_triggered_at?: string | null
           secret?: string | null
+          secret_hash?: string | null
           updated_at?: string
           url: string
         }
@@ -811,6 +816,7 @@ export type Database = {
           is_active?: boolean
           last_triggered_at?: string | null
           secret?: string | null
+          secret_hash?: string | null
           updated_at?: string
           url?: string
         }
