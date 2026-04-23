@@ -556,7 +556,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-white/[0.08]" />
         </div>
 
-        <div className="relative container mx-auto px-6 py-20 md:py-28 text-center flex flex-col justify-center h-full">
+        <div className="relative container mx-auto px-6 py-20 md:py-28 text-center flex flex-col justify-center h-full pt-32 md:pt-48">
           <div className="max-w-6xl mx-auto space-y-6">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-2xl">
               <span className="font-space-grotesk bg-gradient-to-r from-blue-300 via-cyan-300 to-green-300 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
