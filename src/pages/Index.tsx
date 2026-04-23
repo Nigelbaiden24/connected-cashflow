@@ -559,14 +559,14 @@ const Index = () => {
         <div className="relative container mx-auto px-6 py-20 md:py-28 text-center flex flex-col justify-center h-full">
           <div className="max-w-6xl mx-auto space-y-6">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-2xl">
-              <span className="block mb-2">Transform Your Workflow with</span>
               <span className="font-space-grotesk bg-gradient-to-r from-blue-300 via-cyan-300 to-green-300 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
-                FlowPulse Intelligence
+                FlowPulse
               </span>
+              <span>: Powering the next generation of private market growth</span>
             </h1>
             
             <p className="text-base md:text-lg text-blue-50/90 max-w-2xl mx-auto drop-shadow-lg font-medium">
-              Receive institutional analyst grade investment insights delivered the moment they matter
+              Stay ahead with investment‑ready insights delivered at the exact moment of opportunity
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16 pt-20 md:pt-32">
