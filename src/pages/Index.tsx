@@ -558,12 +558,6 @@ const Index = () => {
 
         <div className="relative container mx-auto px-6 py-20 md:py-28 text-center flex flex-col justify-center h-full">
           <div className="max-w-6xl mx-auto space-y-6">
-            <div className="inline-block px-6 py-3 bg-gradient-to-r from-blue-500/30 to-green-500/30 backdrop-blur-md rounded-full border border-blue-500/40 mb-4">
-              <span className="text-sm font-semibold bg-gradient-to-r from-blue-200 to-green-200 bg-clip-text text-transparent">
-                ✨ AI-Powered Workflow Intelligence
-              </span>
-            </div>
-            
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white drop-shadow-2xl">
               <span className="block mb-2">Transform Your Workflow with</span>
               <span className="font-space-grotesk bg-gradient-to-r from-blue-300 via-cyan-300 to-green-300 bg-clip-text text-transparent animate-gradient drop-shadow-lg">
