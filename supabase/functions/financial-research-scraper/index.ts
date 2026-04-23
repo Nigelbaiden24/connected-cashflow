@@ -329,6 +329,47 @@ serve(async (req) => {
   }
 });
 
+// Firecrawl v2 search — discovers fresh, opportunity-level articles across the
+// open web for a given category, then returns full markdown for each hit.
+async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, limit = 8) {
+  const queries = [
+    `${categoryLabel} investment opportunities this week`,
+    `${categoryLabel} new deal OR funding round OR acquisition`,
+    `${categoryLabel} top picks analyst rating price target`,
+  ];
+  const allHits: Array<{ url: string; title?: string; description?: string; markdown?: string }> = [];
+  for (const q of queries) {
+    try {
+      const res = await fetch('https://api.firecrawl.dev/v2/search', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: q,
+          limit,
+          tbs: 'qdr:w',
+          scrapeOptions: { formats: ['markdown'], onlyMainContent: true },
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`[search] "${q}" failed ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      const arr = data?.data?.web ?? data?.web ?? data?.data ?? [];
+      if (Array.isArray(arr)) allHits.push(...arr);
+    } catch (e) {
+      console.warn(`[search] "${q}" error`, e);
+    }
+  }
+  // Dedupe by URL
+  const seen = new Set<string>();
+  return allHits.filter((h) => {
+    if (!h?.url || seen.has(h.url)) return false;
+    seen.add(h.url);
+    return true;
+  });
+}
+
 async function scrapeCategoryUrls(categoryKey: string) {
   const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
   if (!firecrawlApiKey) {
@@ -347,23 +388,22 @@ async function scrapeCategoryUrls(categoryKey: string) {
     );
   }
 
-  console.log(`[category:${categoryKey}] scraping ${urls.length} sources`);
+  console.log(`[category:${categoryKey}] deep-scraping ${urls.length} curated sources + web search`);
 
   let combinedContent = '';
   const scrapedUrls: string[] = [];
   const errors: string[] = [];
+  const articleHits: Array<{ url: string; title?: string }> = [];
 
+  // PHASE 1 – curated sources: scrape index page AND extract links to deep-scrape top stories
   for (const u of urls) {
     try {
-      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlApiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: u,
-          formats: ['markdown'],
+          formats: ['markdown', 'links'],
           onlyMainContent: true,
           waitFor: 3000,
         }),
@@ -371,16 +411,80 @@ async function scrapeCategoryUrls(categoryKey: string) {
 
       if (response.ok) {
         const data = await response.json();
-        const markdown = data.data?.markdown || data.markdown || '';
+        const root = data.data ?? data;
+        const markdown: string = root?.markdown || '';
+        const links: string[] = root?.links || [];
         if (markdown && markdown.length > 100) {
-          combinedContent += `\n\n### Source: ${u}\n\n${markdown.slice(0, 12000)}`;
+          combinedContent += `\n\n### Curated source: ${u}\n\n${markdown.slice(0, 8000)}`;
           scrapedUrls.push(u);
         }
+        // Heuristically pick article-style links from the same domain
+        try {
+          const host = new URL(u).hostname.replace(/^www\./, '');
+          const candidates = (Array.isArray(links) ? links : [])
+            .filter((l) => typeof l === 'string')
+            .filter((l) => {
+              try {
+                const lh = new URL(l).hostname.replace(/^www\./, '');
+                if (lh !== host) return false;
+                // Looks like article (has slug with hyphens or numeric date)
+                return /[a-z0-9]-[a-z0-9]/i.test(new URL(l).pathname) && new URL(l).pathname.length > 20;
+              } catch {
+                return false;
+              }
+            })
+            .slice(0, 4);
+          candidates.forEach((c) => articleHits.push({ url: c }));
+        } catch {}
       } else {
         errors.push(`Failed ${u}: ${response.status}`);
       }
     } catch (err) {
       errors.push(`Error ${u}: ${err instanceof Error ? err.message : 'unknown'}`);
+    }
+  }
+
+  // PHASE 2 – web search for opportunity-grade articles (Firecrawl returns full markdown)
+  try {
+    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 6);
+    console.log(`[category:${categoryKey}] search returned ${hits.length} hits`);
+    for (const h of hits.slice(0, 12)) {
+      const md = (h as any).markdown || (h as any).content || '';
+      if (md && md.length > 300) {
+        combinedContent += `\n\n### Article: ${h.title ?? h.url}\nURL: ${h.url}\n\n${md.slice(0, 9000)}`;
+        scrapedUrls.push(h.url);
+      } else {
+        articleHits.push({ url: h.url, title: h.title });
+      }
+    }
+  } catch (e) {
+    errors.push(`Search phase failed: ${e instanceof Error ? e.message : 'unknown'}`);
+  }
+
+  // PHASE 3 – deep scrape any remaining article candidates that lack markdown
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  for (const art of dedupeArticles) {
+    try {
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: art.url,
+          formats: ['markdown'],
+          onlyMainContent: true,
+          waitFor: 2500,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const md = (data.data ?? data)?.markdown || '';
+        if (md && md.length > 400) {
+          combinedContent += `\n\n### Deep article: ${art.title ?? art.url}\nURL: ${art.url}\n\n${md.slice(0, 10000)}`;
+          scrapedUrls.push(art.url);
+        }
+      }
+    } catch (e) {
+      // Non-fatal
     }
   }
 
@@ -391,6 +495,8 @@ async function scrapeCategoryUrls(categoryKey: string) {
     );
   }
 
+  console.log(`[category:${categoryKey}] total chars: ${combinedContent.length} from ${scrapedUrls.length} sources`);
+
   return new Response(
     JSON.stringify({
       success: true,
@@ -398,7 +504,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
       categoryLabel: label,
       platform: label, // compat with existing UI render path
       content: combinedContent,
-      scrapedUrls,
+      scrapedUrls: Array.from(new Set(scrapedUrls)),
       totalUrls: urls.length,
       errors: errors.length > 0 ? errors : undefined,
     }),
@@ -431,19 +537,17 @@ async function scrapeAllPlatformUrls(platformName: string) {
   let combinedContent = '';
   const scrapedUrls: string[] = [];
   const errors: string[] = [];
+  const articleHits: Array<{ url: string; title?: string }> = [];
 
   for (const url of urls) {
     try {
       console.log(`Scraping: ${url}`);
-      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${firecrawlApiKey}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url: url,
-          formats: ['markdown'],
+          formats: ['markdown', 'links'],
           onlyMainContent: true,
           waitFor: 3000,
         }),
@@ -451,17 +555,54 @@ async function scrapeAllPlatformUrls(platformName: string) {
 
       if (response.ok) {
         const data = await response.json();
-        const markdown = data.data?.markdown || data.markdown || '';
+        const root = data.data ?? data;
+        const markdown: string = root?.markdown || '';
+        const links: string[] = root?.links || [];
         if (markdown && markdown.length > 100) {
-          combinedContent += `\n\n### Source: ${url}\n\n${markdown.slice(0, 15000)}`;
+          combinedContent += `\n\n### Source: ${url}\n\n${markdown.slice(0, 9000)}`;
           scrapedUrls.push(url);
         }
+        try {
+          const host = new URL(url).hostname.replace(/^www\./, '');
+          (Array.isArray(links) ? links : [])
+            .filter((l) => typeof l === 'string')
+            .filter((l) => {
+              try {
+                const lh = new URL(l).hostname.replace(/^www\./, '');
+                return lh === host && /[a-z0-9]-[a-z0-9]/i.test(new URL(l).pathname) && new URL(l).pathname.length > 20;
+              } catch {
+                return false;
+              }
+            })
+            .slice(0, 3)
+            .forEach((l) => articleHits.push({ url: l }));
+        } catch {}
       } else {
         errors.push(`Failed to scrape ${url}: ${response.status}`);
       }
     } catch (error) {
       errors.push(`Error scraping ${url}: ${error instanceof Error ? error.message : 'Unknown'}`);
     }
+  }
+
+  // Deep-scrape article candidates for richer opportunity-level detail
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  for (const art of dedupeArticles) {
+    try {
+      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: art.url, formats: ['markdown'], onlyMainContent: true, waitFor: 2500 }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const md = (data.data ?? data)?.markdown || '';
+        if (md && md.length > 400) {
+          combinedContent += `\n\n### Deep article: ${art.url}\n\n${md.slice(0, 10000)}`;
+          scrapedUrls.push(art.url);
+        }
+      }
+    } catch {}
   }
 
   if (!combinedContent) {
@@ -567,50 +708,55 @@ async function generateAIReport(scrapedData: any[], customPrompt?: string) {
     );
   }
 
-  // Combine all scraped content
+  // Combine all scraped content – give the model substantially more context per source
   const combinedContent = scrapedData
-    .map(d => `### ${d.platform}\n${d.content?.slice(0, 8000) || 'No content'}`)
+    .map((d) => `### ${d.platform ?? d.categoryLabel ?? 'Source'}\n${d.content?.slice(0, 20000) || 'No content'}`)
     .join('\n\n---\n\n');
 
-  const systemPrompt = `You are an elite financial research analyst working for a top-tier investment firm. Your role is to synthesize information from multiple financial data sources and provide actionable intelligence.
+  const systemPrompt = `You are a Managing Director-level investment research analyst at a tier-1 institutional firm (think Goldman Sachs Global Investment Research, BlackRock Investment Institute, Pitchbook). You produce sell-side / buy-side grade research notes that PMs, family offices and sophisticated allocators read before making capital decisions.
 
-Your analysis must be:
-- Data-driven and objective
-- Focused on actionable insights
-- Clear about risks and opportunities
-- Professional and concise
-- Include specific stock tickers when mentioned
+Standards you MUST hit:
+- Cite SPECIFIC numbers from the source data (prices, yields, valuations, raise sizes, multiples, returns, dates) — never vague "strong performance".
+- Name specific companies, tickers, funds, deals, sponsors, lead investors, regions.
+- Quantify risk and upside (base/bull/bear targets where reasonable).
+- Distinguish hard facts from interpretation.
+- Plain English but institutional rigour — no fluff, no marketing tone, no hedging like "could potentially".
+- If the source data is thin, say so explicitly and lower confidence — do not fabricate.`;
 
-You will receive scraped content from various financial platforms. Analyze this data and provide a comprehensive report.`;
-
-  const userPrompt = `Analyze the following scraped financial research data and provide a comprehensive report.
+  const userPrompt = `Produce a deep institutional-grade research note from the scraped data below.
 
 ${customPrompt ? `SPECIAL INSTRUCTIONS: ${customPrompt}\n\n` : ''}
 
-SCRAPED DATA:
-${combinedContent.slice(0, 80000)}
+SCRAPED DATA (multiple sources, opportunity-level articles included):
+${combinedContent.slice(0, 180000)}
 
-Provide your analysis in the following JSON format:
+Return STRICT JSON ONLY (no markdown, no prose outside JSON) with this schema:
 {
-  "summary": "A 2-3 paragraph executive summary of the key findings, including market direction and notable movements",
-  "keyInsights": ["insight1", "insight2", "insight3", "insight4", "insight5"],
-  "marketSentiment": "Bullish/Bearish/Neutral with brief explanation and key drivers",
-  "topStories": ["story1 with relevant tickers", "story2", "story3", "story4", "story5"],
-  "recommendations": ["actionable recommendation 1", "actionable recommendation 2", "actionable recommendation 3"],
+  "summary": "4-6 paragraph executive summary. First paragraph: market regime + direction. Following paragraphs: themes, capital flows, deal activity, valuation context, what's changed this week. Cite specific numbers and names.",
+  "keyInsights": ["8-12 sharp, numerically-grounded insights — each 1-3 sentences"],
+  "marketSentiment": "Bullish | Bearish | Neutral — followed by 2-3 sentence rationale citing specific drivers",
+  "topStories": ["8-12 stories, each formatted as 'Headline — 2-sentence why-it-matters incl. tickers/numbers/sources'"],
+  "recommendations": ["6-10 specific, actionable recommendations for an allocator (e.g. 'Add 50bps to short-duration IG credit via VCSH given 5.1% YTW and falling reinvestment risk')"],
   "opportunityCandidates": [
     {
-      "title": "Concise opportunity name (e.g. 'Acme Corp Series B', 'Brent Crude long', 'XYZ Distressed Bond')",
+      "title": "Specific opportunity name (e.g. 'Anthropic Series F at $61.5B post', 'Brent crude long via USO', 'Blackstone BREIT secondary at 12% discount to NAV')",
       "category": "One of: Stocks & Equities | Crypto & Digital Assets | Real Estate | Fixed Income & Bonds | Commodities | Foreign Exchange | Funds & ETFs | Alternative Investments | ESG & Impact Investing | Private Equity | Venture Capital | Infrastructure | SME Acquisitions | Distressed Assets | Debt & Lending",
-      "asset": "Ticker, fund name, property, or instrument identifier if available",
-      "thesis": "1-2 sentence investment thesis",
-      "key_data": "Headline number(s): price, yield, deal size, valuation, raise amount, etc.",
+      "asset": "Ticker, ISIN, fund code, deal name, property address, instrument identifier",
+      "thesis": "3-5 sentence investment thesis — entry rationale, catalyst, time horizon",
+      "key_data": "Headline numbers as a single string: price, yield, multiple, deal size, valuation, raise, IRR target, etc.",
+      "metrics": { "price": "string|null", "yield": "string|null", "deal_size": "string|null", "valuation": "string|null", "expected_return": "string|null", "horizon": "string|null" },
+      "catalysts": ["2-4 specific upcoming catalysts (earnings date, Fed meeting, deal close, regulatory decision)"],
+      "risks": ["2-4 specific downside risks with severity"],
       "confidence": "high | medium | low",
+      "conviction_score": 1-10,
       "source_url": "The most relevant source URL from the scraped data"
     }
-  ]
+  ],
+  "themes": ["4-8 cross-cutting themes (e.g. 'AI capex re-rating', 'Sterling weakness vs USD', 'PE secondaries discount widening')"],
+  "data_gaps": ["What you'd need to make this an actionable trade (e.g. 'cap table for Acme Series B', 'duration profile of XYZ ETF')"]
 }
 
-Extract 3-8 opportunityCandidates where the source material genuinely surfaces an investable idea, deal, or actionable signal. If no genuine opportunities are present, return an empty array. Respond ONLY with valid JSON, no markdown formatting.`;
+Extract 6-15 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Skip generic news. If only 2 are real, return 2 — do not pad. Respond ONLY with valid JSON.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -620,13 +766,12 @@ Extract 3-8 opportunityCandidates where the source material genuinely surfaces a
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'google/gemini-2.5-pro',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt },
         ],
-        temperature: 0.3,
-        max_tokens: 4000,
+        response_format: { type: 'json_object' },
       }),
     });
 
