@@ -1,13 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Search, MapPin, X, SlidersHorizontal, Globe, TrendingUp, DollarSign, Star } from "lucide-react";
-import worldMapImg from "@/assets/world-map-3d.jpg";
+import { Search, MapPin, X, SlidersHorizontal, Globe, TrendingUp, DollarSign, Star, Loader2, Crosshair } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl, CircleMarker } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface OpportunityProduct {
   id: string;
@@ -22,74 +23,33 @@ interface OpportunityProduct {
   region?: string;
   thumbnail_url: string;
   analyst_rating: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface OpportunityWorldMapProps {
   opportunities: OpportunityProduct[];
 }
 
-// Calibrated to the 3D terrain world map image (percentage-based)
-const REGIONS: Record<string, { x: number; y: number; label: string; countries: string[]; color: string }> = {
-  uk:              { x: 46, y: 20, label: "United Kingdom", countries: ["UK", "United Kingdom", "England", "Scotland", "Wales"], color: "59, 130, 246" },
-  ireland:         { x: 43.5, y: 22, label: "Ireland", countries: ["Ireland"], color: "16, 185, 129" },
-  western_europe:  { x: 48, y: 27, label: "Western Europe", countries: ["France", "Germany", "Netherlands", "Belgium", "Luxembourg", "Switzerland", "Austria"], color: "99, 102, 241" },
-  southern_europe: { x: 50, y: 33, label: "Southern Europe", countries: ["Spain", "Portugal", "Italy", "Greece"], color: "245, 158, 11" },
-  northern_europe: { x: 51, y: 14, label: "Northern Europe", countries: ["Sweden", "Norway", "Denmark", "Finland", "Iceland"], color: "6, 182, 212" },
-  eastern_europe:  { x: 55, y: 22, label: "Eastern Europe", countries: ["Poland", "Czech Republic", "Hungary", "Romania", "Bulgaria"], color: "168, 85, 247" },
-  russia:          { x: 68, y: 12, label: "Russia", countries: ["Russia"], color: "120, 120, 180" },
-  middle_east:     { x: 60, y: 40, label: "Middle East", countries: ["UAE", "Dubai", "Saudi Arabia", "Qatar", "Bahrain", "Israel", "Turkey"], color: "239, 68, 68" },
-  north_africa:    { x: 48, y: 42, label: "North Africa", countries: ["Morocco", "Egypt", "Tunisia", "Algeria", "Libya"], color: "234, 179, 8" },
-  sub_saharan_africa: { x: 51, y: 62, label: "Sub-Saharan Africa", countries: ["South Africa", "Nigeria", "Kenya", "Ghana", "Tanzania"], color: "34, 197, 94" },
-  south_asia:      { x: 67, y: 42, label: "South Asia", countries: ["India", "Pakistan", "Bangladesh", "Sri Lanka"], color: "249, 115, 22" },
-  east_asia:       { x: 77, y: 26, label: "East Asia", countries: ["China", "Japan", "South Korea", "Taiwan", "Hong Kong"], color: "236, 72, 153" },
-  southeast_asia:  { x: 76, y: 50, label: "Southeast Asia", countries: ["Singapore", "Malaysia", "Thailand", "Vietnam", "Indonesia", "Philippines"], color: "20, 184, 166" },
-  oceania:         { x: 84, y: 74, label: "Oceania", countries: ["Australia", "New Zealand"], color: "251, 146, 60" },
-  north_america:   { x: 20, y: 26, label: "North America", countries: ["USA", "United States", "Canada", "US"], color: "37, 99, 235" },
-  central_america: { x: 20, y: 46, label: "Central America", countries: ["Mexico", "Costa Rica", "Panama"], color: "22, 163, 74" },
-  south_america:   { x: 30, y: 68, label: "South America", countries: ["Brazil", "Argentina", "Chile", "Colombia", "Peru"], color: "147, 51, 234" },
-  caribbean:       { x: 25, y: 41, label: "Caribbean", countries: ["Jamaica", "Bahamas", "Barbados", "Trinidad"], color: "14, 165, 233" },
+// Approximate coordinates for fallback geocoding when an opportunity lacks lat/lng
+const COUNTRY_COORDS: Record<string, [number, number]> = {
+  "uk": [54.5, -3], "united kingdom": [54.5, -3], "england": [52.5, -1.5], "scotland": [56.8, -4.2], "wales": [52.4, -3.8],
+  "ireland": [53.4, -8],
+  "france": [46.2, 2.2], "germany": [51.1, 10.4], "spain": [40.4, -3.7], "italy": [42.5, 12.5], "portugal": [39.4, -8.2],
+  "netherlands": [52.1, 5.3], "belgium": [50.5, 4.5], "switzerland": [46.8, 8.2], "austria": [47.5, 14.5],
+  "sweden": [60.1, 18.6], "norway": [60.5, 8.5], "denmark": [56.0, 9.5], "finland": [61.9, 25.7],
+  "poland": [51.9, 19.1], "russia": [61.5, 100],
+  "uae": [23.4, 53.8], "dubai": [25.2, 55.3], "saudi arabia": [23.9, 45.1], "qatar": [25.4, 51.2],
+  "turkey": [38.9, 35.2], "israel": [31.0, 34.9],
+  "egypt": [26.8, 30.8], "morocco": [31.8, -7.1], "south africa": [-30.6, 22.9], "nigeria": [9.1, 8.7], "kenya": [-0.0, 37.9],
+  "india": [20.6, 78.9], "china": [35.9, 104.2], "japan": [36.2, 138.3], "south korea": [35.9, 127.8],
+  "singapore": [1.35, 103.8], "malaysia": [4.2, 101.9], "thailand": [15.9, 100.9], "vietnam": [14.1, 108.3],
+  "indonesia": [-0.8, 113.9], "philippines": [12.9, 121.8], "hong kong": [22.4, 114.1], "taiwan": [23.7, 121.0],
+  "australia": [-25.3, 133.8], "new zealand": [-40.9, 174.9],
+  "usa": [37.1, -95.7], "united states": [37.1, -95.7], "us": [37.1, -95.7], "canada": [56.1, -106.3],
+  "mexico": [23.6, -102.6], "brazil": [-14.2, -51.9], "argentina": [-38.4, -63.6], "chile": [-35.7, -71.5],
+  "colombia": [4.6, -74.3], "peru": [-9.2, -75.0],
 };
-
-// Country-level labels overlaid on the map for geographic context
-const COUNTRY_LABELS: { x: number; y: number; name: string; size?: string }[] = [
-  { x: 20, y: 20, name: "Canada", size: "lg" },
-  { x: 18, y: 32, name: "United States", size: "lg" },
-  { x: 14, y: 46, name: "Mexico" },
-  { x: 30, y: 56, name: "Brazil", size: "lg" },
-  { x: 26, y: 74, name: "Argentina" },
-  { x: 23, y: 68, name: "Chile" },
-  { x: 27, y: 50, name: "Colombia" },
-  { x: 24, y: 54, name: "Peru" },
-  { x: 46, y: 19, name: "UK" },
-  { x: 47, y: 25, name: "France" },
-  { x: 49, y: 22, name: "Germany" },
-  { x: 48, y: 32, name: "Spain" },
-  { x: 51, y: 28, name: "Italy" },
-  { x: 53, y: 14, name: "Sweden" },
-  { x: 55, y: 20, name: "Poland" },
-  { x: 68, y: 10, name: "Russia", size: "lg" },
-  { x: 58, y: 36, name: "Turkey" },
-  { x: 61, y: 42, name: "Saudi Arabia" },
-  { x: 63, y: 39, name: "UAE" },
-  { x: 55, y: 42, name: "Egypt" },
-  { x: 50, y: 52, name: "Nigeria" },
-  { x: 55, y: 58, name: "Kenya" },
-  { x: 52, y: 72, name: "South Africa" },
-  { x: 67, y: 36, name: "India", size: "lg" },
-  { x: 77, y: 24, name: "China", size: "lg" },
-  { x: 82, y: 24, name: "Japan" },
-  { x: 80, y: 28, name: "S. Korea" },
-  { x: 75, y: 48, name: "Thailand" },
-  { x: 78, y: 54, name: "Indonesia" },
-  { x: 83, y: 52, name: "Philippines" },
-  { x: 76, y: 44, name: "Vietnam" },
-  { x: 76, y: 50, name: "Malaysia" },
-  { x: 84, y: 70, name: "Australia", size: "lg" },
-  { x: 90, y: 78, name: "New Zealand" },
-  { x: 44, y: 42, name: "Morocco" },
-  { x: 50, y: 46, name: "Libya" },
-  { x: 43, y: 56, name: "Ghana" },
-];
 
 const formatPrice = (price: number, currency: string) =>
   new Intl.NumberFormat("en-GB", { style: "currency", currency: currency || "GBP", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
@@ -99,6 +59,64 @@ const ratingColor = (rating: string) => {
   if (rating === "hold") return "text-amber-400";
   return "text-red-400";
 };
+
+// Haversine distance in km
+function distanceKm(a: [number, number], b: [number, number]) {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(b[0] - a[0]);
+  const dLon = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+function geocodeOpportunity(opp: OpportunityProduct): [number, number] | null {
+  if (opp.latitude && opp.longitude) return [Number(opp.latitude), Number(opp.longitude)];
+  const candidates = [opp.city, opp.country, opp.location, opp.region].filter(Boolean) as string[];
+  for (const c of candidates) {
+    const key = c.toLowerCase().trim();
+    if (COUNTRY_COORDS[key]) return COUNTRY_COORDS[key];
+    for (const k of Object.keys(COUNTRY_COORDS)) {
+      if (key.includes(k)) return COUNTRY_COORDS[k];
+    }
+  }
+  return null;
+}
+
+// Build a custom branded marker icon
+function buildIcon(color: string, count: number) {
+  return L.divIcon({
+    className: "fp-opp-marker",
+    html: `<div style="
+      position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, ${color}, ${color}cc);
+      box-shadow:0 0 16px ${color}80, 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3);
+      border:2px solid rgba(255,255,255,0.5);color:white;font-weight:700;font-size:13px;font-family:ui-sans-serif,system-ui;">
+      ${count}
+      <span style="position:absolute;inset:-8px;border-radius:50%;background:${color}33;animation:fp-pulse 2.5s ease-out infinite;"></span>
+    </div>`,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+  });
+}
+
+// Component to fly map to a location when search is set
+function MapFlyTo({ position, zoom }: { position: [number, number] | null; zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (position) map.flyTo(position, zoom, { duration: 1.4 });
+  }, [position, zoom, map]);
+  return null;
+}
+
+interface GeocodeResult {
+  display_name: string;
+  lat: string;
+  lon: string;
+}
 
 export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps) {
   const navigate = useNavigate();
@@ -110,56 +128,122 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
 
-  const regionData = useMemo(() => {
-    const grouped: Record<string, OpportunityProduct[]> = {};
-    opportunities.forEach(opp => {
-      const loc = (opp.country || opp.location || "").toLowerCase();
-      for (const [key, region] of Object.entries(REGIONS)) {
-        if (region.countries.some(c => loc.includes(c.toLowerCase()))) {
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(opp);
-          return;
-        }
-      }
-      if (!grouped["uk"]) grouped["uk"] = [];
-      grouped["uk"].push(opp);
-    });
-    return grouped;
+  // Location search
+  const [locationQuery, setLocationQuery] = useState("");
+  const [searchedPoint, setSearchedPoint] = useState<[number, number] | null>(null);
+  const [searchedLabel, setSearchedLabel] = useState<string>("");
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+  const [radiusKm, setRadiusKm] = useState(50);
+
+  // Pre-compute coordinates for each opportunity
+  const geocoded = useMemo(() => {
+    return opportunities
+      .map(o => ({ opp: o, coords: geocodeOpportunity(o) }))
+      .filter((x): x is { opp: OpportunityProduct; coords: [number, number] } => !!x.coords);
   }, [opportunities]);
 
-  const filteredRegionData = useMemo(() => {
-    const result: Record<string, OpportunityProduct[]> = {};
-    for (const [key, opps] of Object.entries(regionData)) {
-      const filtered = opps.filter(opp => {
-        if (mapSearch && !opp.title.toLowerCase().includes(mapSearch.toLowerCase()) && !opp.location?.toLowerCase().includes(mapSearch.toLowerCase())) return false;
-        if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
-        if (priceFilter === "under100k" && opp.price > 100000) return false;
-        if (priceFilter === "100k-500k" && (opp.price < 100000 || opp.price > 500000)) return false;
-        if (priceFilter === "500k-1m" && (opp.price < 500000 || opp.price > 1000000)) return false;
-        if (priceFilter === "over1m" && opp.price < 1000000) return false;
-        if (distanceFilter === "local" && !REGIONS[key]?.countries.some(c => ["UK", "United Kingdom", "England", "Scotland", "Wales"].includes(c))) return false;
-        if (distanceFilter === "europe" && !["uk", "ireland", "western_europe", "southern_europe", "northern_europe", "eastern_europe"].includes(key)) return false;
-        return true;
-      });
-      if (filtered.length > 0) result[key] = filtered;
-    }
-    return result;
-  }, [regionData, mapSearch, categoryFilter, priceFilter, distanceFilter]);
+  const filteredGeocoded = useMemo(() => {
+    return geocoded.filter(({ opp }) => {
+      if (mapSearch && !opp.title.toLowerCase().includes(mapSearch.toLowerCase()) && !opp.location?.toLowerCase().includes(mapSearch.toLowerCase())) return false;
+      if (categoryFilter !== "all" && opp.category !== categoryFilter) return false;
+      if (priceFilter === "under100k" && opp.price > 100000) return false;
+      if (priceFilter === "100k-500k" && (opp.price < 100000 || opp.price > 500000)) return false;
+      if (priceFilter === "500k-1m" && (opp.price < 500000 || opp.price > 1000000)) return false;
+      if (priceFilter === "over1m" && opp.price < 1000000) return false;
+      const ukList = ["UK", "United Kingdom", "England", "Scotland", "Wales"];
+      const inUK = ukList.some(c => (opp.country || opp.location || "").toLowerCase().includes(c.toLowerCase()));
+      if (distanceFilter === "local" && !inUK) return false;
+      return true;
+    });
+  }, [geocoded, mapSearch, categoryFilter, priceFilter, distanceFilter]);
 
-  const totalFiltered = Object.values(filteredRegionData).reduce((sum, arr) => sum + arr.length, 0);
-  const totalValue = Object.values(filteredRegionData).flat().reduce((sum, o) => sum + (o.price || 0), 0);
+  // Cluster nearby opportunities into single markers (within ~1.5° lat/lng grid)
+  const clustered = useMemo(() => {
+    const groups = new Map<string, { coords: [number, number]; opps: OpportunityProduct[] }>();
+    filteredGeocoded.forEach(({ opp, coords }) => {
+      const key = `${Math.round(coords[0] * 2) / 2}_${Math.round(coords[1] * 2) / 2}`;
+      const existing = groups.get(key);
+      if (existing) {
+        existing.opps.push(opp);
+      } else {
+        groups.set(key, { coords, opps: [opp] });
+      }
+    });
+    return Array.from(groups.values());
+  }, [filteredGeocoded]);
+
+  // Nearby opportunities relative to searched point
+  const nearbyOpportunities = useMemo(() => {
+    if (!searchedPoint) return [];
+    return filteredGeocoded
+      .map(({ opp, coords }) => ({ opp, coords, distance: distanceKm(searchedPoint, coords) }))
+      .filter(x => x.distance <= radiusKm * 5) // show wider list, sorted
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 30);
+  }, [filteredGeocoded, searchedPoint, radiusKm]);
+
+  const totalFiltered = filteredGeocoded.length;
+  const totalValue = filteredGeocoded.reduce((sum, { opp }) => sum + (opp.price || 0), 0);
   const categories = [...new Set(opportunities.map(o => o.category))];
   const activeFilters = [categoryFilter !== "all", priceFilter !== "all", distanceFilter !== "all"].filter(Boolean).length;
 
+  const handleLocationSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!locationQuery.trim()) return;
+    setIsGeocoding(true);
+    setGeocodeError(null);
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(locationQuery)}`;
+      const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+      const data: GeocodeResult[] = await res.json();
+      if (data.length === 0) {
+        setGeocodeError("No location found. Try a city, town or postcode.");
+        return;
+      }
+      const point: [number, number] = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      setSearchedPoint(point);
+      setSearchedLabel(data[0].display_name);
+    } catch (err) {
+      setGeocodeError("Search failed. Please try again.");
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
+  const useMyLocation = () => {
+    if (!navigator.geolocation) return;
+    setIsGeocoding(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setSearchedPoint([pos.coords.latitude, pos.coords.longitude]);
+        setSearchedLabel("Your location");
+        setIsGeocoding(false);
+      },
+      () => {
+        setGeocodeError("Could not get your location.");
+        setIsGeocoding(false);
+      }
+    );
+  };
+
+  const clearSearchedPoint = () => {
+    setSearchedPoint(null);
+    setSearchedLabel("");
+    setLocationQuery("");
+    setGeocodeError(null);
+  };
+
   return (
     <div className="space-y-4">
+      <style>{`@keyframes fp-pulse {0%{transform:scale(0.95);opacity:0.7}80%,100%{transform:scale(1.6);opacity:0}}`}</style>
+
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="rounded-xl border border-border/40 bg-gradient-to-br from-card to-card/80 p-3 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10"><Globe className="h-4 w-4 text-primary" /></div>
-          <div><p className="text-xs text-muted-foreground">Regions</p><p className="text-lg font-bold">{Object.keys(filteredRegionData).length}</p></div>
+          <div><p className="text-xs text-muted-foreground">Mapped</p><p className="text-lg font-bold">{filteredGeocoded.length}</p></div>
         </div>
         <div className="rounded-xl border border-border/40 bg-gradient-to-br from-card to-card/80 p-3 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-chart-1/10"><TrendingUp className="h-4 w-4 text-chart-1" /></div>
@@ -175,19 +259,55 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
+      {/* Location Search Bar */}
+      <form onSubmit={handleLocationSearch} className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
+          <Input
+            placeholder="Enter a town, city or postcode (e.g. Manchester, M1 1AA)…"
+            value={locationQuery}
+            onChange={(e) => setLocationQuery(e.target.value)}
+            className="pl-10 bg-card/50 border-primary/30 focus-visible:ring-primary"
+          />
+        </div>
+        <Select value={String(radiusKm)} onValueChange={(v) => setRadiusKm(Number(v))}>
+          <SelectTrigger className="w-full sm:w-[140px] bg-card/50">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">Within 10 km</SelectItem>
+            <SelectItem value="25">Within 25 km</SelectItem>
+            <SelectItem value="50">Within 50 km</SelectItem>
+            <SelectItem value="100">Within 100 km</SelectItem>
+            <SelectItem value="500">Within 500 km</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button type="submit" disabled={isGeocoding} className="gap-1.5">
+          {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          Find Nearby
+        </Button>
+        <Button type="button" variant="outline" onClick={useMyLocation} className="gap-1.5">
+          <Crosshair className="h-4 w-4" /> Use My Location
+        </Button>
+        {searchedPoint && (
+          <Button type="button" variant="ghost" onClick={clearSearchedPoint} className="gap-1.5">
+            <X className="h-4 w-4" /> Clear
+          </Button>
+        )}
+      </form>
+      {geocodeError && <p className="text-xs text-destructive">{geocodeError}</p>}
+
+      {/* Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search opportunities by name or location..." value={mapSearch} onChange={e => setMapSearch(e.target.value)} className="pl-10 bg-card/50 border-border/40" />
+          <Input placeholder="Filter opportunities by name…" value={mapSearch} onChange={e => setMapSearch(e.target.value)} className="pl-10 bg-card/50 border-border/40" />
         </div>
         <Select value={distanceFilter} onValueChange={setDistanceFilter}>
-          <SelectTrigger className="w-[160px] bg-card/50 border-border/40"><SelectValue placeholder="Distance" /></SelectTrigger>
+          <SelectTrigger className="w-[160px] bg-card/50 border-border/40"><SelectValue placeholder="Region" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Regions</SelectItem>
             <SelectItem value="local">UK Only</SelectItem>
-            <SelectItem value="europe">Europe</SelectItem>
-            <SelectItem value="global">Global</SelectItem>
           </SelectContent>
         </Select>
         <Button variant={showFilters ? "default" : "outline"} size="sm" onClick={() => setShowFilters(!showFilters)} className="gap-1.5 h-10">
@@ -230,210 +350,188 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
         </Card>
       )}
 
-      {/* World Map */}
+      {/* Interactive Satellite Map */}
       <Card className="border-border/30 overflow-hidden rounded-2xl shadow-2xl">
         <CardContent className="p-0">
-          <div className="relative w-full">
-            <img
-              src={worldMapImg}
-              alt="3D World Map - FlowPulse Global Intelligence"
-              className="w-full h-auto block select-none pointer-events-none"
-              draggable={false}
-              width={1920}
-              height={960}
-            />
-
-            {/* Country name labels */}
-            {COUNTRY_LABELS.map((cl) => (
-              <div
-                key={cl.name}
-                className="absolute pointer-events-auto cursor-default select-none transition-all duration-200"
-                style={{
-                  left: `${cl.x}%`,
-                  top: `${cl.y}%`,
-                  transform: "translate(-50%, -50%)",
-                  zIndex: hoveredCountry === cl.name ? 30 : 5,
-                }}
-                onMouseEnter={() => setHoveredCountry(cl.name)}
-                onMouseLeave={() => setHoveredCountry(null)}
-              >
-                <span
-                  className="transition-all duration-200"
-                  style={{
-                    fontSize: hoveredCountry === cl.name ? "13px" : cl.size === "lg" ? "10px" : "8px",
-                    fontWeight: hoveredCountry === cl.name ? 700 : cl.size === "lg" ? 600 : 500,
-                    color: hoveredCountry === cl.name ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.6)",
-                    textShadow: hoveredCountry === cl.name
-                      ? "0 0 12px rgba(59,130,246,0.8), 0 1px 4px rgba(0,0,0,0.9), 0 0 24px rgba(59,130,246,0.4)"
-                      : "0 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.5)",
-                    letterSpacing: hoveredCountry === cl.name ? "0.8px" : "0.4px",
-                  }}
-                >
-                  {cl.name}
-                </span>
-              </div>
-            ))}
-
-            {/* Interactive region dots */}
-            {Object.entries(REGIONS).map(([key, region]) => {
-              const opps = filteredRegionData[key];
-              const hasOpps = opps && opps.length > 0;
-
-              if (!hasOpps) {
-                return (
-                  <div
-                    key={key}
-                    className="absolute w-2.5 h-2.5 rounded-full"
-                    style={{
-                      left: `${region.x}%`,
-                      top: `${region.y}%`,
-                      transform: "translate(-50%, -50%)",
-                      background: "rgba(100,200,255,0.2)",
-                      border: "1px solid rgba(100,200,255,0.25)",
-                      zIndex: 6,
-                    }}
+          <div className="relative w-full" style={{ height: "560px" }}>
+            <MapContainer
+              center={[20, 0]}
+              zoom={2}
+              minZoom={2}
+              maxZoom={19}
+              scrollWheelZoom
+              worldCopyJump
+              style={{ height: "100%", width: "100%", background: "hsl(var(--background))" }}
+            >
+              <LayersControl position="topright">
+                <LayersControl.BaseLayer checked name="Satellite (Detailed)">
+                  {/* Esri World Imagery: deep zoom satellite — no API key required */}
+                  <TileLayer
+                    attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
+                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                    maxZoom={19}
                   />
-                );
-              }
-
-              const dotSize = Math.min(36, 18 + opps.length * 3);
-
-              return (
-                <div
-                  key={key}
-                  className="absolute"
-                  style={{
-                    left: `${region.x}%`,
-                    top: `${region.y}%`,
-                    transform: "translate(-50%, -50%)",
-                    zIndex: 10,
-                  }}
-                >
-                  {/* Pulse ring */}
-                  <div
-                    className="absolute rounded-full animate-ping"
-                    style={{
-                      width: dotSize + 16,
-                      height: dotSize + 16,
-                      left: -(dotSize + 16) / 2 + dotSize / 2,
-                      top: -(dotSize + 16) / 2 + dotSize / 2,
-                      background: `rgba(${region.color}, 0.2)`,
-                      animationDuration: "2.5s",
-                    }}
+                </LayersControl.BaseLayer>
+                <LayersControl.BaseLayer name="Streets">
+                  <TileLayer
+                    attribution='&copy; OpenStreetMap contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    maxZoom={19}
                   />
+                </LayersControl.BaseLayer>
+                <LayersControl.BaseLayer name="Dark">
+                  <TileLayer
+                    attribution='&copy; CARTO'
+                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    maxZoom={19}
+                  />
+                </LayersControl.BaseLayer>
+                {/* Labels overlay so satellite has place names when zoomed in */}
+                <LayersControl.Overlay checked name="Place Labels">
+                  <TileLayer
+                    attribution='Labels &copy; Esri'
+                    url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                    maxZoom={19}
+                  />
+                </LayersControl.Overlay>
+              </LayersControl>
 
-                  <HoverCard openDelay={80} closeDelay={250}>
-                    <HoverCardTrigger asChild>
-                      <button
-                        className="relative rounded-full flex items-center justify-center text-white font-bold cursor-pointer transition-all duration-300 hover:scale-125"
-                        style={{
-                          width: dotSize,
-                          height: dotSize,
-                          fontSize: Math.max(10, dotSize * 0.35),
-                          background: `radial-gradient(circle at 35% 35%, rgba(${region.color}, 1), rgba(${region.color}, 0.7))`,
-                          boxShadow: `0 0 16px rgba(${region.color}, 0.5), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.3)`,
-                          border: "2px solid rgba(255,255,255,0.4)",
-                        }}
-                        aria-label={`${region.label}: ${opps.length} opportunities`}
-                      >
-                        {opps.length}
-                      </button>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80 p-0 z-[100] rounded-xl border-border/30 shadow-2xl overflow-hidden backdrop-blur-lg" side="top" sideOffset={12}>
-                      <div className="p-3.5 border-b border-border/30" style={{ background: `linear-gradient(135deg, rgba(${region.color}, 0.15), transparent)` }}>
-                        <div className="flex items-center justify-between">
-                          <p className="font-semibold text-sm flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ background: `rgb(${region.color})` }} />
-                            {region.label}
-                          </p>
-                          <Badge variant="secondary" className="text-[10px] h-5">{opps.length} listed</Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Total value: {formatPrice(opps.reduce((s, o) => s + (o.price || 0), 0), opps[0]?.price_currency || "GBP")}
-                        </p>
+              <MapFlyTo position={searchedPoint} zoom={11} />
+
+              {/* Searched location marker + radius */}
+              {searchedPoint && (
+                <>
+                  <CircleMarker
+                    center={searchedPoint}
+                    radius={10}
+                    pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 2 }}
+                  >
+                    <Popup>
+                      <div className="text-xs">
+                        <p className="font-semibold mb-0.5">Searched location</p>
+                        <p className="text-muted-foreground line-clamp-2">{searchedLabel}</p>
                       </div>
-                      <div className="max-h-56 overflow-y-auto">
-                        {opps.slice(0, 6).map(opp => (
-                          <button key={opp.id} onClick={() => navigate(`${basePath}/${opp.id}`)}
-                            className="w-full flex items-start gap-3 p-3 hover:bg-muted/40 transition-all text-left border-b border-border/10 last:border-0 group/item">
-                            <div className="w-11 h-11 rounded-lg overflow-hidden bg-muted flex-shrink-0 ring-1 ring-border/20">
-                              {opp.thumbnail_url ? (
-                                <img src={opp.thumbnail_url} alt="" className="w-full h-full object-cover group-hover/item:scale-105 transition-transform" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                                  <MapPin className="h-4 w-4" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold line-clamp-1 group-hover/item:text-primary transition-colors">{opp.title}</p>
-                              <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{opp.short_description}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs font-bold" style={{ color: `rgb(${region.color})` }}>{formatPrice(opp.price, opp.price_currency)}</span>
-                                {opp.analyst_rating && (
-                                  <span className={`text-[9px] font-medium ${ratingColor(opp.analyst_rating)}`}>
-                                    ★ {opp.analyst_rating.replace(/_/g, " ").toUpperCase()}
-                                  </span>
+                    </Popup>
+                  </CircleMarker>
+                </>
+              )}
+
+              {/* Opportunity markers */}
+              {clustered.map((cluster, idx) => {
+                const color = "#3b82f6";
+                return (
+                  <Marker key={idx} position={cluster.coords} icon={buildIcon(color, cluster.opps.length)}>
+                    <Popup minWidth={260} maxWidth={320}>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-sm">
+                            {cluster.opps[0].country || cluster.opps[0].location}
+                          </p>
+                          <Badge variant="secondary" className="text-[10px]">{cluster.opps.length} listed</Badge>
+                        </div>
+                        <div className="max-h-56 overflow-y-auto space-y-1.5">
+                          {cluster.opps.slice(0, 6).map((opp) => (
+                            <button
+                              key={opp.id}
+                              onClick={() => navigate(`${basePath}/${opp.id}`)}
+                              className="w-full flex items-start gap-2 p-1.5 hover:bg-muted/40 rounded text-left"
+                            >
+                              <div className="w-9 h-9 rounded overflow-hidden bg-muted flex-shrink-0">
+                                {opp.thumbnail_url ? (
+                                  <img src={opp.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                    <MapPin className="h-3 w-3" />
+                                  </div>
                                 )}
                               </div>
-                              {(opp.city || opp.location) && (
-                                <p className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-0.5">
-                                  <MapPin className="h-2.5 w-2.5" /> {opp.city || opp.location}, {opp.country}
-                                </p>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                        {opps.length > 6 && (
-                          <div className="p-2.5 text-center bg-muted/20">
-                            <span className="text-xs text-muted-foreground font-medium">+{opps.length - 6} more opportunities</span>
-                          </div>
-                        )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold line-clamp-1">{opp.title}</p>
+                                <p className="text-[10px] text-muted-foreground line-clamp-1">{opp.short_description}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs font-bold text-primary">{formatPrice(opp.price, opp.price_currency)}</span>
+                                  {opp.analyst_rating && (
+                                    <span className={`text-[9px] font-medium ${ratingColor(opp.analyst_rating)}`}>
+                                      ★ {opp.analyst_rating.replace(/_/g, " ").toUpperCase()}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                          {cluster.opps.length > 6 && (
+                            <p className="text-[10px] text-center text-muted-foreground pt-1">+{cluster.opps.length - 6} more</p>
+                          )}
+                        </div>
                       </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                </div>
-              );
-            })}
+                    </Popup>
+                  </Marker>
+                );
+              })}
+            </MapContainer>
 
-            {/* Floating legend */}
-            <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 p-2.5 shadow-lg">
-              <p className="text-[10px] font-semibold text-white/70 mb-1.5 uppercase tracking-wider">Concentration</p>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-blue-500/30 border border-blue-400/40" />
-                <span className="text-[9px] text-white/50">Low</span>
-                <div className="w-4 h-4 rounded-full bg-blue-500/60 border border-blue-400/50 mx-1" />
-                <span className="text-[9px] text-white/50">Medium</span>
-                <div className="w-5 h-5 rounded-full bg-blue-500 border border-blue-300/60 mx-1" />
-                <span className="text-[9px] text-white/50">High</span>
-              </div>
-            </div>
-
-            {/* Hovered country tooltip */}
-            {hoveredCountry && (
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-md rounded-lg border border-white/10 px-4 py-2 shadow-xl z-40 pointer-events-none">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-blue-400" />
-                  <span className="text-sm font-semibold text-white">{hoveredCountry}</span>
-                  {(() => {
-                    const countryOpps = opportunities.filter(o => 
-                      (o.country || o.location || "").toLowerCase().includes(hoveredCountry.toLowerCase())
-                    );
-                    return countryOpps.length > 0 ? (
-                      <Badge className="text-[10px] h-5 bg-blue-500/20 text-blue-300 border-blue-500/30">{countryOpps.length} opportunities</Badge>
-                    ) : null;
-                  })()}
-                </div>
-              </div>
-            )}
-
-            {/* Attribution */}
-            <div className="absolute bottom-3 right-3 text-[8px] text-white/40 font-medium bg-black/40 px-2 py-1 rounded backdrop-blur-sm">
-              FlowPulse Global Intelligence
+            {/* Floating zoom hint */}
+            <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 px-3 py-1.5 shadow-lg pointer-events-none">
+              <p className="text-[10px] font-medium text-white/80">
+                🛰️ Zoom in for street-level satellite detail
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Nearby Opportunities Box */}
+      {searchedPoint && (
+        <Card className="border-primary/40 bg-gradient-to-br from-card to-primary/5 backdrop-blur-sm shadow-xl">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  Opportunities Near {searchedLabel.split(",")[0]}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {nearbyOpportunities.length === 0
+                    ? "No opportunities mapped within range. Try widening the radius."
+                    : `${nearbyOpportunities.filter(o => o.distance <= radiusKm).length} within ${radiusKm} km · showing nearest ${nearbyOpportunities.length}`}
+                </p>
+              </div>
+            </div>
+
+            {nearbyOpportunities.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[420px] overflow-y-auto pr-1">
+                {nearbyOpportunities.map(({ opp, distance }) => (
+                  <button
+                    key={opp.id}
+                    onClick={() => navigate(`${basePath}/${opp.id}`)}
+                    className="flex items-start gap-2.5 p-2.5 rounded-lg border border-border/40 bg-card/60 hover:bg-card hover:border-primary/40 hover:shadow-md transition-all text-left group"
+                  >
+                    <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex-shrink-0 ring-1 ring-border/30">
+                      {opp.thumbnail_url ? (
+                        <img src={opp.thumbnail_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                          <MapPin className="h-4 w-4" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold line-clamp-1 group-hover:text-primary transition-colors">{opp.title}</p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{opp.city || opp.country || opp.location}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs font-bold text-primary">{formatPrice(opp.price, opp.price_currency)}</span>
+                        <Badge variant="outline" className="text-[9px] h-4 px-1.5">
+                          {distance < 1 ? "<1 km" : `${Math.round(distance)} km`}
+                        </Badge>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
