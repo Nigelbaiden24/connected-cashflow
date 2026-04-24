@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, X, SlidersHorizontal, Globe, TrendingUp, DollarSign, Star, Loader2, Crosshair } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, LayersControl, CircleMarker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -363,38 +363,18 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
               worldCopyJump
               style={{ height: "100%", width: "100%", background: "hsl(var(--background))" }}
             >
-              <LayersControl position="topright">
-                <LayersControl.BaseLayer checked name="Satellite (Detailed)">
-                  {/* Esri World Imagery: deep zoom satellite — no API key required */}
-                  <TileLayer
-                    attribution='Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
-                    url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                    maxZoom={19}
-                  />
-                </LayersControl.BaseLayer>
-                <LayersControl.BaseLayer name="Streets">
-                  <TileLayer
-                    attribution='&copy; OpenStreetMap contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    maxZoom={19}
-                  />
-                </LayersControl.BaseLayer>
-                <LayersControl.BaseLayer name="Dark">
-                  <TileLayer
-                    attribution='&copy; CARTO'
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                    maxZoom={19}
-                  />
-                </LayersControl.BaseLayer>
-                {/* Labels overlay so satellite has place names when zoomed in */}
-                <LayersControl.Overlay checked name="Place Labels">
-                  <TileLayer
-                    attribution='Labels &copy; Esri'
-                    url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-                    maxZoom={19}
-                  />
-                </LayersControl.Overlay>
-              </LayersControl>
+              {/* Esri World Imagery: deep zoom satellite — no API key required */}
+              <TileLayer
+                attribution='Tiles &copy; Esri, Maxar, Earthstar Geographics'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+              />
+              {/* Place name labels overlay for context */}
+              <TileLayer
+                attribution='Labels &copy; Esri'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={19}
+              />
 
               <MapFlyTo position={searchedPoint} zoom={11} />
 
