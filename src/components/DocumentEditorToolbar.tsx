@@ -59,10 +59,6 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -374,25 +370,26 @@ export function DocumentEditorToolbar({
 
         {/* Text Alignment */}
         <ToolbarSection>
-          <ToggleGroup
-            type="single"
-            value={textAlign}
-            onValueChange={onTextAlignChange}
-            className="bg-muted/30 rounded p-0.5"
-          >
-            <ToggleGroupItem value="left" aria-label="Left" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
-              <AlignLeft className="h-3 w-3" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="center" aria-label="Center" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
-              <AlignCenter className="h-3 w-3" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="right" aria-label="Right" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
-              <AlignRight className="h-3 w-3" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="justify" aria-label="Justify" className="h-6 w-6 data-[state=on]:bg-background data-[state=on]:shadow-sm">
-              <AlignJustify className="h-3 w-3" />
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div className="flex items-center gap-0.5 rounded bg-muted/30 p-0.5">
+            {[
+              { value: "left", label: "Left", icon: AlignLeft },
+              { value: "center", label: "Center", icon: AlignCenter },
+              { value: "right", label: "Right", icon: AlignRight },
+              { value: "justify", label: "Justify", icon: AlignJustify },
+            ].map(({ value, label, icon: Icon }) => (
+              <Button
+                key={value}
+                type="button"
+                variant={textAlign === value ? "secondary" : "ghost"}
+                size="icon"
+                aria-label={label}
+                className="h-6 w-6"
+                onClick={() => onTextAlignChange(value)}
+              >
+                <Icon className="h-3 w-3" />
+              </Button>
+            ))}
+          </div>
         </ToolbarSection>
 
         <ToolbarDivider />
