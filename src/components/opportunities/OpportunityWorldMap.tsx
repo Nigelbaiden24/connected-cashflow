@@ -379,22 +379,20 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
               <MapFlyTo position={searchedPoint} zoom={11} />
 
               {/* Searched location marker + radius */}
-              {searchedPoint && (
-                <>
-                  <CircleMarker
-                    center={searchedPoint}
-                    radius={10}
-                    pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 2 }}
-                  >
-                    <Popup>
-                      <div className="text-xs">
-                        <p className="font-semibold mb-0.5">Searched location</p>
-                        <p className="text-muted-foreground line-clamp-2">{searchedLabel}</p>
-                      </div>
-                    </Popup>
-                  </CircleMarker>
-                </>
-              )}
+              {searchedPoint ? (
+                <CircleMarker
+                  center={searchedPoint}
+                  radius={10}
+                  pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 2 }}
+                >
+                  <Popup>
+                    <div className="text-xs">
+                      <p className="font-semibold mb-0.5">Searched location</p>
+                      <p className="text-muted-foreground line-clamp-2">{searchedLabel}</p>
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              ) : null}
 
               {/* Opportunity markers */}
               {clustered.map((cluster, idx) => {
