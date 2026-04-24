@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { OpportunityShowcase } from "@/components/opportunities/OpportunityShowcase";
@@ -332,12 +331,26 @@ export default function OpportunityIntelligence() {
                   <SelectItem value="rating">Highest Rating</SelectItem>
                 </SelectContent>
               </Select>
-              <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as any)}>
-                <ToggleGroupItem value="showcase"><Presentation className="h-4 w-4" /></ToggleGroupItem>
-                <ToggleGroupItem value="grid"><LayoutGrid className="h-4 w-4" /></ToggleGroupItem>
-                <ToggleGroupItem value="list"><List className="h-4 w-4" /></ToggleGroupItem>
-                <ToggleGroupItem value="map"><Globe className="h-4 w-4" /></ToggleGroupItem>
-              </ToggleGroup>
+              <div className="inline-flex items-center gap-1 rounded-md border border-border bg-muted p-1">
+                {[
+                  { value: "showcase", icon: Presentation, label: "Showcase" },
+                  { value: "grid", icon: LayoutGrid, label: "Grid" },
+                  { value: "list", icon: List, label: "List" },
+                  { value: "map", icon: Globe, label: "Map" },
+                ].map(({ value, icon: Icon, label }) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    variant={viewMode === value ? "secondary" : "ghost"}
+                    size="icon"
+                    className="h-9 w-9"
+                    aria-label={label}
+                    onClick={() => setViewMode(value as typeof viewMode)}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </Button>
+                ))}
+              </div>
               {viewMode === "list" && (
                 <Button variant={compareMode ? "default" : "outline"} size="sm" onClick={() => { setCompareMode(!compareMode); setCompareIds([]); }} className="gap-1.5">
                   <Eye className="h-3.5 w-3.5" /> {compareMode ? "Exit Compare" : "Compare"}
