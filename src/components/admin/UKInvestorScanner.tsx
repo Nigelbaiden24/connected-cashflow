@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
 import { Search, Loader2, Globe, Users, TrendingUp, Building2, Handshake, Download, RefreshCw, Filter, ExternalLink } from "lucide-react";
 
 interface ScanResult {
@@ -89,6 +90,16 @@ export function UKInvestorScanner() {
       const parsed = parseAIResults(data);
       setResults(parsed);
       toast.success(`Found ${parsed.length} results for ${activeCategory}`);
+      saveScrapeResult({
+        source: "uk-investors",
+        title: `UK ${activeCategory} scan${searchQuery ? ` — ${searchQuery}` : ""}`,
+        category: activeCategory,
+        customQuery: searchQuery || null,
+        subCategory: `${investorType}/${stage}/${sector}`,
+        payload: { raw: data, parsed },
+        opportunities: parsed,
+        opportunitiesCount: parsed.length,
+      });
     } catch (err) {
       console.error("Scan error:", err);
       toast.error("Scan failed. Please try again.");
