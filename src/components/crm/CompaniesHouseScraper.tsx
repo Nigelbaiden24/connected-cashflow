@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { saveScrapeResult } from '@/hooks/useScrapeAutoSave';
 import { 
   Search, 
   Building2, 
@@ -104,6 +105,17 @@ export function CompaniesHouseScraper() {
         toast({
           title: "Scrape Complete",
           description: `Successfully scraped ${data.totalCompanies} companies and ${data.totalOfficers} officers`,
+        });
+        saveScrapeResult({
+          source: "companies-house",
+          platform: "finance",
+          title: `Companies House — "${searchQuery}"`,
+          category: "Companies House",
+          customQuery: searchQuery,
+          subCategory: searchType,
+          payload: data,
+          opportunities: data.results,
+          opportunitiesCount: data.totalCompanies ?? (data.results?.length || 0),
         });
       } else {
         throw new Error(data.error || 'Scraping failed');

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { INVESTMENT_CATEGORIES } from "./investmentCategories";
+import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
 import {
   Globe,
   Sparkles,
@@ -250,6 +251,16 @@ export function FinancialResearchScraper() {
           toast.success(
             `${cat.label}: scraped ${data.scrapedUrls?.length || 0}/${data.totalUrls || 0} sources`
           );
+          saveScrapeResult({
+            source: "financial-research",
+            platform: "finance",
+            title: `${cat.label} sweep`,
+            category: cat.label,
+            payload: data,
+            sources: data.scrapedUrls,
+            opportunitiesCount: data.scrapedUrls?.length || 0,
+            rawOutput: data.content,
+          });
         }
       } catch (err) {
         setScrapedData((prev) =>
@@ -350,6 +361,16 @@ export function FinancialResearchScraper() {
 
         if (data.success) {
           toast.success(`${platform.name}: Scraped ${data.scrapedUrls?.length || 0}/${data.totalUrls || 0} research pages`);
+          saveScrapeResult({
+            source: "financial-research",
+            platform: "finance",
+            title: `${platform.name} — research pages`,
+            category: platform.name,
+            payload: data,
+            sources: data.scrapedUrls,
+            opportunitiesCount: data.scrapedUrls?.length || 0,
+            rawOutput: data.content,
+          });
         }
       } catch (error) {
         console.error(`Error scraping ${platform.name}:`, error);
@@ -402,6 +423,15 @@ export function FinancialResearchScraper() {
       });
 
       toast.success("AI Report generated successfully!");
+      saveScrapeResult({
+        source: "financial-research",
+        platform: "finance",
+        title: `AI Report — ${new Date().toLocaleDateString("en-GB")}`,
+        category: "AI Report",
+        payload: data,
+        opportunities: data.opportunityCandidates,
+        opportunitiesCount: Array.isArray(data.opportunityCandidates) ? data.opportunityCandidates.length : 0,
+      });
     } catch (error) {
       console.error("Error generating report:", error);
       toast.error("Failed to generate AI report");

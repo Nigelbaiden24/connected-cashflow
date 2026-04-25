@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
 import {
   Radar,
   Zap,
@@ -277,6 +278,16 @@ export function AIAutoScanner() {
 
       if (result.status === "success") {
         toast.success(`${target.label}: Found ${result.opportunitiesFound} opportunities`);
+        saveScrapeResult({
+          source: "ai-scanner",
+          platform: "investor",
+          title: `${target.label} — ${result.opportunitiesFound} opps`,
+          category: target.label,
+          subCategory: target.id,
+          payload: result,
+          opportunities: (result as any).opportunities,
+          opportunitiesCount: result.opportunitiesFound,
+        });
       } else {
         toast.error(`${target.label}: ${result.error}`);
       }

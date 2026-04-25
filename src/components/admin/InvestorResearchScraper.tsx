@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { INVESTOR_CATEGORIES } from "./investmentCategories";
+import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
 import {
   Sparkles,
   FileText,
@@ -133,6 +134,16 @@ export function InvestorResearchScraper() {
           toast.success(
             `${cat.label}: scraped ${data.scrapedUrls?.length || 0}/${data.totalUrls || 0} sources`
           );
+          saveScrapeResult({
+            source: "investor-research",
+            platform: "investor",
+            title: `${cat.label} sweep`,
+            category: cat.label,
+            payload: data,
+            sources: data.scrapedUrls,
+            opportunitiesCount: data.scrapedUrls?.length || 0,
+            rawOutput: data.content,
+          });
         }
       } catch (err) {
         setScrapedData((prev) =>
@@ -187,6 +198,15 @@ export function InvestorResearchScraper() {
         generatedAt: new Date().toISOString(),
       });
       toast.success("AI Investor Report generated");
+      saveScrapeResult({
+        source: "investor-research",
+        platform: "investor",
+        title: `AI Investor Report — ${new Date().toLocaleDateString("en-GB")}`,
+        category: "AI Investor Report",
+        payload: data,
+        opportunities: data.opportunityCandidates,
+        opportunitiesCount: Array.isArray(data.opportunityCandidates) ? data.opportunityCandidates.length : 0,
+      });
     } catch (e) {
       console.error(e);
       toast.error("Failed to generate report");
