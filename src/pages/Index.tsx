@@ -907,7 +907,7 @@ const Index = () => {
                   </div>
                   <div className="w-px h-12 bg-white/30" />
                   <div className="text-center">
-                    <p className="text-3xl md:text-4xl font-bold drop-shadow-lg">$5B+</p>
+                    <p className="text-3xl md:text-4xl font-bold drop-shadow-lg">£5B+</p>
                     <p className="text-sm md:text-base drop-shadow-lg">Assets Managed</p>
                   </div>
                 </div>

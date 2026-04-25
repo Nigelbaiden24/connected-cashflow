@@ -333,7 +333,7 @@ export default function FinancialPlanDetail() {
                     <div>
                       <h4 className="font-semibold">{income.source_name}</h4>
                       <p className="text-sm text-muted-foreground">{income.source_type}</p>
-                      <p className="text-lg font-bold mt-2">${(income.annual_amount / 1000).toFixed(1)}K / year</p>
+                      <p className="text-lg font-bold mt-2">£{(income.annual_amount / 1000).toFixed(1)}K / year</p>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => deleteItem("income_sources", income.id)}>
                       <Trash2 className="h-4 w-4" />
@@ -357,7 +357,7 @@ export default function FinancialPlanDetail() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h4 className="font-semibold">{expense.category_name}</h4>
-                      <p className="text-lg font-bold mt-2">${(expense.annual_amount / 1000).toFixed(1)}K / year</p>
+                      <p className="text-lg font-bold mt-2">£{(expense.annual_amount / 1000).toFixed(1)}K / year</p>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => deleteItem("expense_categories", expense.id)}>
                       <Trash2 className="h-4 w-4" />
@@ -382,7 +382,7 @@ export default function FinancialPlanDetail() {
                     <div>
                       <h4 className="font-semibold">{milestone.milestone_name}</h4>
                       <p className="text-sm text-muted-foreground">{format(new Date(milestone.target_date), "MMM dd, yyyy")}</p>
-                      {milestone.target_amount && <p className="font-medium mt-1">${(milestone.target_amount / 1000).toFixed(0)}K</p>}
+                      {milestone.target_amount && <p className="font-medium mt-1">£{(milestone.target_amount / 1000).toFixed(0)}K</p>}
                       <Badge className={`mt-2 ${milestone.status === "completed" ? "bg-green-500" : "bg-yellow-500"}`}>
                         {milestone.status}
                       </Badge>

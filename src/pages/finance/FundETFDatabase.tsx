@@ -196,7 +196,7 @@ export default function FundETFDatabase() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Combined AUM</p>
-                    <p className="text-lg font-bold">${(totalAUM / 1000).toFixed(0)}B</p>
+                    <p className="text-lg font-bold">£{(totalAUM / 1000).toFixed(0)}B</p>
                   </div>
                 </div>
               </CardContent>
