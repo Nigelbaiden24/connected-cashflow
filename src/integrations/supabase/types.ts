@@ -171,11 +171,15 @@ export type Database = {
           market_context: string | null
           opportunities: Json | null
           opportunities_count: number | null
+          payload: Json | null
+          platform: string | null
           raw_output: string | null
           research_date: string
+          source: string | null
           sources: Json | null
           status: string | null
           sub_category: string | null
+          title: string | null
           user_id: string | null
         }
         Insert: {
@@ -186,11 +190,15 @@ export type Database = {
           market_context?: string | null
           opportunities?: Json | null
           opportunities_count?: number | null
+          payload?: Json | null
+          platform?: string | null
           raw_output?: string | null
           research_date?: string
+          source?: string | null
           sources?: Json | null
           status?: string | null
           sub_category?: string | null
+          title?: string | null
           user_id?: string | null
         }
         Update: {
@@ -201,11 +209,15 @@ export type Database = {
           market_context?: string | null
           opportunities?: Json | null
           opportunities_count?: number | null
+          payload?: Json | null
+          platform?: string | null
           raw_output?: string | null
           research_date?: string
+          source?: string | null
           sources?: Json | null
           status?: string | null
           sub_category?: string | null
+          title?: string | null
           user_id?: string | null
         }
         Relationships: []
