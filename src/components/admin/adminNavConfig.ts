@@ -59,7 +59,7 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "company-intelligence", label: "Company Intelligence", icon: Briefcase, gradient: "from-teal-500 to-teal-600", platforms: ["finance"] },
 
   // ── FlowPulse Investor ────────────────────────────────────────────────
-  { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600", platforms: ["investor"] },
+  { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600", platforms: ["finance", "investor"] },
   { id: "ai-scanner", label: "AI Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700", platforms: ["investor"] },
   { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600", platforms: ["investor"] },
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600", platforms: ["investor"] },
