@@ -9,6 +9,7 @@ import { Sparkles, FileText, Brain, Loader2, Download, BookOpen } from "lucide-r
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { generateEliteReport, EliteReport } from "@/utils/eliteReportPdf";
+import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
 
 interface Props {
   platform: "finance" | "investor";
@@ -42,6 +43,14 @@ export function EliteScraperAnalyst({ platform }: Props) {
       if (data?.error) throw new Error(data.error);
       setExplanation(data.explanation || "");
       toast.success("Explanation generated");
+      saveScrapeResult({
+        source: "elite-analyst",
+        platform,
+        title: `Elite Explain — ${categoryLabel || "Untitled"}`,
+        category: categoryLabel || "Elite Analyst",
+        payload: { mode: "explain", explanation: data.explanation, scrapedData },
+        rawOutput: data.explanation,
+      });
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Failed to generate explanation");
@@ -59,6 +68,15 @@ export function EliteScraperAnalyst({ platform }: Props) {
       if (data?.error) throw new Error(data.error);
       setReport(data.report);
       toast.success("Report generated — preview below");
+      saveScrapeResult({
+        source: "elite-analyst",
+        platform,
+        title: `Elite Report — ${data.report?.title || categoryLabel || "Untitled"}`,
+        category: categoryLabel || "Elite Analyst",
+        payload: { mode: "report", report: data.report, scrapedData },
+        opportunities: data.report?.opportunities,
+        opportunitiesCount: Array.isArray(data.report?.opportunities) ? data.report.opportunities.length : 0,
+      });
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Failed to generate report");
