@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, X, SlidersHorizontal, Globe, TrendingUp, DollarSign, Star, Loader2, Crosshair } from "lucide-react";
+import { Search, MapPin, X, SlidersHorizontal, Globe, TrendingUp, PoundSterling, Star, Loader2, Crosshair } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -250,7 +250,7 @@ export function OpportunityWorldMap({ opportunities }: OpportunityWorldMapProps)
           <div><p className="text-xs text-muted-foreground">Opportunities</p><p className="text-lg font-bold">{totalFiltered}</p></div>
         </div>
         <div className="rounded-xl border border-border/40 bg-gradient-to-br from-card to-card/80 p-3 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-chart-2/10"><DollarSign className="h-4 w-4 text-chart-2" /></div>
+          <div className="p-2 rounded-lg bg-chart-2/10"><PoundSterling className="h-4 w-4 text-chart-2" /></div>
           <div><p className="text-xs text-muted-foreground">Total Value</p><p className="text-lg font-bold">{formatPrice(totalValue, "GBP")}</p></div>
         </div>
         <div className="rounded-xl border border-border/40 bg-gradient-to-br from-card to-card/80 p-3 flex items-center gap-3">
