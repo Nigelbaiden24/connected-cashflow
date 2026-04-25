@@ -37,7 +37,7 @@ const goals = [
   {
     id: 2,
     title: "House Down Payment",
-    description: "20% down payment for $400k home",
+    description: "20% down payment for £400k home",
     targetAmount: 80000,
     currentAmount: 32000,
     targetDate: new Date(2026, 5, 15),

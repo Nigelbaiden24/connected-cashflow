@@ -483,7 +483,7 @@ export default function Watchlists() {
                           <div className="flex items-center gap-4 mt-2">
                             {item.current_price && (
                               <span className="text-lg font-bold">
-                                ${item.current_price.toFixed(2)}
+                                £{item.current_price.toFixed(2)}
                               </span>
                             )}
                             {item.change_percent !== null && (
@@ -611,7 +611,7 @@ export default function Watchlists() {
                   <div>
                     <p className="text-sm text-muted-foreground">Current Price</p>
                     <p className="text-2xl font-bold">
-                      {selectedItem.current_price ? `$${selectedItem.current_price.toFixed(2)}` : 'N/A'}
+                      {selectedItem.current_price ? `£${selectedItem.current_price.toFixed(2)}` : 'N/A'}
                     </p>
                   </div>
                   <div>
@@ -635,13 +635,13 @@ export default function Watchlists() {
                     {selectedItem.alert_price_high && (
                       <div className="p-3 border rounded">
                         <p className="text-sm text-muted-foreground">High Alert</p>
-                        <p className="text-lg font-bold">${selectedItem.alert_price_high.toFixed(2)}</p>
+                        <p className="text-lg font-bold">£{selectedItem.alert_price_high.toFixed(2)}</p>
                       </div>
                     )}
                     {selectedItem.alert_price_low && (
                       <div className="p-3 border rounded">
                         <p className="text-sm text-muted-foreground">Low Alert</p>
-                        <p className="text-lg font-bold">${selectedItem.alert_price_low.toFixed(2)}</p>
+                        <p className="text-lg font-bold">£{selectedItem.alert_price_low.toFixed(2)}</p>
                       </div>
                     )}
                   </div>

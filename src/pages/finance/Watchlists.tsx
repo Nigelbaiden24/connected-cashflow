@@ -658,13 +658,13 @@ export default function FinanceWatchlists() {
               {selectedItem.alert_price_high && (
                 <div>
                   <Label className="text-muted-foreground">Alert: Price Above</Label>
-                  <p className="font-medium">${selectedItem.alert_price_high.toFixed(2)}</p>
+                  <p className="font-medium">£{selectedItem.alert_price_high.toFixed(2)}</p>
                 </div>
               )}
               {selectedItem.alert_price_low && (
                 <div>
                   <Label className="text-muted-foreground">Alert: Price Below</Label>
-                  <p className="font-medium">${selectedItem.alert_price_low.toFixed(2)}</p>
+                  <p className="font-medium">£{selectedItem.alert_price_low.toFixed(2)}</p>
                 </div>
               )}
               {selectedItem.notes && (

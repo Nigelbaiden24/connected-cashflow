@@ -123,19 +123,19 @@ const Clients = () => {
     {
       category: "Conservative Clients",
       count: 147,
-      totalAUM: "$98.2M",
+      totalAUM: "£98.2M",
       avgReturn: "+4.2%",
     },
     {
       category: "Moderate Clients",
       count: 203,
-      totalAUM: "$156.8M",
+      totalAUM: "£156.8M",
       avgReturn: "+7.1%",
     },
     {
       category: "Aggressive Clients",
       count: 89,
-      totalAUM: "$142.3M",
+      totalAUM: "£142.3M",
       avgReturn: "+12.8%",
     },
   ];

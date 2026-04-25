@@ -557,11 +557,11 @@ const MarketData = () => {
                   <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border/50 text-center">
                     <div>
                       <p className="text-xs text-muted-foreground">High</p>
-                      <p className="text-sm font-medium">${commodity.dayHigh}</p>
+                      <p className="text-sm font-medium">£{commodity.dayHigh}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Low</p>
-                      <p className="text-sm font-medium">${commodity.dayLow}</p>
+                      <p className="text-sm font-medium">£{commodity.dayLow}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">YTD</p>

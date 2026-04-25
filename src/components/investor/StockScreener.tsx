@@ -132,7 +132,7 @@ export function StockScreener() {
                 <TableRow key={stock.symbol}>
                   <TableCell className="font-medium">{stock.symbol}</TableCell>
                   <TableCell>{stock.name}</TableCell>
-                  <TableCell>${stock.price.toFixed(2)}</TableCell>
+                  <TableCell>£{stock.price.toFixed(2)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       {stock.change > 0 ? (
