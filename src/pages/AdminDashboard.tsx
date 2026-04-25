@@ -36,6 +36,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { FinancialResearchScraper } from "@/components/admin/FinancialResearchScraper";
 import { AIAutoScanner } from "@/components/admin/AIAutoScanner";
 import { FlowPulseScraperHub } from "@/components/admin/FlowPulseScraperHub";
+import { SavedScrapes } from "@/components/admin/SavedScrapes";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
@@ -757,6 +758,8 @@ export default function AdminDashboard() {
           {activeTab === 'users' && <UserManagement />}
 
           {activeTab === 'flowpulse-scraper' && <FlowPulseScraperHub />}
+
+          {activeTab === 'saved-scrapes' && <SavedScrapes />}
           
           {activeTab === 'enquiries' && <PlatformEnquiries />}
 
