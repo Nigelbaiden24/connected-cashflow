@@ -43,6 +43,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  parseAgentAction,
+  stripAgentActionBlock,
+  executeAgentAction,
+  type ParsedAgentAction,
+} from "@/lib/agentActions";
+import { Sparkles, ShieldAlert, Zap } from "lucide-react";
 
 interface Message {
   id: string;
@@ -57,6 +65,9 @@ interface Message {
   crmNavigate?: CRMNavigateAction;
   crmInteraction?: CRMInteractionAction;
   crmUpdate?: CRMUpdateAction;
+  agentAction?: ParsedAgentAction;
+  agentActionStatus?: "pending" | "running" | "done" | "error" | "cancelled";
+  agentActionResult?: string;
 }
 
 interface CRMContactAction {
