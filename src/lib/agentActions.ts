@@ -111,7 +111,7 @@ export async function executeAgentAction(
         return { ok: true, message: "Opened global search" };
 
       case "create_crm_contact": {
-        const { error } = await supabase.from("crm_contacts").insert({
+        const { error } = await (supabase.from("crm_contacts") as any).insert({
           user_id: ctx.userId,
           ...a.contact,
         });
