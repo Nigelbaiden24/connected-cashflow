@@ -1609,7 +1609,68 @@ const Chat = () => {
                       </div>
                     )}
 
-                    {/* CRM Search Results */}
+                    {/* Generic Agent Action Card */}
+                    {message.agentAction && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 rounded-xl border border-violet-500/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-violet-500" />
+                            Agent Action
+                            {message.agentAction.adminOnly && (
+                              <Badge variant="outline" className="ml-1 text-[10px] border-amber-500/40 text-amber-500">
+                                <ShieldAlert className="h-3 w-3 mr-1" />Admin
+                              </Badge>
+                            )}
+                          </p>
+                          {message.agentActionStatus === "done" && (
+                            <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30">
+                              <Check className="h-3 w-3 mr-1" />Executed
+                            </Badge>
+                          )}
+                          {message.agentActionStatus === "error" && (
+                            <Badge variant="destructive">Failed</Badge>
+                          )}
+                          {message.agentActionStatus === "cancelled" && (
+                            <Badge variant="outline">Cancelled</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-foreground mb-3">{message.agentAction.description}</div>
+                        <pre className="text-[11px] bg-background/50 rounded-lg p-2 overflow-x-auto mb-3 text-muted-foreground">
+{JSON.stringify(message.agentAction.action, null, 2)}
+                        </pre>
+                        {message.agentActionResult && (
+                          <p className={`text-xs mb-2 ${message.agentActionStatus === "error" ? "text-destructive" : "text-emerald-600"}`}>
+                            {message.agentActionResult}
+                          </p>
+                        )}
+                        {(!message.agentActionStatus || message.agentActionStatus === "pending") && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleConfirmAgentAction(message.id)}
+                              className="flex-1 h-9 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white"
+                            >
+                              <Zap className="h-4 w-4 mr-2" />
+                              Confirm & Execute
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCancelAgentAction(message.id)}
+                              className="h-9 rounded-lg"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        )}
+                        {message.agentActionStatus === "running" && (
+                          <Button size="sm" disabled className="w-full h-9 rounded-lg">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />Executing…
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
                     {message.crmSearchResults && message.crmSearchResults.length > 0 && (
                       <div className="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl border border-blue-500/30">
                         <p className="text-xs font-semibold text-foreground flex items-center gap-2 mb-3">
