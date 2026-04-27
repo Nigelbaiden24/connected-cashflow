@@ -43,6 +43,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  parseAgentAction,
+  stripAgentActionBlock,
+  executeAgentAction,
+  type ParsedAgentAction,
+} from "@/lib/agentActions";
+import { Sparkles, ShieldAlert, Zap } from "lucide-react";
 
 interface Message {
   id: string;
@@ -57,6 +65,9 @@ interface Message {
   crmNavigate?: CRMNavigateAction;
   crmInteraction?: CRMInteractionAction;
   crmUpdate?: CRMUpdateAction;
+  agentAction?: ParsedAgentAction;
+  agentActionStatus?: "pending" | "running" | "done" | "error" | "cancelled";
+  agentActionResult?: string;
 }
 
 interface CRMContactAction {
@@ -116,6 +127,7 @@ const Chat = () => {
   const defaultBotName = isBusinessPlatform ? 'Atlas' : 'Theodore';
   const { profile } = useUserProfile();
   const userFirstName = profile.first_name;
+  const { user: authUser, isAdmin } = useAuth();
 
   const [botName, setBotName] = useState(() => {
     return localStorage.getItem('botName') || defaultBotName;
@@ -869,6 +881,31 @@ const Chat = () => {
     }
   };
 
+  const handleConfirmAgentAction = async (messageId: string) => {
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg?.agentAction) return;
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, agentActionStatus: "running" } : m));
+    const result = await executeAgentAction(msg.agentAction.action, {
+      userId: authUser?.id ?? null,
+      isAdmin,
+      navigate,
+    });
+    setMessages(prev => prev.map(m => m.id === messageId ? {
+      ...m,
+      agentActionStatus: result.ok ? "done" : "error",
+      agentActionResult: result.message,
+    } : m));
+    toast({
+      title: result.ok ? "Action complete" : "Action failed",
+      description: result.message,
+      variant: result.ok ? "default" : "destructive",
+    });
+  };
+
+  const handleCancelAgentAction = (messageId: string) => {
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, agentActionStatus: "cancelled" } : m));
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -958,11 +995,16 @@ const Chat = () => {
             
             const updateAction = parseCRMUpdateAction(streamedContent);
             if (updateAction) crmUpdate = updateAction;
-            
+
+            const agentAction = parseAgentAction(streamedContent) || undefined;
+            const displayContent = agentAction
+              ? stripAgentActionBlock(streamedContent)
+              : streamedContent;
+
             const finalMessage: Message = {
               id: tempId,
               type: "assistant",
-              content: streamedContent || "I apologize, but I couldn't generate a response. Please try again.",
+              content: displayContent || "I apologize, but I couldn't generate a response. Please try again.",
               timestamp: new Date(),
               category: categorizeMessage(streamedContent),
               isDocumentResponse: isDocResponse,
@@ -972,6 +1014,8 @@ const Chat = () => {
               crmNavigate,
               crmInteraction,
               crmUpdate,
+              agentAction,
+              agentActionStatus: agentAction ? "pending" : undefined,
             };
 
             // Update message with document flag and CRM action
@@ -1050,10 +1094,13 @@ const Chat = () => {
         const updateAction = parseCRMUpdateAction(responseContent);
         if (updateAction) crmUpdate = updateAction;
 
+        const agentAction = parseAgentAction(responseContent) || undefined;
+        const displayContent = agentAction ? stripAgentActionBlock(responseContent) : responseContent;
+
         const aiResponse: Message = {
           id: Date.now().toString(),
           type: "assistant",
-          content: responseContent,
+          content: displayContent,
           timestamp: new Date(),
           category: categorizeMessage(responseContent),
           isDocumentResponse: isDocResponse,
@@ -1063,6 +1110,8 @@ const Chat = () => {
           crmNavigate,
           crmInteraction,
           crmUpdate,
+          agentAction,
+          agentActionStatus: agentAction ? "pending" : undefined,
         };
 
         setMessages(prev => [...prev, aiResponse]);
@@ -1560,7 +1609,68 @@ const Chat = () => {
                       </div>
                     )}
 
-                    {/* CRM Search Results */}
+                    {/* Generic Agent Action Card */}
+                    {message.agentAction && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 rounded-xl border border-violet-500/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-semibold text-foreground flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-violet-500" />
+                            Agent Action
+                            {message.agentAction.adminOnly && (
+                              <Badge variant="outline" className="ml-1 text-[10px] border-amber-500/40 text-amber-500">
+                                <ShieldAlert className="h-3 w-3 mr-1" />Admin
+                              </Badge>
+                            )}
+                          </p>
+                          {message.agentActionStatus === "done" && (
+                            <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30">
+                              <Check className="h-3 w-3 mr-1" />Executed
+                            </Badge>
+                          )}
+                          {message.agentActionStatus === "error" && (
+                            <Badge variant="destructive">Failed</Badge>
+                          )}
+                          {message.agentActionStatus === "cancelled" && (
+                            <Badge variant="outline">Cancelled</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-foreground mb-3">{message.agentAction.description}</div>
+                        <pre className="text-[11px] bg-background/50 rounded-lg p-2 overflow-x-auto mb-3 text-muted-foreground">
+{JSON.stringify(message.agentAction.action, null, 2)}
+                        </pre>
+                        {message.agentActionResult && (
+                          <p className={`text-xs mb-2 ${message.agentActionStatus === "error" ? "text-destructive" : "text-emerald-600"}`}>
+                            {message.agentActionResult}
+                          </p>
+                        )}
+                        {(!message.agentActionStatus || message.agentActionStatus === "pending") && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleConfirmAgentAction(message.id)}
+                              className="flex-1 h-9 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white"
+                            >
+                              <Zap className="h-4 w-4 mr-2" />
+                              Confirm & Execute
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCancelAgentAction(message.id)}
+                              className="h-9 rounded-lg"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        )}
+                        {message.agentActionStatus === "running" && (
+                          <Button size="sm" disabled className="w-full h-9 rounded-lg">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />Executing…
+                          </Button>
+                        )}
+                      </div>
+                    )}
+
                     {message.crmSearchResults && message.crmSearchResults.length > 0 && (
                       <div className="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl border border-blue-500/30">
                         <p className="text-xs font-semibold text-foreground flex items-center gap-2 mb-3">
