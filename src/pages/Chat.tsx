@@ -995,11 +995,16 @@ const Chat = () => {
             
             const updateAction = parseCRMUpdateAction(streamedContent);
             if (updateAction) crmUpdate = updateAction;
-            
+
+            const agentAction = parseAgentAction(streamedContent) || undefined;
+            const displayContent = agentAction
+              ? stripAgentActionBlock(streamedContent)
+              : streamedContent;
+
             const finalMessage: Message = {
               id: tempId,
               type: "assistant",
-              content: streamedContent || "I apologize, but I couldn't generate a response. Please try again.",
+              content: displayContent || "I apologize, but I couldn't generate a response. Please try again.",
               timestamp: new Date(),
               category: categorizeMessage(streamedContent),
               isDocumentResponse: isDocResponse,
@@ -1009,6 +1014,8 @@ const Chat = () => {
               crmNavigate,
               crmInteraction,
               crmUpdate,
+              agentAction,
+              agentActionStatus: agentAction ? "pending" : undefined,
             };
 
             // Update message with document flag and CRM action
