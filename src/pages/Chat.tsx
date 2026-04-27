@@ -906,6 +906,7 @@ const Chat = () => {
     setMessages(prev => prev.map(m => m.id === messageId ? { ...m, agentActionStatus: "cancelled" } : m));
   };
 
+  const handleSend = async () => {
     if (!input.trim()) return;
 
     // Detect if user wants a document
