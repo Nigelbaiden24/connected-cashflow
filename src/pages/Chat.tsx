@@ -1094,10 +1094,13 @@ const Chat = () => {
         const updateAction = parseCRMUpdateAction(responseContent);
         if (updateAction) crmUpdate = updateAction;
 
+        const agentAction = parseAgentAction(responseContent) || undefined;
+        const displayContent = agentAction ? stripAgentActionBlock(responseContent) : responseContent;
+
         const aiResponse: Message = {
           id: Date.now().toString(),
           type: "assistant",
-          content: responseContent,
+          content: displayContent,
           timestamp: new Date(),
           category: categorizeMessage(responseContent),
           isDocumentResponse: isDocResponse,
@@ -1107,6 +1110,8 @@ const Chat = () => {
           crmNavigate,
           crmInteraction,
           crmUpdate,
+          agentAction,
+          agentActionStatus: agentAction ? "pending" : undefined,
         };
 
         setMessages(prev => [...prev, aiResponse]);
