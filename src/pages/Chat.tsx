@@ -881,7 +881,31 @@ const Chat = () => {
     }
   };
 
-  const handleSend = async () => {
+  const handleConfirmAgentAction = async (messageId: string) => {
+    const msg = messages.find(m => m.id === messageId);
+    if (!msg?.agentAction) return;
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, agentActionStatus: "running" } : m));
+    const result = await executeAgentAction(msg.agentAction.action, {
+      userId: authUser?.id ?? null,
+      isAdmin,
+      navigate,
+    });
+    setMessages(prev => prev.map(m => m.id === messageId ? {
+      ...m,
+      agentActionStatus: result.ok ? "done" : "error",
+      agentActionResult: result.message,
+    } : m));
+    toast({
+      title: result.ok ? "Action complete" : "Action failed",
+      description: result.message,
+      variant: result.ok ? "default" : "destructive",
+    });
+  };
+
+  const handleCancelAgentAction = (messageId: string) => {
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, agentActionStatus: "cancelled" } : m));
+  };
+
     if (!input.trim()) return;
 
     // Detect if user wants a document
