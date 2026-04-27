@@ -127,6 +127,7 @@ const Chat = () => {
   const defaultBotName = isBusinessPlatform ? 'Atlas' : 'Theodore';
   const { profile } = useUserProfile();
   const userFirstName = profile.first_name;
+  const { user: authUser, isAdmin } = useAuth();
 
   const [botName, setBotName] = useState(() => {
     return localStorage.getItem('botName') || defaultBotName;
