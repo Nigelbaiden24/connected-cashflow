@@ -146,3 +146,5 @@ verify_jwt = false
 
 [functions.enterprise-category-explainer]
 verify_jwt = false
+[functions.run-data-pipeline]
+verify_jwt = false
