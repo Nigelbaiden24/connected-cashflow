@@ -45,9 +45,9 @@ export const PipelineDashboard = () => {
 
   const load = async () => {
     const [{ data: s }, { data: r }, { data: p }] = await Promise.all([
-      supabase.from("pipeline_schedule").select("*").order("source"),
-      supabase.from("pipeline_runs").select("*").order("started_at", { ascending: false }).limit(15),
-      supabase.from("pipeline_pending_items").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50),
+      supabase.from("pipeline_schedule" as any).select("*").order("source"),
+      supabase.from("pipeline_runs" as any).select("*").order("started_at", { ascending: false }).limit(15),
+      supabase.from("pipeline_pending_items" as any).select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(50),
     ]);
     setSchedules((s as any) ?? []);
     setRuns((r as any) ?? []);
@@ -84,7 +84,7 @@ export const PipelineDashboard = () => {
   };
 
   const toggleEnabled = async (source: string, enabled: boolean) => {
-    const { error } = await supabase.from("pipeline_schedule").update({ enabled }).eq("source", source);
+    const { error } = await supabase.from("pipeline_schedule" as any).update({ enabled }).eq("source", source);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     else load();
   };
@@ -109,7 +109,7 @@ export const PipelineDashboard = () => {
   const rejectItem = async (id: string) => {
     setBusyItem(id);
     const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from("pipeline_pending_items").update({
+    const { error } = await supabase.from("pipeline_pending_items" as any).update({
       status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: user?.id,
     }).eq("id", id);
     if (error) toast({ title: "Reject failed", description: error.message, variant: "destructive" });
