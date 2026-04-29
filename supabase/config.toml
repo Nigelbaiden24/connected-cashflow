@@ -148,3 +148,6 @@ verify_jwt = false
 verify_jwt = false
 [functions.run-data-pipeline]
 verify_jwt = false
+
+[functions.dm-finder-search]
+verify_jwt = true
