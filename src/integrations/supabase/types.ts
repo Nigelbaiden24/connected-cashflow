@@ -3207,6 +3207,160 @@ export type Database = {
         }
         Relationships: []
       }
+      dm_finder_contacts: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          email_confidence: string | null
+          email_source_url: string | null
+          full_name: string | null
+          id: string
+          is_inferred: boolean
+          linkedin_url: string | null
+          notes: string | null
+          opted_out: boolean
+          phone: string | null
+          phone_confidence: string | null
+          phone_source_url: string | null
+          relevance_tag: string | null
+          role: string | null
+          saved_to_crm: boolean
+          search_id: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          email_confidence?: string | null
+          email_source_url?: string | null
+          full_name?: string | null
+          id?: string
+          is_inferred?: boolean
+          linkedin_url?: string | null
+          notes?: string | null
+          opted_out?: boolean
+          phone?: string | null
+          phone_confidence?: string | null
+          phone_source_url?: string | null
+          relevance_tag?: string | null
+          role?: string | null
+          saved_to_crm?: boolean
+          search_id: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          email_confidence?: string | null
+          email_source_url?: string | null
+          full_name?: string | null
+          id?: string
+          is_inferred?: boolean
+          linkedin_url?: string | null
+          notes?: string | null
+          opted_out?: boolean
+          phone?: string | null
+          phone_confidence?: string | null
+          phone_source_url?: string | null
+          relevance_tag?: string | null
+          role?: string | null
+          saved_to_crm?: boolean
+          search_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_finder_contacts_search_id_fkey"
+            columns: ["search_id"]
+            isOneToOne: false
+            referencedRelation: "dm_finder_searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_finder_searches: {
+        Row: {
+          company_name: string
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          full_name: string | null
+          id: string
+          job_title: string
+          location: string | null
+          results_count: number
+          sector: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          full_name?: string | null
+          id?: string
+          job_title: string
+          location?: string | null
+          results_count?: number
+          sector?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          full_name?: string | null
+          id?: string
+          job_title?: string
+          location?: string | null
+          results_count?: number
+          sector?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dm_finder_sources: {
+        Row: {
+          excerpt: string | null
+          id: string
+          scraped_at: string
+          search_id: string
+          source_type: string | null
+          url: string
+        }
+        Insert: {
+          excerpt?: string | null
+          id?: string
+          scraped_at?: string
+          search_id: string
+          source_type?: string | null
+          url: string
+        }
+        Update: {
+          excerpt?: string | null
+          id?: string
+          scraped_at?: string
+          search_id?: string
+          source_type?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_finder_sources_search_id_fkey"
+            columns: ["search_id"]
+            isOneToOne: false
+            referencedRelation: "dm_finder_searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           account_number_encrypted: string | null
