@@ -125,8 +125,7 @@ export function DMFinderPanel() {
       if (!u?.user) return;
       const { error } = await supabase.from("crm_contacts").insert([{
         user_id: u.user.id,
-        first_name: (c.full_name || "").split(/\s+/)[0] || "Unknown",
-        last_name: (c.full_name || "").split(/\s+/).slice(1).join(" ") || "",
+        name: c.full_name || "Unknown",
         email: c.email,
         phone: c.phone,
         company: c.company,
