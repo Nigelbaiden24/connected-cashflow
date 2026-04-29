@@ -123,7 +123,7 @@ export function DMFinderPanel() {
     try {
       const { data: u } = await supabase.auth.getUser();
       if (!u?.user) return;
-      const { error } = await supabase.from("crm_contacts").insert({
+      const { error } = await supabase.from("crm_contacts").insert([{
         user_id: u.user.id,
         first_name: (c.full_name || "").split(/\s+/)[0] || "Unknown",
         last_name: (c.full_name || "").split(/\s+/).slice(1).join(" ") || "",
@@ -132,7 +132,7 @@ export function DMFinderPanel() {
         company: c.company,
         position: c.role,
         notes: `DM Finder import. Source: ${c.email_source_url ?? c.phone_source_url ?? "pattern-generated"}. Relevance: ${c.relevance_tag ?? "n/a"}.`,
-      });
+      }]);
       if (error) throw error;
       await supabase.from("dm_finder_contacts").update({ saved_to_crm: true }).eq("id", c.id);
       setContacts((prev) => prev.map((x) => x.id === c.id ? { ...x, saved_to_crm: true } : x));
