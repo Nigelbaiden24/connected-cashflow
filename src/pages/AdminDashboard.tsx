@@ -38,6 +38,7 @@ import { AIAutoScanner } from "@/components/admin/AIAutoScanner";
 import { FlowPulseScraperHub } from "@/components/admin/FlowPulseScraperHub";
 import { SavedScrapes } from "@/components/admin/SavedScrapes";
 import { PipelineDashboard } from "@/components/admin/PipelineDashboard";
+import { DMFinderPanel } from "@/components/admin/DMFinderPanel";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
