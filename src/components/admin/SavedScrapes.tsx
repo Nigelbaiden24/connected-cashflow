@@ -237,39 +237,32 @@ export function SavedScrapes() {
       </CardContent>
 
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>{selected?.title ?? selected?.category}</DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto flex-1 space-y-3">
-            <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
+              <span>{selected?.title ?? selected?.category}</span>
               {selected?.source && <Badge variant="secondary">{SOURCE_LABELS[selected.source] ?? selected.source}</Badge>}
               {selected?.platform && <Badge variant="outline">{selected.platform}</Badge>}
               {selected?.opportunities_count != null && <Badge>{selected.opportunities_count} items</Badge>}
-              <span className="text-slate-500">{selected && new Date(selected.created_at).toLocaleString("en-GB")}</span>
-            </div>
-            {selected?.market_context && (
-              <div>
-                <div className="text-xs uppercase font-semibold text-slate-500 mb-1">Market Context</div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{selected.market_context}</p>
-              </div>
+              <span className="text-xs font-normal text-slate-500 ml-auto">
+                {selected && new Date(selected.created_at).toLocaleString("en-GB")}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto flex-1">
+            {selected && (
+              <ScrapeItemView
+                payload={selected.payload}
+                opportunities={selected.opportunities}
+                rawOutput={selected.raw_output}
+                marketContext={selected.market_context}
+                source={SOURCE_LABELS[selected.source ?? ""] ?? selected.source}
+                filenameStem={`${selected.source ?? "scrape"}-${selected.id.slice(0, 8)}`}
+              />
             )}
-            {selected?.raw_output && (
-              <div>
-                <div className="text-xs uppercase font-semibold text-slate-500 mb-1">Raw Output</div>
-                <pre className="text-xs bg-slate-50 border border-slate-200 rounded p-3 whitespace-pre-wrap max-h-64 overflow-y-auto">{selected.raw_output}</pre>
-              </div>
-            )}
-            <div>
-              <div className="text-xs uppercase font-semibold text-slate-500 mb-1">Payload</div>
-              <pre className="text-xs bg-slate-900 text-slate-100 rounded p-3 overflow-x-auto max-h-96">
-                {JSON.stringify(selected?.payload ?? selected?.opportunities ?? selected?.sources ?? {}, null, 2)}
-              </pre>
-            </div>
           </div>
-          <DialogFooter className="gap-2">
-            {selected && <Button variant="outline" onClick={() => copyJson(selected)}><Copy className="h-4 w-4 mr-1" /> Copy</Button>}
-            {selected && <Button variant="outline" onClick={() => downloadJson(selected)}><Download className="h-4 w-4 mr-1" /> Download</Button>}
+          <DialogFooter className="gap-2 border-t border-slate-100 pt-3">
+            {selected && <Button variant="outline" onClick={() => downloadJson(selected)}><Download className="h-4 w-4 mr-1" /> Download full JSON</Button>}
             {selected && (
               <Button variant="destructive" onClick={() => handleDelete(selected.id)}>
                 <Trash2 className="h-4 w-4 mr-1" /> Delete
