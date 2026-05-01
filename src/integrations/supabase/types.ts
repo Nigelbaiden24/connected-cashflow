@@ -5771,6 +5771,179 @@ export type Database = {
         }
         Relationships: []
       }
+      pipeline_pending_items: {
+        Row: {
+          ai_score: number | null
+          ai_tags: string[] | null
+          category: string | null
+          created_at: string
+          dedup_hash: string
+          enriched_payload: Json | null
+          id: string
+          promoted_id: string | null
+          raw_payload: Json | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          run_id: string | null
+          source: string
+          source_url: string | null
+          status: string
+          summary: string | null
+          target_platform: string | null
+          target_table: string
+          title: string
+        }
+        Insert: {
+          ai_score?: number | null
+          ai_tags?: string[] | null
+          category?: string | null
+          created_at?: string
+          dedup_hash: string
+          enriched_payload?: Json | null
+          id?: string
+          promoted_id?: string | null
+          raw_payload?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string | null
+          source: string
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          target_platform?: string | null
+          target_table: string
+          title: string
+        }
+        Update: {
+          ai_score?: number | null
+          ai_tags?: string[] | null
+          category?: string | null
+          created_at?: string
+          dedup_hash?: string
+          enriched_payload?: Json | null
+          id?: string
+          promoted_id?: string | null
+          raw_payload?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          run_id?: string | null
+          source?: string
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          target_platform?: string | null
+          target_table?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_pending_items_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "pipeline_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipeline_runs: {
+        Row: {
+          attempt: number
+          created_at: string
+          duration_ms: number | null
+          errors: Json | null
+          finished_at: string | null
+          id: string
+          metadata: Json | null
+          records_enriched: number | null
+          records_fetched: number | null
+          records_new: number | null
+          records_staged: number | null
+          source: string
+          started_at: string
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          attempt?: number
+          created_at?: string
+          duration_ms?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          records_enriched?: number | null
+          records_fetched?: number | null
+          records_new?: number | null
+          records_staged?: number | null
+          source: string
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Update: {
+          attempt?: number
+          created_at?: string
+          duration_ms?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          id?: string
+          metadata?: Json | null
+          records_enriched?: number | null
+          records_fetched?: number | null
+          records_new?: number | null
+          records_staged?: number | null
+          source?: string
+          started_at?: string
+          status?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      pipeline_schedule: {
+        Row: {
+          cadence_minutes: number
+          config: Json
+          consecutive_failures: number
+          created_at: string
+          enabled: boolean
+          id: string
+          last_error: string | null
+          last_run_at: string | null
+          last_status: string | null
+          next_run_at: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          cadence_minutes?: number
+          config?: Json
+          consecutive_failures?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          next_run_at?: string
+          source: string
+          updated_at?: string
+        }
+        Update: {
+          cadence_minutes?: number
+          config?: Json
+          consecutive_failures?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          next_run_at?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plan_alerts: {
         Row: {
           alert_type: string
