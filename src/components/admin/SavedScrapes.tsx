@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Archive, Trash2, Eye, RefreshCw, Loader2, Search, Copy, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ScrapeItemView } from "./ScrapeItemView";
 
 interface ScrapeRow {
   id: string;
