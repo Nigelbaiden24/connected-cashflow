@@ -763,7 +763,7 @@ export default function AdminDashboard() {
 
           {activeTab === 'saved-scrapes' && <SavedScrapes />}
           {activeTab === 'data-pipeline' && <PipelineDashboard />}
-          {activeTab === 'dm-finder' && <DMFinderPanel />}
+          {activeTab === 'dm-finder' && <FinderHub />}
           
           {activeTab === 'enquiries' && <PlatformEnquiries />}
 
