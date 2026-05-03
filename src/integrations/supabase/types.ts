@@ -8386,6 +8386,7 @@ export type Database = {
       }
     }
     Functions: {
+      approve_pending_item: { Args: { _item_id: string }; Returns: Json }
       calculate_next_cron_run: {
         Args: { cron_expr: string; tz?: string }
         Returns: string
