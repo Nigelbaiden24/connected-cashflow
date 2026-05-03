@@ -131,6 +131,13 @@ export const INSIGHT_CATEGORIES: InsightCategory[] = [
     description: "Mirror & social trading strategies",
     aliases: ["copy trading", "mirror trading", "social trading"],
   },
+  {
+    value: "Music Royalties",
+    label: "Music Royalties",
+    emoji: "🎵",
+    description: "Music royalty investment platforms & catalogue deals",
+    aliases: ["music royalty", "music royalties", "song royalties", "catalogue", "catalog", "hipgnosis", "royalty exchange"],
+  },
 ];
 
 /**
