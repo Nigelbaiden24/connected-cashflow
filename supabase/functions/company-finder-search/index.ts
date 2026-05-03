@@ -1,0 +1,272 @@
+// Company Finder edge function — Sector Deep-Dive Company Intelligence
+// Uses Firecrawl + Lovable AI to discover companies matching a sector + sub-criteria brief.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const FIRECRAWL_BASE = "https://api.firecrawl.dev/v2";
+const AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+interface SearchInput {
+  sector: string;
+  sub_criteria?: string;
+  location?: string;
+  brief?: string;
+}
+
+interface ExtractedCompany {
+  company_name: string;
+  website?: string | null;
+  country?: string | null;
+  sector?: string | null;
+  tier?: string | null;
+  role?: string | null;
+  description?: string | null;
+  key_signals?: string | null;
+  source_url?: string | null;
+  confidence?: "high" | "medium" | "low" | null;
+  relevance_tag?: string | null;
+}
+
+const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+async function firecrawlSearch(query: string, apiKey: string, limit = 6) {
+  try {
+    const res = await fetch(`${FIRECRAWL_BASE}/search`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ query, limit, scrapeOptions: { formats: ["markdown"], onlyMainContent: true } }),
+    });
+    if (!res.ok) {
+      console.error("Firecrawl search failed:", res.status, await res.text());
+      return [];
+    }
+    const data = await res.json();
+    const results = data?.data?.web ?? data?.data ?? [];
+    return Array.isArray(results) ? results : [];
+  } catch (e) {
+    console.error("Firecrawl exception:", e);
+    return [];
+  }
+}
+
+function buildQueries(input: SearchInput): string[] {
+  const sector = input.sector.trim();
+  const sub = (input.sub_criteria || "").trim();
+  const loc = (input.location || "").trim();
+  const brief = (input.brief || "").trim();
+  const locClause = loc ? ` ${loc}` : "";
+  const queries: string[] = [];
+
+  if (brief) {
+    queries.push(`${brief} ${sector}${locClause} companies list`);
+    queries.push(`${brief} ${sector}${locClause} suppliers directory`);
+    queries.push(`top ${brief} ${sector} companies${locClause}`);
+  }
+  if (sub) {
+    queries.push(`${sector} ${sub}${locClause} companies list`);
+    queries.push(`${sector} ${sub}${locClause} suppliers directory`);
+    queries.push(`top ${sector} ${sub} companies${locClause} 2025`);
+  }
+  queries.push(`${sector}${locClause} leading companies directory`);
+  queries.push(`${sector}${locClause} industry players ranking`);
+
+  // Tier-aware fallbacks (e.g. automotive)
+  if (/automotive|aerospace|manufactur/i.test(`${sector} ${sub} ${brief}`)) {
+    queries.push(`${sector} OEM tier 1 tier 2 tier 3 suppliers${locClause}`);
+    queries.push(`${sector} supply chain tier suppliers list${locClause}`);
+  }
+
+  return [...new Set(queries)].slice(0, 8);
+}
+
+async function extractWithAI(
+  input: SearchInput,
+  pages: Array<{ url: string; title?: string; markdown?: string; description?: string }>,
+  aiKey: string,
+): Promise<ExtractedCompany[]> {
+  const corpus = pages
+    .slice(0, 8)
+    .map((p, i) => `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 3500)}`)
+    .join("\n\n---\n\n");
+
+  const system = `You are an elite B2B market-mapping analyst. From the provided public web sources, extract a structured list of REAL companies that match the user's sector + criteria.
+
+STRICT RULES:
+- Only return real, verifiable companies that appear in the provided sources or are widely-known established players in this space.
+- Each company MUST include a source_url where it was mentioned (or its official website if widely known).
+- Confidence: "high" if the company is explicitly listed as matching the criteria in a credible source; "medium" if inferred from context; "low" if speculative.
+- For supply-chain / tier searches, set "tier" to one of: "OEM", "Tier 1", "Tier 2", "Tier 3", "Distributor", or "Other".
+- Set "role" to a short description of what the company does (max 12 words).
+- key_signals: 1-2 short phrases of supporting evidence (e.g. "Listed in SMMT supplier directory", "$2B revenue 2024").
+- Return [] if nothing credible found. Never invent companies.
+- Aim for 10-25 high-quality matches.`;
+
+  const userPrompt = `Searching for companies matching:
+- Sector: ${input.sector}
+- Sub-criteria: ${input.sub_criteria || "(none)"}
+- Location: ${input.location || "(any)"}
+- Detailed brief: ${input.brief || "(none)"}
+
+Sources:
+${corpus || "(no sources retrieved)"}`;
+
+  try {
+    const res = await fetch(AI_GATEWAY, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${aiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: userPrompt },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "submit_companies",
+              description: "Submit extracted companies matching the search.",
+              parameters: {
+                type: "object",
+                properties: {
+                  companies: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        company_name: { type: "string" },
+                        website: { type: "string" },
+                        country: { type: "string" },
+                        sector: { type: "string" },
+                        tier: { type: "string" },
+                        role: { type: "string" },
+                        description: { type: "string" },
+                        key_signals: { type: "string" },
+                        source_url: { type: "string" },
+                        confidence: { type: "string", enum: ["high", "medium", "low"] },
+                        relevance_tag: { type: "string" },
+                      },
+                      required: ["company_name"],
+                    },
+                  },
+                },
+                required: ["companies"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "submit_companies" } },
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("AI gateway error:", res.status, await res.text());
+      return [];
+    }
+    const data = await res.json();
+    const args = data?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    if (!args) return [];
+    const parsed = typeof args === "string" ? JSON.parse(args) : args;
+    return Array.isArray(parsed?.companies) ? parsed.companies : [];
+  } catch (e) {
+    console.error("AI extraction exception:", e);
+    return [];
+  }
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    if (!FIRECRAWL_API_KEY) return json(500, { error: "FIRECRAWL_API_KEY not configured" });
+    if (!LOVABLE_API_KEY) return json(500, { error: "LOVABLE_API_KEY not configured" });
+
+    const authHeader = req.headers.get("Authorization") || "";
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) return json(401, { error: "Unauthorized" });
+    const userId = userData.user.id;
+
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+    const { data: isAdminRow } = await admin.rpc("is_admin", { _user_id: userId });
+    if (!isAdminRow) return json(403, { error: "Admin only" });
+
+    const body = (await req.json()) as SearchInput;
+    if (!body?.sector?.trim()) return json(400, { error: "sector is required" });
+
+    const { data: searchRow, error: searchErr } = await admin
+      .from("company_finder_searches")
+      .insert({
+        user_id: userId,
+        sector: body.sector,
+        sub_criteria: body.sub_criteria ?? null,
+        location: body.location ?? null,
+        brief: body.brief ?? null,
+        status: "running",
+      })
+      .select()
+      .single();
+    if (searchErr || !searchRow) {
+      console.error("Insert search failed:", searchErr);
+      return json(500, { error: "Failed to create search" });
+    }
+    const searchId = searchRow.id;
+
+    const queries = buildQueries(body);
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 5)));
+    const allPages = searchResults.flat();
+
+    const seen = new Set<string>();
+    const pages = allPages.filter((p: any) => {
+      const u = p?.url;
+      if (!u || seen.has(u)) return false;
+      seen.add(u);
+      return true;
+    });
+
+    const extracted = await extractWithAI(body, pages, LOVABLE_API_KEY);
+
+    if (extracted.length) {
+      const rows = extracted.slice(0, 50).map((c) => ({
+        search_id: searchId,
+        user_id: userId,
+        company_name: c.company_name,
+        website: c.website ?? null,
+        country: c.country ?? null,
+        sector: c.sector ?? body.sector,
+        tier: c.tier ?? null,
+        role: c.role ?? null,
+        description: c.description ?? null,
+        key_signals: c.key_signals ?? null,
+        source_url: c.source_url ?? null,
+        confidence: c.confidence ?? null,
+        relevance_tag: c.relevance_tag ?? null,
+      }));
+      const { error: insErr } = await admin.from("company_finder_results").insert(rows);
+      if (insErr) console.error("Insert companies failed:", insErr);
+    }
+
+    await admin
+      .from("company_finder_searches")
+      .update({ status: "completed", results_count: extracted.length, completed_at: new Date().toISOString() })
+      .eq("id", searchId);
+
+    return json(200, { search_id: searchId, companies: extracted, sources: pages.length });
+  } catch (e) {
+    console.error("company-finder-search error:", e);
+    return json(500, { error: e instanceof Error ? e.message : "Unknown error" });
+  }
+});

@@ -151,3 +151,6 @@ verify_jwt = false
 
 [functions.dm-finder-search]
 verify_jwt = true
+
+[functions.company-finder-search]
+verify_jwt = true

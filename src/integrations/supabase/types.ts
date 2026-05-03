@@ -2333,6 +2333,110 @@ export type Database = {
         }
         Relationships: []
       }
+      company_finder_results: {
+        Row: {
+          company_name: string
+          confidence: string | null
+          country: string | null
+          created_at: string
+          description: string | null
+          id: string
+          key_signals: string | null
+          relevance_tag: string | null
+          role: string | null
+          saved_to_crm: boolean
+          search_id: string
+          sector: string | null
+          source_url: string | null
+          tier: string | null
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          confidence?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          key_signals?: string | null
+          relevance_tag?: string | null
+          role?: string | null
+          saved_to_crm?: boolean
+          search_id: string
+          sector?: string | null
+          source_url?: string | null
+          tier?: string | null
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          confidence?: string | null
+          country?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          key_signals?: string | null
+          relevance_tag?: string | null
+          role?: string | null
+          saved_to_crm?: boolean
+          search_id?: string
+          sector?: string | null
+          source_url?: string | null
+          tier?: string | null
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_finder_results_search_id_fkey"
+            columns: ["search_id"]
+            isOneToOne: false
+            referencedRelation: "company_finder_searches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_finder_searches: {
+        Row: {
+          brief: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          location: string | null
+          results_count: number
+          sector: string
+          status: string
+          sub_criteria: string | null
+          user_id: string
+        }
+        Insert: {
+          brief?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          results_count?: number
+          sector: string
+          status?: string
+          sub_criteria?: string | null
+          user_id: string
+        }
+        Update: {
+          brief?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          results_count?: number
+          sector?: string
+          status?: string
+          sub_criteria?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       company_intelligence: {
         Row: {
           company_name: string
