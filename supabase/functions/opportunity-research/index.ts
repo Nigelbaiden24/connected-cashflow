@@ -680,7 +680,7 @@ ${sourceListForAI}
 ${combinedResearch.slice(0, 30000)}`,
             },
           ],
-          stream: true,
+          stream,
         }),
       }
     );
