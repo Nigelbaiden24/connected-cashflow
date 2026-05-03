@@ -23,7 +23,7 @@ import {
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Car, Globe, LineChart, Bitcoin, Users, Award, Package,
   Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
-  Zap, Factory, Shield
+  Zap, Factory, Shield, Music
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -66,6 +66,7 @@ const categoryConfig = {
   infrastructure_energy: { label: "Infrastructure & Energy", icon: Factory, color: "bg-lime-500/10 text-lime-600", subCategories: ["Renewable Energy Projects", "Infrastructure Funds", "Energy Transition", "Solar Farms", "Wind Energy", "EV Charging"] },
   bonds: { label: "Bonds", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"] },
   timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600", subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"] },
+  music_royalties: { label: "Music Royalties", icon: Music, color: "bg-fuchsia-500/10 text-fuchsia-500", subCategories: ["Catalogue Acquisitions", "Song Royalties", "Publishing Rights", "Master Recordings", "Streaming Royalties", "Sync Rights"] },
 };
 
 const ratingColors: Record<string, string> = {

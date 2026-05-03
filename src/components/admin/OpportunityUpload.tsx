@@ -23,7 +23,8 @@ import {
   Star,
   Save,
   Image,
-  Eye
+  Eye,
+  Music
 } from "lucide-react";
 
 const categoryConfig = {
@@ -101,6 +102,11 @@ const categoryConfig = {
     label: "Timepieces",
     icon: Gem,
     subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"]
+  },
+  music_royalties: {
+    label: "Music Royalties",
+    icon: Music,
+    subCategories: ["Catalogue Acquisitions", "Song Royalties", "Publishing Rights", "Master Recordings", "Streaming Royalties", "Sync Rights"]
   },
 };
 
