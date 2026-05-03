@@ -48,7 +48,7 @@ function buildScraperBody(source: string, baseConfig: Record<string, unknown> = 
     case "elite-scraper":
       return { mode: "explain", platform: "finance", categoryLabel: "Multi-asset Investment Opportunities", scrapedData: "Auto-pipeline run: gather and structure current investment opportunities across asset classes.", ...baseConfig };
     case "companies-house":
-      return { action: "search", query: rotate(COMPANIES_HOUSE_QUERIES), searchType: "companies", maxPages: 1, ...baseConfig };
+      return { action: "full_scrape", query: rotate(COMPANIES_HOUSE_QUERIES), searchType: "companies", maxPages: 1, ...baseConfig };
     default:
       return baseConfig;
   }
