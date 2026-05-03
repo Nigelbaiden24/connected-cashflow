@@ -104,83 +104,104 @@ export function ClientsWeServe() {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-background to-muted/30">
-      <div className="container mx-auto px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-              Trusted by Leading Industry Professionals
+    <section className="relative py-28 bg-[hsl(222,47%,5%)] overflow-hidden">
+      {/* Ambient backdrop */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.10),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(139,92,246,0.08),transparent_60%)]" />
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="relative container mx-auto px-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="max-w-3xl mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-300" />
+              <span className="text-[11px] uppercase tracking-[0.25em] text-white/70 font-semibold">
+                Who we serve
+              </span>
+            </div>
+            <h2 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight text-white leading-[1.1]">
+              Trusted by the operators
+              <br />
+              <span className="bg-gradient-to-r from-sky-300 via-cyan-200 to-violet-300 bg-clip-text text-transparent">
+                moving private capital.
+              </span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              FlowPulse serves a diverse range of financial and business professionals across multiple sectors
+            <p className="mt-5 text-lg text-white/60 max-w-2xl leading-relaxed">
+              From single-family offices to institutional desks — Flowpulse powers the
+              full spectrum of professionals shaping modern finance.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {clientData.map((client, idx) => (
-              <div
-                key={idx}
-                className="group relative perspective-[800px]"
-                onMouseEnter={() => setHoveredIdx(idx)}
-                onMouseLeave={() => setHoveredIdx(null)}
-              >
-                {/* Card */}
+          {/* Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.06] rounded-3xl overflow-hidden border border-white/10">
+            {clientData.map((client, idx) => {
+              const isActive = hoveredIdx === idx;
+              return (
                 <div
-                  className={`relative overflow-hidden rounded-xl border border-primary/20 bg-background/80 backdrop-blur-sm transition-all duration-500 ease-out ${
-                    hoveredIdx === idx
-                      ? "border-primary/50 shadow-xl shadow-primary/15 [transform:rotateY(0deg)_scale(1.02)]"
-                      : "hover:border-primary/30 hover:shadow-md"
-                  }`}
-                  style={{ transformStyle: "preserve-3d" }}
+                  key={idx}
+                  className="group relative bg-[hsl(222,47%,6.5%)] hover:bg-[hsl(222,47%,8.5%)] transition-colors duration-300"
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
                 >
-                  {/* Image */}
-                  <div className="relative h-40 overflow-hidden bg-gradient-to-br from-muted/50 to-muted/20">
+                  {/* Image area */}
+                  <div className="relative h-44 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-sky-500/[0.06] via-transparent to-violet-500/[0.06]" />
                     <img
                       src={client.image}
                       alt={client.name}
                       loading="lazy"
                       width={512}
                       height={512}
-                      className={`w-full h-full object-contain transition-all duration-500 ${
-                        hoveredIdx === idx ? "scale-110 opacity-30" : "scale-100 opacity-90"
+                      className={`relative w-full h-full object-contain p-6 transition-all duration-500 ${
+                        isActive ? "scale-105 opacity-20 blur-[2px]" : "scale-100 opacity-95"
                       }`}
                     />
-                    
-                    {/* Hover overlay with description */}
+
+                    {/* Hover description */}
                     <div
-                      className={`absolute inset-0 flex items-center justify-center p-4 transition-all duration-500 ${
-                        hoveredIdx === idx
-                          ? "opacity-100 translate-z-[40px]"
-                          : "opacity-0"
+                      className={`absolute inset-0 flex items-center justify-center p-5 transition-all duration-400 ${
+                        isActive ? "opacity-100" : "opacity-0 pointer-events-none"
                       }`}
-                      style={{
-                        transform: hoveredIdx === idx ? "translateZ(30px)" : "translateZ(0px)",
-                        transformStyle: "preserve-3d",
-                      }}
                     >
-                      <div
-                        className={`bg-background/90 backdrop-blur-md rounded-lg p-3 border border-primary/30 shadow-lg transition-all duration-500 ${
-                          hoveredIdx === idx
-                            ? "translate-y-0 opacity-100 scale-100"
-                            : "translate-y-4 opacity-0 scale-95"
+                      <p
+                        className={`text-[13px] leading-relaxed text-white/85 text-center transition-all duration-400 ${
+                          isActive ? "translate-y-0" : "translate-y-2"
                         }`}
                       >
-                        <p className="text-xs leading-relaxed text-foreground/90">
-                          {client.description}
-                        </p>
-                      </div>
+                        {client.description}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Title */}
-                  <div className="p-4 text-center">
-                    <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors duration-300">
+                  {/* Title bar */}
+                  <div className="relative px-5 py-4 border-t border-white/[0.06] flex items-center justify-between gap-3">
+                    <p className="font-semibold text-[13px] tracking-tight text-white/90">
                       {client.name}
                     </p>
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${
+                        isActive ? "bg-sky-300 shadow-[0_0_10px_rgba(125,211,252,0.8)]" : "bg-white/20"
+                      }`}
+                    />
                   </div>
+
+                  {/* Bottom accent line */}
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sky-400/60 to-transparent transition-opacity duration-300 ${
+                      isActive ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
