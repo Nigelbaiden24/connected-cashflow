@@ -236,10 +236,13 @@ export const PipelineDashboard = () => {
                       )}
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <Button size="sm" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="bg-emerald-600 hover:bg-emerald-700">
+                      <Button size="sm" variant="secondary" onClick={() => setReviewItem(p)} title="Review full data">
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="bg-emerald-600 hover:bg-emerald-700" title="Approve & promote to live">
                         {busyItem === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => rejectItem(p.id)} disabled={busyItem === p.id}>
+                      <Button size="sm" variant="outline" onClick={() => rejectItem(p.id)} disabled={busyItem === p.id} title="Reject">
                         <XCircle className="h-3 w-3" />
                       </Button>
                     </div>
