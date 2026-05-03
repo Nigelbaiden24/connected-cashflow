@@ -23,7 +23,8 @@ import {
   Star,
   Save,
   Image,
-  Eye
+  Eye,
+  Music
 } from "lucide-react";
 
 const categoryConfig = {
