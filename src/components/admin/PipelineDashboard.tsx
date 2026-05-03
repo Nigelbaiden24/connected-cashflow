@@ -34,6 +34,7 @@ interface Pending {
   id: string; source: string; target_table: string; target_platform: string | null;
   title: string; summary: string | null; category: string | null; source_url: string | null;
   ai_score: number | null; ai_tags: string[] | null; status: string; created_at: string;
+  raw_payload: any; enriched_payload: any;
 }
 
 export const PipelineDashboard = () => {
