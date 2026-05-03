@@ -43,8 +43,18 @@ const COMPANIES_HOUSE_QUERIES = [
   "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
 ];
 function rotate<T>(arr: T[]): T {
-  const idx = Math.floor(Date.now() / (30 * 60 * 1000)) % arr.length;
+  // Rotate every 3h tick so each run picks a fresh category
+  const idx = Math.floor(Date.now() / (3 * 60 * 60 * 1000)) % arr.length;
   return arr[idx];
+}
+// Pick N distinct categories per run (broader coverage)
+function pickN<T>(arr: T[], n: number): T[] {
+  const out: T[] = [];
+  const base = Math.floor(Date.now() / (3 * 60 * 60 * 1000));
+  for (let i = 0; i < Math.min(n, arr.length); i++) {
+    out.push(arr[(base + i) % arr.length]);
+  }
+  return out;
 }
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   switch (source) {
