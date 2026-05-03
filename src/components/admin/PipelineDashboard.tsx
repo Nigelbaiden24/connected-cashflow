@@ -45,6 +45,7 @@ export const PipelineDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [busySource, setBusySource] = useState<string | null>(null);
   const [busyItem, setBusyItem] = useState<string | null>(null);
+  const [reviewItem, setReviewItem] = useState<Pending | null>(null);
 
   const load = async () => {
     const [{ data: s }, { data: r }, { data: p }] = await Promise.all([
