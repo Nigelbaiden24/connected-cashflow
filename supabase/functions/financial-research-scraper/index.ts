@@ -301,6 +301,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   "pensions-tax-wrappers": "Pensions & Tax Wrappers",
   "thematics-packaged": "Thematics & Packaged Investing",
   "copy-trading": "Copy Trading",
+  "music-royalties": "Music Royalties",
 };
 
 serve(async (req) => {
