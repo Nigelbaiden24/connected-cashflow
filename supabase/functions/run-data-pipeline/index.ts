@@ -240,8 +240,8 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   } else if (source === "investor-research") {
     for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
   } else if (source === "opportunity-research") {
-    // Elite enterprise: fan out across 6 distinct categories per run for max coverage
-    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 6)) bodies.push({ category: cat, stream: false, ...baseCfg });
+    // Elite enterprise: rotate through all 20 categories — 3 per run, full cycle every ~7 runs
+    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 3)) bodies.push({ category: cat, stream: false, ...baseCfg });
   } else if (source === "companies-house") {
     for (const q of pickN(COMPANIES_HOUSE_QUERIES, 3)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
   } else {
