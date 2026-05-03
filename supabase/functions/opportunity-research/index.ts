@@ -703,6 +703,51 @@ ${combinedResearch.slice(0, 30000)}`,
       throw new Error("AI analysis failed");
     }
 
+    // Non-streaming JSON path (used by run-data-pipeline)
+    if (!stream) {
+      const j = await aiResponse.json();
+      const txt: string = j.choices?.[0]?.message?.content ?? "";
+      let opportunities: any[] = [];
+      const match = txt.match(/```json\s*([\s\S]*?)```/);
+      const jsonStr = match ? match[1] : txt;
+      try {
+        const parsed = JSON.parse(jsonStr.trim());
+        opportunities = Array.isArray(parsed) ? parsed : (parsed.opportunities ?? []);
+      } catch {
+        try {
+          const arrMatch = jsonStr.match(/\[[\s\S]*\]/);
+          if (arrMatch) opportunities = JSON.parse(arrMatch[0]);
+        } catch { /* ignore */ }
+      }
+      const normalized = opportunities.map((o: any) => ({
+        title: o.name ?? o.title ?? "Untitled",
+        name: o.name ?? o.title,
+        summary: o.description ?? o.summary ?? null,
+        description: o.description,
+        url: o.source_url ?? o.url ?? null,
+        source_url: o.source_url ?? o.url ?? null,
+        image_url: o.image_url ?? null,
+        location: o.location ?? null,
+        country: o.country ?? null,
+        industry: o.industry ?? null,
+        category: effectiveCategory,
+        sub_category: subLabel,
+        analyst_rating: o.analyst_rating ?? null,
+        risk_level: o.risk_level ?? null,
+        thesis: o.investment_thesis ?? null,
+        key_metrics: o.key_metrics ?? null,
+        ...o,
+      }));
+      return new Response(JSON.stringify({
+        success: true,
+        opportunities: normalized,
+        category: categoryLabel,
+        subCategory: subLabel,
+        sourcesScraped: allSources.filter(s => s.status === "success").length,
+        sources: allSources,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const encoder = new TextEncoder();
     const sourceMetaEvent = `data: ${JSON.stringify({
       type: "source_metadata",
