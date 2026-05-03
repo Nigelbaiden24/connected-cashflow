@@ -22,6 +22,38 @@ const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: st
   "companies-house":      { fn: "companies-house-scraper",    targetTable: "opportunities",       platform: "both"     },
 };
 
+// Categories rotated each run so we cover the full opportunity universe over time
+const FINANCIAL_RESEARCH_CATEGORIES = [
+  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
+  "funds-etfs","alternatives","esg","private-equity","venture-capital","infrastructure",
+  "sme-acquisitions","distressed","debt-lending","fractional-pe-vc","private-market-platforms",
+  "derivatives","capital-protected-notes","savings-cash-yield",
+];
+const OPPORTUNITY_RESEARCH_CATEGORIES = [
+  "uk_property","overseas_property","vehicles","businesses","timepieces",
+];
+const COMPANIES_HOUSE_QUERIES = [
+  "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
+];
+function rotate<T>(arr: T[]): T {
+  const idx = Math.floor(Date.now() / (30 * 60 * 1000)) % arr.length;
+  return arr[idx];
+}
+function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
+  switch (source) {
+    case "financial-research":
+      return { categoryKey: rotate(FINANCIAL_RESEARCH_CATEGORIES), ...baseConfig };
+    case "opportunity-research":
+      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), ...baseConfig };
+    case "elite-scraper":
+      return { mode: "explain", platform: "finance", categoryLabel: "Multi-asset Investment Opportunities", scrapedData: "Auto-pipeline run: gather and structure current investment opportunities across asset classes.", ...baseConfig };
+    case "companies-house":
+      return { action: "full_scrape", query: rotate(COMPANIES_HOUSE_QUERIES), searchType: "companies", maxPages: 1, ...baseConfig };
+    default:
+      return baseConfig;
+  }
+}
+
 async function sha256(s: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
@@ -80,16 +112,68 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
 // Normalise scraper outputs into a flat list of candidate items
 function extractItems(source: string, payload: any): Array<{ title: string; summary?: string; url?: string; raw: any }> {
   if (!payload) return [];
+  // Companies-House full_scrape shape: { results: [{ company: {...}, officers: [...] }] }
+  if (Array.isArray(payload.results) && payload.results[0]?.company) {
+    return payload.results.slice(0, 25).map((r: any) => ({
+      title: String(r.company?.name ?? r.company?.companyName ?? r.company?.company_number ?? "Untitled").slice(0, 240),
+      summary: [r.company?.status, r.company?.companyType, r.company?.address].filter(Boolean).join(" · "),
+      url: r.company?.url ?? (r.company?.company_number ? `https://find-and-update.company-information.service.gov.uk/company/${r.company.company_number}` : null),
+      raw: r,
+    })).filter((x: any) => x.title && x.title !== "Untitled");
+  }
   const candidates: any[] =
     payload.opportunities ?? payload.results ?? payload.items ?? payload.profiles ??
     payload.data?.opportunities ?? payload.data?.results ?? payload.data?.items ?? payload.data ?? [];
-  if (!Array.isArray(candidates)) return [];
-  return candidates.slice(0, 25).map((c) => ({
-    title: String(c.title ?? c.name ?? c.firm_name ?? c.company_name ?? c.company ?? c.headline ?? "Untitled").slice(0, 240),
-    summary: c.summary ?? c.description ?? c.thesis ?? c.snippet ?? null,
-    url: c.url ?? c.source_url ?? c.link ?? c.website ?? null,
-    raw: c,
-  })).filter(x => x.title && x.title !== "Untitled");
+  if (Array.isArray(candidates) && candidates.length) {
+    return candidates.slice(0, 25).map((c) => ({
+      title: String(c.title ?? c.name ?? c.firm_name ?? c.company_name ?? c.company ?? c.headline ?? "Untitled").slice(0, 240),
+      summary: c.summary ?? c.description ?? c.thesis ?? c.snippet ?? null,
+      url: c.url ?? c.source_url ?? c.link ?? c.website ?? null,
+      raw: c,
+    })).filter(x => x.title && x.title !== "Untitled");
+  }
+  return [];
+}
+
+// AI fallback: extract opportunities from a blob of scraped markdown/content
+async function aiExtractOpportunities(source: string, payload: any): Promise<Array<{ title: string; summary?: string; url?: string; raw: any }>> {
+  if (!LOVABLE_API_KEY) return [];
+  const blob: string =
+    payload?.content ??
+    payload?.markdown ??
+    payload?.combinedContent ??
+    payload?.data?.content ??
+    "";
+  if (!blob || blob.length < 200) return [];
+  const label = payload?.categoryLabel ?? payload?.category ?? source;
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: "Extract distinct investment opportunities from scraped content. Reply ONLY with JSON: {opportunities:[{title, summary, url, industry, location}]}. Max 12 items. Title <= 140 chars. Skip generic/news-only items." },
+          { role: "user", content: `Category: ${label}\n\nContent:\n${blob.slice(0, 60000)}` },
+        ],
+      }),
+    });
+    if (!res.ok) return [];
+    const j = await res.json();
+    const txt = j.choices?.[0]?.message?.content ?? "{}";
+    const cleaned = txt.replace(/```json\s*|```/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+    const arr = Array.isArray(parsed?.opportunities) ? parsed.opportunities : [];
+    return arr.slice(0, 12).map((o: any) => ({
+      title: String(o.title ?? "Untitled").slice(0, 240),
+      summary: o.summary ?? null,
+      url: o.url ?? null,
+      raw: { ...o, _extracted_from: source, category: label },
+    })).filter((x: any) => x.title && x.title !== "Untitled");
+  } catch (e) {
+    console.warn("[aiExtractOpportunities]", e);
+    return [];
+  }
 }
 
 async function notifyAdmins(supabase: any, source: string, message: string) {
@@ -128,7 +212,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   let payload: any = null;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      payload = await callScraper(def.fn, schedule.config ?? {});
+      payload = await callScraper(def.fn, buildScraperBody(source, (schedule.config as Record<string, unknown>) ?? {}));
       break;
     } catch (e: any) {
       errors.push({ attempt, error: String(e.message ?? e) });
@@ -169,7 +253,10 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
     });
   } catch (e) { console.warn("[history]", e); }
 
-  const items = extractItems(source, payload);
+  let items = extractItems(source, payload);
+  if (items.length === 0) {
+    items = await aiExtractOpportunities(source, payload);
+  }
   fetched = items.length;
 
   for (const it of items) {
