@@ -217,7 +217,7 @@ export const PipelineDashboard = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">{p.title}</span>
+                        <button onClick={() => setReviewItem(p)} className="font-medium text-left hover:text-fuchsia-300 hover:underline">{p.title}</button>
                         {p.ai_score != null && (
                           <Badge variant="outline" className="text-xs">★ {Number(p.ai_score).toFixed(1)}/5</Badge>
                         )}
