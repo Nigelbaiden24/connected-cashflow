@@ -14,20 +14,27 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 // Map scheduler source key → scraper edge function + target table
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
-  "financial-research":   { fn: "financial-research-scraper", targetTable: "opportunities",       platform: "finance"  },
-  "intel-orchestrate":    { fn: "intel-orchestrate",          targetTable: "intel_events",        platform: "both"     },
-  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "both"    },
-  "investor-finder":      { fn: "investor-finder-scraper",    targetTable: "opportunities",       platform: "investor" },
-  "elite-scraper":        { fn: "elite-scraper-analyst",      targetTable: "opportunities",       platform: "finance"  },
-  "companies-house":      { fn: "companies-house-scraper",    targetTable: "opportunities",       platform: "both"     },
+  "financial-research":   { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "finance"  },
+  "investor-research":    { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "investor" },
+  "intel-orchestrate":    { fn: "intel-orchestrate",          targetTable: "intel_events",         platform: "both"     },
+  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "both"     },
+  "investor-finder":      { fn: "investor-finder-scraper",    targetTable: "opportunities",        platform: "investor" },
+  "elite-scraper":        { fn: "elite-scraper-analyst",      targetTable: "opportunities",        platform: "finance"  },
+  "companies-house":      { fn: "companies-house-scraper",    targetTable: "opportunities",        platform: "both"     },
 };
 
-// Categories rotated each run so we cover the full opportunity universe over time
-const FINANCIAL_RESEARCH_CATEGORIES = [
+// Finance platform investment categories (Opportunity Intelligence — Finance)
+const FINANCE_RESEARCH_CATEGORIES = [
   "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
   "funds-etfs","alternatives","esg","private-equity","venture-capital","infrastructure",
-  "sme-acquisitions","distressed","debt-lending","fractional-pe-vc","private-market-platforms",
-  "derivatives","capital-protected-notes","savings-cash-yield",
+  "sme-acquisitions","distressed","debt-lending",
+];
+// Investor platform investment categories (Opportunity Intelligence — Investor)
+const INVESTOR_RESEARCH_CATEGORIES = [
+  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
+  "funds-etfs","alternatives","esg","fractional-pe-vc","private-market-platforms",
+  "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
+  "thematics-packaged","copy-trading",
 ];
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "uk_property","overseas_property","vehicles","businesses","timepieces",
@@ -42,7 +49,9 @@ function rotate<T>(arr: T[]): T {
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   switch (source) {
     case "financial-research":
-      return { categoryKey: rotate(FINANCIAL_RESEARCH_CATEGORIES), ...baseConfig };
+      return { categoryKey: rotate(FINANCE_RESEARCH_CATEGORIES), platform: "finance", ...baseConfig };
+    case "investor-research":
+      return { categoryKey: rotate(INVESTOR_RESEARCH_CATEGORIES), platform: "investor", ...baseConfig };
     case "opportunity-research":
       return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), ...baseConfig };
     case "elite-scraper":
