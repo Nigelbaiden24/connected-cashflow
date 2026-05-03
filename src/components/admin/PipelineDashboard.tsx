@@ -275,6 +275,60 @@ export const PipelineDashboard = () => {
           {runs.length === 0 && <div className="text-sm text-muted-foreground py-6 text-center">No runs yet.</div>}
         </div>
       </Card>
+
+      {/* Review dialog */}
+      <Dialog open={!!reviewItem} onOpenChange={(o) => !o && setReviewItem(null)}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-950 border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              {reviewItem?.title}
+              {reviewItem?.ai_score != null && (
+                <Badge variant="outline" className="text-xs">★ {Number(reviewItem.ai_score).toFixed(1)}/5</Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 flex-wrap text-xs">
+              <Badge className="bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30">{reviewItem?.source}</Badge>
+              <Badge variant="outline">→ {reviewItem?.target_table}</Badge>
+              {reviewItem?.target_platform && <Badge variant="outline">{reviewItem.target_platform}</Badge>}
+              {reviewItem?.source_url && (
+                <a href={reviewItem.source_url} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline truncate">
+                  {reviewItem.source_url}
+                </a>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {reviewItem && (
+            <div className="space-y-4">
+              {reviewItem.summary && (
+                <div className="p-3 rounded-md bg-slate-900/60 border border-slate-800 text-sm text-slate-200">
+                  {reviewItem.summary}
+                </div>
+              )}
+              <ScrapeItemView
+                payload={reviewItem.enriched_payload ?? reviewItem.raw_payload}
+                source={reviewItem.source}
+                filenameStem={`pipeline-${reviewItem.source}-${reviewItem.id.slice(0, 8)}`}
+              />
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => reviewItem && rejectItem(reviewItem.id)} disabled={!reviewItem || busyItem === reviewItem?.id}>
+              <XCircle className="h-4 w-4 mr-1" /> Reject
+            </Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={async () => { if (reviewItem) { await approveItem(reviewItem.id); setReviewItem(null); } }}
+              disabled={!reviewItem || busyItem === reviewItem?.id}
+            >
+              {busyItem === reviewItem?.id ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
+              Approve & promote
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
