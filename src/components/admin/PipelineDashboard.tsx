@@ -186,7 +186,7 @@ export const PipelineDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.10),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.12),transparent_55%),linear-gradient(135deg,#020617,#0b1120)] p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.10),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.12),transparent_55%),linear-gradient(135deg,#ffffff,#f8fafc)] p-6 md:p-8">
         <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
         <div className="absolute -top-32 right-0 w-96 h-96 bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-violet-500/10 blur-[120px] rounded-full pointer-events-none" />
@@ -227,7 +227,7 @@ export const PipelineDashboard = () => {
       </div>
 
       {/* Schedule */}
-      <Card className="p-5 bg-slate-900/40 border-slate-200 backdrop-blur-xl">
+      <Card className="p-5 bg-white border-slate-200 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold flex items-center gap-2 text-slate-900">
             <Layers className="h-4 w-4 text-cyan-400" /> Source Schedule
@@ -243,7 +243,7 @@ export const PipelineDashboard = () => {
             return (
               <div
                 key={s.source}
-                className={`group relative overflow-hidden rounded-2xl border p-4 transition-all bg-gradient-to-br from-slate-950/90 to-slate-900/40 ${failing ? "border-rose-500/30 hover:border-rose-500/60" : "border-slate-200 hover:border-cyan-400/40"} hover:shadow-[0_10px_40px_-15px_rgba(56,189,248,0.4)]`}
+                className={`group relative overflow-hidden rounded-2xl border p-4 transition-all bg-gradient-to-br from-white to-slate-50 ${failing ? "border-rose-500/30 hover:border-rose-500/60" : "border-slate-200 hover:border-cyan-400/40"} hover:shadow-[0_10px_40px_-15px_rgba(56,189,248,0.4)]`}
               >
                 <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${failing ? "from-transparent via-rose-400/60 to-transparent" : "from-transparent via-cyan-400/50 to-transparent"} opacity-0 group-hover:opacity-100 transition-opacity`} />
                 <div className="flex items-start justify-between gap-3">
@@ -278,7 +278,7 @@ export const PipelineDashboard = () => {
       </Card>
 
       {/* Pending review */}
-      <Card className="p-5 bg-slate-900/40 border-slate-200 backdrop-blur-xl">
+      <Card className="p-5 bg-white border-slate-200 backdrop-blur-xl">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <h3 className="font-semibold flex items-center gap-2 text-slate-900">
             <Sparkles className="h-4 w-4 text-amber-400" /> Pending Review
@@ -307,7 +307,7 @@ export const PipelineDashboard = () => {
         </div>
 
         {filteredPending.length === 0 ? (
-          <div className="text-sm text-slate-500 py-12 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-950/30">
+          <div className="text-sm text-slate-500 py-12 text-center border border-dashed border-slate-200 rounded-2xl bg-slate-50">
             <Filter className="h-8 w-8 mx-auto mb-2 text-slate-700" />
             No items awaiting review.
           </div>
@@ -318,9 +318,9 @@ export const PipelineDashboard = () => {
                 const score = Number(p.ai_score) || 0;
                 const scoreTone = score >= 4 ? "from-emerald-500/30 to-emerald-400/10 text-emerald-700 border-emerald-400/40"
                   : score >= 3 ? "from-amber-500/30 to-amber-400/10 text-amber-700 border-amber-400/40"
-                  : "from-slate-700/40 to-slate-600/10 text-slate-600 border-slate-200";
+                  : "from-slate-100 to-slate-50 text-slate-600 border-slate-200";
                 return (
-                  <div key={p.id} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950/90 to-slate-900/40 border border-slate-200 hover:border-cyan-400/40 hover:shadow-[0_12px_50px_-15px_rgba(56,189,248,0.45)] transition-all p-4">
+                  <div key={p.id} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-cyan-400/40 hover:shadow-[0_12px_50px_-15px_rgba(56,189,248,0.45)] transition-all p-4">
                     <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-cyan-500/5 blur-2xl group-hover:bg-cyan-50 transition-colors" />
                     <div className="relative flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -338,7 +338,7 @@ export const PipelineDashboard = () => {
                         {p.summary && <p className="text-xs text-slate-500 mt-2 line-clamp-2">{p.summary}</p>}
                         {(p.ai_tags ?? []).length > 0 && (
                           <div className="flex items-center gap-1 flex-wrap mt-2">
-                            {(p.ai_tags ?? []).slice(0, 4).map(t => <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-800/70 border border-slate-200 text-slate-500">#{t}</span>)}
+                            {(p.ai_tags ?? []).slice(0, 4).map(t => <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-500">#{t}</span>)}
                           </div>
                         )}
                         {p.source_url && (
@@ -348,7 +348,7 @@ export const PipelineDashboard = () => {
                         )}
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">
-                        <Button size="icon" variant="secondary" className="h-7 w-7 bg-slate-100 hover:bg-slate-700/60 border border-slate-200" onClick={() => setReviewItem(p)} title="Review full data">
+                        <Button size="icon" variant="secondary" className="h-7 w-7 bg-slate-100 hover:bg-slate-200 border border-slate-200" onClick={() => setReviewItem(p)} title="Review full data">
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
                         <Button size="icon" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="h-7 w-7 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-[0_4px_12px_-2px_rgba(16,185,129,0.5)]" title="Approve & promote">
@@ -368,14 +368,14 @@ export const PipelineDashboard = () => {
       </Card>
 
       {/* Run history */}
-      <Card className="p-5 bg-slate-900/40 border-slate-200 backdrop-blur-xl">
+      <Card className="p-5 bg-white border-slate-200 backdrop-blur-xl">
         <h3 className="font-semibold mb-3 flex items-center gap-2 text-slate-900">
           <Database className="h-4 w-4 text-sky-400" /> Recent Runs
           <Badge className="ml-1 bg-slate-100 border border-slate-200 text-slate-600 text-[10px]">{runs.length}</Badge>
         </h3>
         <div className="space-y-1">
           {runs.map(r => (
-            <div key={r.id} className="flex items-center justify-between gap-3 text-sm py-2.5 px-3 rounded-xl hover:bg-gradient-to-r hover:from-slate-950/60 hover:to-slate-900/30 border border-transparent hover:border-slate-200 transition-all">
+            <div key={r.id} className="flex items-center justify-between gap-3 text-sm py-2.5 px-3 rounded-xl hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 border border-transparent hover:border-slate-200 transition-all">
               <div className="flex items-center gap-2 min-w-0">
                 {statusBadge(r.status)}
                 <span className="font-medium text-slate-700 truncate">{r.source}</span>
@@ -394,7 +394,7 @@ export const PipelineDashboard = () => {
 
       {/* Review dialog */}
       <Dialog open={!!reviewItem} onOpenChange={(o) => !o && setReviewItem(null)}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-950 border-slate-200">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 flex-wrap text-slate-900">
               <Sparkles className="h-4 w-4 text-amber-400" />
