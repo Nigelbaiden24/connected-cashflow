@@ -160,7 +160,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   let payload: any = null;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      payload = await callScraper(def.fn, schedule.config ?? {});
+      payload = await callScraper(def.fn, buildScraperBody(source, (schedule.config as Record<string, unknown>) ?? {}));
       break;
     } catch (e: any) {
       errors.push({ attempt, error: String(e.message ?? e) });
