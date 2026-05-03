@@ -60,6 +60,7 @@ export function DMFinderPanel() {
     company_name: "",
     location: "",
     sector: "",
+    website: "",
   });
   const [loading, setLoading] = useState(false);
   const [contacts, setContacts] = useState<DMContact[]>([]);
