@@ -17,6 +17,18 @@ interface SearchInput {
   company_name: string;
   location?: string;
   sector?: string;
+  website?: string;
+}
+
+function extractDomain(url: string): string {
+  if (!url) return "";
+  try {
+    const withProto = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const host = new URL(withProto).hostname.toLowerCase().replace(/^www\./, "");
+    return host;
+  } catch {
+    return url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  }
 }
 
 interface ExtractedContact {
