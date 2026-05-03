@@ -8,9 +8,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
   Activity, CheckCircle2, XCircle, RefreshCw, Play, Clock, Database,
-  AlertTriangle, Sparkles, Loader2,
+  AlertTriangle, Sparkles, Loader2, Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ScrapeItemView } from "./ScrapeItemView";
 
 interface Schedule {
   source: string;
