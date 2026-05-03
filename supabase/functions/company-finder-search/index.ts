@@ -36,7 +36,7 @@ interface ExtractedCompany {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-async function firecrawlSearch(query: string, apiKey: string, limit = 8) {
+async function firecrawlSearch(query: string, apiKey: string, limit = 50) {
   try {
     const res = await fetch(`${FIRECRAWL_BASE}/search`, {
       method: "POST",
@@ -220,7 +220,7 @@ async function runDeepDive(
     const queries = buildQueries(body);
     console.log(`[company-finder] search ${searchId}: ${queries.length} queries dispatching in parallel`);
 
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 8)));
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 50)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
