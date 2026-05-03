@@ -296,7 +296,7 @@ Deno.serve(async (req: Request) => {
     if (baseName) {
       const hasVerified = extracted.some((c) => c.email && (c.email_confidence === "high" || c.email_confidence === "medium"));
       if (!hasVerified) {
-        const perms = patternEmails(baseName, body.company_name);
+        const perms = patternEmails(baseName, body.company_name, websiteDomain);
         for (const guess of perms) {
           enriched.push({
             full_name: baseName,
