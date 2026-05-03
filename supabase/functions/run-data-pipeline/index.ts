@@ -16,7 +16,7 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
   "financial-research":   { fn: "financial-research-scraper", targetTable: "opportunities",       platform: "finance"  },
   "intel-orchestrate":    { fn: "intel-orchestrate",          targetTable: "intel_events",        platform: "both"     },
-  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunities",       platform: "both"     },
+  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "both"    },
   "investor-finder":      { fn: "investor-finder-scraper",    targetTable: "opportunities",       platform: "investor" },
   "elite-scraper":        { fn: "elite-scraper-analyst",      targetTable: "opportunities",       platform: "finance"  },
   "companies-house":      { fn: "companies-house-scraper",    targetTable: "opportunities",       platform: "both"     },
