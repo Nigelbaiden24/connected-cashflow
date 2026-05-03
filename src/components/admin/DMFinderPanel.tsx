@@ -225,6 +225,7 @@ export function DMFinderPanel() {
               { id: "full_name", label: "Full Name", placeholder: "(optional)" },
               { id: "job_title", label: "Job Title / Role *", placeholder: "Head of Procurement" },
               { id: "company_name", label: "Company Name *", placeholder: "Acme Ltd" },
+              { id: "website", label: "Website", placeholder: "acme.com (optional)" },
               { id: "location", label: "Location", placeholder: "(optional)" },
               { id: "sector", label: "Sector", placeholder: "(optional)" },
             ].map(f => (
