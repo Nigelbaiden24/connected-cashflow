@@ -172,7 +172,7 @@ async function aiExtractOpportunities(source: string, payload: any): Promise<Arr
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "Extract distinct investment opportunities from scraped content. Reply ONLY with JSON: {opportunities:[{title, summary, url, industry, location}]}. Max 12 items. Title <= 140 chars. Skip generic/news-only items." },
+          { role: "system", content: "Extract distinct investment opportunities from scraped content. Reply ONLY with JSON: {opportunities:[{title, summary, url, industry, location}]}. Max 30 items. Title <= 140 chars. Skip generic/news-only items." },
           { role: "user", content: `Category: ${label}\n\nContent:\n${blob.slice(0, 60000)}` },
         ],
       }),
