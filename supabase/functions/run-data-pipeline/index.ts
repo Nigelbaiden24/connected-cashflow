@@ -22,6 +22,38 @@ const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: st
   "companies-house":      { fn: "companies-house-scraper",    targetTable: "opportunities",       platform: "both"     },
 };
 
+// Categories rotated each run so we cover the full opportunity universe over time
+const FINANCIAL_RESEARCH_CATEGORIES = [
+  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
+  "funds-etfs","alternatives","esg","private-equity","venture-capital","infrastructure",
+  "sme-acquisitions","distressed","debt-lending","fractional-pe-vc","private-market-platforms",
+  "derivatives","capital-protected-notes","savings-cash-yield",
+];
+const OPPORTUNITY_RESEARCH_CATEGORIES = [
+  "uk_property","overseas_property","vehicles","businesses","timepieces",
+];
+const COMPANIES_HOUSE_QUERIES = [
+  "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
+];
+function rotate<T>(arr: T[]): T {
+  const idx = Math.floor(Date.now() / (30 * 60 * 1000)) % arr.length;
+  return arr[idx];
+}
+function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
+  switch (source) {
+    case "financial-research":
+      return { categoryKey: rotate(FINANCIAL_RESEARCH_CATEGORIES), ...baseConfig };
+    case "opportunity-research":
+      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), ...baseConfig };
+    case "elite-scraper":
+      return { mode: "explain", platform: "finance", categoryLabel: "Multi-asset Investment Opportunities", scrapedData: "Auto-pipeline run: gather and structure current investment opportunities across asset classes.", ...baseConfig };
+    case "companies-house":
+      return { action: "search", query: rotate(COMPANIES_HOUSE_QUERIES), searchType: "companies", maxPages: 1, ...baseConfig };
+    default:
+      return baseConfig;
+  }
+}
+
 async function sha256(s: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
