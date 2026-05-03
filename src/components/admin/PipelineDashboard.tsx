@@ -8,9 +8,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
   Activity, CheckCircle2, XCircle, RefreshCw, Play, Clock, Database,
-  AlertTriangle, Sparkles, Loader2,
+  AlertTriangle, Sparkles, Loader2, Eye,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ScrapeItemView } from "./ScrapeItemView";
 
 interface Schedule {
   source: string;
@@ -32,6 +34,7 @@ interface Pending {
   id: string; source: string; target_table: string; target_platform: string | null;
   title: string; summary: string | null; category: string | null; source_url: string | null;
   ai_score: number | null; ai_tags: string[] | null; status: string; created_at: string;
+  raw_payload: any; enriched_payload: any;
 }
 
 export const PipelineDashboard = () => {
@@ -42,6 +45,7 @@ export const PipelineDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [busySource, setBusySource] = useState<string | null>(null);
   const [busyItem, setBusyItem] = useState<string | null>(null);
+  const [reviewItem, setReviewItem] = useState<Pending | null>(null);
 
   const load = async () => {
     const [{ data: s }, { data: r }, { data: p }] = await Promise.all([
@@ -213,7 +217,7 @@ export const PipelineDashboard = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">{p.title}</span>
+                        <button onClick={() => setReviewItem(p)} className="font-medium text-left hover:text-fuchsia-300 hover:underline">{p.title}</button>
                         {p.ai_score != null && (
                           <Badge variant="outline" className="text-xs">★ {Number(p.ai_score).toFixed(1)}/5</Badge>
                         )}
@@ -232,10 +236,13 @@ export const PipelineDashboard = () => {
                       )}
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <Button size="sm" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="bg-emerald-600 hover:bg-emerald-700">
+                      <Button size="sm" variant="secondary" onClick={() => setReviewItem(p)} title="Review full data">
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="bg-emerald-600 hover:bg-emerald-700" title="Approve & promote to live">
                         {busyItem === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => rejectItem(p.id)} disabled={busyItem === p.id}>
+                      <Button size="sm" variant="outline" onClick={() => rejectItem(p.id)} disabled={busyItem === p.id} title="Reject">
                         <XCircle className="h-3 w-3" />
                       </Button>
                     </div>
@@ -268,6 +275,60 @@ export const PipelineDashboard = () => {
           {runs.length === 0 && <div className="text-sm text-muted-foreground py-6 text-center">No runs yet.</div>}
         </div>
       </Card>
+
+      {/* Review dialog */}
+      <Dialog open={!!reviewItem} onOpenChange={(o) => !o && setReviewItem(null)}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-950 border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 flex-wrap">
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              {reviewItem?.title}
+              {reviewItem?.ai_score != null && (
+                <Badge variant="outline" className="text-xs">★ {Number(reviewItem.ai_score).toFixed(1)}/5</Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 flex-wrap text-xs">
+              <Badge className="bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30">{reviewItem?.source}</Badge>
+              <Badge variant="outline">→ {reviewItem?.target_table}</Badge>
+              {reviewItem?.target_platform && <Badge variant="outline">{reviewItem.target_platform}</Badge>}
+              {reviewItem?.source_url && (
+                <a href={reviewItem.source_url} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline truncate">
+                  {reviewItem.source_url}
+                </a>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {reviewItem && (
+            <div className="space-y-4">
+              {reviewItem.summary && (
+                <div className="p-3 rounded-md bg-slate-900/60 border border-slate-800 text-sm text-slate-200">
+                  {reviewItem.summary}
+                </div>
+              )}
+              <ScrapeItemView
+                payload={reviewItem.enriched_payload ?? reviewItem.raw_payload}
+                source={reviewItem.source}
+                filenameStem={`pipeline-${reviewItem.source}-${reviewItem.id.slice(0, 8)}`}
+              />
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => reviewItem && rejectItem(reviewItem.id)} disabled={!reviewItem || busyItem === reviewItem?.id}>
+              <XCircle className="h-4 w-4 mr-1" /> Reject
+            </Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={async () => { if (reviewItem) { await approveItem(reviewItem.id); setReviewItem(null); } }}
+              disabled={!reviewItem || busyItem === reviewItem?.id}
+            >
+              {busyItem === reviewItem?.id ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
+              Approve & promote
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
