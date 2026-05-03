@@ -292,10 +292,13 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
     });
   } catch (e) { console.warn("[history]", e); }
 
-  let items = extractItems(source, payload);
-  if (items.length === 0) {
-    items = await aiExtractOpportunities(source, payload);
+  const allItems: Array<{ title: string; summary?: string; url?: string; raw: any }> = [];
+  for (const pl of payloads) {
+    let it = extractItems(source, pl);
+    if (it.length === 0) it = await aiExtractOpportunities(source, pl);
+    allItems.push(...it);
   }
+  const items = allItems;
   fetched = items.length;
 
   for (const it of items) {
