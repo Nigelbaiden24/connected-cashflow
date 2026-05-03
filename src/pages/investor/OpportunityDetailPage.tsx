@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Building2, Car, Globe, Briefcase, LineChart, Bitcoin, Users, Award, Package, Landmark,
   MapPin, TrendingUp, Star, Calendar, Shield, Target, Eye, DollarSign, Clock, BarChart3, AlertTriangle,
-  ArrowUpRight, Scale, Layers
+  ArrowUpRight, Scale, Layers, Music
 } from "lucide-react";
 import { OpportunityAnalyticsCharts } from "@/components/opportunities/OpportunityAnalyticsCharts";
 
