@@ -23,7 +23,7 @@ import {
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Car, Globe, LineChart, Bitcoin, Users, Award, Package,
   Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
-  Zap, Factory, Shield
+  Zap, Factory, Shield, Music
 } from "lucide-react";
 
 interface OpportunityProduct {
