@@ -554,9 +554,9 @@ serve(async (req) => {
       .map(r => `- Title: ${r.title} | URL: ${r.url} | Image: ${r.imageUrl || "none"} | Desc: ${r.description?.slice(0, 100)}`)
       .join("\n");
 
-    const isOverseasProperty = category === "overseas_property";
-    const isBusinessMA = category === "businesses";
-    const isTimepieces = category === "timepieces";
+    const isOverseasProperty = effectiveCategory === "overseas_property";
+    const isBusinessMA = effectiveCategory === "businesses";
+    const isTimepieces = effectiveCategory === "timepieces";
 
     const economicAnalysisInstructions = isOverseasProperty ? `
 
