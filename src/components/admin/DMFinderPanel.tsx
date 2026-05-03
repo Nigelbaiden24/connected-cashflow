@@ -34,7 +34,7 @@ const confidenceColor = (c: string | null) => {
     case "high": return "bg-emerald-500/15 text-emerald-300 border-emerald-400/40 shadow-[0_0_10px_-3px_rgba(16,185,129,0.5)]";
     case "medium": return "bg-amber-500/15 text-amber-300 border-amber-400/40";
     case "low": return "bg-rose-500/15 text-rose-300 border-rose-400/40";
-    default: return "bg-slate-700/30 text-slate-400 border-white/10";
+    default: return "bg-slate-700/30 text-slate-300 border-white/10";
   }
 };
 
@@ -46,8 +46,8 @@ const KpiTile = ({
   <div className="group relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-slate-950/80 via-slate-950/60 to-slate-900/40 backdrop-blur-xl p-4 hover:border-white/10 transition-all">
     <div className={`absolute -top-10 -right-10 w-28 h-28 rounded-full blur-3xl opacity-30 group-hover:opacity-60 transition-opacity ${accent}`} />
     <div className="relative flex items-center justify-between">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">{label}</span>
-      <Icon className="h-3.5 w-3.5 text-slate-400" />
+      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-300">{label}</span>
+      <Icon className="h-3.5 w-3.5 text-slate-300" />
     </div>
     <div className="relative mt-2 text-2xl font-bold text-slate-50 tabular-nums">{value}</div>
   </div>
@@ -195,7 +195,7 @@ export function DMFinderPanel() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-white via-violet-100 to-cyan-200 bg-clip-text text-transparent">
               DM Finder
             </h2>
-            <p className="text-sm text-slate-400 max-w-2xl">
+            <p className="text-sm text-slate-300 max-w-2xl">
               Decision Maker Contact Intelligence Engine. Surfaces only publicly listed professional details — inferred emails are flagged Low confidence and never SMTP-probed.
             </p>
           </div>
@@ -216,7 +216,7 @@ export function DMFinderPanel() {
           <CardTitle className="text-slate-100 flex items-center gap-2 text-base">
             <Sparkles className="h-4 w-4 text-violet-400" /> Search Intelligence
           </CardTitle>
-          <CardDescription>Provide job title and company. Add optional context for sharper matches.</CardDescription>
+          <CardDescription className="text-slate-300">Provide job title and company. Add optional context for sharper matches.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -228,7 +228,7 @@ export function DMFinderPanel() {
               { id: "sector", label: "Sector", placeholder: "(optional)" },
             ].map(f => (
               <div key={f.id} className="space-y-1.5">
-                <Label htmlFor={f.id} className="text-slate-400 text-[10px] uppercase tracking-[0.14em] font-semibold">{f.label}</Label>
+                <Label htmlFor={f.id} className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold">{f.label}</Label>
                 <Input
                   id={f.id}
                   placeholder={f.placeholder}
@@ -260,7 +260,7 @@ export function DMFinderPanel() {
                 Results
                 <Badge className="bg-violet-500/15 text-violet-200 border-violet-400/40 ml-1 text-[10px]">{filtered.length}/{contacts.length}</Badge>
               </CardTitle>
-              <CardDescription className="mt-1">
+              <CardDescription className="mt-1 text-slate-300">
                 <span className="text-emerald-400">High</span> = official source · <span className="text-amber-400">Medium</span> = secondary · <span className="text-rose-400">Low</span> = pattern-generated, unverified.
               </CardDescription>
             </div>
@@ -270,7 +270,7 @@ export function DMFinderPanel() {
                   <button
                     key={p}
                     onClick={() => setFilter(p)}
-                    className={`px-2.5 py-1 text-[11px] rounded-md capitalize transition-all ${filter === p ? "bg-gradient-to-r from-violet-500/30 to-cyan-500/30 text-violet-100 shadow-inner" : "text-slate-400 hover:text-slate-200"}`}
+                    className={`px-2.5 py-1 text-[11px] rounded-md capitalize transition-all ${filter === p ? "bg-gradient-to-r from-violet-500/30 to-cyan-500/30 text-violet-100 shadow-inner" : "text-slate-300 hover:text-slate-200"}`}
                   >{p}</button>
                 ))}
               </div>
@@ -284,12 +284,12 @@ export function DMFinderPanel() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-white/5 bg-slate-950/80 hover:bg-slate-950/80">
-                    <TableHead className="text-slate-500 text-[10px] uppercase tracking-[0.14em] font-semibold">Name / Role</TableHead>
-                    <TableHead className="text-slate-500 text-[10px] uppercase tracking-[0.14em] font-semibold">Email</TableHead>
-                    <TableHead className="text-slate-500 text-[10px] uppercase tracking-[0.14em] font-semibold">Phone</TableHead>
-                    <TableHead className="text-slate-500 text-[10px] uppercase tracking-[0.14em] font-semibold">Source</TableHead>
-                    <TableHead className="text-slate-500 text-[10px] uppercase tracking-[0.14em] font-semibold">Tag</TableHead>
-                    <TableHead className="text-slate-500 text-[10px] uppercase tracking-[0.14em] font-semibold text-right">Actions</TableHead>
+                    <TableHead className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold">Name / Role</TableHead>
+                    <TableHead className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold">Email</TableHead>
+                    <TableHead className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold">Phone</TableHead>
+                    <TableHead className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold">Source</TableHead>
+                    <TableHead className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold">Tag</TableHead>
+                    <TableHead className="text-slate-300 text-[10px] uppercase tracking-[0.14em] font-semibold text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -302,8 +302,8 @@ export function DMFinderPanel() {
                           </div>
                           <div className="min-w-0">
                             <div className="font-medium truncate">{c.full_name || "—"}</div>
-                            <div className="text-xs text-slate-400 truncate flex items-center gap-1">
-                              {c.role}{c.company ? <><span className="text-slate-600">·</span><Building2 className="h-3 w-3 text-slate-500" />{c.company}</> : null}
+                            <div className="text-xs text-slate-300 truncate flex items-center gap-1">
+                              {c.role}{c.company ? <><span className="text-slate-300">·</span><Building2 className="h-3 w-3 text-slate-300" />{c.company}</> : null}
                             </div>
                           </div>
                         </div>
@@ -311,26 +311,26 @@ export function DMFinderPanel() {
                       <TableCell>
                         {c.email ? (
                           <div className="flex items-center gap-2">
-                            <Mail className="h-3 w-3 text-slate-500 shrink-0" />
+                            <Mail className="h-3 w-3 text-slate-300 shrink-0" />
                             <span className="text-slate-200 text-sm truncate max-w-[180px]">{c.email}</span>
                             <Badge variant="outline" className={`${confidenceColor(c.email_confidence)} text-[10px] capitalize`}>{c.email_confidence}</Badge>
-                            <button onClick={() => copyValue(c.email!)} className="text-slate-500 hover:text-violet-300 transition-colors">
+                            <button onClick={() => copyValue(c.email!)} className="text-slate-300 hover:text-violet-300 transition-colors">
                               <Copy className="h-3 w-3" />
                             </button>
                           </div>
-                        ) : <span className="text-slate-600">—</span>}
+                        ) : <span className="text-slate-300">—</span>}
                       </TableCell>
                       <TableCell>
                         {c.phone ? (
                           <div className="flex items-center gap-2">
-                            <Phone className="h-3 w-3 text-slate-500 shrink-0" />
+                            <Phone className="h-3 w-3 text-slate-300 shrink-0" />
                             <span className="text-slate-200 text-sm">{c.phone}</span>
                             <Badge variant="outline" className={`${confidenceColor(c.phone_confidence)} text-[10px] capitalize`}>{c.phone_confidence}</Badge>
-                            <button onClick={() => copyValue(c.phone!)} className="text-slate-500 hover:text-violet-300 transition-colors">
+                            <button onClick={() => copyValue(c.phone!)} className="text-slate-300 hover:text-violet-300 transition-colors">
                               <Copy className="h-3 w-3" />
                             </button>
                           </div>
-                        ) : <span className="text-slate-600">—</span>}
+                        ) : <span className="text-slate-300">—</span>}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export function DMFinderPanel() {
                               className="text-violet-300 hover:text-violet-200 inline-flex items-center gap-1 text-xs">
                               source <ExternalLink className="h-3 w-3" />
                             </a>
-                          ) : <span className="text-slate-600 text-xs">inferred</span>}
+                          ) : <span className="text-slate-300 text-xs">inferred</span>}
                           {c.linkedin_url && (
                             <a href={c.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:text-sky-300">
                               <Linkedin className="h-3.5 w-3.5" />
@@ -361,8 +361,8 @@ export function DMFinderPanel() {
                   ))}
                   {filtered.length === 0 && (
                     <TableRow className="border-white/5">
-                      <TableCell colSpan={6} className="text-center text-slate-500 py-8">
-                        <Filter className="h-6 w-6 mx-auto mb-2 text-slate-700" />
+                      <TableCell colSpan={6} className="text-center text-slate-300 py-8">
+                        <Filter className="h-6 w-6 mx-auto mb-2 text-slate-500" />
                         No contacts match the current filter.
                       </TableCell>
                     </TableRow>
@@ -377,13 +377,13 @@ export function DMFinderPanel() {
       <Card className="bg-slate-900/40 backdrop-blur-xl border-white/5">
         <CardHeader>
           <CardTitle className="text-slate-100 text-base flex items-center gap-2">
-            <History className="h-4 w-4 text-slate-400" /> Recent searches
+            <History className="h-4 w-4 text-slate-300" /> Recent searches
             <Badge className="ml-1 bg-slate-800/60 border border-white/5 text-slate-300 text-[10px]">{history.length}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {history.length === 0 ? (
-            <p className="text-slate-500 text-sm">No searches yet.</p>
+            <p className="text-slate-300 text-sm">No searches yet.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {history.map((h) => (
@@ -391,9 +391,9 @@ export function DMFinderPanel() {
                   className={`group w-full flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border transition-all text-left ${searchId === h.id ? "border-violet-400/50 shadow-[0_8px_28px_-12px_rgba(168,85,247,0.5)]" : "border-white/5 hover:border-violet-400/30"}`}>
                   <div className="min-w-0">
                     <div className="text-slate-100 text-sm font-medium truncate group-hover:text-violet-200 transition-colors">
-                      {h.job_title} <span className="text-slate-500">@</span> {h.company_name}
+                      {h.job_title} <span className="text-slate-300">@</span> {h.company_name}
                     </div>
-                    <div className="text-[11px] text-slate-500">{new Date(h.created_at).toLocaleString()}</div>
+                    <div className="text-[11px] text-slate-300">{new Date(h.created_at).toLocaleString()}</div>
                   </div>
                   <Badge variant="outline" className="border-white/10 bg-slate-900/50 text-slate-300 shrink-0 ml-2 text-[10px]">{h.results_count} results</Badge>
                 </button>
@@ -403,7 +403,7 @@ export function DMFinderPanel() {
         </CardContent>
       </Card>
 
-      <p className="text-xs text-slate-600">
+      <p className="text-xs text-slate-300">
         Compliance: only publicly listed business contact details are surfaced. Inferred emails are flagged Low confidence and never SMTP-probed. All source URLs are logged for transparency under UK GDPR & PECR.
       </p>
     </div>
