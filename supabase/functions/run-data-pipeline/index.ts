@@ -49,7 +49,9 @@ function rotate<T>(arr: T[]): T {
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   switch (source) {
     case "financial-research":
-      return { categoryKey: rotate(FINANCIAL_RESEARCH_CATEGORIES), ...baseConfig };
+      return { categoryKey: rotate(FINANCE_RESEARCH_CATEGORIES), platform: "finance", ...baseConfig };
+    case "investor-research":
+      return { categoryKey: rotate(INVESTOR_RESEARCH_CATEGORIES), platform: "investor", ...baseConfig };
     case "opportunity-research":
       return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), ...baseConfig };
     case "elite-scraper":
