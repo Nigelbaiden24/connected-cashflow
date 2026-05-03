@@ -499,10 +499,13 @@ serve(async (req) => {
 
     console.log(`Researching: ${category} / ${subCategory || "all"}`);
 
-    const queries = customQuery
+    const allQueries = customQuery
       ? [customQuery]
       : sources.queries.map((q) => subCategory ? `${q} ${subCategory}` : q);
-    const urls = sources?.urls || [];
+    // Pipeline (non-streaming) mode: cap to keep within edge fn timeout
+    const queries = stream ? allQueries : allQueries.slice(0, 5);
+    const allUrls = sources?.urls || [];
+    const urls = stream ? allUrls : allUrls.slice(0, 4);
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
