@@ -354,6 +354,7 @@ export const INVESTOR_CATEGORY_IDS: string[] = [
   "pensions-tax-wrappers",
   "thematics-packaged",
   "copy-trading",
+  "music-royalties",
 ];
 
 export const ALL_CATEGORIES: InvestmentCategory[] = [
