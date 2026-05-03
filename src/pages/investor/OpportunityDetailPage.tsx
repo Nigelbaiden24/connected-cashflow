@@ -30,6 +30,7 @@ const categoryConfig: Record<string, { label: string; icon: any; color: string }
   private_credit: { label: "Private Credit & Lending", icon: Briefcase, color: "bg-emerald-500/10 text-emerald-600" },
   infrastructure_energy: { label: "Infrastructure & Energy", icon: Building2, color: "bg-lime-500/10 text-lime-600" },
   bonds: { label: "Bonds", icon: Landmark, color: "bg-sky-500/10 text-sky-600" },
+  music_royalties: { label: "Music Royalties", icon: Music, color: "bg-fuchsia-500/10 text-fuchsia-500" },
 };
 
 const ratingColors: Record<string, string> = {
