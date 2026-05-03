@@ -540,7 +540,7 @@ serve(async (req) => {
       );
     }
 
-    const categoryLabel = category.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const categoryLabel = effectiveCategory.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     const subLabel = subCategory || "General";
 
     const sourceListForAI = allSources
