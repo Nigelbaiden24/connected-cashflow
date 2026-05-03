@@ -481,7 +481,9 @@ serve(async (req) => {
   }
 
   try {
-    const { category, subCategory, customQuery } = await req.json();
+    const body = await req.json();
+    const { category, subCategory, customQuery } = body;
+    const stream: boolean = body.stream !== false; // default true; pipeline passes false
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -489,8 +491,11 @@ serve(async (req) => {
     if (!FIRECRAWL_API_KEY) throw new Error("FIRECRAWL_API_KEY is not configured");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const sources = CATEGORY_RESEARCH_SOURCES[category];
-    if (!sources && !customQuery) throw new Error(`Unknown category: ${category}`);
+    // Auto-mode: pipeline can pass no category — pick all available keys to fan out
+    const availableKeys = Object.keys(CATEGORY_RESEARCH_SOURCES);
+    const effectiveCategory = category || availableKeys[Math.floor(Date.now() / 3600000) % availableKeys.length];
+    const sources = CATEGORY_RESEARCH_SOURCES[effectiveCategory];
+    if (!sources && !customQuery) throw new Error(`Unknown category: ${effectiveCategory}`);
 
     console.log(`Researching: ${category} / ${subCategory || "all"}`);
 
