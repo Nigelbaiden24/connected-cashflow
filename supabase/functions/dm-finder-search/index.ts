@@ -17,6 +17,18 @@ interface SearchInput {
   company_name: string;
   location?: string;
   sector?: string;
+  website?: string;
+}
+
+function extractDomain(url: string): string {
+  if (!url) return "";
+  try {
+    const withProto = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+    const host = new URL(withProto).hostname.toLowerCase().replace(/^www\./, "");
+    return host;
+  } catch {
+    return url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  }
 }
 
 interface ExtractedContact {
@@ -47,13 +59,13 @@ function guessEmailDomain(company: string): string {
   return slug ? `${slug}.com` : "";
 }
 
-function patternEmails(fullName: string, company: string): string[] {
-  if (!fullName || !company) return [];
+function patternEmails(fullName: string, company: string, websiteDomain?: string): string[] {
+  if (!fullName) return [];
   const parts = fullName.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (parts.length < 2) return [];
   const first = parts[0].replace(/[^a-z]/g, "");
   const last = parts[parts.length - 1].replace(/[^a-z]/g, "");
-  const domain = guessEmailDomain(company);
+  const domain = websiteDomain || guessEmailDomain(company);
   if (!first || !last || !domain) return [];
   return [
     `${first}.${last}@${domain}`,
@@ -237,11 +249,17 @@ Deno.serve(async (req: Request) => {
 
     // Build queries
     const nameClause = body.full_name ? `"${body.full_name}" ` : "";
+    const websiteDomain = body.website ? extractDomain(body.website) : "";
+    const siteClause = websiteDomain ? `site:${websiteDomain} ` : "";
     const queries = [
       `${nameClause}"${body.job_title}" "${body.company_name}" email contact`,
       `"${body.company_name}" leadership team ${body.job_title}`,
       `"${body.company_name}" press release ${body.job_title}`,
       `site:linkedin.com/in ${nameClause}${body.job_title} ${body.company_name}`,
+      ...(websiteDomain ? [
+        `${siteClause}${body.job_title} contact`,
+        `${siteClause}team OR leadership OR about`,
+      ] : []),
     ];
 
     // Run searches in parallel
@@ -278,7 +296,7 @@ Deno.serve(async (req: Request) => {
     if (baseName) {
       const hasVerified = extracted.some((c) => c.email && (c.email_confidence === "high" || c.email_confidence === "medium"));
       if (!hasVerified) {
-        const perms = patternEmails(baseName, body.company_name);
+        const perms = patternEmails(baseName, body.company_name, websiteDomain);
         for (const guess of perms) {
           enriched.push({
             full_name: baseName,
