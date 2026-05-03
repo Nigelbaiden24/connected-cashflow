@@ -36,8 +36,13 @@ const INVESTOR_RESEARCH_CATEGORIES = [
   "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
   "thematics-packaged","copy-trading","music-royalties",
 ];
+// All opportunity-research categories supported by the scraper (must match
+// CATEGORY_RESEARCH_SOURCES keys in opportunity-research/index.ts).
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
-  "uk_property","overseas_property","vehicles","businesses","timepieces",
+  "uk_property","overseas_property","vehicles","businesses","stocks","crypto",
+  "private_equity","memorabilia","commodities","funds","blockchain","crowdfunding",
+  "startup_funding","property_opportunities","infrastructure","infrastructure_energy",
+  "mini_bonds","private_credit","bonds","timepieces",
 ];
 const COMPANIES_HOUSE_QUERIES = [
   "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
@@ -63,7 +68,7 @@ function buildScraperBody(source: string, baseConfig: Record<string, unknown> = 
     case "investor-research":
       return { categoryKey: rotate(INVESTOR_RESEARCH_CATEGORIES), platform: "investor", ...baseConfig };
     case "opportunity-research":
-      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), ...baseConfig };
+      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), stream: false, ...baseConfig };
     case "elite-scraper":
       return { mode: "explain", platform: "finance", categoryLabel: "Multi-asset Investment Opportunities", scrapedData: "Auto-pipeline run: gather and structure current investment opportunities across asset classes.", ...baseConfig };
     case "companies-house":
@@ -133,7 +138,7 @@ function extractItems(source: string, payload: any): Array<{ title: string; summ
   if (!payload) return [];
   // Companies-House full_scrape shape: { results: [{ company: {...}, officers: [...] }] }
   if (Array.isArray(payload.results) && payload.results[0]?.company) {
-    return payload.results.slice(0, 60).map((r: any) => ({
+    return payload.results.slice(0, 150).map((r: any) => ({
       title: String(r.company?.name ?? r.company?.companyName ?? r.company?.company_number ?? "Untitled").slice(0, 240),
       summary: [r.company?.status, r.company?.companyType, r.company?.address].filter(Boolean).join(" · "),
       url: r.company?.url ?? (r.company?.company_number ? `https://find-and-update.company-information.service.gov.uk/company/${r.company.company_number}` : null),
@@ -144,7 +149,7 @@ function extractItems(source: string, payload: any): Array<{ title: string; summ
     payload.opportunities ?? payload.results ?? payload.items ?? payload.profiles ??
     payload.data?.opportunities ?? payload.data?.results ?? payload.data?.items ?? payload.data ?? [];
   if (Array.isArray(candidates) && candidates.length) {
-    return candidates.slice(0, 60).map((c) => ({
+    return candidates.slice(0, 150).map((c) => ({
       title: String(c.title ?? c.name ?? c.firm_name ?? c.company_name ?? c.company ?? c.headline ?? "Untitled").slice(0, 240),
       summary: c.summary ?? c.description ?? c.thesis ?? c.snippet ?? null,
       url: c.url ?? c.source_url ?? c.link ?? c.website ?? null,
@@ -235,7 +240,8 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   } else if (source === "investor-research") {
     for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
   } else if (source === "opportunity-research") {
-    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 3)) bodies.push({ category: cat, ...baseCfg });
+    // Elite enterprise: rotate through all 20 categories — 3 per run, full cycle every ~7 runs
+    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 3)) bodies.push({ category: cat, stream: false, ...baseCfg });
   } else if (source === "companies-house") {
     for (const q of pickN(COMPANIES_HOUSE_QUERIES, 3)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
   } else {

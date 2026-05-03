@@ -481,7 +481,9 @@ serve(async (req) => {
   }
 
   try {
-    const { category, subCategory, customQuery } = await req.json();
+    const body = await req.json();
+    const { category, subCategory, customQuery } = body;
+    const stream: boolean = body.stream !== false; // default true; pipeline passes false
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -489,15 +491,21 @@ serve(async (req) => {
     if (!FIRECRAWL_API_KEY) throw new Error("FIRECRAWL_API_KEY is not configured");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const sources = CATEGORY_RESEARCH_SOURCES[category];
-    if (!sources && !customQuery) throw new Error(`Unknown category: ${category}`);
+    // Auto-mode: pipeline can pass no category — pick all available keys to fan out
+    const availableKeys = Object.keys(CATEGORY_RESEARCH_SOURCES);
+    const effectiveCategory = category || availableKeys[Math.floor(Date.now() / 3600000) % availableKeys.length];
+    const sources = CATEGORY_RESEARCH_SOURCES[effectiveCategory];
+    if (!sources && !customQuery) throw new Error(`Unknown category: ${effectiveCategory}`);
 
     console.log(`Researching: ${category} / ${subCategory || "all"}`);
 
-    const queries = customQuery
+    const allQueries = customQuery
       ? [customQuery]
       : sources.queries.map((q) => subCategory ? `${q} ${subCategory}` : q);
-    const urls = sources?.urls || [];
+    // Pipeline (non-streaming) mode: cap to keep within edge fn timeout
+    const queries = stream ? allQueries : allQueries.slice(0, 5);
+    const allUrls = sources?.urls || [];
+    const urls = stream ? allUrls : allUrls.slice(0, 4);
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
@@ -535,7 +543,7 @@ serve(async (req) => {
       );
     }
 
-    const categoryLabel = category.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const categoryLabel = effectiveCategory.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     const subLabel = subCategory || "General";
 
     const sourceListForAI = allSources
@@ -549,9 +557,9 @@ serve(async (req) => {
       .map(r => `- Title: ${r.title} | URL: ${r.url} | Image: ${r.imageUrl || "none"} | Desc: ${r.description?.slice(0, 100)}`)
       .join("\n");
 
-    const isOverseasProperty = category === "overseas_property";
-    const isBusinessMA = category === "businesses";
-    const isTimepieces = category === "timepieces";
+    const isOverseasProperty = effectiveCategory === "overseas_property";
+    const isBusinessMA = effectiveCategory === "businesses";
+    const isTimepieces = effectiveCategory === "timepieces";
 
     const economicAnalysisInstructions = isOverseasProperty ? `
 
@@ -675,7 +683,7 @@ ${sourceListForAI}
 ${combinedResearch.slice(0, 30000)}`,
             },
           ],
-          stream: true,
+          stream,
         }),
       }
     );
@@ -696,6 +704,51 @@ ${combinedResearch.slice(0, 30000)}`,
       const errText = await aiResponse.text();
       console.error("AI error:", aiResponse.status, errText);
       throw new Error("AI analysis failed");
+    }
+
+    // Non-streaming JSON path (used by run-data-pipeline)
+    if (!stream) {
+      const j = await aiResponse.json();
+      const txt: string = j.choices?.[0]?.message?.content ?? "";
+      let opportunities: any[] = [];
+      const match = txt.match(/```json\s*([\s\S]*?)```/);
+      const jsonStr = match ? match[1] : txt;
+      try {
+        const parsed = JSON.parse(jsonStr.trim());
+        opportunities = Array.isArray(parsed) ? parsed : (parsed.opportunities ?? []);
+      } catch {
+        try {
+          const arrMatch = jsonStr.match(/\[[\s\S]*\]/);
+          if (arrMatch) opportunities = JSON.parse(arrMatch[0]);
+        } catch { /* ignore */ }
+      }
+      const normalized = opportunities.map((o: any) => ({
+        title: o.name ?? o.title ?? "Untitled",
+        name: o.name ?? o.title,
+        summary: o.description ?? o.summary ?? null,
+        description: o.description,
+        url: o.source_url ?? o.url ?? null,
+        source_url: o.source_url ?? o.url ?? null,
+        image_url: o.image_url ?? null,
+        location: o.location ?? null,
+        country: o.country ?? null,
+        industry: o.industry ?? null,
+        category: effectiveCategory,
+        sub_category: subLabel,
+        analyst_rating: o.analyst_rating ?? null,
+        risk_level: o.risk_level ?? null,
+        thesis: o.investment_thesis ?? null,
+        key_metrics: o.key_metrics ?? null,
+        ...o,
+      }));
+      return new Response(JSON.stringify({
+        success: true,
+        opportunities: normalized,
+        category: categoryLabel,
+        subCategory: subLabel,
+        sourcesScraped: allSources.filter(s => s.status === "success").length,
+        sources: allSources,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const encoder = new TextEncoder();
