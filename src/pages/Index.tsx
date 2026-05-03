@@ -312,34 +312,39 @@ const Index = () => {
                   >
                     Pricing
                   </Button>
-                  <div className="px-3 py-2">
-                    <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Insights</p>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start font-semibold"
-                      onClick={() => {
-                        navigate("/reports");
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      Browse all Insights
-                    </Button>
-                    <div className="max-h-64 overflow-y-auto pl-2">
-                      {INSIGHT_CATEGORIES.map((cat) => (
-                        <button
-                          key={cat.value}
-                          onClick={() => {
-                            navigate(`/reports?category=${encodeURIComponent(cat.value)}`);
-                            setMobileMenuOpen(false);
-                          }}
-                          className="w-full text-left px-2 py-1.5 text-sm text-gray-600 hover:text-primary flex items-center gap-2"
-                        >
-                          <span>{cat.emoji}</span>
-                          <span>{cat.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <Collapsible className="px-1">
+                    <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2 rounded-md font-semibold text-sm hover:bg-slate-100 [&[data-state=open]>svg]:rotate-180">
+                      <span>Insights</span>
+                      <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start font-medium text-sm"
+                        onClick={() => {
+                          navigate("/reports");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Browse all Insights
+                      </Button>
+                      <div className="max-h-64 overflow-y-auto pl-2">
+                        {INSIGHT_CATEGORIES.map((cat) => (
+                          <button
+                            key={cat.value}
+                            onClick={() => {
+                              navigate(`/reports?category=${encodeURIComponent(cat.value)}`);
+                              setMobileMenuOpen(false);
+                            }}
+                            className="w-full text-left px-2 py-1.5 text-sm text-gray-600 hover:text-primary flex items-center gap-2"
+                          >
+                            <span>{cat.emoji}</span>
+                            <span>{cat.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                   <Button
                     variant="ghost"
                     className="w-full justify-start font-semibold"
