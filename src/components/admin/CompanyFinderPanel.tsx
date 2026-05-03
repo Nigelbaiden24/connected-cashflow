@@ -94,20 +94,45 @@ export function CompanyFinderPanel() {
     }
     setLoading(true);
     setCompanies([]);
+    setSearchId(null);
     try {
       const { data, error } = await supabase.functions.invoke("company-finder-search", { body: form });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setSearchId(data.search_id);
-      const [{ data: rows }] = await Promise.all([
-        supabase.from("company_finder_results").select("*").eq("search_id", data.search_id),
-        loadHistory(),
-      ]);
+      const sid = data.search_id as string;
+      setSearchId(sid);
+      toast.info("Elite sector deep-dive running — scanning sources & extracting companies…");
+
+      // Poll for completion (search runs in background via EdgeRuntime.waitUntil)
+      const started = Date.now();
+      const maxMs = 4 * 60 * 1000; // 4 minutes safety cap
+      let finalStatus: string | null = null;
+      while (Date.now() - started < maxMs) {
+        await new Promise((r) => setTimeout(r, 2500));
+        const { data: row } = await supabase
+          .from("company_finder_searches")
+          .select("status, results_count")
+          .eq("id", sid)
+          .maybeSingle();
+        if (row?.status === "completed" || row?.status === "failed") {
+          finalStatus = row.status;
+          break;
+        }
+      }
+
+      if (finalStatus === "failed") throw new Error("Search failed — check edge function logs");
+      if (!finalStatus) throw new Error("Search timed out — try a more focused brief");
+
+      const { data: rows } = await supabase
+        .from("company_finder_results")
+        .select("*")
+        .eq("search_id", sid);
       const sorted = ((rows ?? []) as CompanyResult[]).sort(
         (a, b) => (confRank[b.confidence ?? ""] ?? 0) - (confRank[a.confidence ?? ""] ?? 0),
       );
       startTransition(() => setCompanies(sorted));
-      toast.success(`Found ${sorted.length} compan${sorted.length === 1 ? "y" : "ies"} from ${data.sources} source${data.sources === 1 ? "" : "s"}`);
+      void loadHistory();
+      toast.success(`Found ${sorted.length} compan${sorted.length === 1 ? "y" : "ies"}`);
     } catch (e: any) {
       console.error(e);
       toast.error(e.message || "Search failed");
