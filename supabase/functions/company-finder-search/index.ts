@@ -36,7 +36,7 @@ interface ExtractedCompany {
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-async function firecrawlSearch(query: string, apiKey: string, limit = 8) {
+async function firecrawlSearch(query: string, apiKey: string, limit = 50) {
   try {
     const res = await fetch(`${FIRECRAWL_BASE}/search`, {
       method: "POST",
