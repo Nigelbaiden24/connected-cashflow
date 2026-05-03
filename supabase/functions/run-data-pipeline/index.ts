@@ -43,8 +43,18 @@ const COMPANIES_HOUSE_QUERIES = [
   "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
 ];
 function rotate<T>(arr: T[]): T {
-  const idx = Math.floor(Date.now() / (30 * 60 * 1000)) % arr.length;
+  // Rotate every 3h tick so each run picks a fresh category
+  const idx = Math.floor(Date.now() / (3 * 60 * 60 * 1000)) % arr.length;
   return arr[idx];
+}
+// Pick N distinct categories per run (broader coverage)
+function pickN<T>(arr: T[], n: number): T[] {
+  const out: T[] = [];
+  const base = Math.floor(Date.now() / (3 * 60 * 60 * 1000));
+  for (let i = 0; i < Math.min(n, arr.length); i++) {
+    out.push(arr[(base + i) % arr.length]);
+  }
+  return out;
 }
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   switch (source) {
@@ -123,7 +133,7 @@ function extractItems(source: string, payload: any): Array<{ title: string; summ
   if (!payload) return [];
   // Companies-House full_scrape shape: { results: [{ company: {...}, officers: [...] }] }
   if (Array.isArray(payload.results) && payload.results[0]?.company) {
-    return payload.results.slice(0, 25).map((r: any) => ({
+    return payload.results.slice(0, 60).map((r: any) => ({
       title: String(r.company?.name ?? r.company?.companyName ?? r.company?.company_number ?? "Untitled").slice(0, 240),
       summary: [r.company?.status, r.company?.companyType, r.company?.address].filter(Boolean).join(" · "),
       url: r.company?.url ?? (r.company?.company_number ? `https://find-and-update.company-information.service.gov.uk/company/${r.company.company_number}` : null),
@@ -134,7 +144,7 @@ function extractItems(source: string, payload: any): Array<{ title: string; summ
     payload.opportunities ?? payload.results ?? payload.items ?? payload.profiles ??
     payload.data?.opportunities ?? payload.data?.results ?? payload.data?.items ?? payload.data ?? [];
   if (Array.isArray(candidates) && candidates.length) {
-    return candidates.slice(0, 25).map((c) => ({
+    return candidates.slice(0, 60).map((c) => ({
       title: String(c.title ?? c.name ?? c.firm_name ?? c.company_name ?? c.company ?? c.headline ?? "Untitled").slice(0, 240),
       summary: c.summary ?? c.description ?? c.thesis ?? c.snippet ?? null,
       url: c.url ?? c.source_url ?? c.link ?? c.website ?? null,
@@ -162,7 +172,7 @@ async function aiExtractOpportunities(source: string, payload: any): Promise<Arr
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "Extract distinct investment opportunities from scraped content. Reply ONLY with JSON: {opportunities:[{title, summary, url, industry, location}]}. Max 12 items. Title <= 140 chars. Skip generic/news-only items." },
+          { role: "system", content: "Extract distinct investment opportunities from scraped content. Reply ONLY with JSON: {opportunities:[{title, summary, url, industry, location}]}. Max 30 items. Title <= 140 chars. Skip generic/news-only items." },
           { role: "user", content: `Category: ${label}\n\nContent:\n${blob.slice(0, 60000)}` },
         ],
       }),
@@ -173,7 +183,7 @@ async function aiExtractOpportunities(source: string, payload: any): Promise<Arr
     const cleaned = txt.replace(/```json\s*|```/g, "").trim();
     const parsed = JSON.parse(cleaned);
     const arr = Array.isArray(parsed?.opportunities) ? parsed.opportunities : [];
-    return arr.slice(0, 12).map((o: any) => ({
+    return arr.slice(0, 30).map((o: any) => ({
       title: String(o.title ?? "Untitled").slice(0, 240),
       summary: o.summary ?? null,
       url: o.url ?? null,
@@ -217,35 +227,55 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
 
-  // Retry once on failure
-  let payload: any = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      payload = await callScraper(def.fn, buildScraperBody(source, (schedule.config as Record<string, unknown>) ?? {}));
-      break;
-    } catch (e: any) {
-      errors.push({ attempt, error: String(e.message ?? e) });
-      if (attempt === 2) {
-        const finishedAt = new Date();
-        await supabase.from("pipeline_runs").update({
-          status: "failed", finished_at: finishedAt.toISOString(),
-          duration_ms: finishedAt.getTime() - startedAt.getTime(),
-          errors, attempt,
-        }).eq("id", runId);
-        await supabase.from("pipeline_schedule").update({
-          last_run_at: finishedAt.toISOString(),
-          next_run_at: new Date(finishedAt.getTime() + (schedule.cadence_minutes ?? 360) * 60000).toISOString(),
-          last_status: "failed",
-          consecutive_failures: (schedule.consecutive_failures ?? 0) + 1,
-          last_error: String(e.message ?? e).slice(0, 500),
-        }).eq("source", source);
-        await notifyAdmins(supabase, source, `Scraper failed twice: ${String(e.message ?? e).slice(0, 200)}`);
-        return { source, status: "failed", errors };
-      }
-      // brief backoff
-      await new Promise(r => setTimeout(r, 1500));
-    }
+  // Build list of bodies — for category-driven sources, fan out across 3 categories per run for broader coverage
+  const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
+  const bodies: Record<string, unknown>[] = [];
+  if (source === "financial-research") {
+    for (const cat of pickN(FINANCE_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "finance", ...baseCfg });
+  } else if (source === "investor-research") {
+    for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
+  } else if (source === "opportunity-research") {
+    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 3)) bodies.push({ category: cat, ...baseCfg });
+  } else if (source === "companies-house") {
+    for (const q of pickN(COMPANIES_HOUSE_QUERIES, 3)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
+  } else {
+    bodies.push(buildScraperBody(source, baseCfg));
   }
+
+  // Run scraper passes (with one retry per pass)
+  const payloads: any[] = [];
+  for (const body of bodies) {
+    let pl: any = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        pl = await callScraper(def.fn, body);
+        break;
+      } catch (e: any) {
+        errors.push({ pass: bodies.indexOf(body), attempt, error: String(e.message ?? e) });
+        if (attempt === 2) break;
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+    if (pl) payloads.push(pl);
+  }
+
+  if (payloads.length === 0) {
+    const finishedAt = new Date();
+    await supabase.from("pipeline_runs").update({
+      status: "failed", finished_at: finishedAt.toISOString(),
+      duration_ms: finishedAt.getTime() - startedAt.getTime(), errors, attempt: 2,
+    }).eq("id", runId);
+    await supabase.from("pipeline_schedule").update({
+      last_run_at: finishedAt.toISOString(),
+      next_run_at: new Date(finishedAt.getTime() + (schedule.cadence_minutes ?? 180) * 60000).toISOString(),
+      last_status: "failed",
+      consecutive_failures: (schedule.consecutive_failures ?? 0) + 1,
+      last_error: String(errors[0]?.error ?? "scraper failed").slice(0, 500),
+    }).eq("source", source);
+    await notifyAdmins(supabase, source, `Scraper failed: ${JSON.stringify(errors).slice(0, 200)}`);
+    return { source, status: "failed", errors };
+  }
+  const payload = payloads[0]; // primary payload for history mirror
 
   // Mirror raw payload into admin_scrape_history (existing storage)
   try {
@@ -262,10 +292,13 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
     });
   } catch (e) { console.warn("[history]", e); }
 
-  let items = extractItems(source, payload);
-  if (items.length === 0) {
-    items = await aiExtractOpportunities(source, payload);
+  const allItems: Array<{ title: string; summary?: string; url?: string; raw: any }> = [];
+  for (const pl of payloads) {
+    let it = extractItems(source, pl);
+    if (it.length === 0) it = await aiExtractOpportunities(source, pl);
+    allItems.push(...it);
   }
+  const items = allItems;
   fetched = items.length;
 
   for (const it of items) {
@@ -345,7 +378,7 @@ Deno.serve(async (req) => {
         .eq("enabled", true)
         .lte("next_run_at", new Date().toISOString())
         .order("next_run_at", { ascending: true })
-        .limit(2); // cap per tick to avoid edge fn timeout
+        .limit(4); // cap per tick to avoid edge fn timeout
       due = data ?? [];
     }
 
