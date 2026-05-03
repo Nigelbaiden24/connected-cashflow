@@ -227,35 +227,55 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
 
-  // Retry once on failure
-  let payload: any = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      payload = await callScraper(def.fn, buildScraperBody(source, (schedule.config as Record<string, unknown>) ?? {}));
-      break;
-    } catch (e: any) {
-      errors.push({ attempt, error: String(e.message ?? e) });
-      if (attempt === 2) {
-        const finishedAt = new Date();
-        await supabase.from("pipeline_runs").update({
-          status: "failed", finished_at: finishedAt.toISOString(),
-          duration_ms: finishedAt.getTime() - startedAt.getTime(),
-          errors, attempt,
-        }).eq("id", runId);
-        await supabase.from("pipeline_schedule").update({
-          last_run_at: finishedAt.toISOString(),
-          next_run_at: new Date(finishedAt.getTime() + (schedule.cadence_minutes ?? 360) * 60000).toISOString(),
-          last_status: "failed",
-          consecutive_failures: (schedule.consecutive_failures ?? 0) + 1,
-          last_error: String(e.message ?? e).slice(0, 500),
-        }).eq("source", source);
-        await notifyAdmins(supabase, source, `Scraper failed twice: ${String(e.message ?? e).slice(0, 200)}`);
-        return { source, status: "failed", errors };
-      }
-      // brief backoff
-      await new Promise(r => setTimeout(r, 1500));
-    }
+  // Build list of bodies — for category-driven sources, fan out across 3 categories per run for broader coverage
+  const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
+  const bodies: Record<string, unknown>[] = [];
+  if (source === "financial-research") {
+    for (const cat of pickN(FINANCE_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "finance", ...baseCfg });
+  } else if (source === "investor-research") {
+    for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
+  } else if (source === "opportunity-research") {
+    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 3)) bodies.push({ category: cat, ...baseCfg });
+  } else if (source === "companies-house") {
+    for (const q of pickN(COMPANIES_HOUSE_QUERIES, 3)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
+  } else {
+    bodies.push(buildScraperBody(source, baseCfg));
   }
+
+  // Run scraper passes (with one retry per pass)
+  const payloads: any[] = [];
+  for (const body of bodies) {
+    let pl: any = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        pl = await callScraper(def.fn, body);
+        break;
+      } catch (e: any) {
+        errors.push({ pass: bodies.indexOf(body), attempt, error: String(e.message ?? e) });
+        if (attempt === 2) break;
+        await new Promise(r => setTimeout(r, 1200));
+      }
+    }
+    if (pl) payloads.push(pl);
+  }
+
+  if (payloads.length === 0) {
+    const finishedAt = new Date();
+    await supabase.from("pipeline_runs").update({
+      status: "failed", finished_at: finishedAt.toISOString(),
+      duration_ms: finishedAt.getTime() - startedAt.getTime(), errors, attempt: 2,
+    }).eq("id", runId);
+    await supabase.from("pipeline_schedule").update({
+      last_run_at: finishedAt.toISOString(),
+      next_run_at: new Date(finishedAt.getTime() + (schedule.cadence_minutes ?? 180) * 60000).toISOString(),
+      last_status: "failed",
+      consecutive_failures: (schedule.consecutive_failures ?? 0) + 1,
+      last_error: String(errors[0]?.error ?? "scraper failed").slice(0, 500),
+    }).eq("source", source);
+    await notifyAdmins(supabase, source, `Scraper failed: ${JSON.stringify(errors).slice(0, 200)}`);
+    return { source, status: "failed", errors };
+  }
+  const payload = payloads[0]; // primary payload for history mirror
 
   // Mirror raw payload into admin_scrape_history (existing storage)
   try {
