@@ -178,15 +178,15 @@ export const PipelineDashboard = () => {
   }), [pending, schedules, runs]);
 
   if (loading) return (
-    <div className="flex items-center justify-center p-12 text-slate-500">
+    <div className="flex min-h-[calc(100vh-3rem)] items-center justify-center rounded-[28px] border border-slate-200 bg-white p-12 text-slate-500 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.28)]">
       <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading pipeline…
     </div>
   );
 
   return (
-    <div className="space-y-6">
+    <section className="min-h-[calc(100vh-3rem)] space-y-6 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.28)]">
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,0.10),transparent_50%),radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.12),transparent_55%),linear-gradient(135deg,#ffffff,#f8fafc)] p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 md:p-8 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.35)]">
         <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
         <div className="absolute -top-32 right-0 w-96 h-96 bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-violet-500/10 blur-[120px] rounded-full pointer-events-none" />
@@ -445,7 +445,7 @@ export const PipelineDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </section>
   );
 };
 
