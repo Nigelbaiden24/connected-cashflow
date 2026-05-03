@@ -38,7 +38,8 @@ import { AIAutoScanner } from "@/components/admin/AIAutoScanner";
 import { FlowPulseScraperHub } from "@/components/admin/FlowPulseScraperHub";
 import { SavedScrapes } from "@/components/admin/SavedScrapes";
 import { PipelineDashboard } from "@/components/admin/PipelineDashboard";
-import { FinderHub } from "@/components/admin/FinderHub";
+import { DMFinderPanel } from "@/components/admin/DMFinderPanel";
+import { CompanyFinderPanel } from "@/components/admin/CompanyFinderPanel";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
 import { FeaturedAnalystPicks } from "@/components/admin/FeaturedAnalystPicks";
 import { PDFGenerator } from "@/components/admin/PDFGenerator";
@@ -763,7 +764,8 @@ export default function AdminDashboard() {
 
           {activeTab === 'saved-scrapes' && <SavedScrapes />}
           {activeTab === 'data-pipeline' && <PipelineDashboard />}
-          {activeTab === 'dm-finder' && <FinderHub />}
+          {activeTab === 'dm-finder' && <DMFinderPanel />}
+          {activeTab === 'company-finder' && <CompanyFinderPanel />}
           
           {activeTab === 'enquiries' && <PlatformEnquiries />}
 
