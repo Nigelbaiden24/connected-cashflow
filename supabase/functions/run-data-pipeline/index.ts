@@ -68,7 +68,7 @@ function buildScraperBody(source: string, baseConfig: Record<string, unknown> = 
     case "investor-research":
       return { categoryKey: rotate(INVESTOR_RESEARCH_CATEGORIES), platform: "investor", ...baseConfig };
     case "opportunity-research":
-      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), ...baseConfig };
+      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), stream: false, ...baseConfig };
     case "elite-scraper":
       return { mode: "explain", platform: "finance", categoryLabel: "Multi-asset Investment Opportunities", scrapedData: "Auto-pipeline run: gather and structure current investment opportunities across asset classes.", ...baseConfig };
     case "companies-house":
