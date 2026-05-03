@@ -34,7 +34,7 @@ const INVESTOR_RESEARCH_CATEGORIES = [
   "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
   "funds-etfs","alternatives","esg","fractional-pe-vc","private-market-platforms",
   "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
-  "thematics-packaged","copy-trading",
+  "thematics-packaged","copy-trading","music-royalties",
 ];
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "uk_property","overseas_property","vehicles","businesses","timepieces",

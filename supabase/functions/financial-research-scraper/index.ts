@@ -267,6 +267,14 @@ const INVESTMENT_CATEGORY_URLS: Record<string, string[]> = {
     "https://pepperstone.com/en/learn-to-trade/social-trading/",
     "https://www.duplitrade.com/news/",
   ],
+  "music-royalties": [
+    "https://www.royaltyexchange.com/marketplace",
+    "https://www.anotemusic.com/marketplace",
+    "https://www.songvest.com/royalties",
+    "https://www.hipgnosissongs.com/news",
+    "https://www.musicbusinessworldwide.com/categories/business/catalogue-acquisitions/",
+    "https://www.billboard.com/c/business/",
+  ],
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -293,6 +301,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   "pensions-tax-wrappers": "Pensions & Tax Wrappers",
   "thematics-packaged": "Thematics & Packaged Investing",
   "copy-trading": "Copy Trading",
+  "music-royalties": "Music Royalties",
 };
 
 serve(async (req) => {

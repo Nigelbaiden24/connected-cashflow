@@ -86,6 +86,7 @@ const Pricing = () => {
     { id: "pensions-tax-wrappers", name: "Pensions & Tax Wrappers", description: "SIPPs, ISAs & tax-efficient investment vehicles", icon: "🧾" },
     { id: "thematics-packaged", name: "Thematics & Packaged Investing", description: "Thematic baskets & packaged investment products", icon: "📦" },
     { id: "copy-trading", name: "Copy Trading", description: "Mirror & social trading strategies", icon: "👥" },
+    { id: "music-royalties", name: "Music Royalties", description: "Music royalty investment platforms & catalogue deals", icon: "🎵" },
   ];
 
   // Finance pricing constants

@@ -319,6 +319,20 @@ export const INVESTOR_ONLY_CATEGORIES: InvestmentCategory[] = [
       { name: "DupliTrade — News", url: "https://www.duplitrade.com/news/" },
     ],
   },
+  {
+    id: "music-royalties",
+    label: "Music Royalties",
+    emoji: "🎵",
+    description: "Music royalty investment platforms & catalogue deals",
+    sources: [
+      { name: "Royalty Exchange — Marketplace", url: "https://www.royaltyexchange.com/marketplace" },
+      { name: "ANote Music — Marketplace", url: "https://www.anotemusic.com/marketplace" },
+      { name: "SongVest — Royalties", url: "https://www.songvest.com/royalties" },
+      { name: "Hipgnosis Songs Fund — News", url: "https://www.hipgnosissongs.com/news" },
+      { name: "Music Business Worldwide — Catalogues", url: "https://www.musicbusinessworldwide.com/categories/business/catalogue-acquisitions/" },
+      { name: "Billboard — Business", url: "https://www.billboard.com/c/business/" },
+    ],
+  },
 ];
 
 // Ordered investor category IDs to match the requested investor scraper UI.
@@ -340,6 +354,7 @@ export const INVESTOR_CATEGORY_IDS: string[] = [
   "pensions-tax-wrappers",
   "thematics-packaged",
   "copy-trading",
+  "music-royalties",
 ];
 
 export const ALL_CATEGORIES: InvestmentCategory[] = [
