@@ -249,11 +249,17 @@ Deno.serve(async (req: Request) => {
 
     // Build queries
     const nameClause = body.full_name ? `"${body.full_name}" ` : "";
+    const websiteDomain = body.website ? extractDomain(body.website) : "";
+    const siteClause = websiteDomain ? `site:${websiteDomain} ` : "";
     const queries = [
       `${nameClause}"${body.job_title}" "${body.company_name}" email contact`,
       `"${body.company_name}" leadership team ${body.job_title}`,
       `"${body.company_name}" press release ${body.job_title}`,
       `site:linkedin.com/in ${nameClause}${body.job_title} ${body.company_name}`,
+      ...(websiteDomain ? [
+        `${siteClause}${body.job_title} contact`,
+        `${siteClause}team OR leadership OR about`,
+      ] : []),
     ];
 
     // Run searches in parallel
