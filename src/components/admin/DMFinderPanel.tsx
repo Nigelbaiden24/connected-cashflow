@@ -180,7 +180,7 @@ export function DMFinderPanel() {
   }), [contacts]);
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6 rounded-3xl bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 p-4 md:p-6 ring-1 ring-white/5 shadow-2xl text-slate-100">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-3xl border border-white/5 bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.12),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(34,211,238,0.10),transparent_55%),linear-gradient(135deg,#020617,#0b1120)] p-6 md:p-8">
         <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
