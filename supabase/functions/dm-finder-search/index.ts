@@ -59,13 +59,13 @@ function guessEmailDomain(company: string): string {
   return slug ? `${slug}.com` : "";
 }
 
-function patternEmails(fullName: string, company: string): string[] {
-  if (!fullName || !company) return [];
+function patternEmails(fullName: string, company: string, websiteDomain?: string): string[] {
+  if (!fullName) return [];
   const parts = fullName.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (parts.length < 2) return [];
   const first = parts[0].replace(/[^a-z]/g, "");
   const last = parts[parts.length - 1].replace(/[^a-z]/g, "");
-  const domain = guessEmailDomain(company);
+  const domain = websiteDomain || guessEmailDomain(company);
   if (!first || !last || !domain) return [];
   return [
     `${first}.${last}@${domain}`,
