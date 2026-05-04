@@ -140,15 +140,28 @@ export const PipelineDashboard = () => {
     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); void load(); }
   };
 
-  const approveItem = async (id: string) => {
+  const [routing, setRouting] = useState<Record<string, { target: TargetTable; platform: TargetPlatform }>>({});
+  const getRouting = (p: Pending) => routing[p.id] ?? { target: defaultTargetFor(p), platform: defaultPlatformFor(p) };
+  const setItemRouting = (id: string, patch: Partial<{ target: TargetTable; platform: TargetPlatform }>) =>
+    setRouting(r => ({ ...r, [id]: { ...(r[id] ?? { target: "opportunity_products" as TargetTable, platform: "both" as TargetPlatform }), ...patch } }));
+
+  const approveItem = async (id: string, override?: { target?: TargetTable; platform?: TargetPlatform }) => {
     setBusyItem(id);
     const prev = pending;
+    const item = pending.find(x => x.id === id);
+    const r = item ? getRouting(item) : { target: "opportunity_products" as TargetTable, platform: "both" as TargetPlatform };
+    const target = override?.target ?? r.target;
+    const platform = override?.platform ?? r.platform;
     setPending(p => p.filter(x => x.id !== id));
     try {
-      const { data, error } = await supabase.rpc("approve_pending_item" as any, { _item_id: id });
+      const { data, error } = await supabase.rpc("approve_pending_item" as any, {
+        _item_id: id,
+        _target_table: target,
+        _platform: platform,
+      } as any);
       if (error) throw error;
       const res = data as any;
-      if (res?.ok) toast({ title: "Promoted to live dashboard", description: "Item now visible to users." });
+      if (res?.ok) toast({ title: "Promoted", description: `Routed to ${TARGET_OPTIONS.find(o=>o.value===target)?.label} (${platform}).` });
       else { setPending(prev); toast({ title: "Could not promote", description: res?.error ?? "Unknown", variant: "destructive" }); }
     } catch (e: any) {
       setPending(prev);
