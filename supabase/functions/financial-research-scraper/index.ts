@@ -459,9 +459,9 @@ async function scrapeCategoryUrls(categoryKey: string) {
 
   // PHASE 2 – web search for opportunity-grade articles (Firecrawl returns full markdown)
   try {
-    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 6);
+    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 15);
     console.log(`[category:${categoryKey}] search returned ${hits.length} hits`);
-    for (const h of hits.slice(0, 12)) {
+    for (const h of hits.slice(0, 30)) {
       const md = (h as any).markdown || (h as any).content || '';
       if (md && md.length > 300) {
         combinedContent += `\n\n### Article: ${h.title ?? h.url}\nURL: ${h.url}\n\n${md.slice(0, 9000)}`;
@@ -475,7 +475,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
   }
 
   // PHASE 3 – deep scrape any remaining article candidates that lack markdown
-  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 25);
   for (const art of dedupeArticles) {
     try {
       const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
