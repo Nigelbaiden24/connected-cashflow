@@ -105,6 +105,7 @@ const navGroups: NavGroup[] = [
     label: "Discovery & Tools",
     items: [
       { title: "Screeners & Discovery", url: "/investor/screeners", icon: Search, gradient: "from-orange-500 to-orange-600" },
+      { title: "Investor Finder", url: "/investor/investor-finder", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
       { title: "Market Data Hub", url: "/investor/market-data", icon: Database, gradient: "from-blue-500 to-indigo-600" },
       { title: "Tools & Calculators", url: "/investor/tools", icon: Calculator, gradient: "from-rose-500 to-rose-600" },
     ]
