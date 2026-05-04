@@ -50,6 +50,7 @@ const MarketDataHub = lazy(() => import("./pages/investor/MarketDataHub"));
 const ToolsCalculators = lazy(() => import("./pages/investor/ToolsCalculators"));
 const RiskCompliance = lazy(() => import("./pages/investor/RiskCompliance"));
 const InvestorFinderPage = lazy(() => import("./pages/finance/InvestorFinder"));
+const InvestorFinderOpportunities = lazy(() => import("./pages/InvestorFinderOpportunities"));
 const CompanyIntelligence = lazy(() => import("./pages/finance/CompanyIntelligence"));
 const StartupDiscovery = lazy(() => import("./pages/investor/StartupDiscovery"));
 const Watchlists = lazy(() => import("./pages/investor/Watchlists"));
