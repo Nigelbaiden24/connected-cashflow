@@ -487,7 +487,19 @@ export const PipelineDashboard = () => {
             </div>
           )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 flex-wrap sm:flex-nowrap items-stretch sm:items-center">
+            {reviewItem && (() => { const r = getRouting(reviewItem); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
+              <div className="flex-1 grid grid-cols-2 gap-2 mr-auto">
+                <Select value={r.target} onValueChange={(v) => setItemRouting(reviewItem.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
+                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200"><SelectValue placeholder="Destination tab" /></SelectTrigger>
+                  <SelectContent>{TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label} — {o.sidebar}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={r.platform} onValueChange={(v) => setItemRouting(reviewItem.id, { platform: v as TargetPlatform })}>
+                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200"><SelectValue placeholder="Platform" /></SelectTrigger>
+                  <SelectContent>{tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            ); })()}
             <Button variant="outline" className="border-slate-200" onClick={() => reviewItem && rejectItem(reviewItem.id)} disabled={!reviewItem || busyItem === reviewItem?.id}>
               <XCircle className="h-4 w-4 mr-1" /> Reject
             </Button>
