@@ -129,23 +129,16 @@ async function extractWithAI(
 ): Promise<ExtractedCompany[]> {
   if (!pages.length) return [];
 
-  const corpus = pages
-    .slice(0, 18)
-    .map((p, i) =>
-      `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 4500)}`,
-    )
-    .join("\n\n---\n\n");
-
-  const system = `You are an ELITE B2B market-mapping analyst (Bain / McKinsey / PitchBook calibre). Your job: extract a comprehensive, structured list of REAL companies that match the user's sector + criteria from the provided web sources.
+  const system = `You are an ELITE B2B market-mapping analyst (Bain / McKinsey / PitchBook calibre). Your job: extract a comprehensive, structured list of REAL companies of ALL SIZES (small businesses, SMEs, mid-market, large enterprises, OEMs, startups, family-owned firms) that match the user's sector + criteria from the provided web sources.
 
 STRICT RULES:
 - Return only real, verifiable companies that appear in the provided sources OR are widely-known established players in this exact space.
 - Each company MUST include a source_url (where it was mentioned, or its official site).
 - confidence: "high" = explicitly listed in a credible source as matching; "medium" = inferred from strong context; "low" = speculative.
-- For supply-chain/tier searches, set "tier" to one of: "OEM", "Tier 1", "Tier 2", "Tier 3", "Distributor", "Specialist", "Other".
+- For supply-chain/tier searches, set "tier" to one of: "OEM", "Tier 1", "Tier 2", "Tier 3", "Distributor", "Specialist", "SME", "Startup", "Other".
 - "role": short description of what the company actually does (max 14 words).
 - key_signals: 1-2 short evidence phrases (e.g. "Listed in SMMT supplier directory", "$2B revenue 2024", "Supplies BMW & VW").
-- Aim for 20-40 high-quality matches. Be exhaustive — pull every credible name from the corpus.
+- BE EXHAUSTIVE: pull EVERY credible company name from the corpus — small, medium and large. Aim for 40-80 matches per batch.
 - Deduplicate by company name. Never invent companies.
 - Return [] only if nothing credible found.`;
 
