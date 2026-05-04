@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { INVESTMENT_CATEGORIES } from "./investmentCategories";
 import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
+import { autoPromoteScrape } from "@/lib/autoPromoteScrape";
 import {
   Globe,
   Sparkles,
