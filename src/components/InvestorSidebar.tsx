@@ -27,6 +27,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   Sparkles,
+  Compass,
 } from "lucide-react";
 import {
   Sidebar,
