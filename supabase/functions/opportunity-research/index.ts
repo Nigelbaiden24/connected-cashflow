@@ -482,7 +482,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { category, subCategory, customQuery } = body;
+    const { category, subCategory, customQuery, region } = body;
     const stream: boolean = body.stream !== false; // default true; pipeline passes false
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
@@ -497,15 +497,37 @@ serve(async (req) => {
     const sources = CATEGORY_RESEARCH_SOURCES[effectiveCategory];
     if (!sources && !customQuery) throw new Error(`Unknown category: ${effectiveCategory}`);
 
-    console.log(`Researching: ${category} / ${subCategory || "all"}`);
+    console.log(`Researching: ${category} / ${subCategory || "all"} / region=${region || "global"}`);
 
+    // Global region rotation — ensures opportunities span ALL continents over multiple runs
+    const GLOBAL_REGIONS = [
+      "United Kingdom & Ireland",
+      "Western Europe (Germany France Netherlands Switzerland)",
+      "Southern Europe (Spain Portugal Italy Greece)",
+      "Eastern Europe (Poland Romania Hungary Czech)",
+      "Nordics (Sweden Norway Denmark Finland)",
+      "North America (USA Canada)",
+      "Latin America (Brazil Mexico Colombia Chile Argentina)",
+      "Middle East (UAE Saudi Arabia Qatar Israel)",
+      "Africa (Nigeria Kenya South Africa Egypt Morocco Ghana)",
+      "Asia Pacific (Japan Singapore Hong Kong Australia)",
+      "Southeast Asia (Indonesia Vietnam Thailand Philippines Malaysia)",
+      "South Asia (India Pakistan Bangladesh)",
+      "Greater China (China Taiwan)",
+    ];
+    const effectiveRegion = region || GLOBAL_REGIONS[Math.floor(Date.now() / 3600000) % GLOBAL_REGIONS.length];
+
+    const regionalize = (q: string) => `${q} ${effectiveRegion}`;
     const allQueries = customQuery
       ? [customQuery]
-      : sources.queries.map((q) => subCategory ? `${q} ${subCategory}` : q);
+      : sources.queries.flatMap((q) => {
+          const base = subCategory ? `${q} ${subCategory}` : q;
+          return [base, regionalize(base)];
+        });
     // Pipeline (non-streaming) mode: cap to keep within edge fn timeout
-    const queries = stream ? allQueries : allQueries.slice(0, 5);
+    const queries = stream ? allQueries : allQueries.slice(0, 8);
     const allUrls = sources?.urls || [];
-    const urls = stream ? allUrls : allUrls.slice(0, 4);
+    const urls = stream ? allUrls : allUrls.slice(0, 6);
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
