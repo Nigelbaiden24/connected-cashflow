@@ -220,11 +220,11 @@ const Pricing = () => {
           <div className="flex justify-center mb-10">
             <TabsList className="inline-flex w-auto p-1 bg-muted/50 backdrop-blur-sm border border-border/30">
               <TabsTrigger value="finance" className="px-8 py-2.5 text-sm font-semibold data-[state=active]:shadow-md">
-                <TrendingUp className="h-4 w-4 mr-2" />
+                <img src={flowpulseLogo} alt="FlowPulse" className="h-5 w-5 mr-2 rounded-sm object-contain" />
                 FlowPulse Finance
               </TabsTrigger>
               <TabsTrigger value="investor" className="px-8 py-2.5 text-sm font-semibold data-[state=active]:shadow-md">
-                <Sparkles className="h-4 w-4 mr-2" />
+                <img src={flowpulseLogo} alt="FlowPulse" className="h-5 w-5 mr-2 rounded-sm object-contain" />
                 FlowPulse Investor
               </TabsTrigger>
               <TabsTrigger value="teams" className="px-8 py-2.5 text-sm font-semibold data-[state=active]:shadow-md">
