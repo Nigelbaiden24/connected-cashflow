@@ -14,7 +14,28 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrapeItemView } from "./ScrapeItemView";
+
+type TargetTable = "investor_finder_opportunities" | "opportunity_products" | "opportunities" | "intel_events";
+type TargetPlatform = "finance" | "investor" | "both";
+
+const TARGET_OPTIONS: { value: TargetTable; label: string; sidebar: string; platforms: TargetPlatform[] }[] = [
+  { value: "investor_finder_opportunities", label: "Investor Finder", sidebar: "Investor Finder tab", platforms: ["finance", "investor", "both"] },
+  { value: "opportunity_products",          label: "Opportunity Intelligence", sidebar: "Opportunity Intelligence tab", platforms: ["finance", "investor", "both"] },
+  { value: "opportunities",                 label: "Business Opportunities", sidebar: "Opportunities (Business) tab", platforms: ["finance", "investor", "both"] },
+  { value: "intel_events",                  label: "Intelligence Events", sidebar: "Company Intelligence tab", platforms: ["both"] },
+];
+
+const defaultTargetFor = (p: Pending): TargetTable => {
+  if (p.source === "opportunity-research") return "investor_finder_opportunities";
+  const t = (p.target_table as TargetTable) ?? "opportunity_products";
+  return (TARGET_OPTIONS.find(o => o.value === t)?.value) ?? "opportunity_products";
+};
+const defaultPlatformFor = (p: Pending): TargetPlatform => {
+  if (p.target_platform === "finance" || p.target_platform === "investor") return p.target_platform;
+  return "both";
+};
 
 interface Schedule {
   source: string; enabled: boolean; cadence_minutes: number; next_run_at: string;
