@@ -197,6 +197,98 @@ export function FinancialResearchScraper() {
   const [customPrompt, setCustomPrompt] = useState("");
   const [activeTab, setActiveTab] = useState("platforms");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [promotingIdx, setPromotingIdx] = useState<number | null>(null);
+  const [promotedIdx, setPromotedIdx] = useState<Set<number>>(new Set());
+  const [bulkPromoting, setBulkPromoting] = useState(false);
+
+  const inferTargetTable = (cat?: string): "opportunity_products" | "investor_finder_opportunities" => {
+    const c = (cat ?? "").toLowerCase();
+    if (c.includes("venture") || c.includes("private equity") || c.includes("vc") || c.includes("startup")) {
+      return "investor_finder_opportunities";
+    }
+    return "opportunity_products";
+  };
+
+  const promoteOpportunity = useCallback(async (opp: OpportunityCandidate, idx: number) => {
+    setPromotingIdx(idx);
+    try {
+      const target = inferTargetTable(opp.category);
+      const res = await autoPromoteScrape({
+        source: "financial-research",
+        platform: "finance",
+        targetTable: target,
+        title: opp.title,
+        summary: opp.thesis ?? opp.key_data ?? null,
+        category: opp.category ?? null,
+        sourceUrl: opp.source_url ?? null,
+        aiScore: typeof (opp as any).conviction_score === "number"
+          ? Math.max(0, Math.min(5, (opp as any).conviction_score / 2))
+          : opp.confidence === "high" ? 4.5 : opp.confidence === "low" ? 2 : 3.5,
+        aiTags: Array.isArray((opp as any).catalysts) ? (opp as any).catalysts : [],
+        enriched: {
+          ...opp,
+          description: opp.thesis,
+          full_description: opp.thesis,
+          thesis: opp.thesis,
+          investment_thesis: opp.thesis,
+          key_data: opp.key_data,
+          asset: opp.asset,
+          analyst_rating: opp.confidence === "high" ? "Buy" : opp.confidence === "low" ? "Hold" : "Buy",
+        } as Record<string, unknown>,
+      });
+      if (res.ok) {
+        toast.success(`Uploaded "${opp.title.slice(0, 60)}"`);
+        setPromotedIdx((prev) => new Set(prev).add(idx));
+      } else {
+        toast.error(`Upload failed: ${res.error ?? "unknown"}`);
+      }
+    } finally {
+      setPromotingIdx(null);
+    }
+  }, []);
+
+  const promoteAllOpportunities = useCallback(async () => {
+    if (!aiReport?.opportunityCandidates?.length) return;
+    setBulkPromoting(true);
+    let ok = 0, fail = 0;
+    for (let i = 0; i < aiReport.opportunityCandidates.length; i++) {
+      if (promotedIdx.has(i)) continue;
+      const opp = aiReport.opportunityCandidates[i];
+      const target = inferTargetTable(opp.category);
+      const res = await autoPromoteScrape({
+        source: "financial-research",
+        platform: "finance",
+        targetTable: target,
+        title: opp.title,
+        summary: opp.thesis ?? opp.key_data ?? null,
+        category: opp.category ?? null,
+        sourceUrl: opp.source_url ?? null,
+        aiScore: typeof (opp as any).conviction_score === "number"
+          ? Math.max(0, Math.min(5, (opp as any).conviction_score / 2))
+          : opp.confidence === "high" ? 4.5 : opp.confidence === "low" ? 2 : 3.5,
+        aiTags: Array.isArray((opp as any).catalysts) ? (opp as any).catalysts : [],
+        enriched: {
+          ...opp,
+          description: opp.thesis,
+          full_description: opp.thesis,
+          thesis: opp.thesis,
+          investment_thesis: opp.thesis,
+          key_data: opp.key_data,
+          asset: opp.asset,
+          analyst_rating: opp.confidence === "high" ? "Buy" : opp.confidence === "low" ? "Hold" : "Buy",
+        } as Record<string, unknown>,
+      });
+      if (res.ok) {
+        ok++;
+        setPromotedIdx((prev) => new Set(prev).add(i));
+      } else {
+        fail++;
+      }
+    }
+    setBulkPromoting(false);
+    if (ok > 0) toast.success(`Auto-uploaded ${ok} opportunities${fail ? ` (${fail} failed)` : ""}`);
+    else if (fail > 0) toast.error(`Failed to upload ${fail} opportunities`);
+  }, [aiReport, promotedIdx]);
 
   const toggleCategory = (id: string) => {
     setSelectedCategories((prev) =>
