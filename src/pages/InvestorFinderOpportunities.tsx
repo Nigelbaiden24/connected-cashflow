@@ -196,11 +196,11 @@ export default function InvestorFinderOpportunities({ variant = "investor" }: Pr
           {/* KPI strip */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
-              { label: "Live Opportunities", value: stats.total, icon: Activity, color: "text-sky-600", bg: "bg-sky-50" },
-              { label: "Avg Conviction", value: `${stats.avgScore}/5`, icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
-              { label: "Avg Target IRR", value: stats.avgIrr, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Featured", value: stats.featured, icon: Sparkles, color: "text-fuchsia-600", bg: "bg-fuchsia-50" },
-              { label: "Sectors", value: stats.sectors, icon: Layers, color: "text-violet-600", bg: "bg-violet-50" },
+              { label: "Live Opportunities", value: stats.total, icon: Activity, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Avg Conviction", value: `${stats.avgScore}/5`, icon: Star, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Avg Target IRR", value: stats.avgIrr, icon: TrendingUp, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Featured", value: stats.featured, icon: Sparkles, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Sectors", value: stats.sectors, icon: Layers, color: "text-slate-700", bg: "bg-slate-100" },
             ].map(k => (
               <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition">
                 <div className="flex items-center justify-between">
