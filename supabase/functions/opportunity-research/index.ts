@@ -482,7 +482,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { category, subCategory, customQuery } = body;
+    const { category, subCategory, customQuery, region } = body;
     const stream: boolean = body.stream !== false; // default true; pipeline passes false
 
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
