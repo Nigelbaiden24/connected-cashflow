@@ -105,8 +105,8 @@ async function extractWithAI(
   aiKey: string,
 ): Promise<ExtractedContact[]> {
   const corpus = pages
-    .slice(0, 6)
-    .map((p, i) => `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 3500)}`)
+    .slice(0, 22)
+    .map((p, i) => `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 4500)}`)
     .join("\n\n---\n\n");
 
   const system = `You are an OSINT contact-intelligence extractor. From the provided public web pages, extract decision-maker contacts matching the user's criteria.
