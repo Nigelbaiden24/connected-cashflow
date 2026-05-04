@@ -14,7 +14,28 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrapeItemView } from "./ScrapeItemView";
+
+type TargetTable = "investor_finder_opportunities" | "opportunity_products" | "opportunities" | "intel_events";
+type TargetPlatform = "finance" | "investor" | "both";
+
+const TARGET_OPTIONS: { value: TargetTable; label: string; sidebar: string; platforms: TargetPlatform[] }[] = [
+  { value: "investor_finder_opportunities", label: "Investor Finder", sidebar: "Investor Finder tab", platforms: ["finance", "investor", "both"] },
+  { value: "opportunity_products",          label: "Opportunity Intelligence", sidebar: "Opportunity Intelligence tab", platforms: ["finance", "investor", "both"] },
+  { value: "opportunities",                 label: "Business Opportunities", sidebar: "Opportunities (Business) tab", platforms: ["finance", "investor", "both"] },
+  { value: "intel_events",                  label: "Intelligence Events", sidebar: "Company Intelligence tab", platforms: ["both"] },
+];
+
+const defaultTargetFor = (p: Pending): TargetTable => {
+  if (p.source === "opportunity-research") return "investor_finder_opportunities";
+  const t = (p.target_table as TargetTable) ?? "opportunity_products";
+  return (TARGET_OPTIONS.find(o => o.value === t)?.value) ?? "opportunity_products";
+};
+const defaultPlatformFor = (p: Pending): TargetPlatform => {
+  if (p.target_platform === "finance" || p.target_platform === "investor") return p.target_platform;
+  return "both";
+};
 
 interface Schedule {
   source: string; enabled: boolean; cadence_minutes: number; next_run_at: string;
@@ -119,15 +140,28 @@ export const PipelineDashboard = () => {
     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); void load(); }
   };
 
-  const approveItem = async (id: string) => {
+  const [routing, setRouting] = useState<Record<string, { target: TargetTable; platform: TargetPlatform }>>({});
+  const getRouting = (p: Pending) => routing[p.id] ?? { target: defaultTargetFor(p), platform: defaultPlatformFor(p) };
+  const setItemRouting = (id: string, patch: Partial<{ target: TargetTable; platform: TargetPlatform }>) =>
+    setRouting(r => ({ ...r, [id]: { ...(r[id] ?? { target: "opportunity_products" as TargetTable, platform: "both" as TargetPlatform }), ...patch } }));
+
+  const approveItem = async (id: string, override?: { target?: TargetTable; platform?: TargetPlatform }) => {
     setBusyItem(id);
     const prev = pending;
+    const item = pending.find(x => x.id === id);
+    const r = item ? getRouting(item) : { target: "opportunity_products" as TargetTable, platform: "both" as TargetPlatform };
+    const target = override?.target ?? r.target;
+    const platform = override?.platform ?? r.platform;
     setPending(p => p.filter(x => x.id !== id));
     try {
-      const { data, error } = await supabase.rpc("approve_pending_item" as any, { _item_id: id });
+      const { data, error } = await supabase.rpc("approve_pending_item" as any, {
+        _item_id: id,
+        _target_table: target,
+        _platform: platform,
+      } as any);
       if (error) throw error;
       const res = data as any;
-      if (res?.ok) toast({ title: "Promoted to live dashboard", description: "Item now visible to users." });
+      if (res?.ok) toast({ title: "Promoted", description: `Routed to ${TARGET_OPTIONS.find(o=>o.value===target)?.label} (${platform}).` });
       else { setPending(prev); toast({ title: "Could not promote", description: res?.error ?? "Unknown", variant: "destructive" }); }
     } catch (e: any) {
       setPending(prev);
@@ -346,12 +380,35 @@ export const PipelineDashboard = () => {
                             <ExternalLink className="h-3 w-3" /> {p.source_url}
                           </a>
                         )}
+                        {(() => { const r = getRouting(p); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
+                          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Destination tab</label>
+                              <Select value={r.target} onValueChange={(v) => setItemRouting(p.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
+                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                              <div className="text-[10px] text-slate-500 mt-1">→ {tgt.sidebar}</div>
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Platform</label>
+                              <Select value={r.platform} onValueChange={(v) => setItemRouting(p.id, { platform: v as TargetPlatform })}>
+                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        ); })()}
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">
                         <Button size="icon" variant="secondary" className="h-7 w-7 bg-slate-100 hover:bg-slate-200 border border-slate-200" onClick={() => setReviewItem(p)} title="Review full data">
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
-                        <Button size="icon" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="h-7 w-7 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-[0_4px_12px_-2px_rgba(16,185,129,0.5)]" title="Approve & promote">
+                        <Button size="icon" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="h-7 w-7 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-[0_4px_12px_-2px_rgba(16,185,129,0.5)]" title="Approve & promote to selected tab/platform">
                           {busyItem === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                         </Button>
                         <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 bg-white hover:border-rose-500/50 hover:text-rose-700" onClick={() => rejectItem(p.id)} disabled={busyItem === p.id} title="Reject">
@@ -430,7 +487,19 @@ export const PipelineDashboard = () => {
             </div>
           )}
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 flex-wrap sm:flex-nowrap items-stretch sm:items-center">
+            {reviewItem && (() => { const r = getRouting(reviewItem); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
+              <div className="flex-1 grid grid-cols-2 gap-2 mr-auto">
+                <Select value={r.target} onValueChange={(v) => setItemRouting(reviewItem.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
+                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200"><SelectValue placeholder="Destination tab" /></SelectTrigger>
+                  <SelectContent>{TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label} — {o.sidebar}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={r.platform} onValueChange={(v) => setItemRouting(reviewItem.id, { platform: v as TargetPlatform })}>
+                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200"><SelectValue placeholder="Platform" /></SelectTrigger>
+                  <SelectContent>{tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            ); })()}
             <Button variant="outline" className="border-slate-200" onClick={() => reviewItem && rejectItem(reviewItem.id)} disabled={!reviewItem || busyItem === reviewItem?.id}>
               <XCircle className="h-4 w-4 mr-1" /> Reject
             </Button>

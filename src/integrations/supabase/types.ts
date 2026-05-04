@@ -4616,6 +4616,7 @@ export type Database = {
           id: string
           image_url: string | null
           metadata: Json | null
+          platform: string | null
           return_potential: string | null
           risks: string[] | null
           sector: string | null
@@ -4648,6 +4649,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           metadata?: Json | null
+          platform?: string | null
           return_potential?: string | null
           risks?: string[] | null
           sector?: string | null
@@ -4680,6 +4682,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           metadata?: Json | null
+          platform?: string | null
           return_potential?: string | null
           risks?: string[] | null
           sector?: string | null
@@ -5465,6 +5468,7 @@ export type Database = {
           market_sentiment_score: number | null
           minimum_investment: number | null
           overall_conviction_score: number | null
+          platform: string | null
           price: number | null
           price_currency: string | null
           product_details: Json | null
@@ -5541,6 +5545,7 @@ export type Database = {
           market_sentiment_score?: number | null
           minimum_investment?: number | null
           overall_conviction_score?: number | null
+          platform?: string | null
           price?: number | null
           price_currency?: string | null
           product_details?: Json | null
@@ -5617,6 +5622,7 @@ export type Database = {
           market_sentiment_score?: number | null
           minimum_investment?: number | null
           overall_conviction_score?: number | null
+          platform?: string | null
           price?: number | null
           price_currency?: string | null
           product_details?: Json | null
@@ -8589,7 +8595,16 @@ export type Database = {
       }
     }
     Functions: {
-      approve_pending_item: { Args: { _item_id: string }; Returns: Json }
+      approve_pending_item:
+        | { Args: { _item_id: string }; Returns: Json }
+        | {
+            Args: {
+              _item_id: string
+              _platform?: string
+              _target_table?: string
+            }
+            Returns: Json
+          }
       calculate_next_cron_run: {
         Args: { cron_expr: string; tz?: string }
         Returns: string
