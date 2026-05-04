@@ -4598,6 +4598,105 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_finder_opportunities: {
+        Row: {
+          ai_score: number | null
+          ai_tags: string[] | null
+          category: string | null
+          conviction_score: number | null
+          country: string | null
+          created_at: string
+          currency: string | null
+          expected_irr: number | null
+          expected_moic: number | null
+          featured: boolean
+          full_description: string | null
+          geography: string | null
+          highlights: string[] | null
+          id: string
+          image_url: string | null
+          metadata: Json | null
+          return_potential: string | null
+          risks: string[] | null
+          sector: string | null
+          short_description: string | null
+          source: string | null
+          source_url: string | null
+          stage: string | null
+          status: string
+          sub_sector: string | null
+          thesis: string | null
+          ticket_size_max: number | null
+          ticket_size_min: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_score?: number | null
+          ai_tags?: string[] | null
+          category?: string | null
+          conviction_score?: number | null
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          expected_irr?: number | null
+          expected_moic?: number | null
+          featured?: boolean
+          full_description?: string | null
+          geography?: string | null
+          highlights?: string[] | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          return_potential?: string | null
+          risks?: string[] | null
+          sector?: string | null
+          short_description?: string | null
+          source?: string | null
+          source_url?: string | null
+          stage?: string | null
+          status?: string
+          sub_sector?: string | null
+          thesis?: string | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_score?: number | null
+          ai_tags?: string[] | null
+          category?: string | null
+          conviction_score?: number | null
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          expected_irr?: number | null
+          expected_moic?: number | null
+          featured?: boolean
+          full_description?: string | null
+          geography?: string | null
+          highlights?: string[] | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          return_potential?: string | null
+          risks?: string[] | null
+          sector?: string | null
+          short_description?: string | null
+          source?: string | null
+          source_url?: string | null
+          stage?: string | null
+          status?: string
+          sub_sector?: string | null
+          thesis?: string | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_finder_profiles: {
         Row: {
           actively_investing: boolean | null
