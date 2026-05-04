@@ -23,13 +23,13 @@ export interface AdminNavItem {
  */
 export const adminNavItems: AdminNavItem[] = [
   // ── Shared (operational) ──────────────────────────────────────────────
+  { id: "users", label: "Users", icon: Users, gradient: "from-blue-500 to-blue-600", platforms: ["finance", "investor"] },
   { id: "planner", label: "Planner", icon: ClipboardList, gradient: "from-indigo-500 to-purple-600", platforms: ["finance", "investor"] },
   { id: "flowpulse-scraper", label: "FlowPulse Scraper", icon: Crosshair, gradient: "from-fuchsia-500 to-rose-600", platforms: ["finance", "investor"] },
   { id: "saved-scrapes", label: "Saved Scrapes", icon: Archive, gradient: "from-rose-500 to-pink-600", platforms: ["finance", "investor"] },
   { id: "data-pipeline", label: "Data Pipeline", icon: Activity, gradient: "from-fuchsia-500 to-purple-600", platforms: ["finance", "investor"] },
   { id: "dm-finder", label: "DM Finder", icon: Crosshair, gradient: "from-fuchsia-600 to-purple-700", platforms: ["finance", "investor"] },
   { id: "company-finder", label: "Company Finder", icon: Building2, gradient: "from-cyan-500 to-violet-600", platforms: ["finance", "investor"] },
-  { id: "users", label: "Users", icon: Users, gradient: "from-blue-500 to-blue-600", platforms: ["finance", "investor"] },
   { id: "enquiries", label: "Enquiries", icon: MessageSquare, gradient: "from-orange-500 to-orange-600", platforms: ["finance", "investor"] },
   { id: "demo-requests", label: "Demo Requests", icon: Calendar, gradient: "from-slate-500 to-slate-600", platforms: ["finance", "investor"] },
   { id: "news", label: "News", icon: Newspaper, gradient: "from-emerald-500 to-emerald-600", platforms: ["finance", "investor"] },
