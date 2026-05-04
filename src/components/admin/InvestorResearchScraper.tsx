@@ -60,7 +60,25 @@ interface AIReport {
 export function InvestorResearchScraper() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [scrapedData, setScrapedData] = useState<ScrapedData[]>([]);
-  const [aiReport, setAiReport] = useState<AIReport | null>(null);
+  const AI_REPORT_STORAGE_KEY = "flowpulse-investor-ai-report";
+  const [aiReport, setAiReport] = useState<AIReport | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(AI_REPORT_STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as AIReport) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      if (aiReport) window.localStorage.setItem(AI_REPORT_STORAGE_KEY, JSON.stringify(aiReport));
+    } catch {
+      /* ignore */
+    }
+  }, [aiReport]);
   const [isScraping, setIsScraping] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
