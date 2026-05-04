@@ -769,7 +769,7 @@ Return STRICT JSON ONLY (no markdown, no prose outside JSON) with this schema:
   "data_gaps": ["What you'd need to make this an actionable trade (e.g. 'cap table for Acme Series B', 'duration profile of XYZ ETF')"]
 }
 
-Extract 6-15 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Skip generic news. If only 2 are real, return 2 — do not pad. Respond ONLY with valid JSON.`;
+Extract 20-40 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Be aggressive — include every distinct opportunity, deal, fund launch, ticker recommendation, fundraising round, secondary trade, or thematic allocation worth tracking. If only 3 are real, return 3 — do not pad. Respond ONLY with valid JSON.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
