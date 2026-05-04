@@ -138,14 +138,10 @@ export default function InvestorFinderOpportunities({ variant = "investor" }: Pr
     })(),
   }), [items, sectors]);
 
-  const accentText = variant === "investor" ? "text-violet-700" : "text-sky-700";
-  const accentRing = variant === "investor" ? "ring-violet-500/20" : "ring-sky-500/20";
-  const accentBtn = variant === "investor"
-    ? "bg-violet-600 hover:bg-violet-700 text-white"
-    : "bg-sky-600 hover:bg-sky-700 text-white";
-  const accentSoft = variant === "investor"
-    ? "bg-violet-50 text-violet-700 border-violet-200"
-    : "bg-sky-50 text-sky-700 border-sky-200";
+  const accentText = "text-slate-900";
+  const accentRing = "ring-slate-900/10";
+  const accentBtn = "bg-slate-900 hover:bg-slate-800 text-white";
+  const accentSoft = "bg-slate-100 text-slate-700 border-slate-200";
 
   const exportCsv = () => {
     const rows = [
@@ -169,7 +165,7 @@ export default function InvestorFinderOpportunities({ variant = "investor" }: Pr
       {/* Hero */}
       <div className="relative overflow-hidden bg-white border-b border-slate-200">
         <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_1px_1px,_#0f172a_1px,_transparent_0)] [background-size:24px_24px]" />
-        <div className="absolute -top-32 -right-32 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-30 bg-gradient-to-br from-sky-200 to-violet-200" />
+        
         <div className="relative max-w-[1400px] mx-auto px-6 py-10">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500 mb-4">
             <Compass className={cn("h-4 w-4", accentText)} />
@@ -200,11 +196,11 @@ export default function InvestorFinderOpportunities({ variant = "investor" }: Pr
           {/* KPI strip */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
-              { label: "Live Opportunities", value: stats.total, icon: Activity, color: "text-sky-600", bg: "bg-sky-50" },
-              { label: "Avg Conviction", value: `${stats.avgScore}/5`, icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
-              { label: "Avg Target IRR", value: stats.avgIrr, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Featured", value: stats.featured, icon: Sparkles, color: "text-fuchsia-600", bg: "bg-fuchsia-50" },
-              { label: "Sectors", value: stats.sectors, icon: Layers, color: "text-violet-600", bg: "bg-violet-50" },
+              { label: "Live Opportunities", value: stats.total, icon: Activity, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Avg Conviction", value: `${stats.avgScore}/5`, icon: Star, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Avg Target IRR", value: stats.avgIrr, icon: TrendingUp, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Featured", value: stats.featured, icon: Sparkles, color: "text-slate-700", bg: "bg-slate-100" },
+              { label: "Sectors", value: stats.sectors, icon: Layers, color: "text-slate-700", bg: "bg-slate-100" },
             ].map(k => (
               <div key={k.label} className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition">
                 <div className="flex items-center justify-between">
