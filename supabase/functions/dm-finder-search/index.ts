@@ -75,7 +75,7 @@ function patternEmails(fullName: string, company: string, websiteDomain?: string
   ];
 }
 
-async function firecrawlSearch(query: string, apiKey: string, limit = 6) {
+async function firecrawlSearch(query: string, apiKey: string, limit = 15) {
   try {
     const res = await fetch(`${FIRECRAWL_BASE}/search`, {
       method: "POST",
@@ -87,15 +87,14 @@ async function firecrawlSearch(query: string, apiKey: string, limit = 6) {
       }),
     });
     if (!res.ok) {
-      console.error("Firecrawl search failed:", res.status, await res.text());
+      console.error("Firecrawl search failed:", query, res.status, await res.text().catch(() => ""));
       return [];
     }
     const data = await res.json();
-    // v2 shape: { data: { web: [{url,title,description,markdown}] } } or { data: [...] }
     const results = data?.data?.web ?? data?.data ?? [];
     return Array.isArray(results) ? results : [];
   } catch (e) {
-    console.error("Firecrawl search exception:", e);
+    console.error("Firecrawl search exception:", query, e);
     return [];
   }
 }
