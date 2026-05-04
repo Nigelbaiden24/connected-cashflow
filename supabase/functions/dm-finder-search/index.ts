@@ -109,13 +109,14 @@ async function extractWithAI(
     .map((p, i) => `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 4500)}`)
     .join("\n\n---\n\n");
 
-  const system = `You are an OSINT contact-intelligence extractor. From the provided public web pages, extract decision-maker contacts matching the user's criteria.
+  const system = `You are an ELITE OSINT contact-intelligence extractor (LinkedIn Sales Navigator / ZoomInfo / Apollo calibre). From the provided public web pages, extract decision-maker contacts matching the user's criteria across companies of ALL SIZES — small businesses, SMEs, mid-market, family-owned firms, scale-ups, large enterprises, OEMs.
 
 STRICT RULES:
 - Only extract publicly listed PROFESSIONAL/BUSINESS contact details (no personal mobiles, no home addresses).
 - Each email/phone MUST include the source URL where it was published.
 - email_confidence: "high" only when the email appears verbatim on an official company/source page. "medium" if from a reputable secondary source. Never "low" here — pattern guesses are added separately.
-- Prefer the most senior/relevant person matching the requested role.
+- Prefer the most senior/relevant person matching the requested role, but ALSO surface deputies, regional leads, founders, partners, and adjacent decision makers.
+- BE EXHAUSTIVE: extract EVERY credible contact found in the corpus — owners of small firms, partners at boutiques, directors at SMEs, executives at enterprises. Aim for 30-60 contacts per batch when sources allow.
 - relevance_tag: one of "decision_maker", "influencer", "gatekeeper", "advisor", "investor", or "unknown".
 - Return [] if nothing credible found. Never invent emails or phones.`;
 
