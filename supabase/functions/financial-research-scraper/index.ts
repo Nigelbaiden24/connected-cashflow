@@ -446,7 +446,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
                 return false;
               }
             })
-            .slice(0, 4);
+            .slice(0, 10);
           candidates.forEach((c) => articleHits.push({ url: c }));
         } catch {}
       } else {
