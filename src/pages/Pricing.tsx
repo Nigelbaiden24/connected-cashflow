@@ -595,8 +595,8 @@ const Pricing = () => {
               <Card className="relative overflow-hidden border-border/30 bg-card/80 backdrop-blur-sm shadow-2xl">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
                 <div className="text-center pt-12 pb-8 px-8 bg-gradient-to-b from-primary/5 to-transparent">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-5 mx-auto shadow-lg shadow-primary/25">
-                    <Users className="h-10 w-10 text-primary-foreground" />
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-5 mx-auto shadow-lg shadow-primary/25 p-3">
+                    <img src={flowpulseLogo} alt="FlowPulse" className="w-full h-full object-contain rounded-md" />
                   </div>
                   <h2 className="text-3xl font-bold font-space-grotesk mb-2">Enterprise Teams</h2>
                   <p className="text-muted-foreground text-lg mb-6">Custom quotation for your organisation</p>
