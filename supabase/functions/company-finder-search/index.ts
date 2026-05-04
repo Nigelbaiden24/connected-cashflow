@@ -142,6 +142,13 @@ STRICT RULES:
 - Deduplicate by company name. Never invent companies.
 - Return [] only if nothing credible found.`;
 
+  const corpus = pages
+    .slice(0, 22)
+    .map((p, i) =>
+      `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 4500)}`,
+    )
+    .join("\n\n---\n\n");
+
   const userPrompt = `Searching for companies matching:
 - Sector: ${input.sector}
 - Sub-criteria: ${input.sub_criteria || "(none)"}
