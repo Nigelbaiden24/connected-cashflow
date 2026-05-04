@@ -340,14 +340,19 @@ serve(async (req) => {
 
 // Firecrawl v2 search — discovers fresh, opportunity-level articles across the
 // open web for a given category, then returns full markdown for each hit.
-async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, limit = 8) {
+async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, limit = 15) {
   const queries = [
     `${categoryLabel} investment opportunities this week`,
     `${categoryLabel} new deal OR funding round OR acquisition`,
     `${categoryLabel} top picks analyst rating price target`,
+    `${categoryLabel} buy recommendation institutional investors`,
+    `${categoryLabel} undervalued opportunity catalyst 2026`,
+    `${categoryLabel} IPO OR listing OR launch announcement`,
+    `${categoryLabel} private deal sponsor lead investor`,
+    `${categoryLabel} valuation multiple yield IRR target`,
   ];
   const allHits: Array<{ url: string; title?: string; description?: string; markdown?: string }> = [];
-  for (const q of queries) {
+  await Promise.all(queries.map(async (q) => {
     try {
       const res = await fetch('https://api.firecrawl.dev/v2/search', {
         method: 'POST',
@@ -361,7 +366,7 @@ async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, li
       });
       if (!res.ok) {
         console.warn(`[search] "${q}" failed ${res.status}`);
-        continue;
+        return;
       }
       const data = await res.json();
       const arr = data?.data?.web ?? data?.web ?? data?.data ?? [];
@@ -369,8 +374,7 @@ async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, li
     } catch (e) {
       console.warn(`[search] "${q}" error`, e);
     }
-  }
-  // Dedupe by URL
+  }));
   const seen = new Set<string>();
   return allHits.filter((h) => {
     if (!h?.url || seen.has(h.url)) return false;
