@@ -242,7 +242,7 @@ async function runDeepDive(
     const queries = buildQueries(body);
     console.log(`[company-finder] search ${searchId}: ${queries.length} queries dispatching in parallel`);
 
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 50)));
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 30)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
