@@ -340,14 +340,19 @@ serve(async (req) => {
 
 // Firecrawl v2 search — discovers fresh, opportunity-level articles across the
 // open web for a given category, then returns full markdown for each hit.
-async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, limit = 8) {
+async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, limit = 15) {
   const queries = [
     `${categoryLabel} investment opportunities this week`,
     `${categoryLabel} new deal OR funding round OR acquisition`,
     `${categoryLabel} top picks analyst rating price target`,
+    `${categoryLabel} buy recommendation institutional investors`,
+    `${categoryLabel} undervalued opportunity catalyst 2026`,
+    `${categoryLabel} IPO OR listing OR launch announcement`,
+    `${categoryLabel} private deal sponsor lead investor`,
+    `${categoryLabel} valuation multiple yield IRR target`,
   ];
   const allHits: Array<{ url: string; title?: string; description?: string; markdown?: string }> = [];
-  for (const q of queries) {
+  await Promise.all(queries.map(async (q) => {
     try {
       const res = await fetch('https://api.firecrawl.dev/v2/search', {
         method: 'POST',
@@ -361,7 +366,7 @@ async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, li
       });
       if (!res.ok) {
         console.warn(`[search] "${q}" failed ${res.status}`);
-        continue;
+        return;
       }
       const data = await res.json();
       const arr = data?.data?.web ?? data?.web ?? data?.data ?? [];
@@ -369,8 +374,7 @@ async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, li
     } catch (e) {
       console.warn(`[search] "${q}" error`, e);
     }
-  }
-  // Dedupe by URL
+  }));
   const seen = new Set<string>();
   return allHits.filter((h) => {
     if (!h?.url || seen.has(h.url)) return false;
@@ -442,7 +446,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
                 return false;
               }
             })
-            .slice(0, 4);
+            .slice(0, 10);
           candidates.forEach((c) => articleHits.push({ url: c }));
         } catch {}
       } else {
@@ -455,9 +459,9 @@ async function scrapeCategoryUrls(categoryKey: string) {
 
   // PHASE 2 – web search for opportunity-grade articles (Firecrawl returns full markdown)
   try {
-    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 6);
+    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 15);
     console.log(`[category:${categoryKey}] search returned ${hits.length} hits`);
-    for (const h of hits.slice(0, 12)) {
+    for (const h of hits.slice(0, 30)) {
       const md = (h as any).markdown || (h as any).content || '';
       if (md && md.length > 300) {
         combinedContent += `\n\n### Article: ${h.title ?? h.url}\nURL: ${h.url}\n\n${md.slice(0, 9000)}`;
@@ -471,7 +475,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
   }
 
   // PHASE 3 – deep scrape any remaining article candidates that lack markdown
-  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 25);
   for (const art of dedupeArticles) {
     try {
       const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
@@ -583,7 +587,7 @@ async function scrapeAllPlatformUrls(platformName: string) {
                 return false;
               }
             })
-            .slice(0, 3)
+            .slice(0, 8)
             .forEach((l) => articleHits.push({ url: l }));
         } catch {}
       } else {
@@ -595,7 +599,7 @@ async function scrapeAllPlatformUrls(platformName: string) {
   }
 
   // Deep-scrape article candidates for richer opportunity-level detail
-  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 25);
   for (const art of dedupeArticles) {
     try {
       const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
@@ -765,7 +769,7 @@ Return STRICT JSON ONLY (no markdown, no prose outside JSON) with this schema:
   "data_gaps": ["What you'd need to make this an actionable trade (e.g. 'cap table for Acme Series B', 'duration profile of XYZ ETF')"]
 }
 
-Extract 6-15 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Skip generic news. If only 2 are real, return 2 — do not pad. Respond ONLY with valid JSON.`;
+Extract 20-40 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Be aggressive — include every distinct opportunity, deal, fund launch, ticker recommendation, fundraising round, secondary trade, or thematic allocation worth tracking. If only 3 are real, return 3 — do not pad. Respond ONLY with valid JSON.`;
 
   try {
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
