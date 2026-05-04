@@ -599,7 +599,7 @@ async function scrapeAllPlatformUrls(platformName: string) {
   }
 
   // Deep-scrape article candidates for richer opportunity-level detail
-  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 10);
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 25);
   for (const art of dedupeArticles) {
     try {
       const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
