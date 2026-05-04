@@ -1,0 +1,1 @@
+UPDATE public.pipeline_schedule SET cadence_minutes = 360, next_run_at = LEAST(next_run_at, now() + interval '6 hours');
