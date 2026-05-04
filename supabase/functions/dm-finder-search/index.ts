@@ -247,23 +247,70 @@ Deno.serve(async (req: Request) => {
     }
     const searchId = searchRow.id;
 
-    // Build queries
+    // Build queries — elite multi-angle (covers small / mid / large companies)
     const nameClause = body.full_name ? `"${body.full_name}" ` : "";
     const websiteDomain = body.website ? extractDomain(body.website) : "";
     const siteClause = websiteDomain ? `site:${websiteDomain} ` : "";
+    const sectorClause = body.sector ? ` ${body.sector}` : "";
+    const locClause = body.location ? ` ${body.location}` : "";
+    const company = body.company_name;
+    const role = body.job_title;
+
     const queries = [
-      `${nameClause}"${body.job_title}" "${body.company_name}" email contact`,
-      `"${body.company_name}" leadership team ${body.job_title}`,
-      `"${body.company_name}" press release ${body.job_title}`,
-      `site:linkedin.com/in ${nameClause}${body.job_title} ${body.company_name}`,
+      // Direct contact lookup
+      `${nameClause}"${role}" "${company}" email contact`,
+      `${nameClause}"${role}" "${company}" phone`,
+      `"${company}" leadership team ${role}`,
+      `"${company}" press release ${role}`,
+      `"${company}" management team ${role} email`,
+      `"${company}" "${role}" linkedin`,
+      `"${company}" annual report ${role}`,
+      `"${company}" board of directors ${role}`,
+      `"${company}" press contact ${role}`,
+      `"${company}" media inquiries ${role}`,
+
+      // LinkedIn / directories
+      `site:linkedin.com/in ${nameClause}${role} ${company}`,
+      `site:linkedin.com/company "${company}" ${role}`,
+      `site:crunchbase.com "${company}" ${role}`,
+      `site:zoominfo.com "${company}" ${role}`,
+      `site:rocketreach.co "${company}" ${role}`,
+      `site:apollo.io "${company}" ${role}`,
+      `site:bloomberg.com/profile "${company}" ${role}`,
+      `site:owler.com "${company}" ${role}`,
+
+      // SME / small-business angles
+      `"${company}"${locClause} owner founder director contact email`,
+      `"${company}"${locClause} small business directory contact`,
+      `"${company}"${sectorClause} key people contact`,
+      `"${company}" companies house officers directors`,
+
+      // Sector / location fan-out (discovers DMs at OTHER companies of all sizes that match the role+sector+location)
+      ...(body.sector ? [
+        `"${role}"${sectorClause}${locClause} email contact directory`,
+        `top ${role}s${sectorClause}${locClause} 2025`,
+        `${role}${sectorClause}${locClause} small medium business owners`,
+        `${role}${sectorClause}${locClause} startup founders contact`,
+        `${role}${sectorClause}${locClause} site:linkedin.com/in`,
+        `${role}${sectorClause}${locClause} chamber of commerce members`,
+        `${role}${sectorClause}${locClause} trade association directory`,
+        `${role}${sectorClause}${locClause} industry awards finalists`,
+        `${role}${sectorClause}${locClause} mid-market enterprise leaders`,
+        `${role}${sectorClause}${locClause} family-owned business owners`,
+      ] : []),
+
       ...(websiteDomain ? [
-        `${siteClause}${body.job_title} contact`,
+        `${siteClause}${role} contact`,
         `${siteClause}team OR leadership OR about`,
+        `${siteClause}press OR media OR newsroom`,
+        `${siteClause}board directors investors`,
       ] : []),
     ];
 
-    // Run searches in parallel
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 5)));
+    console.log(`[dm-finder] search ${searchId}: dispatching ${queries.length} queries`);
+
+    // Run searches in parallel (15 results each → potentially 300+ raw URLs)
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 15)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
@@ -274,11 +321,12 @@ Deno.serve(async (req: Request) => {
       seen.add(u);
       return true;
     });
+    console.log(`[dm-finder] search ${searchId}: ${pages.length} unique sources`);
 
     // Log sources
     if (pages.length) {
       await admin.from("dm_finder_sources").insert(
-        pages.slice(0, 30).map((p: any) => ({
+        pages.slice(0, 100).map((p: any) => ({
           search_id: searchId,
           url: p.url,
           source_type: "firecrawl_search",
@@ -287,14 +335,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // AI extraction
-    const extracted = await extractWithAI(body, pages, LOVABLE_API_KEY);
+    // AI extraction — chunked & parallel for elite breadth (up to ~100 contacts across many companies)
+    const CHUNK_SIZE = 22;
+    const MAX_CHUNKS = 6;
+    const chunks: typeof pages[] = [];
+    for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
+      chunks.push(pages.slice(i, i + CHUNK_SIZE));
+    }
+    console.log(`[dm-finder] search ${searchId}: extracting from ${chunks.length} chunks`);
+    const extractedBatches = await Promise.all(chunks.map((chunk) => extractWithAI(body, chunk, LOVABLE_API_KEY)));
+    const extracted = extractedBatches.flat();
 
-    // Pattern-based permutations (Low confidence) — add only if AI returned a name + we don't already have a high-confidence email
-    const enriched: ExtractedContact[] = [...extracted];
-    const baseName = body.full_name || extracted[0]?.full_name || "";
+    // Dedupe by name+company+email
+    const dedupKey = (c: ExtractedContact) =>
+      `${(c.full_name ?? "").trim().toLowerCase()}|${(c.company ?? "").trim().toLowerCase()}|${(c.email ?? "").trim().toLowerCase()}`;
+    const dedupMap = new Map<string, ExtractedContact>();
+    for (const c of extracted) {
+      const k = dedupKey(c);
+      if (!k.replace(/\|/g, "")) continue;
+      if (!dedupMap.has(k)) dedupMap.set(k, c);
+    }
+    const uniqueExtracted = [...dedupMap.values()];
+
+    // Pattern-based permutations (Low confidence) — only for the named target if no verified email surfaced
+    const enriched: ExtractedContact[] = [...uniqueExtracted];
+    const baseName = body.full_name || uniqueExtracted[0]?.full_name || "";
     if (baseName) {
-      const hasVerified = extracted.some((c) => c.email && (c.email_confidence === "high" || c.email_confidence === "medium"));
+      const hasVerified = uniqueExtracted.some((c) => c.email && (c.email_confidence === "high" || c.email_confidence === "medium"));
       if (!hasVerified) {
         const perms = patternEmails(baseName, body.company_name, websiteDomain);
         for (const guess of perms) {
@@ -311,9 +378,9 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Persist contacts
+    // Persist contacts (cap 100)
     if (enriched.length) {
-      const rows = enriched.slice(0, 25).map((c) => ({
+      const rows = enriched.slice(0, 100).map((c) => ({
         search_id: searchId,
         user_id: userId,
         full_name: c.full_name ?? null,
