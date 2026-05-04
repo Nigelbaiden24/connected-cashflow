@@ -255,7 +255,16 @@ async function runDeepDive(
     });
     console.log(`[company-finder] search ${searchId}: ${pages.length} unique sources`);
 
-    const extracted = await extractWithAI(body, pages, aiKey);
+    // Chunk pages and run multiple AI extractions in parallel for elite breadth (up to 100 companies).
+    const CHUNK_SIZE = 22;
+    const MAX_CHUNKS = 6;
+    const chunks: typeof pages[] = [];
+    for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
+      chunks.push(pages.slice(i, i + CHUNK_SIZE));
+    }
+    console.log(`[company-finder] search ${searchId}: extracting from ${chunks.length} chunks`);
+    const extractedBatches = await Promise.all(chunks.map((chunk) => extractWithAI(body, chunk, aiKey)));
+    const extracted = extractedBatches.flat();
 
     // Dedupe by normalised company name
     const byName = new Map<string, ExtractedCompany>();
@@ -267,7 +276,7 @@ async function runDeepDive(
     const unique = [...byName.values()];
 
     if (unique.length) {
-      const rows = unique.slice(0, 80).map((c) => ({
+      const rows = unique.slice(0, 100).map((c) => ({
         search_id: searchId,
         user_id: userId,
         company_name: c.company_name,
