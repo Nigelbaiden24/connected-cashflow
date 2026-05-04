@@ -587,7 +587,7 @@ async function scrapeAllPlatformUrls(platformName: string) {
                 return false;
               }
             })
-            .slice(0, 3)
+            .slice(0, 8)
             .forEach((l) => articleHits.push({ url: l }));
         } catch {}
       } else {
