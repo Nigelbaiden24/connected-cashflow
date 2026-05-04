@@ -165,7 +165,7 @@ export default function InvestorFinderOpportunities({ variant = "investor" }: Pr
       {/* Hero */}
       <div className="relative overflow-hidden bg-white border-b border-slate-200">
         <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(circle_at_1px_1px,_#0f172a_1px,_transparent_0)] [background-size:24px_24px]" />
-        <div className="absolute -top-32 -right-32 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-30 bg-gradient-to-br from-sky-200 to-violet-200" />
+        
         <div className="relative max-w-[1400px] mx-auto px-6 py-10">
           <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-500 mb-4">
             <Compass className={cn("h-4 w-4", accentText)} />
