@@ -105,7 +105,7 @@ export function CompanyFinderPanel() {
 
       // Poll for completion (search runs in background via EdgeRuntime.waitUntil)
       const started = Date.now();
-      const maxMs = 4 * 60 * 1000; // 4 minutes safety cap
+      const maxMs = 8 * 60 * 1000; // 8 minutes safety cap (elite multi-chunk extraction)
       let finalStatus: string | null = null;
       while (Date.now() - started < maxMs) {
         await new Promise((r) => setTimeout(r, 2500));

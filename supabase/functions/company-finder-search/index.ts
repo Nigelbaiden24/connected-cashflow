@@ -75,6 +75,9 @@ function buildQueries(input: SearchInput): string[] {
     queries.push(`top ${brief}${locClause} 2025 ranking`);
     queries.push(`leading ${brief}${locClause} private companies`);
     queries.push(`${brief}${locClause} site:linkedin.com/company`);
+    queries.push(`${brief}${locClause} site:crunchbase.com/organization`);
+    queries.push(`${brief}${locClause} small business directory`);
+    queries.push(`${brief}${locClause} startup companies`);
   }
   // Sub-criteria driven
   if (sub) {
@@ -82,22 +85,41 @@ function buildQueries(input: SearchInput): string[] {
     queries.push(`${sector} ${sub}${locClause} suppliers directory 2025`);
     queries.push(`top ${sector} ${sub} companies${locClause}`);
     queries.push(`${sector} ${sub}${locClause} market leaders`);
+    queries.push(`${sector} ${sub}${locClause} SME small medium enterprise`);
+    queries.push(`${sector} ${sub}${locClause} emerging startups`);
   }
-  // Sector backbone
+  // Sector backbone — multi-segment coverage
   queries.push(`${sector}${locClause} leading companies directory 2025`);
   queries.push(`${sector}${locClause} industry players ranking`);
   queries.push(`${sector}${locClause} top private companies revenue`);
   queries.push(`${sector}${locClause} trade association member directory`);
+  queries.push(`${sector}${locClause} largest enterprises 2025`);
+  queries.push(`${sector}${locClause} mid-market companies list`);
+  queries.push(`${sector}${locClause} small business owners directory`);
+  queries.push(`${sector}${locClause} fastest growing companies 2025`);
+  queries.push(`${sector}${locClause} startups raised funding 2024 2025`);
+  queries.push(`${sector}${locClause} family-owned businesses`);
+  queries.push(`${sector}${locClause} site:crunchbase.com`);
+  queries.push(`${sector}${locClause} site:linkedin.com/company`);
+  queries.push(`${sector}${locClause} site:dnb.com`);
+  queries.push(`${sector}${locClause} site:owler.com`);
+  queries.push(`${sector}${locClause} site:bloomberg.com/profile`);
+  queries.push(`${sector}${locClause} site:zoominfo.com`);
+  queries.push(`${sector}${locClause} chamber of commerce members`);
+  queries.push(`${sector}${locClause} yellow pages business listing`);
+  queries.push(`${sector}${locClause} regional business awards finalists`);
+  queries.push(`${sector}${locClause} Inc 5000 Financial Times 1000`);
 
   // Tier-aware fallbacks for supply-chain heavy sectors
-  if (/automotive|aerospace|manufactur|industrial|defen[sc]e|energy|chemical|pharma/i.test(`${sector} ${sub} ${brief}`)) {
+  if (/automotive|aerospace|manufactur|industrial|defen[sc]e|energy|chemical|pharma|construction|food|retail|tech|software/i.test(`${sector} ${sub} ${brief}`)) {
     queries.push(`${sector} OEM tier 1 tier 2 tier 3 suppliers${locClause}`);
     queries.push(`${sector} supply chain tier suppliers list${locClause}`);
     queries.push(`${sector}${locClause} component manufacturers directory`);
     queries.push(`${sector}${locClause} contract manufacturers list`);
+    queries.push(`${sector}${locClause} independent specialists boutique firms`);
   }
 
-  return [...new Set(queries.map((q) => q.trim()))].slice(0, 14);
+  return [...new Set(queries.map((q) => q.trim()))].slice(0, 32);
 }
 
 async function extractWithAI(
@@ -107,25 +129,25 @@ async function extractWithAI(
 ): Promise<ExtractedCompany[]> {
   if (!pages.length) return [];
 
-  const corpus = pages
-    .slice(0, 18)
-    .map((p, i) =>
-      `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 4500)}`,
-    )
-    .join("\n\n---\n\n");
-
-  const system = `You are an ELITE B2B market-mapping analyst (Bain / McKinsey / PitchBook calibre). Your job: extract a comprehensive, structured list of REAL companies that match the user's sector + criteria from the provided web sources.
+  const system = `You are an ELITE B2B market-mapping analyst (Bain / McKinsey / PitchBook calibre). Your job: extract a comprehensive, structured list of REAL companies of ALL SIZES (small businesses, SMEs, mid-market, large enterprises, OEMs, startups, family-owned firms) that match the user's sector + criteria from the provided web sources.
 
 STRICT RULES:
 - Return only real, verifiable companies that appear in the provided sources OR are widely-known established players in this exact space.
 - Each company MUST include a source_url (where it was mentioned, or its official site).
 - confidence: "high" = explicitly listed in a credible source as matching; "medium" = inferred from strong context; "low" = speculative.
-- For supply-chain/tier searches, set "tier" to one of: "OEM", "Tier 1", "Tier 2", "Tier 3", "Distributor", "Specialist", "Other".
+- For supply-chain/tier searches, set "tier" to one of: "OEM", "Tier 1", "Tier 2", "Tier 3", "Distributor", "Specialist", "SME", "Startup", "Other".
 - "role": short description of what the company actually does (max 14 words).
 - key_signals: 1-2 short evidence phrases (e.g. "Listed in SMMT supplier directory", "$2B revenue 2024", "Supplies BMW & VW").
-- Aim for 20-40 high-quality matches. Be exhaustive — pull every credible name from the corpus.
+- BE EXHAUSTIVE: pull EVERY credible company name from the corpus — small, medium and large. Aim for 40-80 matches per batch.
 - Deduplicate by company name. Never invent companies.
 - Return [] only if nothing credible found.`;
+
+  const corpus = pages
+    .slice(0, 22)
+    .map((p, i) =>
+      `### SOURCE ${i + 1}\nURL: ${p.url}\nTITLE: ${p.title ?? ""}\n\n${(p.markdown ?? p.description ?? "").slice(0, 4500)}`,
+    )
+    .join("\n\n---\n\n");
 
   const userPrompt = `Searching for companies matching:
 - Sector: ${input.sector}
@@ -220,7 +242,7 @@ async function runDeepDive(
     const queries = buildQueries(body);
     console.log(`[company-finder] search ${searchId}: ${queries.length} queries dispatching in parallel`);
 
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 50)));
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 30)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
@@ -233,7 +255,16 @@ async function runDeepDive(
     });
     console.log(`[company-finder] search ${searchId}: ${pages.length} unique sources`);
 
-    const extracted = await extractWithAI(body, pages, aiKey);
+    // Chunk pages and run multiple AI extractions in parallel for elite breadth (up to 100 companies).
+    const CHUNK_SIZE = 22;
+    const MAX_CHUNKS = 6;
+    const chunks: typeof pages[] = [];
+    for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
+      chunks.push(pages.slice(i, i + CHUNK_SIZE));
+    }
+    console.log(`[company-finder] search ${searchId}: extracting from ${chunks.length} chunks`);
+    const extractedBatches = await Promise.all(chunks.map((chunk) => extractWithAI(body, chunk, aiKey)));
+    const extracted = extractedBatches.flat();
 
     // Dedupe by normalised company name
     const byName = new Map<string, ExtractedCompany>();
@@ -245,7 +276,7 @@ async function runDeepDive(
     const unique = [...byName.values()];
 
     if (unique.length) {
-      const rows = unique.slice(0, 80).map((c) => ({
+      const rows = unique.slice(0, 100).map((c) => ({
         search_id: searchId,
         user_id: userId,
         company_name: c.company_name,
