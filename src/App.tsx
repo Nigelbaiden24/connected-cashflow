@@ -50,6 +50,7 @@ const MarketDataHub = lazy(() => import("./pages/investor/MarketDataHub"));
 const ToolsCalculators = lazy(() => import("./pages/investor/ToolsCalculators"));
 const RiskCompliance = lazy(() => import("./pages/investor/RiskCompliance"));
 const InvestorFinderPage = lazy(() => import("./pages/finance/InvestorFinder"));
+const InvestorFinderOpportunities = lazy(() => import("./pages/InvestorFinderOpportunities"));
 const CompanyIntelligence = lazy(() => import("./pages/finance/CompanyIntelligence"));
 const StartupDiscovery = lazy(() => import("./pages/investor/StartupDiscovery"));
 const Watchlists = lazy(() => import("./pages/investor/Watchlists"));
@@ -253,6 +254,7 @@ const App = () => {
                 <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><ClientOnboarding /></Suspense>} />
                 <Route path="/practice" element={<Suspense fallback={<PageLoader />}><PracticeManagement /></Suspense>} />
                 <Route path="/finance/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
+                <Route path="/finance/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="finance" /></Suspense>} />
                 <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsDashboard /></Suspense>} />
                 <Route path="/finance-payroll" element={<Suspense fallback={<PageLoader />}><FinancePayroll /></Suspense>} />
                 <Route path="/finance-crm" element={<Suspense fallback={<PageLoader />}><CRM /></Suspense>} />
@@ -335,6 +337,7 @@ const App = () => {
                 <Route path="/investor/stocks-crypto" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
                 <Route path="/investor/featured-picks" element={<Suspense fallback={<PageLoader />}><InvestorFeaturedPicks /></Suspense>} />
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
+                <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="investor" /></Suspense>} />
               </Route>
 
               <Route path="/investor/news" element={<InvestorNews />} />

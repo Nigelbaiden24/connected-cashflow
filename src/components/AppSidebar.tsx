@@ -33,6 +33,7 @@ import {
   Globe,
   Lightbulb,
   Search,
+  Compass,
 } from "lucide-react";
 import {
   Sidebar,
@@ -113,6 +114,7 @@ const navGroups: NavGroup[] = [
       { title: "Stocks & Crypto", url: "/finance/stocks-crypto", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
       { title: "Analyst Reports", url: "/finance/reports", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
       { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
+      { title: "Investor Finder", url: "/finance/investor-finder", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
     ],
   },
 ];
