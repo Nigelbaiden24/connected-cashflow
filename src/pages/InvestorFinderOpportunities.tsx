@@ -138,14 +138,10 @@ export default function InvestorFinderOpportunities({ variant = "investor" }: Pr
     })(),
   }), [items, sectors]);
 
-  const accentText = variant === "investor" ? "text-violet-700" : "text-sky-700";
-  const accentRing = variant === "investor" ? "ring-violet-500/20" : "ring-sky-500/20";
-  const accentBtn = variant === "investor"
-    ? "bg-violet-600 hover:bg-violet-700 text-white"
-    : "bg-sky-600 hover:bg-sky-700 text-white";
-  const accentSoft = variant === "investor"
-    ? "bg-violet-50 text-violet-700 border-violet-200"
-    : "bg-sky-50 text-sky-700 border-sky-200";
+  const accentText = "text-slate-900";
+  const accentRing = "ring-slate-900/10";
+  const accentBtn = "bg-slate-900 hover:bg-slate-800 text-white";
+  const accentSoft = "bg-slate-100 text-slate-700 border-slate-200";
 
   const exportCsv = () => {
     const rows = [
