@@ -232,18 +232,31 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
 
-  // Build list of bodies — for category-driven sources, fan out across 3 categories per run for broader coverage
+  // Build list of bodies — for category-driven sources, fan out across multiple categories AND global regions per run
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
+  const GLOBAL_REGIONS_PIPELINE = [
+    "United Kingdom & Ireland", "Western Europe", "Southern Europe", "Eastern Europe", "Nordics",
+    "North America", "Latin America", "Middle East", "Africa", "Asia Pacific",
+    "Southeast Asia", "South Asia", "Greater China",
+  ];
+  const pickRegions = (n: number): string[] => {
+    const out: string[] = [];
+    const base = Math.floor(Date.now() / (6 * 60 * 60 * 1000));
+    for (let i = 0; i < n; i++) out.push(GLOBAL_REGIONS_PIPELINE[(base + i) % GLOBAL_REGIONS_PIPELINE.length]);
+    return out;
+  };
   const bodies: Record<string, unknown>[] = [];
   if (source === "financial-research") {
-    for (const cat of pickN(FINANCE_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "finance", ...baseCfg });
+    for (const cat of pickN(FINANCE_RESEARCH_CATEGORIES, 4)) bodies.push({ categoryKey: cat, platform: "finance", ...baseCfg });
   } else if (source === "investor-research") {
-    for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 3)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
+    for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 4)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
   } else if (source === "opportunity-research") {
-    // Elite enterprise: rotate through all 20 categories — 3 per run, full cycle every ~7 runs
-    for (const cat of pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 3)) bodies.push({ category: cat, stream: false, ...baseCfg });
+    // Elite enterprise: rotate categories × global regions for full continent coverage every cycle
+    const cats = pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 4);
+    const regions = pickRegions(3);
+    for (const cat of cats) for (const r of regions) bodies.push({ category: cat, region: r, stream: false, ...baseCfg });
   } else if (source === "companies-house") {
-    for (const q of pickN(COMPANIES_HOUSE_QUERIES, 3)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
+    for (const q of pickN(COMPANIES_HOUSE_QUERIES, 4)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
