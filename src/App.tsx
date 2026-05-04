@@ -254,6 +254,7 @@ const App = () => {
                 <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><ClientOnboarding /></Suspense>} />
                 <Route path="/practice" element={<Suspense fallback={<PageLoader />}><PracticeManagement /></Suspense>} />
                 <Route path="/finance/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
+                <Route path="/finance/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="finance" /></Suspense>} />
                 <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsDashboard /></Suspense>} />
                 <Route path="/finance-payroll" element={<Suspense fallback={<PageLoader />}><FinancePayroll /></Suspense>} />
                 <Route path="/finance-crm" element={<Suspense fallback={<PageLoader />}><CRM /></Suspense>} />
