@@ -33,6 +33,7 @@ import {
   Globe,
   Lightbulb,
   Search,
+  Compass,
 } from "lucide-react";
 import {
   Sidebar,
