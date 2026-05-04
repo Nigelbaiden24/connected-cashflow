@@ -380,12 +380,35 @@ export const PipelineDashboard = () => {
                             <ExternalLink className="h-3 w-3" /> {p.source_url}
                           </a>
                         )}
+                        {(() => { const r = getRouting(p); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
+                          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Destination tab</label>
+                              <Select value={r.target} onValueChange={(v) => setItemRouting(p.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
+                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                              <div className="text-[10px] text-slate-500 mt-1">→ {tgt.sidebar}</div>
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Platform</label>
+                              <Select value={r.platform} onValueChange={(v) => setItemRouting(p.id, { platform: v as TargetPlatform })}>
+                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        ); })()}
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">
                         <Button size="icon" variant="secondary" className="h-7 w-7 bg-slate-100 hover:bg-slate-200 border border-slate-200" onClick={() => setReviewItem(p)} title="Review full data">
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
-                        <Button size="icon" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="h-7 w-7 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-[0_4px_12px_-2px_rgba(16,185,129,0.5)]" title="Approve & promote">
+                        <Button size="icon" onClick={() => approveItem(p.id)} disabled={busyItem === p.id} className="h-7 w-7 bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-[0_4px_12px_-2px_rgba(16,185,129,0.5)]" title="Approve & promote to selected tab/platform">
                           {busyItem === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                         </Button>
                         <Button size="icon" variant="outline" className="h-7 w-7 border-slate-200 bg-white hover:border-rose-500/50 hover:text-rose-700" onClick={() => rejectItem(p.id)} disabled={busyItem === p.id} title="Reject">
