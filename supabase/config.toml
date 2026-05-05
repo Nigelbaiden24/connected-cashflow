@@ -154,3 +154,12 @@ verify_jwt = false
 
 [functions.company-finder-search]
 verify_jwt = false
+
+[functions.financial-research-scraper]
+verify_jwt = false
+
+[functions.investor-finder-scraper]
+verify_jwt = false
+
+[functions.elite-scraper-analyst]
+verify_jwt = false
