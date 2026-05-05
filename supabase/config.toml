@@ -4,100 +4,100 @@ project_id = "wlsmdcdfyudtvbnbqfmn"
 verify_jwt = false
 
 [functions.financial-chat]
-verify_jwt = true
+verify_jwt = false
 
 [functions.business-chat]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-document]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-recruitment-image]
-verify_jwt = true
+verify_jwt = false
 
 [functions.transcribe-audio]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-checkout-session]
-verify_jwt = true
+verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
 
 [functions.client-onboarding]
-verify_jwt = true
+verify_jwt = false
 
 [functions.automation-engine]
-verify_jwt = true
+verify_jwt = false
 
 [functions.text-to-speech]
-verify_jwt = true
+verify_jwt = false
 
 [functions.seed-automations]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-analyst]
 verify_jwt = false
 
 [functions.google-calendar-auth]
-verify_jwt = true
+verify_jwt = false
 
 [functions.outlook-calendar-auth]
 verify_jwt = false
 
 [functions.fetch-calendar-events]
-verify_jwt = true
+verify_jwt = false
 
 [functions.investment-insights]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-investor-alert]
 verify_jwt = false
 
 [functions.portfolio-benchmark-analysis]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-stock-discovery]
-verify_jwt = true
+verify_jwt = false
 
 [functions.scenario-simulation]
-verify_jwt = true
+verify_jwt = false
 
 [functions.compliance-insights]
-verify_jwt = true
+verify_jwt = false
 
 [functions.business-recommendations]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-ai-roundup]
 verify_jwt = false
 
 [functions.risk-stress-test]
-verify_jwt = true
+verify_jwt = false
 
 [functions.exposure-analysis]
-verify_jwt = true
+verify_jwt = false
 
 [functions.generate-regulatory-updates]
 verify_jwt = false
 
 [functions.portfolio-analysis]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-risk-analysis]
-verify_jwt = true
+verify_jwt = false
 
 [functions.ai-compliance-monitor]
-verify_jwt = true
+verify_jwt = false
 
 [functions.translate-content]
 verify_jwt = false
 
 [functions.crm-ai-insights]
-verify_jwt = true
+verify_jwt = false
 
 [functions.companies-house-scraper]
-verify_jwt = true
+verify_jwt = false
 
 [functions.create-report-payment]
 verify_jwt = false
@@ -109,7 +109,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-research-report]
-verify_jwt = true
+verify_jwt = false
 
 [functions.orchestrate-report]
 verify_jwt = false
@@ -121,7 +121,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.planner-ai-assistant]
-verify_jwt = true
+verify_jwt = false
 
 [functions.paraplanning-ai]
 verify_jwt = false
@@ -130,7 +130,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.security-anomaly-detection]
-verify_jwt = true
+verify_jwt = false
 
 [functions.api-gateway]
 verify_jwt = false
@@ -146,6 +146,7 @@ verify_jwt = false
 
 [functions.enterprise-category-explainer]
 verify_jwt = false
+
 [functions.run-data-pipeline]
 verify_jwt = false
 
