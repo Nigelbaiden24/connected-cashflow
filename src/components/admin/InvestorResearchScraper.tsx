@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { INVESTOR_CATEGORIES } from "./investmentCategories";
 import { saveScrapeResult } from "@/hooks/useScrapeAutoSave";
+import { autoPromoteScrape } from "@/lib/autoPromoteScrape";
+import { CheckCircle2 } from "lucide-react";
 import {
   Sparkles,
   FileText,
