@@ -651,43 +651,54 @@ ${aiReport.opportunityCandidates
                 )}
                 {aiReport.opportunityCandidates.length > 0 && (
                   <section>
-                    <h3 className="font-semibold mb-2">Opportunity Candidates</h3>
+                    <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
+                      <h3 className="font-semibold">Opportunity Candidates ({aiReport.opportunityCandidates.length})</h3>
+                      <Button
+                        size="sm"
+                        onClick={promoteAllOpportunities}
+                        disabled={bulkPromoting || promotedIdx.size >= aiReport.opportunityCandidates.length}
+                        className="gap-2"
+                      >
+                        {bulkPromoting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                        {bulkPromoting ? "Uploading..." : `Auto-upload all (${aiReport.opportunityCandidates.length - promotedIdx.size})`}
+                      </Button>
+                    </div>
                     <div className="space-y-2">
-                      {aiReport.opportunityCandidates.map((o, n) => (
-                        <div key={n} className="rounded border p-3 bg-muted/30">
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div className="font-medium text-sm">{o.title}</div>
-                            {o.confidence && (
-                              <Badge variant="outline" className="text-xs">
-                                {o.confidence}
-                              </Badge>
-                            )}
+                      {aiReport.opportunityCandidates.map((o, n) => {
+                        const isPromoted = promotedIdx.has(n);
+                        const isPromoting = promotingIdx === n;
+                        return (
+                          <div key={n} className="rounded border p-3 bg-muted/30">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <div className="font-medium text-sm">{o.title}</div>
+                              {o.confidence && (
+                                <Badge variant="outline" className="text-xs">{o.confidence}</Badge>
+                              )}
+                            </div>
+                            {o.asset && <div className="text-xs text-muted-foreground mt-1">Asset: {o.asset}</div>}
+                            {o.thesis && <div className="text-xs mt-1">{o.thesis}</div>}
+                            {o.key_data && <div className="text-xs text-muted-foreground mt-1">{o.key_data}</div>}
+                            <div className="flex items-center justify-between gap-2 mt-2">
+                              {o.source_url ? (
+                                <a href={o.source_url} target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1">
+                                  Source <ExternalLink className="h-3 w-3" />
+                                </a>
+                              ) : <span />}
+                              <Button
+                                size="sm"
+                                variant={isPromoted ? "secondary" : "default"}
+                                disabled={isPromoted || isPromoting || bulkPromoting}
+                                onClick={() => promoteOpportunity(o, n)}
+                                className="h-7 text-xs gap-1.5"
+                              >
+                                {isPromoting ? <Loader2 className="h-3 w-3 animate-spin" /> :
+                                  isPromoted ? <CheckCircle2 className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
+                                {isPromoted ? "Uploaded" : isPromoting ? "Uploading..." : "Auto-upload"}
+                              </Button>
+                            </div>
                           </div>
-                          {o.asset && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Asset: {o.asset}
-                            </div>
-                          )}
-                          {o.thesis && (
-                            <div className="text-xs mt-1">{o.thesis}</div>
-                          )}
-                          {o.key_data && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {o.key_data}
-                            </div>
-                          )}
-                          {o.source_url && (
-                            <a
-                              href={o.source_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs text-primary inline-flex items-center gap-1 mt-1"
-                            >
-                              Source <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </section>
                 )}
