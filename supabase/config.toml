@@ -153,4 +153,4 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.company-finder-search]
-verify_jwt = true
+verify_jwt = false
