@@ -257,53 +257,19 @@ Deno.serve(async (req: Request) => {
     const role = body.job_title;
 
     const queries = [
-      // Direct contact lookup
       `${nameClause}"${role}" "${company}" email contact`,
-      `${nameClause}"${role}" "${company}" phone`,
       `"${company}" leadership team ${role}`,
-      `"${company}" press release ${role}`,
-      `"${company}" management team ${role} email`,
       `"${company}" "${role}" linkedin`,
-      `"${company}" annual report ${role}`,
-      `"${company}" board of directors ${role}`,
-      `"${company}" press contact ${role}`,
-      `"${company}" media inquiries ${role}`,
-
-      // LinkedIn / directories
       `site:linkedin.com/in ${nameClause}${role} ${company}`,
-      `site:linkedin.com/company "${company}" ${role}`,
       `site:crunchbase.com "${company}" ${role}`,
-      `site:zoominfo.com "${company}" ${role}`,
-      `site:rocketreach.co "${company}" ${role}`,
-      `site:apollo.io "${company}" ${role}`,
-      `site:bloomberg.com/profile "${company}" ${role}`,
-      `site:owler.com "${company}" ${role}`,
-
-      // SME / small-business angles
-      `"${company}"${locClause} owner founder director contact email`,
-      `"${company}"${locClause} small business directory contact`,
-      `"${company}"${sectorClause} key people contact`,
-      `"${company}" companies house officers directors`,
-
-      // Sector / location fan-out (discovers DMs at OTHER companies of all sizes that match the role+sector+location)
+      `"${company}"${locClause} owner founder director contact`,
       ...(body.sector ? [
-        `"${role}"${sectorClause}${locClause} email contact directory`,
+        `"${role}"${sectorClause}${locClause} contact directory`,
         `top ${role}s${sectorClause}${locClause} 2025`,
-        `${role}${sectorClause}${locClause} small medium business owners`,
-        `${role}${sectorClause}${locClause} startup founders contact`,
-        `${role}${sectorClause}${locClause} site:linkedin.com/in`,
-        `${role}${sectorClause}${locClause} chamber of commerce members`,
-        `${role}${sectorClause}${locClause} trade association directory`,
-        `${role}${sectorClause}${locClause} industry awards finalists`,
-        `${role}${sectorClause}${locClause} mid-market enterprise leaders`,
-        `${role}${sectorClause}${locClause} family-owned business owners`,
       ] : []),
-
       ...(websiteDomain ? [
         `${siteClause}${role} contact`,
-        `${siteClause}team OR leadership OR about`,
-        `${siteClause}press OR media OR newsroom`,
-        `${siteClause}board directors investors`,
+        `${siteClause}team OR leadership`,
       ] : []),
     ];
 
