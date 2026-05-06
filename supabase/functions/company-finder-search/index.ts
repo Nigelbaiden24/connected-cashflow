@@ -68,58 +68,22 @@ function buildQueries(input: SearchInput): string[] {
   const locClause = loc ? ` ${loc}` : "";
   const queries: string[] = [];
 
-  // Brief-driven (highest precision)
   if (brief) {
-    queries.push(`${brief}${locClause} list of companies`);
-    queries.push(`${brief}${locClause} suppliers directory`);
-    queries.push(`top ${brief}${locClause} 2025 ranking`);
-    queries.push(`leading ${brief}${locClause} private companies`);
+    queries.push(`${brief}${locClause} top companies 2025`);
     queries.push(`${brief}${locClause} site:linkedin.com/company`);
     queries.push(`${brief}${locClause} site:crunchbase.com/organization`);
-    queries.push(`${brief}${locClause} small business directory`);
-    queries.push(`${brief}${locClause} startup companies`);
   }
-  // Sub-criteria driven
   if (sub) {
-    queries.push(`${sector} ${sub}${locClause} companies list`);
-    queries.push(`${sector} ${sub}${locClause} suppliers directory 2025`);
-    queries.push(`top ${sector} ${sub} companies${locClause}`);
-    queries.push(`${sector} ${sub}${locClause} market leaders`);
-    queries.push(`${sector} ${sub}${locClause} SME small medium enterprise`);
-    queries.push(`${sector} ${sub}${locClause} emerging startups`);
+    queries.push(`top ${sector} ${sub}${locClause} companies 2025`);
+    queries.push(`${sector} ${sub}${locClause} market leaders directory`);
   }
-  // Sector backbone — multi-segment coverage
-  queries.push(`${sector}${locClause} leading companies directory 2025`);
-  queries.push(`${sector}${locClause} industry players ranking`);
+  queries.push(`${sector}${locClause} leading companies 2025`);
   queries.push(`${sector}${locClause} top private companies revenue`);
-  queries.push(`${sector}${locClause} trade association member directory`);
-  queries.push(`${sector}${locClause} largest enterprises 2025`);
-  queries.push(`${sector}${locClause} mid-market companies list`);
-  queries.push(`${sector}${locClause} small business owners directory`);
-  queries.push(`${sector}${locClause} fastest growing companies 2025`);
-  queries.push(`${sector}${locClause} startups raised funding 2024 2025`);
-  queries.push(`${sector}${locClause} family-owned businesses`);
   queries.push(`${sector}${locClause} site:crunchbase.com`);
   queries.push(`${sector}${locClause} site:linkedin.com/company`);
-  queries.push(`${sector}${locClause} site:dnb.com`);
-  queries.push(`${sector}${locClause} site:owler.com`);
-  queries.push(`${sector}${locClause} site:bloomberg.com/profile`);
-  queries.push(`${sector}${locClause} site:zoominfo.com`);
-  queries.push(`${sector}${locClause} chamber of commerce members`);
-  queries.push(`${sector}${locClause} yellow pages business listing`);
-  queries.push(`${sector}${locClause} regional business awards finalists`);
-  queries.push(`${sector}${locClause} Inc 5000 Financial Times 1000`);
+  queries.push(`${sector}${locClause} fastest growing companies 2025`);
 
-  // Tier-aware fallbacks for supply-chain heavy sectors
-  if (/automotive|aerospace|manufactur|industrial|defen[sc]e|energy|chemical|pharma|construction|food|retail|tech|software/i.test(`${sector} ${sub} ${brief}`)) {
-    queries.push(`${sector} OEM tier 1 tier 2 tier 3 suppliers${locClause}`);
-    queries.push(`${sector} supply chain tier suppliers list${locClause}`);
-    queries.push(`${sector}${locClause} component manufacturers directory`);
-    queries.push(`${sector}${locClause} contract manufacturers list`);
-    queries.push(`${sector}${locClause} independent specialists boutique firms`);
-  }
-
-  return [...new Set(queries.map((q) => q.trim()))].slice(0, 32);
+  return [...new Set(queries.map((q) => q.trim()))].slice(0, 10);
 }
 
 async function extractWithAI(
@@ -223,11 +187,9 @@ ${corpus}`;
     }
   };
 
-  // Try Pro first for elite quality; fall back to flash on failure / rate-limit.
-  const primary = await callModel("google/gemini-2.5-pro");
-  if (primary && primary.length) return primary;
-  const fallback = await callModel("google/gemini-2.5-flash");
-  return fallback ?? [];
+  // Use flash model for speed (Pro adds 30-60s per chunk).
+  const result = await callModel("google/gemini-2.5-flash");
+  return result ?? [];
 }
 
 async function runDeepDive(
@@ -242,7 +204,7 @@ async function runDeepDive(
     const queries = buildQueries(body);
     console.log(`[company-finder] search ${searchId}: ${queries.length} queries dispatching in parallel`);
 
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 30)));
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 12)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
@@ -255,9 +217,9 @@ async function runDeepDive(
     });
     console.log(`[company-finder] search ${searchId}: ${pages.length} unique sources`);
 
-    // Chunk pages and run multiple AI extractions in parallel for elite breadth (up to 100 companies).
-    const CHUNK_SIZE = 22;
-    const MAX_CHUNKS = 6;
+    // Chunk pages and run multiple AI extractions in parallel for elite breadth.
+    const CHUNK_SIZE = 18;
+    const MAX_CHUNKS = 2;
     const chunks: typeof pages[] = [];
     for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
       chunks.push(pages.slice(i, i + CHUNK_SIZE));

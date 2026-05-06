@@ -257,60 +257,26 @@ Deno.serve(async (req: Request) => {
     const role = body.job_title;
 
     const queries = [
-      // Direct contact lookup
       `${nameClause}"${role}" "${company}" email contact`,
-      `${nameClause}"${role}" "${company}" phone`,
       `"${company}" leadership team ${role}`,
-      `"${company}" press release ${role}`,
-      `"${company}" management team ${role} email`,
       `"${company}" "${role}" linkedin`,
-      `"${company}" annual report ${role}`,
-      `"${company}" board of directors ${role}`,
-      `"${company}" press contact ${role}`,
-      `"${company}" media inquiries ${role}`,
-
-      // LinkedIn / directories
       `site:linkedin.com/in ${nameClause}${role} ${company}`,
-      `site:linkedin.com/company "${company}" ${role}`,
       `site:crunchbase.com "${company}" ${role}`,
-      `site:zoominfo.com "${company}" ${role}`,
-      `site:rocketreach.co "${company}" ${role}`,
-      `site:apollo.io "${company}" ${role}`,
-      `site:bloomberg.com/profile "${company}" ${role}`,
-      `site:owler.com "${company}" ${role}`,
-
-      // SME / small-business angles
-      `"${company}"${locClause} owner founder director contact email`,
-      `"${company}"${locClause} small business directory contact`,
-      `"${company}"${sectorClause} key people contact`,
-      `"${company}" companies house officers directors`,
-
-      // Sector / location fan-out (discovers DMs at OTHER companies of all sizes that match the role+sector+location)
+      `"${company}"${locClause} owner founder director contact`,
       ...(body.sector ? [
-        `"${role}"${sectorClause}${locClause} email contact directory`,
+        `"${role}"${sectorClause}${locClause} contact directory`,
         `top ${role}s${sectorClause}${locClause} 2025`,
-        `${role}${sectorClause}${locClause} small medium business owners`,
-        `${role}${sectorClause}${locClause} startup founders contact`,
-        `${role}${sectorClause}${locClause} site:linkedin.com/in`,
-        `${role}${sectorClause}${locClause} chamber of commerce members`,
-        `${role}${sectorClause}${locClause} trade association directory`,
-        `${role}${sectorClause}${locClause} industry awards finalists`,
-        `${role}${sectorClause}${locClause} mid-market enterprise leaders`,
-        `${role}${sectorClause}${locClause} family-owned business owners`,
       ] : []),
-
       ...(websiteDomain ? [
         `${siteClause}${role} contact`,
-        `${siteClause}team OR leadership OR about`,
-        `${siteClause}press OR media OR newsroom`,
-        `${siteClause}board directors investors`,
+        `${siteClause}team OR leadership`,
       ] : []),
     ];
 
     console.log(`[dm-finder] search ${searchId}: dispatching ${queries.length} queries`);
 
-    // Run searches in parallel (15 results each → potentially 300+ raw URLs)
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 15)));
+    // Run searches in parallel (smaller per-query limit for speed)
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 8)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
@@ -323,21 +289,21 @@ Deno.serve(async (req: Request) => {
     });
     console.log(`[dm-finder] search ${searchId}: ${pages.length} unique sources`);
 
-    // Log sources
+    // Log sources (fire and forget)
     if (pages.length) {
-      await admin.from("dm_finder_sources").insert(
-        pages.slice(0, 100).map((p: any) => ({
+      admin.from("dm_finder_sources").insert(
+        pages.slice(0, 60).map((p: any) => ({
           search_id: searchId,
           url: p.url,
           source_type: "firecrawl_search",
           excerpt: (p.description ?? p.markdown ?? "").slice(0, 500),
         })),
-      );
+      ).then(() => {}, () => {});
     }
 
-    // AI extraction — chunked & parallel for elite breadth (up to ~100 contacts across many companies)
-    const CHUNK_SIZE = 22;
-    const MAX_CHUNKS = 6;
+    // AI extraction — fewer, smaller chunks for speed
+    const CHUNK_SIZE = 18;
+    const MAX_CHUNKS = 2;
     const chunks: typeof pages[] = [];
     for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
       chunks.push(pages.slice(i, i + CHUNK_SIZE));
