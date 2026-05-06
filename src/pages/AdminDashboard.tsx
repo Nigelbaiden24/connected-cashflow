@@ -30,6 +30,7 @@ import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { InsightsAccessRequests } from "@/components/admin/InsightsAccessRequests";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
+import { OpportunityManager } from "@/components/admin/OpportunityManager";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
