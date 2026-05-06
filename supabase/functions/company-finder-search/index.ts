@@ -206,7 +206,7 @@ async function runDeepDive(
     const queries = buildQueries(body);
     console.log(`[company-finder] search ${searchId}: ${queries.length} queries dispatching in parallel`);
 
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 30)));
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, firecrawlKey, 12)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
@@ -219,9 +219,9 @@ async function runDeepDive(
     });
     console.log(`[company-finder] search ${searchId}: ${pages.length} unique sources`);
 
-    // Chunk pages and run multiple AI extractions in parallel for elite breadth (up to 100 companies).
-    const CHUNK_SIZE = 22;
-    const MAX_CHUNKS = 6;
+    // Chunk pages and run multiple AI extractions in parallel for elite breadth.
+    const CHUNK_SIZE = 18;
+    const MAX_CHUNKS = 2;
     const chunks: typeof pages[] = [];
     for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
       chunks.push(pages.slice(i, i + CHUNK_SIZE));
