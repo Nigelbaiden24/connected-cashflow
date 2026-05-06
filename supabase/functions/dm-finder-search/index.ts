@@ -275,8 +275,8 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[dm-finder] search ${searchId}: dispatching ${queries.length} queries`);
 
-    // Run searches in parallel (15 results each → potentially 300+ raw URLs)
-    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 15)));
+    // Run searches in parallel (smaller per-query limit for speed)
+    const searchResults = await Promise.all(queries.map((q) => firecrawlSearch(q, FIRECRAWL_API_KEY, 8)));
     const allPages = searchResults.flat();
 
     // Dedupe by URL
@@ -289,21 +289,21 @@ Deno.serve(async (req: Request) => {
     });
     console.log(`[dm-finder] search ${searchId}: ${pages.length} unique sources`);
 
-    // Log sources
+    // Log sources (fire and forget)
     if (pages.length) {
-      await admin.from("dm_finder_sources").insert(
-        pages.slice(0, 100).map((p: any) => ({
+      admin.from("dm_finder_sources").insert(
+        pages.slice(0, 60).map((p: any) => ({
           search_id: searchId,
           url: p.url,
           source_type: "firecrawl_search",
           excerpt: (p.description ?? p.markdown ?? "").slice(0, 500),
         })),
-      );
+      ).then(() => {}, () => {});
     }
 
-    // AI extraction — chunked & parallel for elite breadth (up to ~100 contacts across many companies)
-    const CHUNK_SIZE = 22;
-    const MAX_CHUNKS = 6;
+    // AI extraction — fewer, smaller chunks for speed
+    const CHUNK_SIZE = 18;
+    const MAX_CHUNKS = 2;
     const chunks: typeof pages[] = [];
     for (let i = 0; i < pages.length && chunks.length < MAX_CHUNKS; i += CHUNK_SIZE) {
       chunks.push(pages.slice(i, i + CHUNK_SIZE));
