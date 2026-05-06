@@ -187,11 +187,9 @@ ${corpus}`;
     }
   };
 
-  // Try Pro first for elite quality; fall back to flash on failure / rate-limit.
-  const primary = await callModel("google/gemini-2.5-pro");
-  if (primary && primary.length) return primary;
-  const fallback = await callModel("google/gemini-2.5-flash");
-  return fallback ?? [];
+  // Use flash model for speed (Pro adds 30-60s per chunk).
+  const result = await callModel("google/gemini-2.5-flash");
+  return result ?? [];
 }
 
 async function runDeepDive(
