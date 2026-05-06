@@ -2,7 +2,7 @@ import {
   Users, MessageSquare, Calendar, FileText, Newspaper, TrendingUp, BookOpen,
   Video, List, Shield, Bell, ShoppingBag, Star, Lightbulb, Bitcoin, FlaskConical,
   Sparkles, Bot, Contact, ClipboardList, Globe, Settings, Radar, Calculator,
-  Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive,
+  Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive, Brain,
 } from "lucide-react";
 
 export type AdminPlatform = "finance" | "investor";
