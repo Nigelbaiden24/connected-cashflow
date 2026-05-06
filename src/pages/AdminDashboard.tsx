@@ -30,6 +30,7 @@ import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { InsightsAccessRequests } from "@/components/admin/InsightsAccessRequests";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
+import { OpportunityManager } from "@/components/admin/OpportunityManager";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -1472,31 +1473,43 @@ export default function AdminDashboard() {
 
           {activeTab === 'fund-analyst' && <FundAnalystAdmin />}
 
+          {activeTab === 'opportunity-engine' && <OpportunityResearchEngine />}
+
           {activeTab === 'opportunities' && (
             <div className="space-y-6">
-              <OpportunityResearchEngine />
-              <ContentTargetSelector
-                selectedPlatform={opportunityTarget.platform}
-                onPlatformChange={(platform) => setOpportunityTarget({ ...opportunityTarget, platform })}
-                selectedUsers={opportunityTarget.selectedUsers}
-                onUsersChange={(users) => setOpportunityTarget({ ...opportunityTarget, selectedUsers: users })}
-                allUsersSelected={opportunityTarget.allUsers}
-                onAllUsersChange={(allUsers) => setOpportunityTarget({ ...opportunityTarget, allUsers })}
-              />
-              <Card className="bg-white border-slate-200 shadow-lg">
-                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <Lightbulb className="h-5 w-5 text-purple-600" />
-                    Upload Opportunity
-                  </CardTitle>
-                  <CardDescription className="text-slate-500">
-                    Add investment opportunities for Real Estate, Private Businesses, and Collectibles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <OpportunityUpload />
-                </CardContent>
-              </Card>
+              <Tabs defaultValue="manage" className="w-full">
+                <TabsList className="grid w-full max-w-md grid-cols-2">
+                  <TabsTrigger value="manage">Manage</TabsTrigger>
+                  <TabsTrigger value="add">Add New</TabsTrigger>
+                </TabsList>
+                <TabsContent value="manage" className="mt-6">
+                  <OpportunityManager />
+                </TabsContent>
+                <TabsContent value="add" className="mt-6 space-y-6">
+                  <ContentTargetSelector
+                    selectedPlatform={opportunityTarget.platform}
+                    onPlatformChange={(platform) => setOpportunityTarget({ ...opportunityTarget, platform })}
+                    selectedUsers={opportunityTarget.selectedUsers}
+                    onUsersChange={(users) => setOpportunityTarget({ ...opportunityTarget, selectedUsers: users })}
+                    allUsersSelected={opportunityTarget.allUsers}
+                    onAllUsersChange={(allUsers) => setOpportunityTarget({ ...opportunityTarget, allUsers })}
+                  />
+                  <Card className="bg-white border-slate-200 shadow-lg">
+                    <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-purple-50 to-transparent">
+                      <CardTitle className="flex items-center gap-2 text-slate-900">
+                        <Lightbulb className="h-5 w-5 text-purple-600" />
+                        Upload Opportunity
+                      </CardTitle>
+                      <CardDescription className="text-slate-500">
+                        Add investment opportunities for Real Estate, Private Businesses, and Collectibles
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <OpportunityUpload />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
 

@@ -2,7 +2,7 @@ import {
   Users, MessageSquare, Calendar, FileText, Newspaper, TrendingUp, BookOpen,
   Video, List, Shield, Bell, ShoppingBag, Star, Lightbulb, Bitcoin, FlaskConical,
   Sparkles, Bot, Contact, ClipboardList, Globe, Settings, Radar, Calculator,
-  Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive,
+  Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive, Brain,
 } from "lucide-react";
 
 export type AdminPlatform = "finance" | "investor";
@@ -64,6 +64,7 @@ export const adminNavItems: AdminNavItem[] = [
 
   // ── FlowPulse Investor ────────────────────────────────────────────────
   { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600", platforms: ["finance", "investor"] },
+  { id: "opportunity-engine", label: "Opportunity Engine", icon: Brain, gradient: "from-purple-500 to-fuchsia-600", platforms: ["finance", "investor"] },
   { id: "ai-scanner", label: "AI Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700", platforms: ["investor"] },
   { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600", platforms: ["investor"] },
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600", platforms: ["investor"] },
