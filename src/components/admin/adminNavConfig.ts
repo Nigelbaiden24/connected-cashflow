@@ -65,7 +65,7 @@ export const adminNavItems: AdminNavItem[] = [
   // ── FlowPulse Investor ────────────────────────────────────────────────
   { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600", platforms: ["finance", "investor"] },
   { id: "opportunity-engine", label: "Opportunity Engine", icon: Brain, gradient: "from-purple-500 to-fuchsia-600", platforms: ["finance", "investor"] },
-  { id: "ai-scanner", label: "AI Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700", platforms: ["investor"] },
+  { id: "ai-scanner", label: "AI Auto Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700", platforms: ["finance", "investor"] },
   { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600", platforms: ["investor"] },
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600", platforms: ["investor"] },
   { id: "research-ai", label: "Research AI", icon: Bot, gradient: "from-rose-500 to-pink-600", platforms: ["investor"] },
