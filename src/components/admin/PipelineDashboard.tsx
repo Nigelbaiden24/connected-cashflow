@@ -86,6 +86,8 @@ export const PipelineDashboard = () => {
   const [reviewItem, setReviewItem] = useState<Pending | null>(null);
   const [query, setQuery] = useState("");
   const [filterPlatform, setFilterPlatform] = useState<"all" | "finance" | "investor" | "both">("all");
+  const [autoScrapeEnabled, setAutoScrapeEnabled] = useState<boolean>(false);
+  const [savingMaster, setSavingMaster] = useState(false);
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [, startTransition] = useTransition();
 
