@@ -22,6 +22,7 @@ import {
   Languages,
   ClipboardList,
   Lightbulb,
+  Activity,
   Newspaper,
   ChevronLeft,
   ChevronRight,
