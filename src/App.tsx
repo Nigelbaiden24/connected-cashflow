@@ -275,6 +275,7 @@ const App = () => {
                 <Route path="/finance/languages" element={<Suspense fallback={<PageLoader />}><FinanceLanguages /></Suspense>} />
                 <Route path="/finance/featured-picks" element={<Suspense fallback={<PageLoader />}><FinanceFeaturedPicks /></Suspense>} />
                 <Route path="/finance-ai-generator" element={<Suspense fallback={<PageLoader />}><FinanceAIGenerator /></Suspense>} />
+                <Route path="/finance/deal-flow" element={<Suspense fallback={<PageLoader />}><DealFlowIntelligence platform="finance" /></Suspense>} />
               </Route>
 
               {/* Finance News has its own layout */}
