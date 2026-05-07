@@ -77,6 +77,7 @@ const Opportunities = lazy(() => import("./pages/Opportunities"));
 const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const OpportunityIntelligence = lazy(() => import("./pages/OpportunityIntelligence"));
 const OpportunityDetailPage = lazy(() => import("./pages/investor/OpportunityDetailPage"));
+const DealFlowIntelligence = lazy(() => import("./pages/shared/DealFlowIntelligence"));
 const Chat = lazy(() => import("./pages/Chat"));
 const FinanceAIGenerator = lazy(() => import("./pages/FinanceAIGenerator"));
 const BusinessAIGenerator = lazy(() => import("./pages/BusinessAIGenerator"));
