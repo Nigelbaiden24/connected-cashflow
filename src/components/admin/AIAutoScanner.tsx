@@ -281,7 +281,18 @@ export function AIAutoScanner() {
   useEffect(() => {
     if (isAutoScanActive && !isScanning) {
       const intervalMs = parseInt(scanInterval) * 60 * 60 * 1000;
-      intervalRef.current = setInterval(() => {
+      intervalRef.current = setInterval(async () => {
+        // Respect master auto-scraper kill switch
+        const { data: cfg } = await supabase
+          .from("platform_config" as any)
+          .select("value")
+          .eq("key", "auto_scraper_enabled")
+          .maybeSingle();
+        const enabled = (cfg as any)?.value?.enabled === true;
+        if (!enabled) {
+          toast.info("Auto-scrape is disabled in master settings — skipping scheduled run");
+          return;
+        }
         runFullScan();
       }, intervalMs);
 
