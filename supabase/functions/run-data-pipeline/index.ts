@@ -387,6 +387,23 @@ Deno.serve(async (req) => {
     const forceSource: string | undefined = body.source;
     const triggeredBy: string = body.triggered_by ?? "scheduler";
 
+    // Master kill-switch: only run automatic schedules if admin enabled it.
+    // Manual triggers from the admin UI bypass this gate by passing triggered_by != "scheduler" with a forceSource.
+    if (!forceSource || triggeredBy === "scheduler") {
+      const { data: cfg } = await supabase
+        .from("platform_config")
+        .select("value")
+        .eq("key", "auto_scraper_enabled")
+        .maybeSingle();
+      const enabled = cfg?.value?.enabled === true;
+      if (!enabled) {
+        return new Response(
+          JSON.stringify({ ok: true, ran: 0, skipped: true, reason: "auto_scraper_disabled" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     let due: any[] = [];
     if (forceSource) {
       const { data } = await supabase.from("pipeline_schedule").select("*").eq("source", forceSource);
