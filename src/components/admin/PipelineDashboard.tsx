@@ -113,6 +113,9 @@ export const PipelineDashboard = () => {
 
   useEffect(() => {
     void load();
+    // Load master kill switch
+    void supabase.from("platform_config" as any).select("value").eq("key", "auto_scraper_enabled").maybeSingle()
+      .then(({ data }) => setAutoScrapeEnabled(((data as any)?.value?.enabled) === true));
     const ch = supabase
       .channel("pipeline-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "pipeline_pending_items" }, scheduleReload)
@@ -121,6 +124,23 @@ export const PipelineDashboard = () => {
       .subscribe();
     return () => { supabase.removeChannel(ch); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
   }, [load, scheduleReload]);
+
+  const setMasterAutoScrape = async (enabled: boolean) => {
+    setSavingMaster(true);
+    setAutoScrapeEnabled(enabled);
+    const { error } = await supabase.from("platform_config" as any).upsert({
+      key: "auto_scraper_enabled",
+      value: { enabled } as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "key" });
+    setSavingMaster(false);
+    if (error) {
+      setAutoScrapeEnabled(!enabled);
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: enabled ? "Auto-scraper ON" : "Auto-scraper OFF", description: enabled ? "Scheduled scrapes will run." : "All scheduled scrapes are paused." });
+    }
+  };
 
   const triggerRun = async (source?: string) => {
     setBusySource(source ?? "all");
