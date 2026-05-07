@@ -98,14 +98,10 @@ export function FlowPulseScraperHub() {
         </Tabs>
       ) : (
         <Tabs defaultValue="investor-research" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-2">
             <TabsTrigger value="investor-research" className="gap-2">
               <TrendingUp className="h-4 w-4" />
               Investor Research
-            </TabsTrigger>
-            <TabsTrigger value="ai-scanner" className="gap-2">
-              <Zap className="h-4 w-4" />
-              AI Auto Scanner
             </TabsTrigger>
             <TabsTrigger value="uk-investors" className="gap-2">
               <Briefcase className="h-4 w-4" />
@@ -114,9 +110,6 @@ export function FlowPulseScraperHub() {
           </TabsList>
           <TabsContent value="investor-research" className="mt-6">
             <InvestorResearchScraper />
-          </TabsContent>
-          <TabsContent value="ai-scanner" className="mt-6">
-            <AIAutoScanner />
           </TabsContent>
           <TabsContent value="uk-investors" className="mt-6">
             <UKInvestorScanner />

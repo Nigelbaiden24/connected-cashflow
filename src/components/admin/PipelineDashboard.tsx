@@ -86,6 +86,8 @@ export const PipelineDashboard = () => {
   const [reviewItem, setReviewItem] = useState<Pending | null>(null);
   const [query, setQuery] = useState("");
   const [filterPlatform, setFilterPlatform] = useState<"all" | "finance" | "investor" | "both">("all");
+  const [autoScrapeEnabled, setAutoScrapeEnabled] = useState<boolean>(false);
+  const [savingMaster, setSavingMaster] = useState(false);
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [, startTransition] = useTransition();
 
@@ -111,6 +113,9 @@ export const PipelineDashboard = () => {
 
   useEffect(() => {
     void load();
+    // Load master kill switch
+    void supabase.from("platform_config" as any).select("value").eq("key", "auto_scraper_enabled").maybeSingle()
+      .then(({ data }) => setAutoScrapeEnabled(((data as any)?.value?.enabled) === true));
     const ch = supabase
       .channel("pipeline-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "pipeline_pending_items" }, scheduleReload)
@@ -119,6 +124,23 @@ export const PipelineDashboard = () => {
       .subscribe();
     return () => { supabase.removeChannel(ch); if (reloadTimer.current) clearTimeout(reloadTimer.current); };
   }, [load, scheduleReload]);
+
+  const setMasterAutoScrape = async (enabled: boolean) => {
+    setSavingMaster(true);
+    setAutoScrapeEnabled(enabled);
+    const { error } = await supabase.from("platform_config" as any).upsert({
+      key: "auto_scraper_enabled",
+      value: { enabled } as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "key" });
+    setSavingMaster(false);
+    if (error) {
+      setAutoScrapeEnabled(!enabled);
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: enabled ? "Auto-scraper ON" : "Auto-scraper OFF", description: enabled ? "Scheduled scrapes will run." : "All scheduled scrapes are paused." });
+    }
+  };
 
   const triggerRun = async (source?: string) => {
     setBusySource(source ?? "all");
@@ -241,14 +263,25 @@ export const PipelineDashboard = () => {
               Scrape · enrich · stage · promote. Sources rotate continuously and feed both Finance and Investor opportunity intelligence.
             </p>
           </div>
-          <Button
-            onClick={() => triggerRun()}
-            disabled={busySource === "all"}
-            className="relative overflow-hidden bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-600 hover:opacity-95 border-0 shadow-[0_8px_32px_-8px_rgba(56,189,248,0.6)]"
-          >
-            {busySource === "all" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
-            Run all due now
-          </Button>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className={`flex items-center gap-2.5 rounded-2xl border px-3.5 py-2 ${autoScrapeEnabled ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Auto-Scraper Master</span>
+                <span className={`text-xs font-semibold ${autoScrapeEnabled ? "text-emerald-700" : "text-slate-600"}`}>
+                  {autoScrapeEnabled ? "ON · Scheduled scrapes active" : "OFF · All schedules paused"}
+                </span>
+              </div>
+              <Switch checked={autoScrapeEnabled} onCheckedChange={setMasterAutoScrape} disabled={savingMaster} />
+            </div>
+            <Button
+              onClick={() => triggerRun()}
+              disabled={busySource === "all"}
+              className="relative overflow-hidden bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-600 hover:opacity-95 border-0 shadow-[0_8px_32px_-8px_rgba(56,189,248,0.6)]"
+            >
+              {busySource === "all" ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+              Run all due now
+            </Button>
+          </div>
         </div>
 
         <div className="relative grid grid-cols-2 md:grid-cols-5 gap-3 mt-7">

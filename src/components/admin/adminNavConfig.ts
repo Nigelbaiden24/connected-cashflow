@@ -65,7 +65,7 @@ export const adminNavItems: AdminNavItem[] = [
   // ── FlowPulse Investor ────────────────────────────────────────────────
   { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600", platforms: ["finance", "investor"] },
   { id: "opportunity-engine", label: "Opportunity Engine", icon: Brain, gradient: "from-purple-500 to-fuchsia-600", platforms: ["finance", "investor"] },
-  { id: "ai-scanner", label: "AI Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700", platforms: ["investor"] },
+  { id: "ai-scanner", label: "AI Auto Scanner", icon: Radar, gradient: "from-indigo-500 to-purple-700", platforms: ["finance", "investor"] },
   { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600", platforms: ["investor"] },
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600", platforms: ["investor"] },
   { id: "research-ai", label: "Research AI", icon: Bot, gradient: "from-rose-500 to-pink-600", platforms: ["investor"] },
@@ -74,7 +74,7 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "investor-finder", label: "Investor Finder", icon: Users, gradient: "from-violet-500 to-purple-600", platforms: ["investor"] },
   { id: "startup-discovery", label: "Startup Discovery", icon: Sparkles, gradient: "from-emerald-500 to-emerald-600", platforms: ["investor"] },
   // New Phase 5 modules (UI placeholders surface in Phase 5)
-  { id: "deal-flow", label: "Deal Flow Intelligence", icon: Activity, gradient: "from-fuchsia-500 to-pink-600", platforms: ["investor"] },
+  { id: "deal-flow", label: "Deal Flow Intelligence", icon: Activity, gradient: "from-fuchsia-500 to-pink-600", platforms: ["finance", "investor"] },
   { id: "company-registry", label: "Company Registry", icon: Building2, gradient: "from-blue-500 to-indigo-600", platforms: ["investor"] },
   { id: "funding-signals", label: "Funding Signals", icon: Database, gradient: "from-amber-500 to-rose-600", platforms: ["investor"] },
 ];

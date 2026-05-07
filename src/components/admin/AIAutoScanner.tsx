@@ -61,48 +61,19 @@ interface ScanResult {
 }
 
 const DEFAULT_TARGETS: ScanTarget[] = [
-  {
-    id: "crowdfunding",
-    label: "Crowdfunding Platforms",
-    icon: DollarSign,
-    description: "Seedrs, Crowdcube, Republic, WeFunder — live equity & reward campaigns",
-    enabled: true,
-  },
-  {
-    id: "startup_funding",
-    label: "Startup Funding News",
-    icon: TrendingUp,
-    description: "TechCrunch, Crunchbase, Sifted, PitchBook — latest rounds & deals",
-    enabled: true,
-  },
-  {
-    id: "property_opportunities",
-    label: "Property Opportunities",
-    icon: Building2,
-    description: "Auctions, off-plan, distressed assets, student housing, co-living",
-    enabled: true,
-  },
-  {
-    id: "infrastructure",
-    label: "Infrastructure Projects",
-    icon: MapPin,
-    description: "Renewables, data centres, transport, green hydrogen, utilities",
-    enabled: true,
-  },
-  {
-    id: "businesses",
-    label: "Business M&A Intelligence",
-    icon: Briefcase,
-    description: "Acquisition targets, funding rounds, franchises, SME listings",
-    enabled: false,
-  },
-  {
-    id: "blockchain",
-    label: "Blockchain & Web3",
-    icon: Zap,
-    description: "DeFi, RWA tokenisation, Layer 2, blockchain gaming, DAOs",
-    enabled: false,
-  },
+  { id: "crowdfunding", label: "Crowdfunding Platforms", icon: DollarSign, description: "Seedrs, Crowdcube, Republic, WeFunder — live equity & reward campaigns", enabled: true },
+  { id: "startup_funding", label: "Startup Funding News", icon: TrendingUp, description: "TechCrunch, Crunchbase, Sifted, PitchBook — latest rounds & deals", enabled: true },
+  { id: "property_opportunities", label: "Property Opportunities", icon: Building2, description: "Auctions, off-plan, distressed assets, student housing, co-living", enabled: true },
+  { id: "overseas_property", label: "Overseas Property", icon: Globe, description: "International real estate — Dubai, Lisbon, Bali, Miami, Tulum", enabled: true },
+  { id: "infrastructure", label: "Infrastructure Projects", icon: MapPin, description: "Renewables, data centres, transport, green hydrogen, utilities", enabled: true },
+  { id: "businesses", label: "Business M&A", icon: Briefcase, description: "Acquisition targets, funding rounds, franchises, SME listings", enabled: true },
+  { id: "private_equity", label: "Private Equity & VC", icon: TrendingUp, description: "PE/VC fund launches, growth capital, buyout opportunities", enabled: true },
+  { id: "stocks", label: "Stocks & Equities", icon: BarChart3, description: "IPOs, secondary placements, rights issues, large-cap rotations", enabled: true },
+  { id: "crypto", label: "Crypto & Blockchain", icon: Zap, description: "DeFi, RWA tokenisation, Layer 2, blockchain gaming, DAOs", enabled: true },
+  { id: "funds", label: "Funds & ETFs", icon: Database, description: "New fund launches, ETF rotations, hedge fund opportunities", enabled: true },
+  { id: "commodities", label: "Commodities", icon: Sparkles, description: "Gold, oil, energy, agricultural commodities, rare earths", enabled: true },
+  { id: "vehicles", label: "Classic & Luxury Vehicles", icon: Briefcase, description: "Auctions, classic cars, supercars, investment-grade vehicles", enabled: true },
+  { id: "memorabilia", label: "Watches & Collectibles", icon: Sparkles, description: "Rolex, Patek, AP, art, sports memorabilia, fine wine", enabled: true },
 ];
 
 export function AIAutoScanner() {
@@ -310,7 +281,18 @@ export function AIAutoScanner() {
   useEffect(() => {
     if (isAutoScanActive && !isScanning) {
       const intervalMs = parseInt(scanInterval) * 60 * 60 * 1000;
-      intervalRef.current = setInterval(() => {
+      intervalRef.current = setInterval(async () => {
+        // Respect master auto-scraper kill switch
+        const { data: cfg } = await supabase
+          .from("platform_config" as any)
+          .select("value")
+          .eq("key", "auto_scraper_enabled")
+          .maybeSingle();
+        const enabled = (cfg as any)?.value?.enabled === true;
+        if (!enabled) {
+          toast.info("Auto-scrape is disabled in master settings — skipping scheduled run");
+          return;
+        }
         runFullScan();
       }, intervalMs);
 
