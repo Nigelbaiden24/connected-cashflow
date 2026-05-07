@@ -74,7 +74,7 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "investor-finder", label: "Investor Finder", icon: Users, gradient: "from-violet-500 to-purple-600", platforms: ["investor"] },
   { id: "startup-discovery", label: "Startup Discovery", icon: Sparkles, gradient: "from-emerald-500 to-emerald-600", platforms: ["investor"] },
   // New Phase 5 modules (UI placeholders surface in Phase 5)
-  { id: "deal-flow", label: "Deal Flow Intelligence", icon: Activity, gradient: "from-fuchsia-500 to-pink-600", platforms: ["investor"] },
+  { id: "deal-flow", label: "Deal Flow Intelligence", icon: Activity, gradient: "from-fuchsia-500 to-pink-600", platforms: ["finance", "investor"] },
   { id: "company-registry", label: "Company Registry", icon: Building2, gradient: "from-blue-500 to-indigo-600", platforms: ["investor"] },
   { id: "funding-signals", label: "Funding Signals", icon: Database, gradient: "from-amber-500 to-rose-600", platforms: ["investor"] },
 ];
