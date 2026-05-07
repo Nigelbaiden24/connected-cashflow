@@ -91,6 +91,7 @@ const navGroups: NavGroup[] = [
       { title: "Signals & Alerts", url: "/investor/alerts", icon: Bell, gradient: "from-amber-500 to-orange-600" },
       { title: "Benchmarking & Trends", url: "/investor/trends", icon: LineChart, gradient: "from-cyan-500 to-cyan-600" },
       { title: "Opportunity Intelligence", url: "/investor/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
+      { title: "Deal Flow Intelligence", url: "/investor/deal-flow", icon: Activity, gradient: "from-fuchsia-500 to-pink-600" },
     ]
   },
   {
