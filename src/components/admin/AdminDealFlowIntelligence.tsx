@@ -203,11 +203,24 @@ export function AdminDealFlowIntelligence() {
                         {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
                       </TableCell>
                       <TableCell>
-                        {e.source_url && (
-                          <a href={e.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {e.source_url && (
+                            <a href={e.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          )}
+                          <Button
+                            size="sm"
+                            variant={promotedIds.has(e.id) ? "secondary" : "default"}
+                            disabled={promotedIds.has(e.id) || promotingId === e.id}
+                            onClick={() => promote(e)}
+                            className="h-7 gap-1"
+                          >
+                            {promotingId === e.id ? <Loader2 className="h-3 w-3 animate-spin" /> :
+                              promotedIds.has(e.id) ? <CheckCircle2 className="h-3 w-3" /> : <Rocket className="h-3 w-3" />}
+                            {promotedIds.has(e.id) ? "Promoted" : "Promote"}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
