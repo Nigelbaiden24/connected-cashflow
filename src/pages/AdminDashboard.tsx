@@ -31,6 +31,7 @@ import { InsightsAccessRequests } from "@/components/admin/InsightsAccessRequest
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
 import { OpportunityManager } from "@/components/admin/OpportunityManager";
+import { NewsletterComposer } from "@/components/admin/NewsletterComposer";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
