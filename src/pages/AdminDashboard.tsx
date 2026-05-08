@@ -31,6 +31,7 @@ import { InsightsAccessRequests } from "@/components/admin/InsightsAccessRequest
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
 import { OpportunityManager } from "@/components/admin/OpportunityManager";
+import { NewsletterComposer } from "@/components/admin/NewsletterComposer";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
 import { AdminResearchChatbot } from "@/components/admin/AdminResearchChatbot";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -862,69 +863,82 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === 'newsletters' && (
-            <Card className="border-slate-200 shadow-lg bg-white">
-              <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
-                <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
-                  <Newspaper className="h-6 w-6 text-secondary" />
-                  Upload Newsletter
-                </CardTitle>
-                <CardDescription className="text-slate-500">Upload newsletters for selected platforms and users</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <form onSubmit={handleNewsletterUpload} className="space-y-4">
-                  <ContentTargetSelector
-                    selectedPlatform={newsletterTarget.platform}
-                    onPlatformChange={(platform) => setNewsletterTarget({ ...newsletterTarget, platform })}
-                    selectedUsers={newsletterTarget.selectedUsers}
-                    onUsersChange={(users) => setNewsletterTarget({ ...newsletterTarget, selectedUsers: users })}
-                    allUsersSelected={newsletterTarget.allUsers}
-                    onAllUsersChange={(allUsers) => setNewsletterTarget({ ...newsletterTarget, allUsers })}
-                  />
-                  <div className="space-y-2">
-                    <Label htmlFor="newsletter-title">Title *</Label>
-                    <Input
-                      id="newsletter-title"
-                      value={newsletterForm.title}
-                      onChange={(e) => setNewsletterForm({ ...newsletterForm, title: e.target.value })}
-                      placeholder="Newsletter title"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newsletter-desc">Description</Label>
-                    <Textarea
-                      id="newsletter-desc"
-                      value={newsletterForm.description}
-                      onChange={(e) => setNewsletterForm({ ...newsletterForm, description: e.target.value })}
-                      placeholder="Newsletter description"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newsletter-date">Publish Date (Optional)</Label>
-                    <Input
-                      id="newsletter-date"
-                      type="date"
-                      value={newsletterForm.publishDate}
-                      onChange={(e) => setNewsletterForm({ ...newsletterForm, publishDate: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="newsletter-file">File (PDF) *</Label>
-                    <Input
-                      id="newsletter-file"
-                      type="file"
-                      accept=".pdf"
-                      onChange={(e) => setNewsletterForm({ ...newsletterForm, file: e.target.files?.[0] || null })}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" disabled={uploading}>
-                    {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-                    Upload Newsletter
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            <Tabs defaultValue="compose" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6 max-w-md">
+                <TabsTrigger value="compose">Compose (branded)</TabsTrigger>
+                <TabsTrigger value="upload">Upload PDF</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="compose">
+                <NewsletterComposer />
+              </TabsContent>
+
+              <TabsContent value="upload">
+                <Card className="border-slate-200 shadow-lg bg-white">
+                  <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-secondary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-2xl text-slate-900">
+                      <Newspaper className="h-6 w-6 text-secondary" />
+                      Upload Newsletter
+                    </CardTitle>
+                    <CardDescription className="text-slate-500">Upload newsletters for selected platforms and users</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <form onSubmit={handleNewsletterUpload} className="space-y-4">
+                      <ContentTargetSelector
+                        selectedPlatform={newsletterTarget.platform}
+                        onPlatformChange={(platform) => setNewsletterTarget({ ...newsletterTarget, platform })}
+                        selectedUsers={newsletterTarget.selectedUsers}
+                        onUsersChange={(users) => setNewsletterTarget({ ...newsletterTarget, selectedUsers: users })}
+                        allUsersSelected={newsletterTarget.allUsers}
+                        onAllUsersChange={(allUsers) => setNewsletterTarget({ ...newsletterTarget, allUsers })}
+                      />
+                      <div className="space-y-2">
+                        <Label htmlFor="newsletter-title">Title *</Label>
+                        <Input
+                          id="newsletter-title"
+                          value={newsletterForm.title}
+                          onChange={(e) => setNewsletterForm({ ...newsletterForm, title: e.target.value })}
+                          placeholder="Newsletter title"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newsletter-desc">Description</Label>
+                        <Textarea
+                          id="newsletter-desc"
+                          value={newsletterForm.description}
+                          onChange={(e) => setNewsletterForm({ ...newsletterForm, description: e.target.value })}
+                          placeholder="Newsletter description"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newsletter-date">Publish Date (Optional)</Label>
+                        <Input
+                          id="newsletter-date"
+                          type="date"
+                          value={newsletterForm.publishDate}
+                          onChange={(e) => setNewsletterForm({ ...newsletterForm, publishDate: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="newsletter-file">File (PDF) *</Label>
+                        <Input
+                          id="newsletter-file"
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => setNewsletterForm({ ...newsletterForm, file: e.target.files?.[0] || null })}
+                          required
+                        />
+                      </div>
+                      <Button type="submit" disabled={uploading}>
+                        {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                        Upload Newsletter
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           )}
 
           {activeTab === 'portfolios' && (

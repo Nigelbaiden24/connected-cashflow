@@ -84,6 +84,48 @@ export function FeaturedAnalystPicks() {
   const [catalystsInput, setCatalystsInput] = useState('');
   const [risksInput, setRisksInput] = useState('');
   const [activeAssetType, setActiveAssetType] = useState<string>('all');
+  const [aiPicking, setAiPicking] = useState(false);
+
+  const handleAiAutoPick = async () => {
+    setAiPicking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-finance-picks', { body: { count: 5 } });
+      if (error) throw error;
+      if (!(data as any)?.ok) throw new Error((data as any)?.error ?? 'AI pick failed');
+      const aiPicks: any[] = (data as any).picks ?? [];
+      if (aiPicks.length === 0) {
+        toast.error('AI returned no picks from the Finance universe');
+        return;
+      }
+      const ws = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const we = format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const rows = aiPicks.map((p, i) => ({
+        asset_type: (p.kind === 'fund' ? 'fund' : p.kind === 'crypto' ? 'crypto' : 'stock'),
+        asset_id: p.id,
+        asset_name: p.name,
+        asset_symbol: p.symbol ?? null,
+        analyst_rating: ['strong_buy','buy','hold','sell','strong_sell'].includes(p.analyst_rating) ? p.analyst_rating : 'buy',
+        conviction_score: Math.max(1, Math.min(10, Number(p.conviction_score) || 7)),
+        investment_thesis: p.investment_thesis ?? null,
+        key_catalysts: Array.isArray(p.key_catalysts) ? p.key_catalysts : [],
+        risk_factors: Array.isArray(p.risk_factors) ? p.risk_factors : [],
+        time_horizon: ['short_term','medium_term','long_term'].includes(p.time_horizon) ? p.time_horizon : 'medium_term',
+        sector: p.sector ?? null,
+        week_start_date: ws,
+        week_end_date: we,
+        display_order: i + 1,
+        is_active: true,
+      }));
+      const { error: insErr } = await supabase.from('featured_analyst_picks').insert(rows as any);
+      if (insErr) throw insErr;
+      toast.success(`Added ${rows.length} AI picks from Finance universe (size ${(data as any).universe_size})`);
+      fetchPicks();
+    } catch (e: any) {
+      toast.error(e.message ?? 'AI auto-pick failed');
+    } finally {
+      setAiPicking(false);
+    }
+  };
 
   useEffect(() => {
     fetchPicks();
@@ -265,10 +307,16 @@ export function FeaturedAnalystPicks() {
                 </CardDescription>
               </div>
             </div>
-            <Button onClick={handleCreate} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Pick
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleAiAutoPick} disabled={aiPicking} variant="outline" className="gap-2">
+                {aiPicking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                AI Auto-Pick (Finance Universe)
+              </Button>
+              <Button onClick={handleCreate} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Pick
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
