@@ -90,7 +90,7 @@ export default function OpportunityDetailPage() {
   const hasDownside = opportunity.downside_analysis || opportunity.sensitivity_analysis;
   const hasExit = opportunity.exit_scenarios || opportunity.exit_timeline;
 
-  const PitchbookSection = ({ icon: SectionIcon, title, children, accent }: { icon: any; title: string; children: React.ReactNode; accent: string }) => (
+  const SnapshotSection = ({ icon: SectionIcon, title, children, accent }: { icon: any; title: string; children: React.ReactNode; accent: string }) => (
     <Card className="border-border/50 overflow-hidden">
       <div className={`h-1 ${accent}`} />
       <CardHeader className="pb-2">
@@ -136,7 +136,7 @@ export default function OpportunityDetailPage() {
 
           {/* Opportunity Snapshot */}
           {hasSnapshot && (
-            <PitchbookSection icon={Target} title="Opportunity Snapshot" accent="bg-gradient-to-r from-blue-500 to-cyan-500">
+            <SnapshotSection icon={Target} title="Opportunity Snapshot" accent="bg-gradient-to-r from-blue-500 to-cyan-500">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {opportunity.expected_irr != null && (
                   <div className="p-3 rounded-lg bg-muted/50 border border-border/30 text-center">
@@ -163,12 +163,12 @@ export default function OpportunityDetailPage() {
                   </div>
                 )}
               </div>
-            </PitchbookSection>
+            </SnapshotSection>
           )}
 
           {/* Investment Thesis */}
           {(opportunity.investment_thesis || opportunity.catalysts || opportunity.market_dynamics) && (
-            <PitchbookSection icon={Layers} title="Investment Thesis" accent="bg-gradient-to-r from-purple-500 to-pink-500">
+            <SnapshotSection icon={Layers} title="Investment Thesis" accent="bg-gradient-to-r from-purple-500 to-pink-500">
               <div className="space-y-4">
                 {opportunity.investment_thesis && (
                   <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Why the opportunity exists</p><p className="text-sm whitespace-pre-wrap">{opportunity.investment_thesis}</p></div>
@@ -180,12 +180,12 @@ export default function OpportunityDetailPage() {
                   <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Market Dynamics</p><p className="text-sm whitespace-pre-wrap">{opportunity.market_dynamics}</p></div>
                 )}
               </div>
-            </PitchbookSection>
+            </SnapshotSection>
           )}
 
           {/* Financial Summary */}
           {hasFinancials && (
-            <PitchbookSection icon={BarChart3} title="Financial Summary" accent="bg-gradient-to-r from-green-500 to-emerald-500">
+            <SnapshotSection icon={BarChart3} title="Financial Summary" accent="bg-gradient-to-r from-green-500 to-emerald-500">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {opportunity.annual_revenue != null && (
                   <div className="p-3 rounded-lg bg-muted/50 border border-border/30">
@@ -212,37 +212,37 @@ export default function OpportunityDetailPage() {
                   </div>
                 )}
               </div>
-            </PitchbookSection>
+            </SnapshotSection>
           )}
 
           {/* Comparable Deals */}
           {hasComparables && (
-            <PitchbookSection icon={Scale} title="Comparable Deals" accent="bg-gradient-to-r from-amber-500 to-orange-500">
+            <SnapshotSection icon={Scale} title="Comparable Deals" accent="bg-gradient-to-r from-amber-500 to-orange-500">
               <div className="space-y-4">
                 {opportunity.comparable_deals && <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Similar Transactions</p><p className="text-sm whitespace-pre-wrap">{opportunity.comparable_deals}</p></div>}
                 {opportunity.comparable_valuations && <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Comparable Valuations</p><p className="text-sm whitespace-pre-wrap">{opportunity.comparable_valuations}</p></div>}
               </div>
-            </PitchbookSection>
+            </SnapshotSection>
           )}
 
           {/* Downside Analysis */}
           {hasDownside && (
-            <PitchbookSection icon={AlertTriangle} title="Downside Analysis" accent="bg-gradient-to-r from-red-500 to-rose-500">
+            <SnapshotSection icon={AlertTriangle} title="Downside Analysis" accent="bg-gradient-to-r from-red-500 to-rose-500">
               <div className="space-y-4">
                 {opportunity.downside_analysis && <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">What Could Go Wrong</p><p className="text-sm whitespace-pre-wrap">{opportunity.downside_analysis}</p></div>}
                 {opportunity.sensitivity_analysis && <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Sensitivity Analysis</p><p className="text-sm whitespace-pre-wrap">{opportunity.sensitivity_analysis}</p></div>}
               </div>
-            </PitchbookSection>
+            </SnapshotSection>
           )}
 
           {/* Exit Scenarios */}
           {hasExit && (
-            <PitchbookSection icon={ArrowUpRight} title="Exit Scenarios" accent="bg-gradient-to-r from-indigo-500 to-violet-500">
+            <SnapshotSection icon={ArrowUpRight} title="Exit Scenarios" accent="bg-gradient-to-r from-indigo-500 to-violet-500">
               <div className="space-y-4">
                 {opportunity.exit_scenarios && <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Likely Exits</p><p className="text-sm whitespace-pre-wrap">{opportunity.exit_scenarios}</p></div>}
                 {opportunity.exit_timeline && <div><p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Expected Timeline</p><p className="text-sm whitespace-pre-wrap">{opportunity.exit_timeline}</p></div>}
               </div>
-            </PitchbookSection>
+            </SnapshotSection>
           )}
 
           {/* Interactive Analytics Charts */}

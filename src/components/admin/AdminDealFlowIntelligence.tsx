@@ -3,10 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Play, RefreshCw, Activity, AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
+import { Loader2, Play, RefreshCw, Activity, AlertTriangle, CheckCircle2, ExternalLink, Rocket } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { autoPromoteScrape } from "@/lib/autoPromoteScrape";
 
 interface IntelEvent {
   id: string;
@@ -36,6 +38,48 @@ export function AdminDealFlowIntelligence() {
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [stats, setStats] = useState({ total: 0, validated: 0, alerts: 0 });
+  const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [targetPlatform, setTargetPlatform] = useState<"finance" | "investor" | "both">("both");
+  const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
+
+  const promote = async (e: IntelEvent) => {
+    setPromotingId(e.id);
+    try {
+      const platforms: Array<"finance" | "investor"> =
+        targetPlatform === "both" ? ["finance", "investor"] : [targetPlatform];
+      let ok = 0;
+      for (const p of platforms) {
+        const res = await autoPromoteScrape({
+          source: "deal-flow-intelligence",
+          platform: p,
+          targetTable: p === "investor" ? "investor_finder_opportunities" : "opportunity_products",
+          title: e.title ?? "Untitled deal",
+          summary: e.summary,
+          category: e.event_type,
+          sourceUrl: e.source_url,
+          enriched: {
+            description: e.summary,
+            sector: e.event_type,
+            stage: e.funding_stage,
+            ticket_size_min: e.amount_value,
+            currency: e.amount_currency ?? "GBP",
+            confidence: e.confidence,
+          },
+          aiScore: Math.min(5, Math.max(0, (e.confidence_score ?? 0.6) * 5)),
+          aiTags: [e.event_type, e.funding_stage].filter(Boolean) as string[],
+        });
+        if (res.ok) ok++;
+        else toast.error(`Promote to ${p} failed: ${res.error}`);
+      }
+      if (ok > 0) {
+        toast.success(`Promoted to ${ok} platform${ok > 1 ? "s" : ""}`);
+        setPromotedIds((s) => new Set(s).add(e.id));
+        await supabase.from("intel_events").update({ status: "validated" }).eq("id", e.id);
+      }
+    } finally {
+      setPromotingId(null);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -78,7 +122,15 @@ export function AdminDealFlowIntelligence() {
             PitchBook-lite ingestion — Firecrawl → AI extraction → structured deal events.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Select value={targetPlatform} onValueChange={(v) => setTargetPlatform(v as any)}>
+            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="both">Both platforms</SelectItem>
+              <SelectItem value="finance">Finance only</SelectItem>
+              <SelectItem value="investor">Investor only</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
@@ -151,11 +203,24 @@ export function AdminDealFlowIntelligence() {
                         {formatDistanceToNow(new Date(e.created_at), { addSuffix: true })}
                       </TableCell>
                       <TableCell>
-                        {e.source_url && (
-                          <a href={e.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {e.source_url && (
+                            <a href={e.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          )}
+                          <Button
+                            size="sm"
+                            variant={promotedIds.has(e.id) ? "secondary" : "default"}
+                            disabled={promotedIds.has(e.id) || promotingId === e.id}
+                            onClick={() => promote(e)}
+                            className="h-7 gap-1"
+                          >
+                            {promotingId === e.id ? <Loader2 className="h-3 w-3 animate-spin" /> :
+                              promotedIds.has(e.id) ? <CheckCircle2 className="h-3 w-3" /> : <Rocket className="h-3 w-3" />}
+                            {promotedIds.has(e.id) ? "Promoted" : "Promote"}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
