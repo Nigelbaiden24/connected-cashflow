@@ -10,9 +10,9 @@ import { Loader2, Save, Eye, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DOMPurify from "dompurify";
-import { ContentTargetSelector } from "./ContentTargetSelector";
+import { ContentTargetSelector, type Platform } from "./ContentTargetSelector";
 
-type ContentTarget = { platform: string; selectedUsers: string[]; allUsers: boolean };
+type ContentTarget = { platform: Platform; selectedUsers: string[]; allUsers: boolean };
 
 type TemplateId = "market_brief" | "deal_spotlight" | "weekly_roundup" | "featured_picks";
 
