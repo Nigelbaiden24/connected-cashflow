@@ -68,7 +68,7 @@ export function FlowPulseScraperHub() {
 
       {isFinance ? (
         <Tabs defaultValue="financial-research" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="financial-research" className="gap-2">
               <Globe className="h-4 w-4" />
               Financial Research
@@ -77,10 +77,6 @@ export function FlowPulseScraperHub() {
               <Building2 className="h-4 w-4" />
               Companies House
             </TabsTrigger>
-            <TabsTrigger value="uk-investors" className="gap-2">
-              <Briefcase className="h-4 w-4" />
-              UK Investors
-            </TabsTrigger>
           </TabsList>
           <TabsContent value="financial-research" className="mt-6">
             <FinancialResearchScraper />
@@ -88,29 +84,15 @@ export function FlowPulseScraperHub() {
           <TabsContent value="companies-house" className="mt-6">
             <CompaniesHouseScraper />
           </TabsContent>
-          <TabsContent value="uk-investors" className="mt-6">
-            <UKInvestorScanner />
-          </TabsContent>
         </Tabs>
       ) : (
-        <Tabs defaultValue="investor-research" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-2">
-            <TabsTrigger value="investor-research" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Investor Research
-            </TabsTrigger>
-            <TabsTrigger value="uk-investors" className="gap-2">
-              <Briefcase className="h-4 w-4" />
-              Investor Finder
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="investor-research" className="mt-6">
-            <InvestorResearchScraper />
-          </TabsContent>
-          <TabsContent value="uk-investors" className="mt-6">
-            <UKInvestorScanner />
-          </TabsContent>
-        </Tabs>
+        <Card className="border-slate-200 bg-white">
+          <CardContent className="p-8 text-center text-slate-600">
+            <Radar className="h-10 w-10 mx-auto mb-3 text-violet-500" />
+            <p className="font-medium">Investor scraping tools have moved to dedicated sidebar tabs:</p>
+            <p className="text-sm mt-2 text-slate-500">Opportunity Engine · AI Auto Scanner · Investor Finder · Startup Discovery · Deal Flow Intelligence</p>
+          </CardContent>
+        </Card>
       )}
 
       <EliteScraperAnalyst platform={isFinance ? "finance" : "investor"} />
