@@ -122,7 +122,15 @@ export function AdminDealFlowIntelligence() {
             PitchBook-lite ingestion — Firecrawl → AI extraction → structured deal events.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Select value={targetPlatform} onValueChange={(v) => setTargetPlatform(v as any)}>
+            <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="both">Both platforms</SelectItem>
+              <SelectItem value="finance">Finance only</SelectItem>
+              <SelectItem value="investor">Investor only</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" onClick={load} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
           </Button>
