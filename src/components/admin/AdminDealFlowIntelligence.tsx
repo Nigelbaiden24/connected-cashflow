@@ -38,6 +38,48 @@ export function AdminDealFlowIntelligence() {
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [stats, setStats] = useState({ total: 0, validated: 0, alerts: 0 });
+  const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [targetPlatform, setTargetPlatform] = useState<"finance" | "investor" | "both">("both");
+  const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
+
+  const promote = async (e: IntelEvent) => {
+    setPromotingId(e.id);
+    try {
+      const platforms: Array<"finance" | "investor"> =
+        targetPlatform === "both" ? ["finance", "investor"] : [targetPlatform];
+      let ok = 0;
+      for (const p of platforms) {
+        const res = await autoPromoteScrape({
+          source: "deal-flow-intelligence",
+          platform: p,
+          targetTable: p === "investor" ? "investor_finder_opportunities" : "opportunity_products",
+          title: e.title ?? "Untitled deal",
+          summary: e.summary,
+          category: e.event_type,
+          sourceUrl: e.source_url,
+          enriched: {
+            description: e.summary,
+            sector: e.event_type,
+            stage: e.funding_stage,
+            ticket_size_min: e.amount_value,
+            currency: e.amount_currency ?? "GBP",
+            confidence: e.confidence,
+          },
+          aiScore: Math.min(5, Math.max(0, (e.confidence_score ?? 0.6) * 5)),
+          aiTags: [e.event_type, e.funding_stage].filter(Boolean) as string[],
+        });
+        if (res.ok) ok++;
+        else toast.error(`Promote to ${p} failed: ${res.error}`);
+      }
+      if (ok > 0) {
+        toast.success(`Promoted to ${ok} platform${ok > 1 ? "s" : ""}`);
+        setPromotedIds((s) => new Set(s).add(e.id));
+        await supabase.from("intel_events").update({ status: "validated" }).eq("id", e.id);
+      }
+    } finally {
+      setPromotingId(null);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
