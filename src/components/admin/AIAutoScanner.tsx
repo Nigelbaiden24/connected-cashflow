@@ -58,6 +58,8 @@ interface ScanResult {
   status: "success" | "error";
   error?: string;
   highlights?: string[];
+  opportunities?: any[];
+  rawOutput?: string;
 }
 
 const DEFAULT_TARGETS: ScanTarget[] = [
@@ -87,12 +89,37 @@ export function AIAutoScanner() {
   const [totalOppsFound, setTotalOppsFound] = useState(0);
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
   const [recentHistory, setRecentHistory] = useState<any[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load recent scan history
   useEffect(() => {
     loadRecentHistory();
+    void supabase
+      .from("platform_config" as any)
+      .select("value")
+      .eq("key", "auto_scraper_enabled")
+      .maybeSingle()
+      .then(({ data }) => {
+        const value = (data as any)?.value ?? {};
+        setIsAutoScanActive(value.enabled === true);
+        if (value.interval_hours) setScanInterval(String(value.interval_hours));
+      });
   }, []);
+
+  const setAutoScanConfig = async (enabled: boolean, intervalHours = scanInterval) => {
+    setIsAutoScanActive(enabled);
+    const { error } = await supabase.from("platform_config" as any).upsert({
+      key: "auto_scraper_enabled",
+      value: { enabled, interval_hours: Number(intervalHours), controlled_from: "ai-auto-scanner" } as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "key" });
+    if (error) {
+      setIsAutoScanActive(!enabled);
+      toast.error(`Failed to update auto scanner: ${error.message}`);
+    } else {
+      toast.success(enabled ? "Auto scanner enabled" : "Auto scanner disabled");
+    }
+  };
 
   const loadRecentHistory = async () => {
     try {
@@ -204,6 +231,8 @@ export function AIAutoScanner() {
       result.opportunitiesFound = opps.length;
       result.status = "success";
       result.highlights = opps.slice(0, 3).map((o: any) => o.name || "Unknown");
+      result.opportunities = opps;
+      result.rawOutput = fullOutput;
 
       setTargets(prev => prev.map(t => t.id === categoryId ? {
         ...t,
@@ -256,8 +285,9 @@ export function AIAutoScanner() {
           category: target.label,
           subCategory: target.id,
           payload: result,
-          opportunities: (result as any).opportunities,
+          opportunities: result.opportunities,
           opportunitiesCount: result.opportunitiesFound,
+          rawOutput: result.rawOutput,
         });
       } else {
         toast.error(`${target.label}: ${result.error}`);
