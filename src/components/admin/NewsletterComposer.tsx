@@ -26,7 +26,7 @@ const TEMPLATES: { id: TemplateId; label: string; tagline: string; accent: strin
 const BRAND = {
   name: "FlowPulse",
   url: "https://flowpulse.co.uk",
-  logoText: "FP",
+  logoUrl: "https://flowpulse.co.uk/flowpulse-logo.png",
   fontStack: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
 };
 
@@ -40,12 +40,14 @@ function renderTemplate(t: TemplateId, fields: Record<string, string>, accent: s
   const dateStr = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
   const header = `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${accent};padding:28px 32px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${accent};padding:24px 32px;">
       <tr>
         <td>
           <table role="presentation"><tr>
-            <td style="background:#fff;color:${accent};font-weight:800;font-size:18px;width:42px;height:42px;border-radius:10px;text-align:center;line-height:42px;font-family:${BRAND.fontStack};">${BRAND.logoText}</td>
-            <td style="padding-left:14px;color:#fff;font-family:${BRAND.fontStack};">
+            <td style="background:#fff;padding:8px 12px;border-radius:10px;">
+              <img src="${BRAND.logoUrl}" alt="${BRAND.name}" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;" />
+            </td>
+            <td style="padding-left:14px;color:#fff;font-family:${BRAND.fontStack};vertical-align:middle;">
               <div style="font-weight:700;font-size:16px;letter-spacing:.3px;">${BRAND.name}</div>
               <div style="font-size:11px;opacity:.85;text-transform:uppercase;letter-spacing:1.5px;">${TEMPLATES.find(x=>x.id===t)?.label}</div>
             </td>
