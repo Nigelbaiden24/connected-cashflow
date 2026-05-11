@@ -584,8 +584,8 @@ async function scrapeAllPlatformUrls(platformName: string) {
     } catch {}
   }
 
-  // Parallel deep-scrape article candidates
-  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 20);
+  // Parallel deep-scrape article candidates (capped to 8 for speed)
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 8);
   const deep = await Promise.allSettled(dedupeArticles.map((a) => scrapeOne(a.url, true)));
   for (const r of deep) {
     if (r.status !== 'fulfilled' || !r.value.ok) continue;
