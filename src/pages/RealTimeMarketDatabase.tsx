@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCryptoData, useStockData, CryptoData, StockData } from "@/hooks/useRealTimeMarketData";
 import { AnalystPicksSection } from "@/components/market/AnalystPicksSection";
 import { AssetAnalystActivity } from "@/components/market/AssetAnalystActivity";
+import { AnalystActivityFeed } from "@/components/market/AnalystActivityFeed";
 import { 
   Search, 
   TrendingUp, 
