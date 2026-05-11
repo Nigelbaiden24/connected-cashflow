@@ -547,8 +547,8 @@ async function scrapeAllPlatformUrls(platformName: string) {
           url: u,
           formats: deep ? ['markdown'] : ['markdown', 'links'],
           onlyMainContent: true,
-          waitFor: 1200,
-          timeout: 25000,
+          waitFor: 600,
+          timeout: 15000,
         }),
       });
       if (!response.ok) return { ok: false as const, url: u, status: response.status };
