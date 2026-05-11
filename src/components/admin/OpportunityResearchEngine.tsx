@@ -1097,7 +1097,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
                     {opp.estimated_value && (
                       <div className="flex items-center gap-1.5 text-slate-700">
                         <DollarSign className="h-3.5 w-3.5 text-green-600" />
-                        <span className="truncate">{opp.estimated_value}</span>
+                        <span className="truncate font-semibold">{toGBPDisplay(opp.estimated_value)}</span>
                       </div>
                     )}
                     {opp.location && (
