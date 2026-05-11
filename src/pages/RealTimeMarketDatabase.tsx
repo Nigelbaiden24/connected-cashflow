@@ -243,6 +243,13 @@ export default function RealTimeMarketDatabase() {
               <BarChart3 className="h-4 w-4" />
               Stocks ({stockTotal.toLocaleString()})
             </TabsTrigger>
+            <TabsTrigger
+              value="analyst-activity"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-fuchsia-600 data-[state=active]:text-white data-[state=active]:shadow-md gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              Analyst Activity
+            </TabsTrigger>
           </TabsList>
 
           {/* Crypto Tab */}
