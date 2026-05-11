@@ -295,7 +295,15 @@ export function StocksCryptoAdmin() {
   const cryptoTotalPages = Math.ceil(cryptoTotal / 100);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="space-y-6">
+      <AIElitePicksPanel
+        mode="score_stocks"
+        title="AI Elite Scoring (Stocks & Crypto)"
+        description="Re-scores the top stocks & crypto with institutional rationale, conviction (0–5) and detailed strengths/risks."
+        count={10}
+        onComplete={() => { refetchStocks(); refetchCrypto(); }}
+      />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Asset Selection Panel */}
       <Card className="border-slate-200 shadow-xl bg-white">
         <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50">
