@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -854,18 +855,33 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
       {/* Auto-Scrape Engine */}
       <Card className="border-emerald-200 shadow-lg bg-gradient-to-br from-emerald-50/40 to-transparent">
         <CardHeader className="border-b border-emerald-100">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Zap className="h-5 w-5 text-emerald-600" />
-            Auto-Scrape Engine
-            {autoScanRunning && (
-              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 ml-2 animate-pulse">
-                ● LIVE
-              </Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            Continuously scan selected categories on a schedule. Promoted results flow into platform Opportunities automatically.
-          </CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Zap className="h-5 w-5 text-emerald-600" />
+                Auto-Scrape Engine
+                {autoScanRunning && (
+                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 ml-2 animate-pulse">
+                    ● LIVE
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Continuously scan selected categories on a schedule. Promoted results flow into platform Opportunities automatically.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 pt-1">
+              <span className={`text-xs font-medium ${autoScanRunning ? "text-emerald-700" : "text-slate-500"}`}>
+                {autoScanRunning ? "ON" : "OFF"}
+              </span>
+              <Switch
+                checked={autoScanRunning}
+                onCheckedChange={(v) => (v ? startAutoScan() : stopAutoScan())}
+                disabled={!autoScanRunning && autoScanCategories.length === 0}
+                aria-label="Toggle auto-scrape"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
