@@ -401,6 +401,17 @@ export function OpportunityResearchEngine() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
+  const [busyId, setBusyId] = useState<string | null>(null);
+  // Auto-scan
+  const [autoScanCategories, setAutoScanCategories] = useState<string[]>([]);
+  const [autoScanInterval, setAutoScanInterval] = useState<string>("60");
+  const [autoScanRunning, setAutoScanRunning] = useState(false);
+  const [autoScanLastRun, setAutoScanLastRun] = useState<string | null>(null);
+  const [autoScanNextRun, setAutoScanNextRun] = useState<string | null>(null);
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoIndexRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
   const opportunities = phase === "complete" ? parseOpportunities(aiOutput) : [];
