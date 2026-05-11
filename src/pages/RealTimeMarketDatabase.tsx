@@ -527,6 +527,10 @@ export default function RealTimeMarketDatabase() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="analyst-activity" className="mt-0">
+            <AnalystActivityFeed platform="finance" />
+          </TabsContent>
         </Tabs>
       </div>
 
