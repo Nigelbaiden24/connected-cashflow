@@ -337,62 +337,60 @@ export function FinancialResearchScraper() {
       })),
     ]);
 
-    for (const cat of cats) {
-      try {
-        const { data, error } = await supabase.functions.invoke(
-          "financial-research-scraper",
-          { body: { categoryKey: cat.id } }
-        );
-        if (error) throw error;
+    // PARALLEL — fan out all category scrapes at once for major speed-up
+    const results = await Promise.allSettled(
+      cats.map((cat) =>
+        supabase.functions
+          .invoke("financial-research-scraper", { body: { categoryKey: cat.id } })
+          .then(({ data, error }) => ({ cat, data, error }))
+      )
+    );
 
+    let okCount = 0;
+    for (const r of results) {
+      if (r.status !== "fulfilled") continue;
+      const { cat, data, error } = r.value;
+      const key = `${cat.emoji} ${cat.label}`;
+      if (error || !data?.success) {
         setScrapedData((prev) =>
           prev.map((item) =>
-            item.platform === `${cat.emoji} ${cat.label}`
-              ? {
-                  ...item,
-                  content: data.content || "No content extracted",
-                  status: data.success ? ("success" as const) : ("error" as const),
-                  scrapedAt: new Date().toISOString(),
-                  error: data.success ? undefined : data.error,
-                  scrapedUrls: data.scrapedUrls || [],
-                  totalUrls: data.totalUrls || 0,
-                }
+            item.platform === key
+              ? { ...item, status: "error" as const, error: data?.error || error?.message || "Source temporarily unreachable" }
               : item
           )
         );
-
-        if (data?.success) {
-          toast.success(
-            `${cat.label}: scraped ${data.scrapedUrls?.length || 0}/${data.totalUrls || 0} sources`
-          );
-          saveScrapeResult({
-            source: "financial-research",
-            platform: "finance",
-            title: `${cat.label} sweep`,
-            category: cat.label,
-            payload: data,
-            sources: data.scrapedUrls,
-            opportunitiesCount: data.scrapedUrls?.length || 0,
-            rawOutput: data.content,
-          });
-        }
-      } catch (err) {
-        setScrapedData((prev) =>
-          prev.map((item) =>
-            item.platform === `${cat.emoji} ${cat.label}`
-              ? {
-                  ...item,
-                  status: "error" as const,
-                  error: err instanceof Error ? err.message : "Failed to scrape category",
-                }
-              : item
-          )
-        );
+        continue;
       }
+      okCount++;
+      setScrapedData((prev) =>
+        prev.map((item) =>
+          item.platform === key
+            ? {
+                ...item,
+                content: data.content || "No content extracted",
+                status: "success" as const,
+                scrapedAt: new Date().toISOString(),
+                scrapedUrls: data.scrapedUrls || [],
+                totalUrls: data.totalUrls || 0,
+              }
+            : item
+        )
+      );
+      saveScrapeResult({
+        source: "financial-research",
+        platform: "finance",
+        title: `${cat.label} sweep`,
+        category: cat.label,
+        payload: data,
+        sources: data.scrapedUrls,
+        opportunitiesCount: data.scrapedUrls?.length || 0,
+        rawOutput: data.content,
+      });
     }
 
     setIsScrapingInProgress(false);
-    toast.success("Category sweep complete");
+    if (okCount > 0) toast.success(`Category sweep complete — ${okCount}/${cats.length} categories`);
+    else toast.message("Sources were slow — partial results returned");
   };
 
   const handleCopy = useCallback(async (text: string, id?: string) => {
