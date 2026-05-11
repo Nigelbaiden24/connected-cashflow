@@ -781,6 +781,7 @@ export function StocksCryptoAdmin() {
           </CardContent>
         )}
       </Card>
+      </div>
     </div>
   );
 }
