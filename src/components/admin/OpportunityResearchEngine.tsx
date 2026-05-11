@@ -785,7 +785,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
 
           <div className="flex items-center gap-3 pt-2">
             <Button
-              onClick={handleResearch}
+              onClick={() => handleResearch()}
               disabled={isRunning || (!category && !customQuery)}
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
             >
