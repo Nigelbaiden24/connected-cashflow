@@ -305,6 +305,7 @@ export function StocksCryptoAdmin() {
         count={10}
         onComplete={() => { refetchStocks(); refetchCrypto(); }}
       />
+      <StocksCryptoEliteScanner />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Asset Selection Panel */}
       <Card className="border-slate-200 shadow-xl bg-white">
