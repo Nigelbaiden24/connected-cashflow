@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { AIElitePicksPanel } from './AIElitePicksPanel';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -269,6 +270,13 @@ export function FundAnalystAdmin() {
 
   return (
     <div className="space-y-6">
+      <AIElitePicksPanel
+        mode="score_funds"
+        title="AI Elite Scoring (Fund Analyst)"
+        description="Re-scores top funds with Morningstar/Citywire-grade rationale, conviction (0–5), strengths, risks and ESG dimensions."
+        count={10}
+        onComplete={fetchFunds}
+      />
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
