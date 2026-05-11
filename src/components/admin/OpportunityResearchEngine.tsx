@@ -1173,25 +1173,58 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
                     </div>
                   </div>
 
-                  {/* Copy button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full gap-1.5 text-xs"
-                    onClick={() => copyOpportunityForUpload(opp)}
-                  >
-                    {copiedId === opp.name ? (
-                      <>
-                        <Check className="h-3 w-3 text-green-600" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" />
-                        Copy for Opportunity Upload
-                      </>
-                    )}
-                  </Button>
+                  {/* Action buttons */}
+                  {(() => {
+                    const oppId = opp.name + (opp.source_url || "");
+                    const isPromoted = promotedIds.has(oppId);
+                    const isRejected = rejectedIds.has(oppId);
+                    const isBusy = busyId === oppId;
+                    return (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-xs"
+                            onClick={() => promoteOpportunity(opp)}
+                            disabled={isPromoted || isRejected || isBusy}
+                          >
+                            {isPromoted ? (
+                              <><CheckCircle2 className="h-3.5 w-3.5" /> Promoted</>
+                            ) : isBusy ? (
+                              <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Promoting…</>
+                            ) : (
+                              <><Sparkles className="h-3.5 w-3.5" /> Promote</>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-xs border-red-200 text-red-700 hover:bg-red-50"
+                            onClick={() => rejectOpportunity(opp)}
+                            disabled={isPromoted || isRejected}
+                          >
+                            {isRejected ? (
+                              <><XCircle className="h-3.5 w-3.5" /> Rejected</>
+                            ) : (
+                              <><XCircle className="h-3.5 w-3.5" /> Reject</>
+                            )}
+                          </Button>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full gap-1.5 text-xs"
+                          onClick={() => copyOpportunityForUpload(opp)}
+                        >
+                          {copiedId === opp.name ? (
+                            <><Check className="h-3 w-3 text-green-600" /> Copied!</>
+                          ) : (
+                            <><Copy className="h-3 w-3" /> Copy for Manual Upload</>
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             ))}
