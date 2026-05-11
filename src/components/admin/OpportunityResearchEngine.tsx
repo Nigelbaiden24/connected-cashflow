@@ -134,7 +134,183 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
     icon: Gem,
     subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"],
   },
+  fixed_income: {
+    label: "Fixed Income & Bonds",
+    icon: BarChart3,
+    subCategories: ["UK Gilts", "US Treasuries", "Corporate Bonds", "High Yield", "Emerging Market Debt", "Inflation-Linked"],
+  },
+  fx: {
+    label: "Foreign Exchange",
+    icon: DollarSign,
+    subCategories: ["Major Pairs", "Minor Pairs", "Exotics", "FX Carry", "FX Hedging"],
+  },
+  alternatives: {
+    label: "Alternative Investments",
+    icon: Gem,
+    subCategories: ["Hedge Funds", "Fine Art", "Wine", "Collectibles", "Farmland", "Litigation Finance"],
+  },
+  esg: {
+    label: "ESG & Impact Investing",
+    icon: Sparkles,
+    subCategories: ["Climate", "Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Infrastructure"],
+  },
+  venture_capital: {
+    label: "Venture Capital",
+    icon: TrendingUp,
+    subCategories: ["Pre-Seed", "Seed", "Series A", "Series B+", "Growth", "Deep Tech"],
+  },
+  sme_acquisitions: {
+    label: "SME Acquisitions",
+    icon: Briefcase,
+    subCategories: ["Owner-Managed", "Search Funds", "Bolt-Ons", "Distressed SME", "Cross-Border"],
+  },
+  distressed_assets: {
+    label: "Distressed Assets",
+    icon: AlertTriangle,
+    subCategories: ["Distressed Debt", "Special Situations", "Restructuring", "NPLs", "Turnaround"],
+  },
+  debt_lending: {
+    label: "Debt & Lending",
+    icon: DollarSign,
+    subCategories: ["Private Credit", "Direct Lending", "Mezzanine", "Asset-Backed Lending", "Bridge Loans"],
+  },
+  fractional_pe_vc: {
+    label: "Fractional PE / VC",
+    icon: Briefcase,
+    subCategories: ["Crowdcube", "Seedrs", "AngelList Syndicates", "Republic", "Wefunder", "Moonfare"],
+  },
+  private_market_platforms: {
+    label: "Private Market Platforms",
+    icon: Globe,
+    subCategories: ["Pre-IPO Secondaries", "Forge Global", "EquityZen", "Hiive", "Carta X"],
+  },
+  derivatives: {
+    label: "Derivatives",
+    icon: BarChart3,
+    subCategories: ["Options", "Futures", "Swaps", "Structured Products", "CFDs"],
+  },
+  capital_protected_notes: {
+    label: "Capital-Protected & Income Notes",
+    icon: Building2,
+    subCategories: ["100% Capital Protected", "Income Notes", "Autocalls", "Reverse Convertibles"],
+  },
+  savings_cash_yield: {
+    label: "Savings, Cash & Yield",
+    icon: DollarSign,
+    subCategories: ["High-Yield Savings", "Money Market", "Cash ISAs", "Notice Accounts", "Fixed-Term Bonds"],
+  },
+  pensions_tax_wrappers: {
+    label: "Pensions & Tax Wrappers",
+    icon: Briefcase,
+    subCategories: ["SIPPs", "Stocks & Shares ISAs", "LISAs", "JISAs", "VCT", "EIS/SEIS"],
+  },
+  thematics_packaged: {
+    label: "Thematics & Packaged",
+    icon: Sparkles,
+    subCategories: ["AI & Robotics", "Clean Energy", "Cybersecurity", "Genomics", "Space", "Megatrends"],
+  },
+  copy_trading: {
+    label: "Copy Trading",
+    icon: TrendingUp,
+    subCategories: ["eToro", "ZuluTrade", "NAGA", "Pepperstone Social", "DupliTrade"],
+  },
+  music_royalties: {
+    label: "Music Royalties",
+    icon: Star,
+    subCategories: ["Royalty Exchange", "ANote Music", "SongVest", "Catalogue Acquisitions", "Streaming Royalties"],
+  },
 };
+
+// Map UI category key to opportunity_products allowed category enum
+const PROMOTE_CATEGORY_MAP: Record<string, string> = {
+  uk_property: "uk_property",
+  overseas_property: "overseas_property",
+  property_opportunities: "real_estate",
+  vehicles: "vehicles",
+  businesses: "businesses",
+  sme_acquisitions: "private_business",
+  startup_funding: "private_equity",
+  venture_capital: "private_equity",
+  private_equity: "private_equity",
+  fractional_pe_vc: "private_equity",
+  private_market_platforms: "private_equity",
+  crowdfunding: "private_equity",
+  distressed_assets: "private_equity",
+  debt_lending: "private_equity",
+  stocks: "stocks",
+  derivatives: "stocks",
+  copy_trading: "stocks",
+  thematics_packaged: "stocks",
+  crypto: "crypto",
+  blockchain: "crypto",
+  memorabilia: "memorabilia",
+  timepieces: "collectibles_luxury",
+  alternatives: "collectibles_luxury",
+  music_royalties: "collectibles_luxury",
+  commodities: "commodities",
+  infrastructure: "commodities",
+  fx: "commodities",
+  funds: "funds",
+  fixed_income: "funds",
+  esg: "funds",
+  capital_protected_notes: "funds",
+  savings_cash_yield: "funds",
+  pensions_tax_wrappers: "funds",
+};
+
+// FX rates (approximate static — converts to GBP for display & DB price)
+const FX_TO_GBP: Record<string, number> = {
+  GBP: 1, USD: 0.79, EUR: 0.85, CHF: 0.88, CAD: 0.58, AUD: 0.52, JPY: 0.0052, HKD: 0.10, SGD: 0.59,
+};
+function detectCurrency(s: string): string {
+  if (!s) return "GBP";
+  if (/£|gbp/i.test(s)) return "GBP";
+  if (/€|eur/i.test(s)) return "EUR";
+  if (/\$|usd/i.test(s)) return "USD";
+  if (/chf/i.test(s)) return "CHF";
+  if (/¥|jpy/i.test(s)) return "JPY";
+  return "GBP";
+}
+function parseAmount(s: string): number | null {
+  if (!s) return null;
+  const lower = s.toLowerCase();
+  let mult = 1;
+  if (/\bbn\b|billion/.test(lower)) mult = 1_000_000_000;
+  else if (/\bm\b|million/.test(lower)) mult = 1_000_000;
+  else if (/\bk\b|thousand/.test(lower)) mult = 1_000;
+  const num = lower.replace(/[^0-9.]/g, "");
+  if (!num) return null;
+  const n = parseFloat(num);
+  return isNaN(n) ? null : n * mult;
+}
+function formatGBP(amount: number): string {
+  if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(2)}bn`;
+  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(2)}m`;
+  if (amount >= 1_000) return `£${(amount / 1_000).toFixed(1)}k`;
+  return `£${Math.round(amount).toLocaleString()}`;
+}
+function toGBPDisplay(value: string): string {
+  if (!value) return "";
+  const cur = detectCurrency(value);
+  const amt = parseAmount(value);
+  if (amt === null) return value;
+  const rate = FX_TO_GBP[cur] ?? 1;
+  return formatGBP(amt * rate);
+}
+function toGBPNumber(value: string): number | null {
+  const cur = detectCurrency(value);
+  const amt = parseAmount(value);
+  if (amt === null) return null;
+  return amt * (FX_TO_GBP[cur] ?? 1);
+}
+function mapAnalystRating(r: string): string {
+  const v = (r || "").toLowerCase();
+  if (/strong buy|gold/.test(v)) return "Gold";
+  if (/buy|silver/.test(v)) return "Silver";
+  if (/hold|bronze/.test(v)) return "Bronze";
+  if (/sell|negative/.test(v)) return "Negative";
+  return "Neutral";
+}
 
 type ResearchPhase = "idle" | "scraping" | "analyzing" | "complete" | "error";
 
@@ -225,6 +401,17 @@ export function OpportunityResearchEngine() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
+  const [busyId, setBusyId] = useState<string | null>(null);
+  // Auto-scan
+  const [autoScanCategories, setAutoScanCategories] = useState<string[]>([]);
+  const [autoScanInterval, setAutoScanInterval] = useState<string>("60");
+  const [autoScanRunning, setAutoScanRunning] = useState(false);
+  const [autoScanLastRun, setAutoScanLastRun] = useState<string | null>(null);
+  const [autoScanNextRun, setAutoScanNextRun] = useState<string | null>(null);
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoIndexRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
 
   const opportunities = phase === "complete" ? parseOpportunities(aiOutput) : [];
@@ -330,6 +517,59 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     handleCopy(text, opp.name);
   }, [handleCopy]);
 
+  // Promote opportunity → opportunity_products (visible on platform Deal Intelligence / Opportunities)
+  const promoteOpportunity = useCallback(async (opp: ScrapedOpportunity) => {
+    const id = opp.name + (opp.source_url || "");
+    setBusyId(id);
+    try {
+      const cat = PROMOTE_CATEGORY_MAP[category] || "businesses";
+      const sub = subCategory || categoryConfig[category]?.label || "General";
+      const priceGBP = opp.estimated_value ? toGBPNumber(opp.estimated_value) : null;
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase.from("opportunity_products").insert({
+        title: opp.name,
+        short_description: (opp.description || "").slice(0, 500),
+        full_description: opp.description,
+        category: cat,
+        sub_category: sub,
+        price: priceGBP,
+        price_currency: "GBP",
+        location: opp.location || null,
+        country: opp.location || null,
+        thumbnail_url: opp.image_url || null,
+        gallery_images: opp.image_url ? [opp.image_url] : null,
+        analyst_rating: mapAnalystRating(opp.analyst_rating),
+        investment_thesis: opp.investment_thesis || null,
+        risks: opp.risk_level ? `${opp.risk_level} risk` : null,
+        product_details: {
+          source_url: opp.source_url,
+          source_website: opp.source_website,
+          projected_returns: opp.projected_returns,
+          key_metrics: opp.key_metrics,
+          scraped_date: opp.scraped_date,
+          original_value: opp.estimated_value,
+          promoted_via: "opportunity-research-engine",
+        },
+        status: "active",
+        uploaded_by: session?.user?.id ?? null,
+      });
+      if (error) throw error;
+      setPromotedIds(prev => new Set(prev).add(id));
+      toast.success(`✓ Promoted "${opp.name}" to platform Opportunities`);
+    } catch (err: any) {
+      console.error("Promote failed:", err);
+      toast.error(err.message || "Failed to promote");
+    } finally {
+      setBusyId(null);
+    }
+  }, [category, subCategory]);
+
+  const rejectOpportunity = useCallback((opp: ScrapedOpportunity) => {
+    const id = opp.name + (opp.source_url || "");
+    setRejectedIds(prev => new Set(prev).add(id));
+    toast.info(`Rejected "${opp.name}"`);
+  }, []);
+
   const handleDownload = useCallback(() => {
     if (!aiOutput) return;
     const header = `# FlowPulse Opportunity Research\n**Category:** ${sourceMetadata?.category || category}\n**Date:** ${sourceMetadata?.researchDate || new Date().toISOString()}\n\n---\n\n`;
@@ -345,11 +585,13 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     toast.success("Report downloaded!");
   }, [aiOutput, sourceMetadata, category]);
 
-  const handleResearch = async () => {
-    if (!category && !customQuery) {
+  const handleResearch = async (overrideCategory?: string) => {
+    const useCategory = overrideCategory ?? category;
+    if (!useCategory && !customQuery) {
       toast.error("Select a category or enter a custom query");
       return;
     }
+    if (overrideCategory) setCategory(overrideCategory);
 
     abortRef.current = new AbortController();
     setPhase("scraping");
@@ -375,7 +617,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            category: category || "stocks",
+            category: useCategory || "stocks",
             subCategory,
             customQuery: customQuery || undefined,
           }),
@@ -433,7 +675,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
       // Auto-save the scrape to database
       const finalOpps = parseOpportunities(accumulatedOutput);
       const finalContext = getMarketContext(accumulatedOutput);
-      saveScrapeToDb(category, subCategory, customQuery, capturedSourceMeta?.sources, finalOpps, accumulatedOutput, finalContext);
+      saveScrapeToDb(useCategory, subCategory, customQuery, capturedSourceMeta?.sources, finalOpps, accumulatedOutput, finalContext);
       toast.success("Research complete — individual opportunities found!");
     } catch (error: any) {
       if (error.name === "AbortError") return;
@@ -449,6 +691,42 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     setAiOutput("");
     setSourceMetadata(null);
   };
+
+  // Auto-scan: rotates through selected categories at the configured interval
+  const stopAutoScan = useCallback(() => {
+    if (autoTimerRef.current) {
+      clearInterval(autoTimerRef.current);
+      autoTimerRef.current = null;
+    }
+    setAutoScanRunning(false);
+    setAutoScanNextRun(null);
+    toast.info("Auto-scan stopped");
+  }, []);
+
+  const startAutoScan = useCallback(() => {
+    if (autoScanCategories.length === 0) {
+      toast.error("Select at least one category for auto-scan");
+      return;
+    }
+    const minutes = Math.max(1, parseInt(autoScanInterval) || 60);
+    setAutoScanRunning(true);
+    autoIndexRef.current = 0;
+
+    const runOnce = async () => {
+      const cat = autoScanCategories[autoIndexRef.current % autoScanCategories.length];
+      autoIndexRef.current += 1;
+      setAutoScanLastRun(new Date().toISOString());
+      setAutoScanNextRun(new Date(Date.now() + minutes * 60_000).toISOString());
+      toast.info(`Auto-scan running: ${categoryConfig[cat]?.label || cat}`);
+      try { await handleResearch(cat); } catch (e) { console.error(e); }
+    };
+
+    runOnce();
+    autoTimerRef.current = setInterval(runOnce, minutes * 60_000);
+    toast.success(`Auto-scan started (every ${minutes}m, ${autoScanCategories.length} categories)`);
+  }, [autoScanCategories, autoScanInterval]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => { if (autoTimerRef.current) clearInterval(autoTimerRef.current); }, []);
 
   const isRunning = phase === "scraping" || phase === "analyzing";
   const categoryData = category ? categoryConfig[category] : null;
@@ -543,7 +821,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
 
           <div className="flex items-center gap-3 pt-2">
             <Button
-              onClick={handleResearch}
+              onClick={() => handleResearch()}
               disabled={isRunning || (!category && !customQuery)}
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
             >
@@ -573,7 +851,90 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
         </CardContent>
       </Card>
 
-      {/* Progress */}
+      {/* Auto-Scrape Engine */}
+      <Card className="border-emerald-200 shadow-lg bg-gradient-to-br from-emerald-50/40 to-transparent">
+        <CardHeader className="border-b border-emerald-100">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Zap className="h-5 w-5 text-emerald-600" />
+            Auto-Scrape Engine
+            {autoScanRunning && (
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 ml-2 animate-pulse">
+                ● LIVE
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Continuously scan selected categories on a schedule. Promoted results flow into platform Opportunities automatically.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2 md:col-span-2">
+              <Label>Categories to auto-scan</Label>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border rounded-md bg-white">
+                {Object.entries(categoryConfig).map(([key, cfg]) => {
+                  const active = autoScanCategories.includes(key);
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setAutoScanCategories(prev =>
+                        active ? prev.filter(c => c !== key) : [...prev, key]
+                      )}
+                      disabled={autoScanRunning}
+                      className={`px-2.5 py-1 rounded-md text-xs border transition ${
+                        active
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-emerald-400"
+                      } disabled:opacity-50`}
+                    >
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-slate-500">{autoScanCategories.length} selected</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Interval</Label>
+              <Select value={autoScanInterval} onValueChange={setAutoScanInterval} disabled={autoScanRunning}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">Every 15 minutes</SelectItem>
+                  <SelectItem value="30">Every 30 minutes</SelectItem>
+                  <SelectItem value="60">Every hour</SelectItem>
+                  <SelectItem value="180">Every 3 hours</SelectItem>
+                  <SelectItem value="360">Every 6 hours</SelectItem>
+                  <SelectItem value="720">Every 12 hours</SelectItem>
+                  <SelectItem value="1440">Daily</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2 pt-1">
+                {!autoScanRunning ? (
+                  <Button
+                    onClick={startAutoScan}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full"
+                    disabled={autoScanCategories.length === 0 || isRunning}
+                  >
+                    <Zap className="h-4 w-4 mr-2" /> Start Auto-Scan
+                  </Button>
+                ) : (
+                  <Button onClick={stopAutoScan} variant="destructive" className="w-full">
+                    <XCircle className="h-4 w-4 mr-2" /> Stop
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+          {autoScanRunning && (
+            <div className="text-xs text-slate-600 flex items-center gap-4 pt-2 border-t">
+              {autoScanLastRun && <span>Last run: {new Date(autoScanLastRun).toLocaleTimeString()}</span>}
+              {autoScanNextRun && <span>Next run: {new Date(autoScanNextRun).toLocaleTimeString()}</span>}
+              <span>Cycle position: {autoIndexRef.current % Math.max(1, autoScanCategories.length) + 1}/{autoScanCategories.length}</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       {isRunning && (
         <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
           <CardContent className="py-6">
@@ -736,7 +1097,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
                     {opp.estimated_value && (
                       <div className="flex items-center gap-1.5 text-slate-700">
                         <DollarSign className="h-3.5 w-3.5 text-green-600" />
-                        <span className="truncate">{opp.estimated_value}</span>
+                        <span className="truncate font-semibold">{toGBPDisplay(opp.estimated_value)}</span>
                       </div>
                     )}
                     {opp.location && (
@@ -812,25 +1173,58 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
                     </div>
                   </div>
 
-                  {/* Copy button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full gap-1.5 text-xs"
-                    onClick={() => copyOpportunityForUpload(opp)}
-                  >
-                    {copiedId === opp.name ? (
-                      <>
-                        <Check className="h-3 w-3 text-green-600" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" />
-                        Copy for Opportunity Upload
-                      </>
-                    )}
-                  </Button>
+                  {/* Action buttons */}
+                  {(() => {
+                    const oppId = opp.name + (opp.source_url || "");
+                    const isPromoted = promotedIds.has(oppId);
+                    const isRejected = rejectedIds.has(oppId);
+                    const isBusy = busyId === oppId;
+                    return (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-xs"
+                            onClick={() => promoteOpportunity(opp)}
+                            disabled={isPromoted || isRejected || isBusy}
+                          >
+                            {isPromoted ? (
+                              <><CheckCircle2 className="h-3.5 w-3.5" /> Promoted</>
+                            ) : isBusy ? (
+                              <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Promoting…</>
+                            ) : (
+                              <><Sparkles className="h-3.5 w-3.5" /> Promote</>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 text-xs border-red-200 text-red-700 hover:bg-red-50"
+                            onClick={() => rejectOpportunity(opp)}
+                            disabled={isPromoted || isRejected}
+                          >
+                            {isRejected ? (
+                              <><XCircle className="h-3.5 w-3.5" /> Rejected</>
+                            ) : (
+                              <><XCircle className="h-3.5 w-3.5" /> Reject</>
+                            )}
+                          </Button>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full gap-1.5 text-xs"
+                          onClick={() => copyOpportunityForUpload(opp)}
+                        >
+                          {copiedId === opp.name ? (
+                            <><Check className="h-3 w-3 text-green-600" /> Copied!</>
+                          ) : (
+                            <><Copy className="h-3 w-3" /> Copy for Manual Upload</>
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             ))}
