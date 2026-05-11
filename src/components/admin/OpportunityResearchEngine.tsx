@@ -617,7 +617,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            category: category || "stocks",
+            category: useCategory || "stocks",
             subCategory,
             customQuery: customQuery || undefined,
           }),
