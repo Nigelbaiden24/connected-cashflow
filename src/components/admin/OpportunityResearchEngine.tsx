@@ -134,7 +134,183 @@ const categoryConfig: Record<string, { label: string; icon: any; subCategories: 
     icon: Gem,
     subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"],
   },
+  fixed_income: {
+    label: "Fixed Income & Bonds",
+    icon: BarChart3,
+    subCategories: ["UK Gilts", "US Treasuries", "Corporate Bonds", "High Yield", "Emerging Market Debt", "Inflation-Linked"],
+  },
+  fx: {
+    label: "Foreign Exchange",
+    icon: DollarSign,
+    subCategories: ["Major Pairs", "Minor Pairs", "Exotics", "FX Carry", "FX Hedging"],
+  },
+  alternatives: {
+    label: "Alternative Investments",
+    icon: Gem,
+    subCategories: ["Hedge Funds", "Fine Art", "Wine", "Collectibles", "Farmland", "Litigation Finance"],
+  },
+  esg: {
+    label: "ESG & Impact Investing",
+    icon: Sparkles,
+    subCategories: ["Climate", "Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Infrastructure"],
+  },
+  venture_capital: {
+    label: "Venture Capital",
+    icon: TrendingUp,
+    subCategories: ["Pre-Seed", "Seed", "Series A", "Series B+", "Growth", "Deep Tech"],
+  },
+  sme_acquisitions: {
+    label: "SME Acquisitions",
+    icon: Briefcase,
+    subCategories: ["Owner-Managed", "Search Funds", "Bolt-Ons", "Distressed SME", "Cross-Border"],
+  },
+  distressed_assets: {
+    label: "Distressed Assets",
+    icon: AlertTriangle,
+    subCategories: ["Distressed Debt", "Special Situations", "Restructuring", "NPLs", "Turnaround"],
+  },
+  debt_lending: {
+    label: "Debt & Lending",
+    icon: DollarSign,
+    subCategories: ["Private Credit", "Direct Lending", "Mezzanine", "Asset-Backed Lending", "Bridge Loans"],
+  },
+  fractional_pe_vc: {
+    label: "Fractional PE / VC",
+    icon: Briefcase,
+    subCategories: ["Crowdcube", "Seedrs", "AngelList Syndicates", "Republic", "Wefunder", "Moonfare"],
+  },
+  private_market_platforms: {
+    label: "Private Market Platforms",
+    icon: Globe,
+    subCategories: ["Pre-IPO Secondaries", "Forge Global", "EquityZen", "Hiive", "Carta X"],
+  },
+  derivatives: {
+    label: "Derivatives",
+    icon: BarChart3,
+    subCategories: ["Options", "Futures", "Swaps", "Structured Products", "CFDs"],
+  },
+  capital_protected_notes: {
+    label: "Capital-Protected & Income Notes",
+    icon: Building2,
+    subCategories: ["100% Capital Protected", "Income Notes", "Autocalls", "Reverse Convertibles"],
+  },
+  savings_cash_yield: {
+    label: "Savings, Cash & Yield",
+    icon: DollarSign,
+    subCategories: ["High-Yield Savings", "Money Market", "Cash ISAs", "Notice Accounts", "Fixed-Term Bonds"],
+  },
+  pensions_tax_wrappers: {
+    label: "Pensions & Tax Wrappers",
+    icon: Briefcase,
+    subCategories: ["SIPPs", "Stocks & Shares ISAs", "LISAs", "JISAs", "VCT", "EIS/SEIS"],
+  },
+  thematics_packaged: {
+    label: "Thematics & Packaged",
+    icon: Sparkles,
+    subCategories: ["AI & Robotics", "Clean Energy", "Cybersecurity", "Genomics", "Space", "Megatrends"],
+  },
+  copy_trading: {
+    label: "Copy Trading",
+    icon: TrendingUp,
+    subCategories: ["eToro", "ZuluTrade", "NAGA", "Pepperstone Social", "DupliTrade"],
+  },
+  music_royalties: {
+    label: "Music Royalties",
+    icon: Star,
+    subCategories: ["Royalty Exchange", "ANote Music", "SongVest", "Catalogue Acquisitions", "Streaming Royalties"],
+  },
 };
+
+// Map UI category key to opportunity_products allowed category enum
+const PROMOTE_CATEGORY_MAP: Record<string, string> = {
+  uk_property: "uk_property",
+  overseas_property: "overseas_property",
+  property_opportunities: "real_estate",
+  vehicles: "vehicles",
+  businesses: "businesses",
+  sme_acquisitions: "private_business",
+  startup_funding: "private_equity",
+  venture_capital: "private_equity",
+  private_equity: "private_equity",
+  fractional_pe_vc: "private_equity",
+  private_market_platforms: "private_equity",
+  crowdfunding: "private_equity",
+  distressed_assets: "private_equity",
+  debt_lending: "private_equity",
+  stocks: "stocks",
+  derivatives: "stocks",
+  copy_trading: "stocks",
+  thematics_packaged: "stocks",
+  crypto: "crypto",
+  blockchain: "crypto",
+  memorabilia: "memorabilia",
+  timepieces: "collectibles_luxury",
+  alternatives: "collectibles_luxury",
+  music_royalties: "collectibles_luxury",
+  commodities: "commodities",
+  infrastructure: "commodities",
+  fx: "commodities",
+  funds: "funds",
+  fixed_income: "funds",
+  esg: "funds",
+  capital_protected_notes: "funds",
+  savings_cash_yield: "funds",
+  pensions_tax_wrappers: "funds",
+};
+
+// FX rates (approximate static — converts to GBP for display & DB price)
+const FX_TO_GBP: Record<string, number> = {
+  GBP: 1, USD: 0.79, EUR: 0.85, CHF: 0.88, CAD: 0.58, AUD: 0.52, JPY: 0.0052, HKD: 0.10, SGD: 0.59,
+};
+function detectCurrency(s: string): string {
+  if (!s) return "GBP";
+  if (/£|gbp/i.test(s)) return "GBP";
+  if (/€|eur/i.test(s)) return "EUR";
+  if (/\$|usd/i.test(s)) return "USD";
+  if (/chf/i.test(s)) return "CHF";
+  if (/¥|jpy/i.test(s)) return "JPY";
+  return "GBP";
+}
+function parseAmount(s: string): number | null {
+  if (!s) return null;
+  const lower = s.toLowerCase();
+  let mult = 1;
+  if (/\bbn\b|billion/.test(lower)) mult = 1_000_000_000;
+  else if (/\bm\b|million/.test(lower)) mult = 1_000_000;
+  else if (/\bk\b|thousand/.test(lower)) mult = 1_000;
+  const num = lower.replace(/[^0-9.]/g, "");
+  if (!num) return null;
+  const n = parseFloat(num);
+  return isNaN(n) ? null : n * mult;
+}
+function formatGBP(amount: number): string {
+  if (amount >= 1_000_000_000) return `£${(amount / 1_000_000_000).toFixed(2)}bn`;
+  if (amount >= 1_000_000) return `£${(amount / 1_000_000).toFixed(2)}m`;
+  if (amount >= 1_000) return `£${(amount / 1_000).toFixed(1)}k`;
+  return `£${Math.round(amount).toLocaleString()}`;
+}
+function toGBPDisplay(value: string): string {
+  if (!value) return "";
+  const cur = detectCurrency(value);
+  const amt = parseAmount(value);
+  if (amt === null) return value;
+  const rate = FX_TO_GBP[cur] ?? 1;
+  return formatGBP(amt * rate);
+}
+function toGBPNumber(value: string): number | null {
+  const cur = detectCurrency(value);
+  const amt = parseAmount(value);
+  if (amt === null) return null;
+  return amt * (FX_TO_GBP[cur] ?? 1);
+}
+function mapAnalystRating(r: string): string {
+  const v = (r || "").toLowerCase();
+  if (/strong buy|gold/.test(v)) return "Gold";
+  if (/buy|silver/.test(v)) return "Silver";
+  if (/hold|bronze/.test(v)) return "Bronze";
+  if (/sell|negative/.test(v)) return "Negative";
+  return "Neutral";
+}
 
 type ResearchPhase = "idle" | "scraping" | "analyzing" | "complete" | "error";
 
