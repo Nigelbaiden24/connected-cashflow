@@ -442,65 +442,66 @@ export function FinancialResearchScraper() {
       status: 'pending' as const,
     })));
 
-    // Scrape each platform using the scrapeAll option to get all research URLs
-    for (const platform of platformsToScrape) {
-      try {
-        const { data, error } = await supabase.functions.invoke('financial-research-scraper', {
-          body: { 
-            platformName: platform.id, 
-            scrapeAll: true  // This tells the backend to scrape all research URLs for the platform
-          }
-        });
+    // PARALLEL — fan out all platform scrapes at once
+    const results = await Promise.allSettled(
+      platformsToScrape.map((platform) =>
+        supabase.functions
+          .invoke("financial-research-scraper", {
+            body: { platformName: platform.id, scrapeAll: true },
+          })
+          .then(({ data, error }) => ({ platform, data, error }))
+      )
+    );
 
-        if (error) throw error;
-
-        const urlCount = data.scrapedUrls?.length || 0;
-        const totalUrls = data.totalUrls || 0;
-
-        setScrapedData(prev => prev.map(item =>
+    let okCount = 0;
+    for (const r of results) {
+      if (r.status !== "fulfilled") continue;
+      const { platform, data, error } = r.value;
+      if (error || !data?.success) {
+        setScrapedData((prev) =>
+          prev.map((item) =>
+            item.platform === platform.name
+              ? {
+                  ...item,
+                  status: "error" as const,
+                  error: data?.error || error?.message || "Source temporarily unreachable",
+                }
+              : item
+          )
+        );
+        continue;
+      }
+      okCount++;
+      setScrapedData((prev) =>
+        prev.map((item) =>
           item.platform === platform.name
             ? {
                 ...item,
                 content: data.content || "No content extracted",
-                status: data.success ? 'success' as const : 'error' as const,
+                status: "success" as const,
                 scrapedAt: new Date().toISOString(),
-                error: data.success ? undefined : data.error,
                 scrapedUrls: data.scrapedUrls || [],
                 totalUrls: data.totalUrls || 0,
               }
             : item
-        ));
-
-        if (data.success) {
-          toast.success(`${platform.name}: Scraped ${data.scrapedUrls?.length || 0}/${data.totalUrls || 0} research pages`);
-          saveScrapeResult({
-            source: "financial-research",
-            platform: "finance",
-            title: `${platform.name} — research pages`,
-            category: platform.name,
-            payload: data,
-            sources: data.scrapedUrls,
-            opportunitiesCount: data.scrapedUrls?.length || 0,
-            rawOutput: data.content,
-          });
-        }
-      } catch (error) {
-        console.error(`Error scraping ${platform.name}:`, error);
-        setScrapedData(prev => prev.map(item =>
-          item.platform === platform.name
-            ? {
-                ...item,
-                status: 'error' as const,
-                error: error instanceof Error ? error.message : "Failed to scrape",
-              }
-            : item
-        ));
-      }
+        )
+      );
+      saveScrapeResult({
+        source: "financial-research",
+        platform: "finance",
+        title: `${platform.name} — research pages`,
+        category: platform.name,
+        payload: data,
+        sources: data.scrapedUrls,
+        opportunitiesCount: data.scrapedUrls?.length || 0,
+        rawOutput: data.content,
+      });
     }
 
     setIsScrapingInProgress(false);
-    const successCount = scrapedData.filter(d => d.status === 'success').length;
-    toast.success(`Scraping completed! ${successCount}/${platformsToScrape.length} platforms scraped successfully`);
+    if (okCount > 0)
+      toast.success(`Scraping completed — ${okCount}/${platformsToScrape.length} platforms`);
+    else toast.message("Sources were slow — partial results returned");
   };
 
   const generateAIReport = async () => {
