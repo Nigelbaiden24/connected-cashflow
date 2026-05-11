@@ -24,16 +24,47 @@ serve(async (req) => {
     );
 
     // Pull today's universe from stocks_crypto (finance/investor sidebar feed)
-    const { data: universe } = await supabase
+    const { data: dbUniverse } = await supabase
       .from("stocks_crypto")
       .select("id,symbol,name,asset_type,sector,industry,current_price,market_cap,price_change_24h,price_change_7d,price_change_30d,price_change_1y,logo_url,overall_score,analyst_rating")
       .order("market_cap", { ascending: false, nullsFirst: false })
       .limit(180);
 
-    if (!universe?.length) {
-      return new Response(JSON.stringify({ ok: false, error: "Universe empty. Publish stocks/crypto first." }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    // Fallback curated universe so scans always run, even before admin publishes the live table
+    const fallbackUniverse = [
+      { symbol: "AAPL", name: "Apple Inc.", asset_type: "stock", sector: "Technology" },
+      { symbol: "MSFT", name: "Microsoft Corporation", asset_type: "stock", sector: "Technology" },
+      { symbol: "NVDA", name: "NVIDIA Corporation", asset_type: "stock", sector: "Semiconductors" },
+      { symbol: "GOOGL", name: "Alphabet Inc.", asset_type: "stock", sector: "Technology" },
+      { symbol: "AMZN", name: "Amazon.com Inc.", asset_type: "stock", sector: "Consumer Discretionary" },
+      { symbol: "META", name: "Meta Platforms Inc.", asset_type: "stock", sector: "Technology" },
+      { symbol: "TSLA", name: "Tesla Inc.", asset_type: "stock", sector: "Automotive" },
+      { symbol: "BRK.B", name: "Berkshire Hathaway", asset_type: "stock", sector: "Financials" },
+      { symbol: "JPM", name: "JPMorgan Chase", asset_type: "stock", sector: "Financials" },
+      { symbol: "V", name: "Visa Inc.", asset_type: "stock", sector: "Financials" },
+      { symbol: "UNH", name: "UnitedHealth Group", asset_type: "stock", sector: "Healthcare" },
+      { symbol: "LLY", name: "Eli Lilly", asset_type: "stock", sector: "Pharmaceuticals" },
+      { symbol: "XOM", name: "Exxon Mobil", asset_type: "stock", sector: "Energy" },
+      { symbol: "AVGO", name: "Broadcom Inc.", asset_type: "stock", sector: "Semiconductors" },
+      { symbol: "ASML", name: "ASML Holding", asset_type: "stock", sector: "Semiconductors" },
+      { symbol: "TSM", name: "Taiwan Semiconductor", asset_type: "stock", sector: "Semiconductors" },
+      { symbol: "COST", name: "Costco Wholesale", asset_type: "stock", sector: "Consumer Staples" },
+      { symbol: "NFLX", name: "Netflix Inc.", asset_type: "stock", sector: "Communication Services" },
+      { symbol: "AMD", name: "Advanced Micro Devices", asset_type: "stock", sector: "Semiconductors" },
+      { symbol: "ORCL", name: "Oracle Corporation", asset_type: "stock", sector: "Technology" },
+      { symbol: "BTC", name: "Bitcoin", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "ETH", name: "Ethereum", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "SOL", name: "Solana", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "BNB", name: "Binance Coin", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "XRP", name: "XRP", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "ADA", name: "Cardano", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "AVAX", name: "Avalanche", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "LINK", name: "Chainlink", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "DOT", name: "Polkadot", asset_type: "crypto", sector: "Cryptocurrency" },
+      { symbol: "MATIC", name: "Polygon", asset_type: "crypto", sector: "Cryptocurrency" },
+    ].map((x, i) => ({ id: `fallback-${i}-${x.symbol}`, ...x, logo_url: null, current_price: null, market_cap: null }));
+
+    const universe = (dbUniverse && dbUniverse.length > 0) ? dbUniverse : fallbackUniverse;
 
     const sys = `You are an elite multi-asset analyst (institutional grade). Pick the top ${count} highest-conviction stocks and crypto from the supplied universe for TODAY. Judge PAST performance and FUTURE outlook with rigour. Score conviction strictly 0–5. Pick ONLY ids supplied. Output strict JSON.`;
     const user = `Universe (${universe.length}): ${JSON.stringify(universe).slice(0, 120000)}\n\nReturn JSON: {"picks":[{"id":"<id>","symbol":"...","name":"...","asset_type":"stock|crypto","activity_type":"ai_pick","headline":"<one-line catchy headline like a Bloomberg alert>","summary":"2-3 sentence punchy commentary","analyst_rating":"Gold|Silver|Bronze|Neutral|Negative","conviction_score":0-5,"past_performance":"1-2 sentences on recent track record (24h, 30d, 1y)","future_outlook":"2-3 sentences on near to mid term outlook with specifics","catalysts":["...","..."],"risks":["...","..."]}]}`;
