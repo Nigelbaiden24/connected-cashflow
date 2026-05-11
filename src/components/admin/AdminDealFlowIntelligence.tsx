@@ -45,6 +45,70 @@ export function AdminDealFlowIntelligence() {
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [targetPlatform, setTargetPlatform] = useState<"finance" | "investor" | "both">("both");
   const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+  const [manual, setManual] = useState({
+    title: "",
+    summary: "",
+    event_type: "funding_round",
+    funding_stage: "",
+    amount_value: "",
+    amount_currency: "GBP",
+    source_url: "",
+  });
+
+  const reject = async (e: IntelEvent) => {
+    setRejectingId(e.id);
+    try {
+      const { error } = await supabase.from("intel_events").update({ status: "rejected" }).eq("id", e.id);
+      if (error) throw error;
+      setRejectedIds((s) => new Set(s).add(e.id));
+      setEvents((evs) => evs.map((x) => (x.id === e.id ? { ...x, status: "rejected" } : x)));
+      toast.success("Deal rejected");
+    } catch (err: any) {
+      toast.error(`Reject failed: ${err.message ?? err}`);
+    } finally {
+      setRejectingId(null);
+    }
+  };
+
+  const addManualDeal = async () => {
+    if (!manual.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    setAddSaving(true);
+    try {
+      const amt = manual.amount_value ? Number(manual.amount_value.replace(/[^0-9.]/g, "")) : null;
+      const { data, error } = await supabase.from("intel_events").insert({
+        title: manual.title.trim(),
+        summary: manual.summary || null,
+        event_type: manual.event_type || "manual",
+        funding_stage: manual.funding_stage || null,
+        amount_value: amt,
+        amount_currency: manual.amount_currency || "GBP",
+        source_url: manual.source_url || null,
+        status: "new",
+        confidence: "high",
+        confidence_score: 0.9,
+        raw_data: { source: "manual_admin_entry" } as any,
+        structured_data: { source: "manual_admin_entry" } as any,
+      }).select().single();
+      if (error) throw error;
+      toast.success("Manual deal added");
+      setAddOpen(false);
+      setManual({ title: "", summary: "", event_type: "funding_round", funding_stage: "", amount_value: "", amount_currency: "GBP", source_url: "" });
+      await load();
+      // Auto-promote if user wants — leave to manual click. Surface row.
+      void data;
+    } catch (err: any) {
+      toast.error(`Add failed: ${err.message ?? err}`);
+    } finally {
+      setAddSaving(false);
+    }
+  };
 
   const promote = async (e: IntelEvent) => {
     setPromotingId(e.id);
