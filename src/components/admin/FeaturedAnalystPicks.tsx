@@ -293,6 +293,13 @@ export function FeaturedAnalystPicks() {
 
   return (
     <div className="space-y-6">
+      <AIElitePicksPanel
+        mode="picks"
+        title="AI Featured Picks (Finance Universe)"
+        description="Elite AI picks the top 5 highest-conviction items from your published Finance funds, stocks & crypto and explains why."
+        count={5}
+        onComplete={fetchPicks}
+      />
       {/* Header */}
       <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
         <CardHeader>
@@ -309,10 +316,6 @@ export function FeaturedAnalystPicks() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={handleAiAutoPick} disabled={aiPicking} variant="outline" className="gap-2">
-                {aiPicking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                AI Auto-Pick (Finance Universe)
-              </Button>
               <Button onClick={handleCreate} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Add Pick
