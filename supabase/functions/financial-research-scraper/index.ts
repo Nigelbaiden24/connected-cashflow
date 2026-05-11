@@ -455,25 +455,27 @@ async function scrapeCategoryUrls(categoryKey: string) {
     } catch {}
   }
 
-  // PHASE 2 — web search (already parallel internally)
-  try {
-    const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 12);
-    console.log(`[category:${categoryKey}] search returned ${hits.length} hits`);
-    for (const h of hits.slice(0, 30)) {
-      const md = (h as any).markdown || (h as any).content || '';
-      if (md && md.length > 300) {
-        combinedContent += `\n\n### Article: ${h.title ?? h.url}\nURL: ${h.url}\n\n${md.slice(0, 9000)}`;
-        scrapedUrls.push(h.url);
-      } else {
-        articleHits.push({ url: h.url, title: h.title });
+  // PHASE 2 — quick web search (single round, capped) — only if we have time budget
+  if (combinedContent.length < 5000) {
+    try {
+      const hits = await firecrawlCategorySearch(firecrawlApiKey, label, 6);
+      console.log(`[category:${categoryKey}] search returned ${hits.length} hits`);
+      for (const h of hits.slice(0, 12)) {
+        const md = (h as any).markdown || (h as any).content || '';
+        if (md && md.length > 300) {
+          combinedContent += `\n\n### Article: ${h.title ?? h.url}\nURL: ${h.url}\n\n${md.slice(0, 9000)}`;
+          scrapedUrls.push(h.url);
+        } else {
+          articleHits.push({ url: h.url, title: h.title });
+        }
       }
+    } catch (e) {
+      errors.push(`Search phase failed: ${e instanceof Error ? e.message : 'unknown'}`);
     }
-  } catch (e) {
-    errors.push(`Search phase failed: ${e instanceof Error ? e.message : 'unknown'}`);
   }
 
-  // PHASE 3 — parallel deep scrape of remaining article candidates
-  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 20);
+  // PHASE 3 — parallel deep scrape of remaining article candidates (capped to 8)
+  const dedupeArticles = Array.from(new Map(articleHits.map((a) => [a.url, a])).values()).slice(0, 8);
   const deepResults = await Promise.allSettled(dedupeArticles.map((a) => scrapeOne(a.url, true)));
   for (const r of deepResults) {
     if (r.status !== 'fulfilled' || !r.value.ok) continue;
