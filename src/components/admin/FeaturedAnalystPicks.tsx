@@ -28,6 +28,7 @@ import {
   BarChart3
 } from "lucide-react";
 import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
+import { AIElitePicksPanel } from "./AIElitePicksPanel";
 
 interface AnalystPick {
   id: string;
