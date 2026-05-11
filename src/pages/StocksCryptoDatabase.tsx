@@ -485,6 +485,10 @@ export default function StocksCryptoDatabase() {
               onSelectAsset={setSelectedAsset}
             />
           </TabsContent>
+
+          <TabsContent value="analyst-activity" className="mt-0">
+            <AnalystActivityFeed platform={typeof window !== 'undefined' && window.location.pathname.startsWith('/investor') ? 'investor' : 'finance'} />
+          </TabsContent>
         </Tabs>
       </div>
 
