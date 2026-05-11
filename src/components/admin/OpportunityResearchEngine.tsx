@@ -517,6 +517,59 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     handleCopy(text, opp.name);
   }, [handleCopy]);
 
+  // Promote opportunity → opportunity_products (visible on platform Deal Intelligence / Opportunities)
+  const promoteOpportunity = useCallback(async (opp: ScrapedOpportunity) => {
+    const id = opp.name + (opp.source_url || "");
+    setBusyId(id);
+    try {
+      const cat = PROMOTE_CATEGORY_MAP[category] || "businesses";
+      const sub = subCategory || categoryConfig[category]?.label || "General";
+      const priceGBP = opp.estimated_value ? toGBPNumber(opp.estimated_value) : null;
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase.from("opportunity_products").insert({
+        title: opp.name,
+        short_description: (opp.description || "").slice(0, 500),
+        full_description: opp.description,
+        category: cat,
+        sub_category: sub,
+        price: priceGBP,
+        price_currency: "GBP",
+        location: opp.location || null,
+        country: opp.location || null,
+        thumbnail_url: opp.image_url || null,
+        gallery_images: opp.image_url ? [opp.image_url] : null,
+        analyst_rating: mapAnalystRating(opp.analyst_rating),
+        investment_thesis: opp.investment_thesis || null,
+        risks: opp.risk_level ? `${opp.risk_level} risk` : null,
+        product_details: {
+          source_url: opp.source_url,
+          source_website: opp.source_website,
+          projected_returns: opp.projected_returns,
+          key_metrics: opp.key_metrics,
+          scraped_date: opp.scraped_date,
+          original_value: opp.estimated_value,
+          promoted_via: "opportunity-research-engine",
+        },
+        status: "active",
+        uploaded_by: session?.user?.id ?? null,
+      });
+      if (error) throw error;
+      setPromotedIds(prev => new Set(prev).add(id));
+      toast.success(`✓ Promoted "${opp.name}" to platform Opportunities`);
+    } catch (err: any) {
+      console.error("Promote failed:", err);
+      toast.error(err.message || "Failed to promote");
+    } finally {
+      setBusyId(null);
+    }
+  }, [category, subCategory]);
+
+  const rejectOpportunity = useCallback((opp: ScrapedOpportunity) => {
+    const id = opp.name + (opp.source_url || "");
+    setRejectedIds(prev => new Set(prev).add(id));
+    toast.info(`Rejected "${opp.name}"`);
+  }, []);
+
   const handleDownload = useCallback(() => {
     if (!aiOutput) return;
     const header = `# FlowPulse Opportunity Research\n**Category:** ${sourceMetadata?.category || category}\n**Date:** ${sourceMetadata?.researchDate || new Date().toISOString()}\n\n---\n\n`;
