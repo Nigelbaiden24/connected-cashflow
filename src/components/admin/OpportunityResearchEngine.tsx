@@ -851,7 +851,90 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
         </CardContent>
       </Card>
 
-      {/* Progress */}
+      {/* Auto-Scrape Engine */}
+      <Card className="border-emerald-200 shadow-lg bg-gradient-to-br from-emerald-50/40 to-transparent">
+        <CardHeader className="border-b border-emerald-100">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Zap className="h-5 w-5 text-emerald-600" />
+            Auto-Scrape Engine
+            {autoScanRunning && (
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 ml-2 animate-pulse">
+                ● LIVE
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Continuously scan selected categories on a schedule. Promoted results flow into platform Opportunities automatically.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2 md:col-span-2">
+              <Label>Categories to auto-scan</Label>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border rounded-md bg-white">
+                {Object.entries(categoryConfig).map(([key, cfg]) => {
+                  const active = autoScanCategories.includes(key);
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setAutoScanCategories(prev =>
+                        active ? prev.filter(c => c !== key) : [...prev, key]
+                      )}
+                      disabled={autoScanRunning}
+                      className={`px-2.5 py-1 rounded-md text-xs border transition ${
+                        active
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-emerald-400"
+                      } disabled:opacity-50`}
+                    >
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-slate-500">{autoScanCategories.length} selected</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Interval</Label>
+              <Select value={autoScanInterval} onValueChange={setAutoScanInterval} disabled={autoScanRunning}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">Every 15 minutes</SelectItem>
+                  <SelectItem value="30">Every 30 minutes</SelectItem>
+                  <SelectItem value="60">Every hour</SelectItem>
+                  <SelectItem value="180">Every 3 hours</SelectItem>
+                  <SelectItem value="360">Every 6 hours</SelectItem>
+                  <SelectItem value="720">Every 12 hours</SelectItem>
+                  <SelectItem value="1440">Daily</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2 pt-1">
+                {!autoScanRunning ? (
+                  <Button
+                    onClick={startAutoScan}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white w-full"
+                    disabled={autoScanCategories.length === 0 || isRunning}
+                  >
+                    <Zap className="h-4 w-4 mr-2" /> Start Auto-Scan
+                  </Button>
+                ) : (
+                  <Button onClick={stopAutoScan} variant="destructive" className="w-full">
+                    <XCircle className="h-4 w-4 mr-2" /> Stop
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+          {autoScanRunning && (
+            <div className="text-xs text-slate-600 flex items-center gap-4 pt-2 border-t">
+              {autoScanLastRun && <span>Last run: {new Date(autoScanLastRun).toLocaleTimeString()}</span>}
+              {autoScanNextRun && <span>Next run: {new Date(autoScanNextRun).toLocaleTimeString()}</span>}
+              <span>Cycle position: {autoIndexRef.current % Math.max(1, autoScanCategories.length) + 1}/{autoScanCategories.length}</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       {isRunning && (
         <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
           <CardContent className="py-6">
