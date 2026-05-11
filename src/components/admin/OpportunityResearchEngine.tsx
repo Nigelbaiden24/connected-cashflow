@@ -692,6 +692,42 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     setSourceMetadata(null);
   };
 
+  // Auto-scan: rotates through selected categories at the configured interval
+  const stopAutoScan = useCallback(() => {
+    if (autoTimerRef.current) {
+      clearInterval(autoTimerRef.current);
+      autoTimerRef.current = null;
+    }
+    setAutoScanRunning(false);
+    setAutoScanNextRun(null);
+    toast.info("Auto-scan stopped");
+  }, []);
+
+  const startAutoScan = useCallback(() => {
+    if (autoScanCategories.length === 0) {
+      toast.error("Select at least one category for auto-scan");
+      return;
+    }
+    const minutes = Math.max(1, parseInt(autoScanInterval) || 60);
+    setAutoScanRunning(true);
+    autoIndexRef.current = 0;
+
+    const runOnce = async () => {
+      const cat = autoScanCategories[autoIndexRef.current % autoScanCategories.length];
+      autoIndexRef.current += 1;
+      setAutoScanLastRun(new Date().toISOString());
+      setAutoScanNextRun(new Date(Date.now() + minutes * 60_000).toISOString());
+      toast.info(`Auto-scan running: ${categoryConfig[cat]?.label || cat}`);
+      try { await handleResearch(cat); } catch (e) { console.error(e); }
+    };
+
+    runOnce();
+    autoTimerRef.current = setInterval(runOnce, minutes * 60_000);
+    toast.success(`Auto-scan started (every ${minutes}m, ${autoScanCategories.length} categories)`);
+  }, [autoScanCategories, autoScanInterval]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => { if (autoTimerRef.current) clearInterval(autoTimerRef.current); }, []);
+
   const isRunning = phase === "scraping" || phase === "analyzing";
   const categoryData = category ? categoryConfig[category] : null;
 
