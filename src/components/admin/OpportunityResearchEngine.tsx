@@ -675,7 +675,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
       // Auto-save the scrape to database
       const finalOpps = parseOpportunities(accumulatedOutput);
       const finalContext = getMarketContext(accumulatedOutput);
-      saveScrapeToDb(category, subCategory, customQuery, capturedSourceMeta?.sources, finalOpps, accumulatedOutput, finalContext);
+      saveScrapeToDb(useCategory, subCategory, customQuery, capturedSourceMeta?.sources, finalOpps, accumulatedOutput, finalContext);
       toast.success("Research complete — individual opportunities found!");
     } catch (error: any) {
       if (error.name === "AbortError") return;
