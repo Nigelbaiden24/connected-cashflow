@@ -6,9 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Play, RefreshCw, Activity, AlertTriangle, CheckCircle2, ExternalLink, Rocket } from "lucide-react";
+import { Loader2, Play, RefreshCw, Activity, AlertTriangle, CheckCircle2, ExternalLink, Rocket, X, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { autoPromoteScrape } from "@/lib/autoPromoteScrape";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface IntelEvent {
   id: string;
@@ -41,6 +45,70 @@ export function AdminDealFlowIntelligence() {
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [targetPlatform, setTargetPlatform] = useState<"finance" | "investor" | "both">("both");
   const [promotedIds, setPromotedIds] = useState<Set<string>>(new Set());
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+  const [manual, setManual] = useState({
+    title: "",
+    summary: "",
+    event_type: "funding_round",
+    funding_stage: "",
+    amount_value: "",
+    amount_currency: "GBP",
+    source_url: "",
+  });
+
+  const reject = async (e: IntelEvent) => {
+    setRejectingId(e.id);
+    try {
+      const { error } = await supabase.from("intel_events").update({ status: "rejected" }).eq("id", e.id);
+      if (error) throw error;
+      setRejectedIds((s) => new Set(s).add(e.id));
+      setEvents((evs) => evs.map((x) => (x.id === e.id ? { ...x, status: "rejected" } : x)));
+      toast.success("Deal rejected");
+    } catch (err: any) {
+      toast.error(`Reject failed: ${err.message ?? err}`);
+    } finally {
+      setRejectingId(null);
+    }
+  };
+
+  const addManualDeal = async () => {
+    if (!manual.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    setAddSaving(true);
+    try {
+      const amt = manual.amount_value ? Number(manual.amount_value.replace(/[^0-9.]/g, "")) : null;
+      const { data, error } = await supabase.from("intel_events").insert({
+        title: manual.title.trim(),
+        summary: manual.summary || null,
+        event_type: manual.event_type || "manual",
+        funding_stage: manual.funding_stage || null,
+        amount_value: amt,
+        amount_currency: manual.amount_currency || "GBP",
+        source_url: manual.source_url || null,
+        status: "new",
+        confidence: "high",
+        confidence_score: 0.9,
+        raw_data: { source: "manual_admin_entry" } as any,
+        structured_data: { source: "manual_admin_entry" } as any,
+      }).select().single();
+      if (error) throw error;
+      toast.success("Manual deal added");
+      setAddOpen(false);
+      setManual({ title: "", summary: "", event_type: "funding_round", funding_stage: "", amount_value: "", amount_currency: "GBP", source_url: "" });
+      await load();
+      // Auto-promote if user wants — leave to manual click. Surface row.
+      void data;
+    } catch (err: any) {
+      toast.error(`Add failed: ${err.message ?? err}`);
+    } finally {
+      setAddSaving(false);
+    }
+  };
 
   const promote = async (e: IntelEvent) => {
     setPromotingId(e.id);
@@ -138,6 +206,77 @@ export function AdminDealFlowIntelligence() {
             {running ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
             Run Pipeline Now
           </Button>
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-fuchsia-500/40">
+                <Plus className="h-4 w-4 mr-2" /> Add Manual Deal
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Add Manual Deal</DialogTitle>
+                <DialogDescription>Manually source a deal — it will appear in the events list and can be promoted to either platform.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <Label>Title *</Label>
+                  <Input value={manual.title} onChange={(e) => setManual({ ...manual, title: e.target.value })} placeholder="Acme raises $20M Series B" />
+                </div>
+                <div>
+                  <Label>Summary</Label>
+                  <Textarea rows={3} value={manual.summary} onChange={(e) => setManual({ ...manual, summary: e.target.value })} placeholder="Short description of the deal" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Event type</Label>
+                    <Select value={manual.event_type} onValueChange={(v) => setManual({ ...manual, event_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="funding_round">Funding round</SelectItem>
+                        <SelectItem value="acquisition">Acquisition</SelectItem>
+                        <SelectItem value="ipo">IPO</SelectItem>
+                        <SelectItem value="exit">Exit</SelectItem>
+                        <SelectItem value="partnership">Partnership</SelectItem>
+                        <SelectItem value="manual">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Stage</Label>
+                    <Input value={manual.funding_stage} onChange={(e) => setManual({ ...manual, funding_stage: e.target.value })} placeholder="Seed, Series A…" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Amount</Label>
+                    <Input value={manual.amount_value} onChange={(e) => setManual({ ...manual, amount_value: e.target.value })} placeholder="20000000" />
+                  </div>
+                  <div>
+                    <Label>Currency</Label>
+                    <Select value={manual.amount_currency} onValueChange={(v) => setManual({ ...manual, amount_currency: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="GBP">GBP</SelectItem>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label>Source URL</Label>
+                  <Input value={manual.source_url} onChange={(e) => setManual({ ...manual, source_url: e.target.value })} placeholder="https://…" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setAddOpen(false)}>Cancel</Button>
+                <Button onClick={addManualDeal} disabled={addSaving}>
+                  {addSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+                  Add Deal
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -212,13 +351,23 @@ export function AdminDealFlowIntelligence() {
                           <Button
                             size="sm"
                             variant={promotedIds.has(e.id) ? "secondary" : "default"}
-                            disabled={promotedIds.has(e.id) || promotingId === e.id}
+                            disabled={promotedIds.has(e.id) || promotingId === e.id || e.status === "rejected" || rejectedIds.has(e.id)}
                             onClick={() => promote(e)}
                             className="h-7 gap-1"
                           >
                             {promotingId === e.id ? <Loader2 className="h-3 w-3 animate-spin" /> :
                               promotedIds.has(e.id) ? <CheckCircle2 className="h-3 w-3" /> : <Rocket className="h-3 w-3" />}
                             {promotedIds.has(e.id) ? "Promoted" : "Promote"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={rejectingId === e.id || e.status === "rejected" || rejectedIds.has(e.id) || promotedIds.has(e.id)}
+                            onClick={() => reject(e)}
+                            className="h-7 gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-50"
+                          >
+                            {rejectingId === e.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                            {e.status === "rejected" || rejectedIds.has(e.id) ? "Rejected" : "Reject"}
                           </Button>
                         </div>
                       </TableCell>
