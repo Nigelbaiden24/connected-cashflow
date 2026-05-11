@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCryptoData, useStockData, CryptoData, StockData } from "@/hooks/useRealTimeMarketData";
 import { AnalystPicksSection } from "@/components/market/AnalystPicksSection";
 import { AssetAnalystActivity } from "@/components/market/AssetAnalystActivity";
+import { AnalystActivityFeed } from "@/components/market/AnalystActivityFeed";
 import { 
   Search, 
   TrendingUp, 
@@ -241,6 +242,13 @@ export default function RealTimeMarketDatabase() {
             >
               <BarChart3 className="h-4 w-4" />
               Stocks ({stockTotal.toLocaleString()})
+            </TabsTrigger>
+            <TabsTrigger
+              value="analyst-activity"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-fuchsia-600 data-[state=active]:text-white data-[state=active]:shadow-md gap-2"
+            >
+              <Activity className="h-4 w-4" />
+              Analyst Activity
             </TabsTrigger>
           </TabsList>
 
@@ -518,6 +526,10 @@ export default function RealTimeMarketDatabase() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="analyst-activity" className="mt-0">
+            <AnalystActivityFeed platform="finance" />
           </TabsContent>
         </Tabs>
       </div>

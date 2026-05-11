@@ -7855,6 +7855,81 @@ export type Database = {
         }
         Relationships: []
       }
+      stocks_crypto_analyst_activity: {
+        Row: {
+          activity_type: string
+          analyst_rating: string | null
+          asset_type: string
+          catalysts: string[] | null
+          conviction_score: number | null
+          created_at: string
+          created_by: string | null
+          future_outlook: string | null
+          headline: string
+          id: string
+          is_promoted: boolean | null
+          logo_url: string | null
+          metadata: Json | null
+          name: string
+          past_performance: string | null
+          platform: string | null
+          risks: string[] | null
+          scan_date: string | null
+          source: string | null
+          summary: string | null
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          activity_type?: string
+          analyst_rating?: string | null
+          asset_type: string
+          catalysts?: string[] | null
+          conviction_score?: number | null
+          created_at?: string
+          created_by?: string | null
+          future_outlook?: string | null
+          headline: string
+          id?: string
+          is_promoted?: boolean | null
+          logo_url?: string | null
+          metadata?: Json | null
+          name: string
+          past_performance?: string | null
+          platform?: string | null
+          risks?: string[] | null
+          scan_date?: string | null
+          source?: string | null
+          summary?: string | null
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          activity_type?: string
+          analyst_rating?: string | null
+          asset_type?: string
+          catalysts?: string[] | null
+          conviction_score?: number | null
+          created_at?: string
+          created_by?: string | null
+          future_outlook?: string | null
+          headline?: string
+          id?: string
+          is_promoted?: boolean | null
+          logo_url?: string | null
+          metadata?: Json | null
+          name?: string
+          past_performance?: string | null
+          platform?: string | null
+          risks?: string[] | null
+          scan_date?: string | null
+          source?: string | null
+          summary?: string | null
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null

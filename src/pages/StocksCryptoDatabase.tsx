@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
+import { AnalystActivityFeed } from "@/components/market/AnalystActivityFeed";
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { 
@@ -427,6 +428,10 @@ export default function StocksCryptoDatabase() {
               <Star className="h-4 w-4" />
               Top Rated
             </TabsTrigger>
+            <TabsTrigger value="analyst-activity" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-fuchsia-600 data-[state=active]:text-white data-[state=active]:shadow-md gap-2">
+              <Activity className="h-4 w-4" />
+              Analyst Activity
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-0">
@@ -479,6 +484,10 @@ export default function StocksCryptoDatabase() {
               getScoreColor={getScoreColor}
               onSelectAsset={setSelectedAsset}
             />
+          </TabsContent>
+
+          <TabsContent value="analyst-activity" className="mt-0">
+            <AnalystActivityFeed platform={typeof window !== 'undefined' && window.location.pathname.startsWith('/investor') ? 'investor' : 'finance'} />
           </TabsContent>
         </Tabs>
       </div>
