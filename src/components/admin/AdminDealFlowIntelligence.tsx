@@ -351,13 +351,23 @@ export function AdminDealFlowIntelligence() {
                           <Button
                             size="sm"
                             variant={promotedIds.has(e.id) ? "secondary" : "default"}
-                            disabled={promotedIds.has(e.id) || promotingId === e.id}
+                            disabled={promotedIds.has(e.id) || promotingId === e.id || e.status === "rejected" || rejectedIds.has(e.id)}
                             onClick={() => promote(e)}
                             className="h-7 gap-1"
                           >
                             {promotingId === e.id ? <Loader2 className="h-3 w-3 animate-spin" /> :
                               promotedIds.has(e.id) ? <CheckCircle2 className="h-3 w-3" /> : <Rocket className="h-3 w-3" />}
                             {promotedIds.has(e.id) ? "Promoted" : "Promote"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={rejectingId === e.id || e.status === "rejected" || rejectedIds.has(e.id) || promotedIds.has(e.id)}
+                            onClick={() => reject(e)}
+                            className="h-7 gap-1 border-rose-500/40 text-rose-600 hover:bg-rose-50"
+                          >
+                            {rejectingId === e.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                            {e.status === "rejected" || rejectedIds.has(e.id) ? "Rejected" : "Reject"}
                           </Button>
                         </div>
                       </TableCell>
