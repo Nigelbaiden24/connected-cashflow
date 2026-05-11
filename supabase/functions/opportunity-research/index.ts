@@ -359,6 +359,206 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
       "https://www.watchpro.com/",
     ],
   },
+  music_royalties: {
+    queries: [
+      "music royalty investment opportunities 2025 catalogue",
+      "buy music royalties streaming income investment",
+      "Royalty Exchange ANote SongVest live deals",
+      "music catalogue acquisition investment fund 2025",
+      "songwriter publishing royalties for sale investors",
+    ],
+    urls: [
+      "https://www.royaltyexchange.com/",
+      "https://www.anotemusic.com/",
+      "https://www.songvest.com/",
+      "https://www.hipgnosissongs.com/",
+    ],
+  },
+  fixed_income: {
+    queries: [
+      "UK gilts US treasuries investment opportunities yields 2025",
+      "corporate bonds high yield investment grade current",
+      "emerging market debt fixed income opportunities",
+      "inflation linked bonds TIPS linkers investment 2025",
+    ],
+    urls: [
+      "https://www.dmo.gov.uk/",
+      "https://www.hl.co.uk/shares/corporate-bonds-gilts",
+      "https://www.fixedincomeinvestor.co.uk/",
+    ],
+  },
+  fx: {
+    queries: [
+      "FX trading opportunities major pairs outlook 2025",
+      "currency carry trade opportunities emerging markets",
+      "FX hedging strategies forecasts USD GBP EUR 2025",
+    ],
+    urls: [
+      "https://www.dailyfx.com/",
+      "https://www.forexlive.com/",
+      "https://www.fxstreet.com/",
+    ],
+  },
+  alternatives: {
+    queries: [
+      "alternative investments hedge fund fine art wine farmland 2025",
+      "litigation finance investment opportunities returns",
+      "collectibles alternative assets investment grade",
+    ],
+    urls: [
+      "https://www.preqin.com/insights",
+      "https://www.artprice.com/",
+      "https://www.liv-ex.com/",
+    ],
+  },
+  esg: {
+    queries: [
+      "ESG impact investing opportunities 2025 climate green bonds",
+      "sustainable infrastructure renewable investment funds",
+      "social impact investing opportunities current",
+    ],
+    urls: [
+      "https://www.climatebonds.net/",
+      "https://www.unpri.org/",
+      "https://www.gsi-alliance.org/",
+    ],
+  },
+  venture_capital: {
+    queries: [
+      "venture capital deals seed series A B 2025 UK Europe",
+      "deep tech VC funding rounds open opportunities",
+      "growth equity venture investments current 2025",
+    ],
+    urls: [
+      "https://news.crunchbase.com/venture/",
+      "https://techcrunch.com/category/venture/",
+      "https://sifted.eu/",
+    ],
+  },
+  sme_acquisitions: {
+    queries: [
+      "SME acquisitions UK owner managed business for sale 2025",
+      "search fund opportunities SME buyout investment",
+      "bolt-on acquisitions small business M&A UK",
+    ],
+    urls: [
+      "https://www.businessesforsale.com/uk",
+      "https://www.daltonsbusiness.com/",
+      "https://www.bizdaq.com/",
+    ],
+  },
+  distressed_assets: {
+    queries: [
+      "distressed debt special situations investment opportunities 2025",
+      "non performing loans NPL investment UK Europe",
+      "restructuring turnaround investment opportunities current",
+    ],
+    urls: [
+      "https://www.preqin.com/insights",
+      "https://debtwire.com/",
+    ],
+  },
+  debt_lending: {
+    queries: [
+      "private credit direct lending investment opportunities 2025",
+      "mezzanine asset backed lending bridge loan investments",
+      "private debt fund opportunities institutional 2025",
+    ],
+    urls: [
+      "https://www.preqin.com/academy/lesson-5-private-debt",
+      "https://www.kuflink.co.uk/",
+      "https://www.assetzexchange.co.uk/",
+    ],
+  },
+  fractional_pe_vc: {
+    queries: [
+      "fractional PE VC platforms Moonfare Crowdcube Seedrs 2025",
+      "AngelList syndicates Republic Wefunder live deals",
+      "retail private equity platform investment opportunities",
+    ],
+    urls: [
+      "https://www.moonfare.com/",
+      "https://www.seedrs.com/invest",
+      "https://www.crowdcube.com/explore",
+      "https://republic.com/fundraise",
+    ],
+  },
+  private_market_platforms: {
+    queries: [
+      "pre IPO secondaries Forge Global EquityZen Hiive 2025",
+      "private market secondary share platforms opportunities",
+      "Carta X private company shares investment",
+    ],
+    urls: [
+      "https://forgeglobal.com/",
+      "https://equityzen.com/",
+      "https://www.hiive.com/",
+    ],
+  },
+  derivatives: {
+    queries: [
+      "options futures trading opportunities outlook 2025",
+      "structured products CFD investment opportunities",
+      "swaps derivatives institutional investment trends",
+    ],
+    urls: [
+      "https://www.cmegroup.com/",
+      "https://www.theice.com/",
+      "https://www.barchart.com/",
+    ],
+  },
+  capital_protected_notes: {
+    queries: [
+      "capital protected notes autocall income note opportunities 2025",
+      "100% capital protected structured product UK",
+      "reverse convertible income notes investment current",
+    ],
+    urls: [
+      "https://www.lowes.co.uk/",
+      "https://www.structuredretailproducts.com/",
+    ],
+  },
+  savings_cash_yield: {
+    queries: [
+      "best high yield savings cash ISA fixed term bonds UK 2025",
+      "money market notice account top rates UK",
+    ],
+    urls: [
+      "https://moneyfactscompare.co.uk/savings-accounts/",
+      "https://www.savingschampion.co.uk/",
+    ],
+  },
+  pensions_tax_wrappers: {
+    queries: [
+      "SIPP stocks shares ISA LISA VCT EIS SEIS opportunities 2025",
+      "pension tax wrapper investment platforms UK best",
+    ],
+    urls: [
+      "https://www.hl.co.uk/",
+      "https://www.aj-bell.co.uk/",
+      "https://www.gov.uk/tax-on-your-private-pension",
+    ],
+  },
+  thematics_packaged: {
+    queries: [
+      "thematic ETF AI robotics clean energy cybersecurity genomics 2025",
+      "megatrend space thematic investment funds opportunities",
+    ],
+    urls: [
+      "https://www.justetf.com/uk/",
+      "https://www.trackinsight.com/",
+    ],
+  },
+  copy_trading: {
+    queries: [
+      "copy trading platforms eToro ZuluTrade NAGA top traders 2025",
+      "social trading investment opportunities best performers",
+    ],
+    urls: [
+      "https://www.etoro.com/discover/",
+      "https://www.zulutrade.com/",
+    ],
+  },
 };
 
 interface SourceRecord {
