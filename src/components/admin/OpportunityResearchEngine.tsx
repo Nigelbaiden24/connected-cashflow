@@ -585,11 +585,13 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     toast.success("Report downloaded!");
   }, [aiOutput, sourceMetadata, category]);
 
-  const handleResearch = async () => {
-    if (!category && !customQuery) {
+  const handleResearch = async (overrideCategory?: string) => {
+    const useCategory = overrideCategory ?? category;
+    if (!useCategory && !customQuery) {
       toast.error("Select a category or enter a custom query");
       return;
     }
+    if (overrideCategory) setCategory(overrideCategory);
 
     abortRef.current = new AbortController();
     setPhase("scraping");
