@@ -80,25 +80,25 @@ const MODULE_TABS = [
 ];
 
 const convictionTone = (c: number) =>
-  c >= 4 ? { ring: "ring-emerald-500/30", text: "text-emerald-300", bar: "bg-emerald-400" }
-  : c >= 2.5 ? { ring: "ring-amber-500/30", text: "text-amber-300", bar: "bg-amber-400" }
-  : { ring: "ring-rose-500/30", text: "text-rose-300", bar: "bg-rose-400" };
+  c >= 4 ? { accent: "border-l-emerald-400", text: "text-emerald-300", bar: "bg-emerald-400", chip: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" }
+  : c >= 2.5 ? { accent: "border-l-amber-400", text: "text-amber-300", bar: "bg-amber-400", chip: "bg-amber-500/10 text-amber-300 border-amber-500/30" }
+  : { accent: "border-l-rose-400", text: "text-rose-300", bar: "bg-rose-400", chip: "bg-rose-500/10 text-rose-300 border-rose-500/30" };
 
 function StatTile({
-  label, value, hint, icon: Icon, accent,
-}: { label: string; value: string | number; hint?: string; icon: any; accent: string }) {
+  label, value, hint, icon: Icon, delta,
+}: { label: string; value: string | number; hint?: string; icon: any; delta?: string }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/60 p-4 transition hover:border-slate-700">
-      <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${accent} opacity-70`} />
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500 font-medium">{label}</p>
-          <p className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-50 tabular-nums">{value}</p>
-          {hint && <p className="mt-0.5 text-[11px] text-slate-500">{hint}</p>}
+    <div className="group relative flex items-center gap-3 px-4 py-3 border-r border-slate-800/60 last:border-r-0 hover:bg-slate-900/40 transition-colors">
+      <div className="rounded-md bg-slate-900 p-2 ring-1 ring-slate-800">
+        <Icon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-200 transition-colors" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500 font-medium">{label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <p className="text-lg font-semibold tracking-tight text-slate-50 tabular-nums leading-tight">{value}</p>
+          {delta && <span className="text-[10px] text-emerald-400 tabular-nums">{delta}</span>}
         </div>
-        <div className="rounded-lg bg-slate-900/80 p-1.5 ring-1 ring-slate-800">
-          <Icon className="w-3.5 h-3.5 text-slate-400" />
-        </div>
+        {hint && <p className="text-[10px] text-slate-600 leading-tight">{hint}</p>}
       </div>
     </div>
   );
@@ -108,12 +108,12 @@ function MetricBar({ label, value, max = 100, tone }: { label: string; value: nu
   const pct = Math.min(100, Math.max(0, (value / max) * 100));
   return (
     <div className="space-y-1">
-      <div className="flex items-baseline justify-between text-[10px] uppercase tracking-wider text-slate-500">
-        <span>{label}</span>
-        <span className="text-slate-300 tabular-nums font-medium">{value}{max === 5 ? "/5" : ""}</span>
+      <div className="flex items-baseline justify-between text-[10px] uppercase tracking-[0.12em] text-slate-500">
+        <span className="font-medium">{label}</span>
+        <span className="text-slate-200 tabular-nums font-semibold">{value}{max === 5 ? "" : ""}<span className="text-slate-600 ml-0.5">/{max === 5 ? "5" : "100"}</span></span>
       </div>
       <div className="h-1 rounded-full bg-slate-800/80 overflow-hidden">
-        <div className={`h-full ${tone} transition-all`} style={{ width: `${pct}%` }} />
+        <div className={`h-full ${tone} transition-all duration-500`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
