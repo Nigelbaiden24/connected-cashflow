@@ -176,3 +176,6 @@ verify_jwt = true
 
 [functions.analyst-benchmark-trends]
 verify_jwt = false
+
+[functions.analyst-dynamic-watchlist]
+verify_jwt = false

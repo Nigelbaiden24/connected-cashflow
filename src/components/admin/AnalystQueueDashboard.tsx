@@ -12,6 +12,7 @@ import { Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity, Spa
 import ReactMarkdown from "react-markdown";
 import MarketCommentaryPanel from "./MarketCommentaryPanel";
 import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
+import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
@@ -214,6 +215,9 @@ export default function AnalystQueueDashboard() {
 
       {/* Benchmarking & Trends */}
       <BenchmarkTrendsPanel />
+
+      {/* Dynamic AI Watchlist */}
+      <DynamicWatchlistPanel />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">

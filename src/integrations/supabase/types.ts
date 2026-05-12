@@ -839,6 +839,72 @@ export type Database = {
           },
         ]
       }
+      analyst_dynamic_watchlist: {
+        Row: {
+          alert_urgency_score: number | null
+          asset_name: string | null
+          asset_type: string | null
+          catalyst_summary: string | null
+          confidence_score: number | null
+          created_at: string
+          entry_risk_level: string | null
+          expires_at: string | null
+          id: string
+          momentum_score: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          signals: Json | null
+          status: string
+          support_resistance: string | null
+          symbol: string
+          trigger_type: string
+          updated_at: string
+          watchlist_reason: string | null
+        }
+        Insert: {
+          alert_urgency_score?: number | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalyst_summary?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          entry_risk_level?: string | null
+          expires_at?: string | null
+          id?: string
+          momentum_score?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          signals?: Json | null
+          status?: string
+          support_resistance?: string | null
+          symbol: string
+          trigger_type: string
+          updated_at?: string
+          watchlist_reason?: string | null
+        }
+        Update: {
+          alert_urgency_score?: number | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalyst_summary?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          entry_risk_level?: string | null
+          expires_at?: string | null
+          id?: string
+          momentum_score?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          signals?: Json | null
+          status?: string
+          support_resistance?: string | null
+          symbol?: string
+          trigger_type?: string
+          updated_at?: string
+          watchlist_reason?: string | null
+        }
+        Relationships: []
+      }
       analyst_market_commentary: {
         Row: {
           analyst_commentary: string | null
