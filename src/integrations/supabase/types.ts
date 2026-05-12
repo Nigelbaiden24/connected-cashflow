@@ -758,6 +758,75 @@ export type Database = {
           },
         ]
       }
+      analyst_market_commentary: {
+        Row: {
+          analyst_commentary: string | null
+          beneficiary_sectors: string | null
+          confidence_score: number | null
+          created_at: string
+          executive_summary: string | null
+          headline: string
+          id: string
+          institutional_flows: string | null
+          market_implications: string | null
+          mobile_summary: string | null
+          push_summary: string | null
+          retail_breakdown: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risks_ahead: string | null
+          sections: Json
+          sources: Json
+          status: string
+          updated_at: string
+          why_moved: string | null
+        }
+        Insert: {
+          analyst_commentary?: string | null
+          beneficiary_sectors?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          executive_summary?: string | null
+          headline: string
+          id?: string
+          institutional_flows?: string | null
+          market_implications?: string | null
+          mobile_summary?: string | null
+          push_summary?: string | null
+          retail_breakdown?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risks_ahead?: string | null
+          sections?: Json
+          sources?: Json
+          status?: string
+          updated_at?: string
+          why_moved?: string | null
+        }
+        Update: {
+          analyst_commentary?: string | null
+          beneficiary_sectors?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          executive_summary?: string | null
+          headline?: string
+          id?: string
+          institutional_flows?: string | null
+          market_implications?: string | null
+          mobile_summary?: string | null
+          push_summary?: string | null
+          retail_breakdown?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risks_ahead?: string | null
+          sections?: Json
+          sources?: Json
+          status?: string
+          updated_at?: string
+          why_moved?: string | null
+        }
+        Relationships: []
+      }
       analyst_opportunities: {
         Row: {
           brief_generated: boolean

@@ -10,6 +10,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import MarketCommentaryPanel from "./MarketCommentaryPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
@@ -206,6 +207,9 @@ export default function AnalystQueueDashboard() {
           </div>
         )}
       </Card>
+
+      {/* Market Commentary */}
+      <MarketCommentaryPanel />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
