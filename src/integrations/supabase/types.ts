@@ -668,6 +668,7 @@ export type Database = {
           compliance_pass: boolean
           conviction: number
           created_at: string
+          extended: Json
           full_markdown: string | null
           id: string
           key_levels: string | null
@@ -694,6 +695,7 @@ export type Database = {
           compliance_pass?: boolean
           conviction?: number
           created_at?: string
+          extended?: Json
           full_markdown?: string | null
           id?: string
           key_levels?: string | null
@@ -720,6 +722,7 @@ export type Database = {
           compliance_pass?: boolean
           conviction?: number
           created_at?: string
+          extended?: Json
           full_markdown?: string | null
           id?: string
           key_levels?: string | null
