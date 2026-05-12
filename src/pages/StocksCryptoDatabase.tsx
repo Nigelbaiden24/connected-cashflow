@@ -133,8 +133,26 @@ export default function StocksCryptoDatabase() {
       switch (sortBy) {
         case "market_cap":
           return (b.market_cap || 0) - (a.market_cap || 0);
-        case "price_change_24h":
-          return (b.price_change_24h || 0) - (a.price_change_24h || 0);
+        case "gainers_24h":
+          return (b.price_change_24h || -Infinity) - (a.price_change_24h || -Infinity);
+        case "losers_24h":
+          return (a.price_change_24h ?? Infinity) - (b.price_change_24h ?? Infinity);
+        case "gainers_7d":
+          return (b.price_change_7d || -Infinity) - (a.price_change_7d || -Infinity);
+        case "losers_7d":
+          return (a.price_change_7d ?? Infinity) - (b.price_change_7d ?? Infinity);
+        case "gainers_30d":
+          return (b.price_change_30d || -Infinity) - (a.price_change_30d || -Infinity);
+        case "losers_30d":
+          return (a.price_change_30d ?? Infinity) - (b.price_change_30d ?? Infinity);
+        case "gainers_1y":
+          return (b.price_change_1y || -Infinity) - (a.price_change_1y || -Infinity);
+        case "losers_1y":
+          return (a.price_change_1y ?? Infinity) - (b.price_change_1y ?? Infinity);
+        case "volume_24h":
+          return (b.volume_24h || 0) - (a.volume_24h || 0);
+        case "price_high":
+          return (b.current_price || 0) - (a.current_price || 0);
         case "overall_score":
           return (Number(b.overall_score) || 0) - (Number(a.overall_score) || 0);
         case "name":
