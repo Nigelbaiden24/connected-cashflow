@@ -228,6 +228,9 @@ export default function AnalystQueueDashboard() {
       {/* Real-Time Investment Alerts */}
       <RealtimeAlertsPanel />
 
+      {/* ETF & Fund Analysis */}
+      <ETFFundAnalysisPanel />
+
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Input placeholder="Search briefs…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs bg-slate-900/60 border-slate-700" />
