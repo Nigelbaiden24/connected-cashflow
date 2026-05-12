@@ -57,8 +57,17 @@ export default function RealTimeMarketDatabase() {
   ).sort((a, b) => {
     switch (sortBy) {
       case "market_cap": return (b.marketCap || 0) - (a.marketCap || 0);
-      case "price_change": return (b.priceChange24h || 0) - (a.priceChange24h || 0);
       case "volume": return (b.volume24h || 0) - (a.volume24h || 0);
+      case "price_high": return (b.currentPrice || 0) - (a.currentPrice || 0);
+      case "gainers_24h": return (b.priceChange24h ?? -Infinity) - (a.priceChange24h ?? -Infinity);
+      case "losers_24h": return (a.priceChange24h ?? Infinity) - (b.priceChange24h ?? Infinity);
+      case "gainers_7d": return (b.priceChange7d ?? -Infinity) - (a.priceChange7d ?? -Infinity);
+      case "losers_7d": return (a.priceChange7d ?? Infinity) - (b.priceChange7d ?? Infinity);
+      case "gainers_30d": return (b.priceChange30d ?? -Infinity) - (a.priceChange30d ?? -Infinity);
+      case "losers_30d": return (a.priceChange30d ?? Infinity) - (b.priceChange30d ?? Infinity);
+      case "gainers_1y": return (b.priceChange1y ?? -Infinity) - (a.priceChange1y ?? -Infinity);
+      case "losers_1y": return (a.priceChange1y ?? Infinity) - (b.priceChange1y ?? Infinity);
+      case "name": return a.name.localeCompare(b.name);
       default: return 0;
     }
   });
@@ -69,8 +78,19 @@ export default function RealTimeMarketDatabase() {
   ).sort((a, b) => {
     switch (sortBy) {
       case "market_cap": return (b.marketCap || 0) - (a.marketCap || 0);
-      case "price_change": return (b.changePercent || 0) - (a.changePercent || 0);
       case "volume": return (b.volume || 0) - (a.volume || 0);
+      case "price_high": return (b.currentPrice || 0) - (a.currentPrice || 0);
+      case "gainers_24h":
+      case "gainers_7d":
+      case "gainers_30d":
+      case "gainers_1y":
+        return (b.changePercent || 0) - (a.changePercent || 0);
+      case "losers_24h":
+      case "losers_7d":
+      case "losers_30d":
+      case "losers_1y":
+        return (a.changePercent || 0) - (b.changePercent || 0);
+      case "name": return a.name.localeCompare(b.name);
       default: return 0;
     }
   });
