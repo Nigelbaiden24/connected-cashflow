@@ -659,6 +659,296 @@ export type Database = {
           },
         ]
       }
+      analyst_briefs: {
+        Row: {
+          action: string | null
+          catalyst: string | null
+          category: string
+          compliance_flags: Json | null
+          compliance_pass: boolean
+          conviction: number
+          created_at: string
+          full_markdown: string | null
+          id: string
+          key_levels: string | null
+          opportunity_id: string | null
+          opportunity_score: number
+          persona: string
+          promoted_opportunity_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_score: number
+          risks: string | null
+          status: string
+          thesis: string | null
+          time_horizon: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action?: string | null
+          catalyst?: string | null
+          category: string
+          compliance_flags?: Json | null
+          compliance_pass?: boolean
+          conviction?: number
+          created_at?: string
+          full_markdown?: string | null
+          id?: string
+          key_levels?: string | null
+          opportunity_id?: string | null
+          opportunity_score?: number
+          persona: string
+          promoted_opportunity_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_score?: number
+          risks?: string | null
+          status?: string
+          thesis?: string | null
+          time_horizon?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string | null
+          catalyst?: string | null
+          category?: string
+          compliance_flags?: Json | null
+          compliance_pass?: boolean
+          conviction?: number
+          created_at?: string
+          full_markdown?: string | null
+          id?: string
+          key_levels?: string | null
+          opportunity_id?: string | null
+          opportunity_score?: number
+          persona?: string
+          promoted_opportunity_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_score?: number
+          risks?: string | null
+          status?: string
+          thesis?: string | null
+          time_horizon?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analyst_briefs_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "analyst_opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analyst_briefs_promoted_opportunity_id_fkey"
+            columns: ["promoted_opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analyst_opportunities: {
+        Row: {
+          brief_generated: boolean
+          category: string
+          conviction: number
+          created_at: string
+          evidence_signal_ids: string[] | null
+          id: string
+          metadata: Json | null
+          opportunity_score: number
+          persona: string
+          risk_score: number
+          theme_key: string
+          time_horizon: string | null
+          title: string
+        }
+        Insert: {
+          brief_generated?: boolean
+          category: string
+          conviction?: number
+          created_at?: string
+          evidence_signal_ids?: string[] | null
+          id?: string
+          metadata?: Json | null
+          opportunity_score?: number
+          persona: string
+          risk_score?: number
+          theme_key: string
+          time_horizon?: string | null
+          title: string
+        }
+        Update: {
+          brief_generated?: boolean
+          category?: string
+          conviction?: number
+          created_at?: string
+          evidence_signal_ids?: string[] | null
+          id?: string
+          metadata?: Json | null
+          opportunity_score?: number
+          persona?: string
+          risk_score?: number
+          theme_key?: string
+          time_horizon?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      analyst_pipeline_runs: {
+        Row: {
+          classified: number
+          duration_ms: number | null
+          errors: Json | null
+          finished_at: string | null
+          generated: number
+          id: string
+          scored: number
+          scraped: number
+          started_at: string
+          trigger_source: string
+        }
+        Insert: {
+          classified?: number
+          duration_ms?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          generated?: number
+          id?: string
+          scored?: number
+          scraped?: number
+          started_at?: string
+          trigger_source?: string
+        }
+        Update: {
+          classified?: number
+          duration_ms?: number | null
+          errors?: Json | null
+          finished_at?: string | null
+          generated?: number
+          id?: string
+          scored?: number
+          scraped?: number
+          started_at?: string
+          trigger_source?: string
+        }
+        Relationships: []
+      }
+      analyst_pipeline_settings: {
+        Row: {
+          autoscrape_enabled: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          autoscrape_enabled?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          autoscrape_enabled?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      analyst_raw_signals: {
+        Row: {
+          classified: boolean
+          content: string | null
+          created_at: string
+          dedup_hash: string | null
+          fetched_at: string
+          id: string
+          raw_payload: Json | null
+          source: string
+          source_url: string | null
+          title: string | null
+        }
+        Insert: {
+          classified?: boolean
+          content?: string | null
+          created_at?: string
+          dedup_hash?: string | null
+          fetched_at?: string
+          id?: string
+          raw_payload?: Json | null
+          source: string
+          source_url?: string | null
+          title?: string | null
+        }
+        Update: {
+          classified?: boolean
+          content?: string | null
+          created_at?: string
+          dedup_hash?: string | null
+          fetched_at?: string
+          id?: string
+          raw_payload?: Json | null
+          source?: string
+          source_url?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
+      analyst_signals: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          raw_signal_id: string | null
+          regions: string[] | null
+          scored: boolean
+          sectors: string[] | null
+          sentiment: number | null
+          summary: string | null
+          tickers: string[] | null
+          urgency: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          raw_signal_id?: string | null
+          regions?: string[] | null
+          scored?: boolean
+          sectors?: string[] | null
+          sentiment?: number | null
+          summary?: string | null
+          tickers?: string[] | null
+          urgency?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          raw_signal_id?: string | null
+          regions?: string[] | null
+          scored?: boolean
+          sectors?: string[] | null
+          sentiment?: number | null
+          summary?: string | null
+          tickers?: string[] | null
+          urgency?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analyst_signals_raw_signal_id_fkey"
+            columns: ["raw_signal_id"]
+            isOneToOne: false
+            referencedRelation: "analyst_raw_signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_clients: {
         Row: {
           api_key: string
