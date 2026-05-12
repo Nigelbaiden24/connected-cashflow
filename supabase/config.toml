@@ -170,3 +170,6 @@ verify_jwt = false
 
 [functions.analyst-promote-brief]
 verify_jwt = true
+
+[functions.analyst-market-commentary]
+verify_jwt = true
