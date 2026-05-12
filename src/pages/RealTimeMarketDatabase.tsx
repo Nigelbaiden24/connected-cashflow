@@ -57,8 +57,17 @@ export default function RealTimeMarketDatabase() {
   ).sort((a, b) => {
     switch (sortBy) {
       case "market_cap": return (b.marketCap || 0) - (a.marketCap || 0);
-      case "price_change": return (b.priceChange24h || 0) - (a.priceChange24h || 0);
       case "volume": return (b.volume24h || 0) - (a.volume24h || 0);
+      case "price_high": return (b.currentPrice || 0) - (a.currentPrice || 0);
+      case "gainers_24h": return (b.priceChange24h ?? -Infinity) - (a.priceChange24h ?? -Infinity);
+      case "losers_24h": return (a.priceChange24h ?? Infinity) - (b.priceChange24h ?? Infinity);
+      case "gainers_7d": return (b.priceChange7d ?? -Infinity) - (a.priceChange7d ?? -Infinity);
+      case "losers_7d": return (a.priceChange7d ?? Infinity) - (b.priceChange7d ?? Infinity);
+      case "gainers_30d": return (b.priceChange30d ?? -Infinity) - (a.priceChange30d ?? -Infinity);
+      case "losers_30d": return (a.priceChange30d ?? Infinity) - (b.priceChange30d ?? Infinity);
+      case "gainers_1y": return (b.priceChange1y ?? -Infinity) - (a.priceChange1y ?? -Infinity);
+      case "losers_1y": return (a.priceChange1y ?? Infinity) - (b.priceChange1y ?? Infinity);
+      case "name": return a.name.localeCompare(b.name);
       default: return 0;
     }
   });
@@ -69,8 +78,19 @@ export default function RealTimeMarketDatabase() {
   ).sort((a, b) => {
     switch (sortBy) {
       case "market_cap": return (b.marketCap || 0) - (a.marketCap || 0);
-      case "price_change": return (b.changePercent || 0) - (a.changePercent || 0);
       case "volume": return (b.volume || 0) - (a.volume || 0);
+      case "price_high": return (b.currentPrice || 0) - (a.currentPrice || 0);
+      case "gainers_24h":
+      case "gainers_7d":
+      case "gainers_30d":
+      case "gainers_1y":
+        return (b.changePercent || 0) - (a.changePercent || 0);
+      case "losers_24h":
+      case "losers_7d":
+      case "losers_30d":
+      case "losers_1y":
+        return (a.changePercent || 0) - (b.changePercent || 0);
+      case "name": return a.name.localeCompare(b.name);
       default: return 0;
     }
   });
@@ -212,14 +232,23 @@ export default function RealTimeMarketDatabase() {
                 </div>
               </div>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px] bg-white border-slate-200">
+                <SelectTrigger className="w-[220px] bg-white border-slate-200">
                   <ArrowUpDown className="h-4 w-4 mr-2 text-slate-400" />
                   <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="market_cap">Market Cap</SelectItem>
-                  <SelectItem value="price_change">24h Change</SelectItem>
-                  <SelectItem value="volume">Volume</SelectItem>
+                <SelectContent className="bg-white max-h-[400px]">
+                  <SelectItem value="market_cap">Market Cap (largest)</SelectItem>
+                  <SelectItem value="volume">Volume (24h)</SelectItem>
+                  <SelectItem value="price_high">Price (highest)</SelectItem>
+                  <SelectItem value="gainers_24h">🚀 Top Gainers (24h)</SelectItem>
+                  <SelectItem value="losers_24h">📉 Top Losers (24h)</SelectItem>
+                  <SelectItem value="gainers_7d">🚀 Top Gainers (7d)</SelectItem>
+                  <SelectItem value="losers_7d">📉 Top Losers (7d)</SelectItem>
+                  <SelectItem value="gainers_30d">🚀 Top Gainers (30d)</SelectItem>
+                  <SelectItem value="losers_30d">📉 Top Losers (30d)</SelectItem>
+                  <SelectItem value="gainers_1y">🚀 Top Gainers (1y)</SelectItem>
+                  <SelectItem value="losers_1y">📉 Top Losers (1y)</SelectItem>
+                  <SelectItem value="name">Alphabetical</SelectItem>
                 </SelectContent>
               </Select>
             </div>
