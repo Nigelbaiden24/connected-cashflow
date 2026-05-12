@@ -179,14 +179,19 @@ export default function AnalystQueueDashboard() {
     }
   };
 
-  const promote = async (brief: Brief) => {
+  const [promotingId, setPromotingId] = useState<string | null>(null);
+  const promote = async (brief: Brief, platform: "finance" | "investor" | "both") => {
+    setPromotingId(brief.id);
     try {
-      const { error } = await supabase.functions.invoke("analyst-promote-brief", { body: { brief_id: brief.id } });
+      const { error } = await supabase.functions.invoke("analyst-promote-brief", { body: { brief_id: brief.id, platform } });
       if (error) throw error;
-      toast({ title: "Promoted", description: "Live in Opportunity Intelligence." });
+      const dest = platform === "both" ? "Finance + Investor" : platform === "finance" ? "FlowPulse Finance" : "FlowPulse Investor";
+      toast({ title: "Promoted", description: `Published to ${dest}.` });
       await load();
     } catch (e: any) {
       toast({ title: "Promote failed", description: e.message, variant: "destructive" });
+    } finally {
+      setPromotingId(null);
     }
   };
 
