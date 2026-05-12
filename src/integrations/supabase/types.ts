@@ -659,6 +659,87 @@ export type Database = {
           },
         ]
       }
+      analyst_benchmark_reports: {
+        Row: {
+          anomalies: Json | null
+          capital_flows: Json | null
+          confidence_score: number | null
+          created_at: string
+          executive_summary: string | null
+          full_commentary: string | null
+          growth_vs_value: Json | null
+          headline: string
+          id: string
+          mobile_summary: string | null
+          momentum_shifts: Json | null
+          outperformers: Json | null
+          push_summary: string | null
+          rankings: Json | null
+          regional_analysis: Json | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sector_analysis: Json | null
+          sentiment_analysis: Json | null
+          sources: Json | null
+          status: string
+          trend_reversals: Json | null
+          underperformers: Json | null
+          updated_at: string
+        }
+        Insert: {
+          anomalies?: Json | null
+          capital_flows?: Json | null
+          confidence_score?: number | null
+          created_at?: string
+          executive_summary?: string | null
+          full_commentary?: string | null
+          growth_vs_value?: Json | null
+          headline: string
+          id?: string
+          mobile_summary?: string | null
+          momentum_shifts?: Json | null
+          outperformers?: Json | null
+          push_summary?: string | null
+          rankings?: Json | null
+          regional_analysis?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sector_analysis?: Json | null
+          sentiment_analysis?: Json | null
+          sources?: Json | null
+          status?: string
+          trend_reversals?: Json | null
+          underperformers?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          anomalies?: Json | null
+          capital_flows?: Json | null
+          confidence_score?: number | null
+          created_at?: string
+          executive_summary?: string | null
+          full_commentary?: string | null
+          growth_vs_value?: Json | null
+          headline?: string
+          id?: string
+          mobile_summary?: string | null
+          momentum_shifts?: Json | null
+          outperformers?: Json | null
+          push_summary?: string | null
+          rankings?: Json | null
+          regional_analysis?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sector_analysis?: Json | null
+          sentiment_analysis?: Json | null
+          sources?: Json | null
+          status?: string
+          trend_reversals?: Json | null
+          underperformers?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analyst_briefs: {
         Row: {
           action: string | null

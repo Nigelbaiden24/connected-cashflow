@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import MarketCommentaryPanel from "./MarketCommentaryPanel";
+import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
@@ -210,6 +211,9 @@ export default function AnalystQueueDashboard() {
 
       {/* Market Commentary */}
       <MarketCommentaryPanel />
+
+      {/* Benchmarking & Trends */}
+      <BenchmarkTrendsPanel />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
