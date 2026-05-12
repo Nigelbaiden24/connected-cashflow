@@ -14,6 +14,7 @@ import MarketCommentaryPanel from "./MarketCommentaryPanel";
 import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
 import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
 import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
+import RealtimeAlertsPanel from "./RealtimeAlertsPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
