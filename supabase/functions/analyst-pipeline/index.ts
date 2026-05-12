@@ -289,17 +289,72 @@ async function runScore(): Promise<number> {
     groups.get(key)!.push(s);
   }
 
+  // Source reliability weights (Quant Engine — purely numerical, no LLM)
+  const SOURCE_RELIABILITY: Record<string, number> = {
+    sec_edgar: 100, firecrawl_news: 75, yahoo_finance: 70,
+    reddit_wallstreetbets: 25, reddit_stocks: 35, reddit_investing: 40,
+  };
+
   let count = 0;
   for (const [key, group] of groups) {
-    const sources = new Set(group.map((g) => g.raw_signal_id));
-    const avgSent = group.reduce((a, g) => a + (Number(g.sentiment) || 0), 0) / group.length;
+    const sourceIds = new Set(group.map((g) => g.raw_signal_id));
+    const sentiments = group.map((g) => Number(g.sentiment) || 0);
+    const avgSent = sentiments.reduce((a, b) => a + b, 0) / sentiments.length;
     const avgUrg = group.reduce((a, g) => a + (Number(g.urgency) || 0), 0) / group.length;
-    const sentimentScore = Math.round(((avgSent + 1) / 2) * 100); // 0-100
+
+    // Fetch source mix for reliability + sentiment-instability calc
+    const { data: rawRows } = await sb.from("analyst_raw_signals")
+      .select("source").in("id", Array.from(sourceIds));
+    const sourceList = (rawRows || []).map((r) => r.source);
+    const reliabilityAvg = sourceList.length
+      ? sourceList.reduce((a, s) => a + (SOURCE_RELIABILITY[s] ?? 50), 0) / sourceList.length
+      : 50;
+
+    // ─── CONFIDENCE SUBSCORES (0-100) ──────────────────────────────
+    const c_source_reliability = Math.round(reliabilityAvg);
+    // sentiment agreement: low std dev → high agreement
+    const meanS = avgSent;
+    const variance = sentiments.reduce((a, s) => a + (s - meanS) ** 2, 0) / sentiments.length;
+    const stdDev = Math.sqrt(variance);
+    const c_sentiment_agreement = Math.round(Math.max(0, 100 - stdDev * 100));
+    // data consistency: more independent sources converging on same theme
+    const c_data_consistency = Math.min(100, sourceIds.size * 25);
+    // historical accuracy proxy: SEC/EDGAR + firecrawl_news weighted
+    const officialShare = sourceList.filter((s) => s === "sec_edgar" || s === "firecrawl_news").length / Math.max(1, sourceList.length);
+    const c_historical_accuracy = Math.round(50 + officialShare * 50);
+    // technical confirmation proxy: urgency + diversity
+    const c_technical_confirmation = Math.round(Math.min(100, (avgUrg / 5) * 60 + (sourceIds.size * 10)));
+
+    const confidence_score = Math.round(
+      c_source_reliability * 0.25 +
+      c_data_consistency * 0.20 +
+      c_historical_accuracy * 0.20 +
+      c_sentiment_agreement * 0.20 +
+      c_technical_confirmation * 0.15
+    );
+
+    // ─── RISK SUBSCORES (0-100, higher = riskier) ───────────────────
+    const r_volatility = Math.round(Math.min(100, avgUrg * 18 + stdDev * 40));
+    const r_macro_uncertainty = ["Macro News", "Risk Event", "Volatility Event"].includes(group[0].category) ? 75 : 35;
+    const r_liquidity = group[0].tickers?.[0] ? 30 : 60; // assume listed = better liquidity
+    const r_sentiment_instability = Math.round(Math.min(100, stdDev * 100 + (1 - Math.abs(avgSent)) * 30));
+    const r_earnings_risk = group[0].category === "Earnings" ? 70 : 30;
+
+    const risk_score = Math.round(
+      r_volatility * 0.25 +
+      r_macro_uncertainty * 0.20 +
+      r_liquidity * 0.20 +
+      r_sentiment_instability * 0.20 +
+      r_earnings_risk * 0.15
+    );
+
+    // Opportunity score blends conviction with confidence, penalised by risk
+    const sentimentScore = Math.round(((avgSent + 1) / 2) * 100);
     const urgencyScore = Math.round((avgUrg / 5) * 100);
-    const diversityScore = Math.min(100, sources.size * 25);
-    const opportunity_score = Math.round(sentimentScore * 0.35 + urgencyScore * 0.35 + diversityScore * 0.30);
-    const conviction = Math.round((opportunity_score / 100) * 5 * 10) / 10; // 0-5 with 1 decimal
-    const risk_score = Math.round(Math.max(0, Math.min(100, (1 - Math.abs(avgSent)) * 60 + (avgUrg * 8))));
+    const opportunity_score = Math.round(
+      sentimentScore * 0.25 + urgencyScore * 0.20 + confidence_score * 0.40 - risk_score * 0.15
+    );
+    const conviction = Math.round(Math.max(0, Math.min(5, (opportunity_score / 100) * 5)) * 10) / 10;
 
     const cat = group[0].category;
     const title = group[0].tickers?.[0]
@@ -316,7 +371,25 @@ async function runScore(): Promise<number> {
       risk_score,
       time_horizon: avgUrg >= 4 ? "intraday" : avgUrg >= 2 ? "swing" : "long-term",
       evidence_signal_ids: group.map((g) => g.id),
-      metadata: { tickers: group[0].tickers, sectors: group[0].sectors, signal_count: group.length },
+      metadata: {
+        tickers: group[0].tickers, sectors: group[0].sectors, signal_count: group.length,
+        confidence_score,
+        confidence_subscores: {
+          source_reliability: c_source_reliability,
+          data_consistency: c_data_consistency,
+          historical_accuracy: c_historical_accuracy,
+          sentiment_agreement: c_sentiment_agreement,
+          technical_confirmation: c_technical_confirmation,
+        },
+        risk_subscores: {
+          volatility: r_volatility,
+          macro_uncertainty: r_macro_uncertainty,
+          liquidity: r_liquidity,
+          sentiment_instability: r_sentiment_instability,
+          earnings_risk: r_earnings_risk,
+        },
+        source_mix: sourceList,
+      },
     }).select("id").single();
 
     if (!error && opp) {
