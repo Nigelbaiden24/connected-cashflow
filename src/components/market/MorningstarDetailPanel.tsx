@@ -228,7 +228,7 @@ export function MorningstarDetailPanel({
   isExpanded = false,
   onToggleExpand,
 }: MorningstarDetailPanelProps) {
-  const [activeTab, setActiveTab] = useState("scenario");
+  const [activeTab, setActiveTab] = useState("performance");
   const [timeRange, setTimeRange] = useState("1Y");
   const [realHistory, setRealHistory] = useState<{ date: string; price: number }[] | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
