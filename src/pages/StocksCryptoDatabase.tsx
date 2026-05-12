@@ -410,13 +410,22 @@ export default function StocksCryptoDatabase() {
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[160px] bg-white border-slate-200">
+                <SelectTrigger className="w-[200px] bg-white border-slate-200">
                   <ArrowUpDown className="h-4 w-4 mr-2 text-slate-400" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="market_cap">Market Cap</SelectItem>
-                  <SelectItem value="price_change_24h">24h Performance</SelectItem>
+                <SelectContent className="bg-white max-h-[400px]">
+                  <SelectItem value="market_cap">Market Cap (largest)</SelectItem>
+                  <SelectItem value="volume_24h">Volume (24h)</SelectItem>
+                  <SelectItem value="price_high">Price (highest)</SelectItem>
+                  <SelectItem value="gainers_24h">🚀 Top Gainers (24h)</SelectItem>
+                  <SelectItem value="losers_24h">📉 Top Losers (24h)</SelectItem>
+                  <SelectItem value="gainers_7d">🚀 Top Gainers (7d)</SelectItem>
+                  <SelectItem value="losers_7d">📉 Top Losers (7d)</SelectItem>
+                  <SelectItem value="gainers_30d">🚀 Top Gainers (30d)</SelectItem>
+                  <SelectItem value="losers_30d">📉 Top Losers (30d)</SelectItem>
+                  <SelectItem value="gainers_1y">🚀 Top Gainers (1y)</SelectItem>
+                  <SelectItem value="losers_1y">📉 Top Losers (1y)</SelectItem>
                   <SelectItem value="overall_score">Analyst Score</SelectItem>
                   <SelectItem value="name">Alphabetical</SelectItem>
                 </SelectContent>
