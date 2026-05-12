@@ -16,6 +16,7 @@ import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
 import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
 import RealtimeAlertsPanel from "./RealtimeAlertsPanel";
 import ETFFundAnalysisPanel from "./ETFFundAnalysisPanel";
+import DiscoveryEnginePanel from "./DiscoveryEnginePanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
