@@ -7,11 +7,15 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
   Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity,
   Search, Filter, Clock, Database, Cpu, Gauge, FileText, ShieldCheck,
   TrendingUp, BarChart3, Eye, Users, Bell, LineChart, Compass, ChevronDown,
+  Briefcase, Landmark, Globe2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import MarketCommentaryPanel from "./MarketCommentaryPanel";
