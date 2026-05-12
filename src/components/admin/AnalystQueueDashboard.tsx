@@ -15,6 +15,7 @@ import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
 import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
 import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
 import RealtimeAlertsPanel from "./RealtimeAlertsPanel";
+import ETFFundAnalysisPanel from "./ETFFundAnalysisPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
@@ -226,6 +227,9 @@ export default function AnalystQueueDashboard() {
 
       {/* Real-Time Investment Alerts */}
       <RealtimeAlertsPanel />
+
+      {/* ETF & Fund Analysis */}
+      <ETFFundAnalysisPanel />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">

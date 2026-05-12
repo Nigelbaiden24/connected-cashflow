@@ -4064,6 +4064,84 @@ export type Database = {
         }
         Relationships: []
       }
+      etf_fund_analyses: {
+        Row: {
+          asset_class: string | null
+          comparative_analysis: string | null
+          cons: Json | null
+          created_at: string
+          fee_analysis: Json | null
+          fund_flows: Json | null
+          fund_name: string
+          fund_type: string | null
+          historical_performance: Json | null
+          holdings_concentration: Json | null
+          id: string
+          manager_performance: Json | null
+          overall_score: number | null
+          pros: Json | null
+          region: string | null
+          sector_exposure: Json | null
+          status: string
+          suitable_investor_types: Json | null
+          summary: string | null
+          ticker: string
+          trend_commentary: string | null
+          updated_at: string
+          volatility_metrics: Json | null
+        }
+        Insert: {
+          asset_class?: string | null
+          comparative_analysis?: string | null
+          cons?: Json | null
+          created_at?: string
+          fee_analysis?: Json | null
+          fund_flows?: Json | null
+          fund_name: string
+          fund_type?: string | null
+          historical_performance?: Json | null
+          holdings_concentration?: Json | null
+          id?: string
+          manager_performance?: Json | null
+          overall_score?: number | null
+          pros?: Json | null
+          region?: string | null
+          sector_exposure?: Json | null
+          status?: string
+          suitable_investor_types?: Json | null
+          summary?: string | null
+          ticker: string
+          trend_commentary?: string | null
+          updated_at?: string
+          volatility_metrics?: Json | null
+        }
+        Update: {
+          asset_class?: string | null
+          comparative_analysis?: string | null
+          cons?: Json | null
+          created_at?: string
+          fee_analysis?: Json | null
+          fund_flows?: Json | null
+          fund_name?: string
+          fund_type?: string | null
+          historical_performance?: Json | null
+          holdings_concentration?: Json | null
+          id?: string
+          manager_performance?: Json | null
+          overall_score?: number | null
+          pros?: Json | null
+          region?: string | null
+          sector_exposure?: Json | null
+          status?: string
+          suitable_investor_types?: Json | null
+          summary?: string | null
+          ticker?: string
+          trend_commentary?: string | null
+          updated_at?: string
+          volatility_metrics?: Json | null
+        }
+        Relationships: []
+      }
       expense_categories: {
         Row: {
           annual_amount: number
