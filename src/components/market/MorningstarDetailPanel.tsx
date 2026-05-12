@@ -597,6 +597,13 @@ export function MorningstarDetailPanel({
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-primary" />
                       <CardTitle className="text-sm font-semibold">Price History</CardTitle>
+                      {realHistory && realHistory.length > 0 ? (
+                        <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-0">Live</Badge>
+                      ) : historyLoading ? (
+                        <Badge variant="outline" className="text-[10px]">Loading…</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px]">Simulated</Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       {['1W', '1M', '3M', '6M', '1Y', 'All'].map((range) => (
