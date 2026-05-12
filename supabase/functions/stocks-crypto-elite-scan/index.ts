@@ -104,7 +104,11 @@ serve(async (req) => {
         logo_url: u.logo_url ?? null,
         activity_type: p.activity_type || "ai_pick",
         headline: p.headline || `${p.name || u.name}: AI conviction update`,
-        summary: p.summary ?? null,
+        summary: [
+          p.recommendation ? `📊 Recommendation: ${p.recommendation}` : null,
+          p.summary,
+          p.why_invest ? `\n💡 Why invest: ${p.why_invest}` : null,
+        ].filter(Boolean).join("\n") || null,
         analyst_rating: ["Gold","Silver","Bronze","Neutral","Negative"].includes(p.analyst_rating) ? p.analyst_rating : "Neutral",
         conviction_score: Math.max(0, Math.min(5, Number(p.conviction_score) || 3)),
         past_performance: p.past_performance ?? null,
