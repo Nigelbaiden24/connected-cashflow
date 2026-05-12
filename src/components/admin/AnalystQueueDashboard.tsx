@@ -7,11 +7,15 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import {
   Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity,
   Search, Filter, Clock, Database, Cpu, Gauge, FileText, ShieldCheck,
   TrendingUp, BarChart3, Eye, Users, Bell, LineChart, Compass, ChevronDown,
+  Briefcase, Landmark, Globe2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import MarketCommentaryPanel from "./MarketCommentaryPanel";
@@ -175,14 +179,19 @@ export default function AnalystQueueDashboard() {
     }
   };
 
-  const promote = async (brief: Brief) => {
+  const [promotingId, setPromotingId] = useState<string | null>(null);
+  const promote = async (brief: Brief, platform: "finance" | "investor" | "both") => {
+    setPromotingId(brief.id);
     try {
-      const { error } = await supabase.functions.invoke("analyst-promote-brief", { body: { brief_id: brief.id } });
+      const { error } = await supabase.functions.invoke("analyst-promote-brief", { body: { brief_id: brief.id, platform } });
       if (error) throw error;
-      toast({ title: "Promoted", description: "Live in Opportunity Intelligence." });
+      const dest = platform === "both" ? "Finance + Investor" : platform === "finance" ? "FlowPulse Finance" : "FlowPulse Investor";
+      toast({ title: "Promoted", description: `Published to ${dest}.` });
       await load();
     } catch (e: any) {
       toast({ title: "Promote failed", description: e.message, variant: "destructive" });
+    } finally {
+      setPromotingId(null);
     }
   };
 
@@ -426,10 +435,45 @@ export default function AnalystQueueDashboard() {
 
                         {(b.status === "pending" || b.status === "quarantined") && (
                           <div className="flex flex-col gap-1.5 shrink-0">
-                            <Button size="sm" onClick={() => promote(b)}
-                              className="h-7 px-2.5 bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs">
-                              <Check className="w-3 h-3 mr-1" /> Promote
-                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="sm" disabled={promotingId === b.id}
+                                  className="h-7 px-2.5 bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs">
+                                  {promotingId === b.id
+                                    ? <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                    : <Check className="w-3 h-3 mr-1" />}
+                                  Promote <ChevronDown className="w-3 h-3 ml-1 opacity-70" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-52 bg-slate-950 border-slate-800 text-slate-200">
+                                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">
+                                  Publish to platform
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-slate-800" />
+                                <DropdownMenuItem onClick={() => promote(b, "finance")} className="focus:bg-slate-900 cursor-pointer">
+                                  <Landmark className="w-3.5 h-3.5 mr-2 text-blue-400" />
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-medium">FlowPulse Finance</span>
+                                    <span className="text-[10px] text-slate-500">Adviser & finance frontend</span>
+                                  </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => promote(b, "investor")} className="focus:bg-slate-900 cursor-pointer">
+                                  <Briefcase className="w-3.5 h-3.5 mr-2 text-purple-400" />
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-medium">FlowPulse Investor</span>
+                                    <span className="text-[10px] text-slate-500">Investor experience frontend</span>
+                                  </div>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-slate-800" />
+                                <DropdownMenuItem onClick={() => promote(b, "both")} className="focus:bg-slate-900 cursor-pointer">
+                                  <Globe2 className="w-3.5 h-3.5 mr-2 text-emerald-400" />
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-medium">Both platforms</span>
+                                    <span className="text-[10px] text-slate-500">Publish to Finance + Investor</span>
+                                  </div>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                             <Button size="sm" variant="outline" onClick={() => reject(b)}
                               className="h-7 px-2.5 border-slate-700 bg-slate-900/60 hover:bg-rose-950/40 text-rose-300 text-xs">
                               <X className="w-3 h-3 mr-1" /> Reject
