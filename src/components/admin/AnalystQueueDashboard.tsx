@@ -13,6 +13,7 @@ import ReactMarkdown from "react-markdown";
 import MarketCommentaryPanel from "./MarketCommentaryPanel";
 import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
 import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
+import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
@@ -218,6 +219,9 @@ export default function AnalystQueueDashboard() {
 
       {/* Dynamic AI Watchlist */}
       <DynamicWatchlistPanel />
+
+      {/* Investor Behaviour Segmentation */}
+      <InvestorSegmentsPanel />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
