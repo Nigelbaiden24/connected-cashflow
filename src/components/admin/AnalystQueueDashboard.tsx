@@ -14,6 +14,7 @@ import MarketCommentaryPanel from "./MarketCommentaryPanel";
 import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
 import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
 import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
+import RealtimeAlertsPanel from "./RealtimeAlertsPanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
 
@@ -222,6 +223,9 @@ export default function AnalystQueueDashboard() {
 
       {/* Investor Behaviour Segmentation */}
       <InvestorSegmentsPanel />
+
+      {/* Real-Time Investment Alerts */}
+      <RealtimeAlertsPanel />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">

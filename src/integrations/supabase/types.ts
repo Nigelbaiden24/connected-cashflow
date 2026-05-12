@@ -7605,6 +7605,66 @@ export type Database = {
         }
         Relationships: []
       }
+      realtime_investment_alerts: {
+        Row: {
+          actionable_summary: string | null
+          alert_category: string
+          asset_name: string | null
+          asset_type: string | null
+          catalyst_explanation: string | null
+          classification: string
+          confidence_score: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          risk_disclaimer: string | null
+          signals: Json | null
+          source_refs: Json | null
+          status: string
+          symbol: string
+          updated_at: string
+          urgency_rating: string
+        }
+        Insert: {
+          actionable_summary?: string | null
+          alert_category: string
+          asset_name?: string | null
+          asset_type?: string | null
+          catalyst_explanation?: string | null
+          classification: string
+          confidence_score?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          risk_disclaimer?: string | null
+          signals?: Json | null
+          source_refs?: Json | null
+          status?: string
+          symbol: string
+          updated_at?: string
+          urgency_rating?: string
+        }
+        Update: {
+          actionable_summary?: string | null
+          alert_category?: string
+          asset_name?: string | null
+          asset_type?: string | null
+          catalyst_explanation?: string | null
+          classification?: string
+          confidence_score?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          risk_disclaimer?: string | null
+          signals?: Json | null
+          source_refs?: Json | null
+          status?: string
+          symbol?: string
+          updated_at?: string
+          urgency_rating?: string
+        }
+        Relationships: []
+      }
       regulatory_updates: {
         Row: {
           ai_generated: boolean | null

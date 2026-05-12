@@ -182,3 +182,6 @@ verify_jwt = false
 
 [functions.analyst-investor-segments]
 verify_jwt = false
+
+[functions.analyst-realtime-alerts]
+verify_jwt = false
