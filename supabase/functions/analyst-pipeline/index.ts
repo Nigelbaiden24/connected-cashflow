@@ -338,24 +338,46 @@ async function runGenerate(): Promise<number> {
       const evidenceText = (evidence || []).map((e, i) => `[${i + 1}] (${e.category}) ${e.summary}`).join("\n");
 
       const brief = await aiJson(
-        `You are a ${opp.persona} writing a buy-side research brief. Cite evidence by [n] reference. Never invent figures. All currency must be GBP. Add an FCA-style "Not advice — for information only" footer.`,
-        `OPPORTUNITY: ${opp.title}\nCATEGORY: ${opp.category}\nCONVICTION: ${opp.conviction}/5\nSCORE: ${opp.opportunity_score}/100\nRISK: ${opp.risk_score}/100\nHORIZON: ${opp.time_horizon}\n\nEVIDENCE:\n${evidenceText}\n\nProduce the brief.`,
+        `You are a ${opp.persona} producing an institutional opportunity brief for FlowPulse.
+
+Identify high-potential investment opportunities by synthesising:
+momentum, valuation, sentiment, earnings performance, institutional activity, macro trends, sector rotation, and technical indicators.
+
+Cite evidence by [n] reference. Never invent figures or tickers. All currency in GBP. Separate facts vs estimates vs sentiment vs assumptions.
+
+Produce BOTH:
+  • a short retail-friendly summary (plain English, ≤90 words, no jargon)
+  • an institutional-grade detailed analysis (Bloomberg/Goldman tone, multi-paragraph)
+
+Always include bullish catalysts AND bearish risks. End full_markdown with the FCA footer: "Not advice — for information only. Capital at risk."`,
+        `OPPORTUNITY: ${opp.title}\nCATEGORY: ${opp.category}\nCONVICTION: ${opp.conviction}/5\nOPPORTUNITY SCORE: ${opp.opportunity_score}/100\nRISK SCORE: ${opp.risk_score}/100\nHORIZON: ${opp.time_horizon}\n\nEVIDENCE:\n${evidenceText}\n\nProduce the brief.`,
         {
           type: "function",
           function: {
             name: "generate_brief",
-            description: "Generate analyst brief",
+            description: "Generate institutional opportunity brief",
             parameters: {
               type: "object",
               properties: {
                 thesis: { type: "string", description: "3-5 sentence investment thesis" },
-                catalyst: { type: "string", description: "Near-term catalyst" },
-                key_levels: { type: "string", description: "Price levels / support / resistance, GBP if applicable" },
-                risks: { type: "string", description: "Top 3 risks" },
-                action: { type: "string", description: "Suggested action: Watch / Accumulate / Avoid" },
-                full_markdown: { type: "string", description: "Full brief in markdown with all sections + FCA footer" },
+                catalyst: { type: "string", description: "Bullish catalysts — concise bullet-style list" },
+                bearish_risks: { type: "string", description: "Bearish risks / downside scenarios" },
+                technical_overview: { type: "string", description: "Momentum, trend, support/resistance, volume profile" },
+                valuation_commentary: { type: "string", description: "Multiples, peer comparison, fair-value sense (qualitative if no numbers verifiable)" },
+                key_levels: { type: "string", description: "Specific price levels in GBP if verifiable, else qualitative zones" },
+                risks: { type: "string", description: "Top 3 risks (overall, including macro)" },
+                comparable_assets: { type: "string", description: "2-4 comparable tickers/funds/assets with one-line rationale" },
+                confidence_score: { type: "integer", minimum: 0, maximum: 100, description: "0-100 confidence in this thesis" },
+                risk_level: { type: "string", enum: ["Low", "Medium", "High", "Speculative"] },
+                investor_profile: { type: "string", enum: ["Conservative", "Balanced", "Growth", "Aggressive", "Speculative"] },
+                allocation_category: { type: "string", description: "e.g. Core Equity, Satellite Growth, Tactical, Alternatives, Income" },
+                suggested_tags: { type: "array", items: { type: "string" }, description: "5-10 SEO/topic tags" },
+                retail_summary: { type: "string", description: "≤90-word plain-English summary for retail investors" },
+                detailed_analysis: { type: "string", description: "Institutional-grade multi-paragraph analysis" },
+                action: { type: "string", enum: ["Watch", "Accumulate", "Reduce", "Avoid"] },
+                full_markdown: { type: "string", description: "Full brief in markdown — must contain ALL sections above (Retail Summary, Detailed Analysis, Thesis, Bullish Catalysts, Bearish Risks, Technical Overview, Valuation, Key Levels, Comparable Assets, Risk Level, Investor Profile, Allocation, Tags, Confidence) and end with the FCA footer." },
               },
-              required: ["thesis", "catalyst", "risks", "action", "full_markdown"],
+              required: ["thesis", "catalyst", "bearish_risks", "risks", "confidence_score", "risk_level", "investor_profile", "allocation_category", "suggested_tags", "retail_summary", "detailed_analysis", "action", "full_markdown"],
               additionalProperties: false,
             },
           },
