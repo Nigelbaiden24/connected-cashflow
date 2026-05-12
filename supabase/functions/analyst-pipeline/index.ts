@@ -521,8 +521,14 @@ Return pass=false if ANY rule is violated. List the violated rule numbers with a
         }
       );
 
-      const compPass = compliance?.pass !== false;
-      const flags = compliance?.flags || [];
+      const llmPass = compliance?.pass !== false;
+      const llmFlags = compliance?.flags || [];
+      const allFlags = [...deterministicFlags, ...llmFlags];
+      // Critical rules cannot be overridden
+      const criticalViolated = allFlags.some((f) => /RULE_(1|2|3|7|8)/.test(f)) ||
+        (compliance?.severity === "critical");
+      const compPass = llmPass && deterministicFlags.length === 0 && !criticalViolated;
+      const oppMeta = (opp as any).metadata || {};
 
       await sb.from("analyst_briefs").insert({
         opportunity_id: opp.id,
@@ -540,7 +546,7 @@ Return pass=false if ANY rule is violated. List the violated rule numbers with a
         action: brief.action,
         full_markdown: brief.full_markdown,
         compliance_pass: compPass,
-        compliance_flags: flags,
+        compliance_flags: allFlags,
         status: compPass ? "pending" : "quarantined",
         extended: {
           retail_summary: brief.retail_summary,
@@ -550,11 +556,20 @@ Return pass=false if ANY rule is violated. List the violated rule numbers with a
           technical_overview: brief.technical_overview,
           valuation_commentary: brief.valuation_commentary,
           comparable_assets: brief.comparable_assets,
-          confidence_score: brief.confidence_score,
+          confidence_score: oppMeta.confidence_score ?? brief.confidence_score,
+          confidence_subscores: oppMeta.confidence_subscores,
+          risk_subscores: oppMeta.risk_subscores,
+          source_mix: oppMeta.source_mix,
           risk_level: brief.risk_level,
           investor_profile: brief.investor_profile,
           allocation_category: brief.allocation_category,
           suggested_tags: brief.suggested_tags || [],
+          rules_engine: {
+            deterministic_flags: deterministicFlags,
+            llm_flags: llmFlags,
+            severity: compliance?.severity || (compPass ? "clean" : "major"),
+            rules_violated: compliance?.rules_violated || [],
+          },
         },
       });
       await sb.from("analyst_opportunities").update({ brief_generated: true }).eq("id", opp.id);
