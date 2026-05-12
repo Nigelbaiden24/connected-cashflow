@@ -119,7 +119,7 @@ serve(async (req) => {
         source: "ai_scan",
         is_promoted: promote,
         platform,
-        metadata: { stock_id: p.id, snapshot: u },
+        metadata: { stock_id: p.id, snapshot: u, recommendation: p.recommendation ?? null, why_invest: p.why_invest ?? null },
       };
     });
 
