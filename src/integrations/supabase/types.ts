@@ -5302,6 +5302,66 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_segments: {
+        Row: {
+          behavioural_signals: Json | null
+          created_at: string
+          engagement_score: number | null
+          id: string
+          primary_segment: string
+          recommended_alerts: Json | null
+          recommended_assets: Json | null
+          recommended_content: Json | null
+          recommended_portfolios: Json | null
+          recommended_watchlists: Json | null
+          risk_tolerance: string | null
+          secondary_segments: Json | null
+          segment_confidence: number | null
+          status: string
+          summary: string | null
+          target_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          behavioural_signals?: Json | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          primary_segment: string
+          recommended_alerts?: Json | null
+          recommended_assets?: Json | null
+          recommended_content?: Json | null
+          recommended_portfolios?: Json | null
+          recommended_watchlists?: Json | null
+          risk_tolerance?: string | null
+          secondary_segments?: Json | null
+          segment_confidence?: number | null
+          status?: string
+          summary?: string | null
+          target_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          behavioural_signals?: Json | null
+          created_at?: string
+          engagement_score?: number | null
+          id?: string
+          primary_segment?: string
+          recommended_alerts?: Json | null
+          recommended_assets?: Json | null
+          recommended_content?: Json | null
+          recommended_portfolios?: Json | null
+          recommended_watchlists?: Json | null
+          risk_tolerance?: string | null
+          secondary_segments?: Json | null
+          segment_confidence?: number | null
+          status?: string
+          summary?: string | null
+          target_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       investor_videos: {
         Row: {
           category: string | null
