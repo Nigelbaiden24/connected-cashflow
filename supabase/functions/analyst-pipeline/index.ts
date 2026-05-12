@@ -429,6 +429,20 @@ Always include bullish catalysts AND bearish risks. End full_markdown with the F
         compliance_pass: compPass,
         compliance_flags: flags,
         status: compPass ? "pending" : "quarantined",
+        extended: {
+          retail_summary: brief.retail_summary,
+          detailed_analysis: brief.detailed_analysis,
+          bullish_catalysts: brief.catalyst,
+          bearish_risks: brief.bearish_risks,
+          technical_overview: brief.technical_overview,
+          valuation_commentary: brief.valuation_commentary,
+          comparable_assets: brief.comparable_assets,
+          confidence_score: brief.confidence_score,
+          risk_level: brief.risk_level,
+          investor_profile: brief.investor_profile,
+          allocation_category: brief.allocation_category,
+          suggested_tags: brief.suggested_tags || [],
+        },
       });
       await sb.from("analyst_opportunities").update({ brief_generated: true }).eq("id", opp.id);
       count++;

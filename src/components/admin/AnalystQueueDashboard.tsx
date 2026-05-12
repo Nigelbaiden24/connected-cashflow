@@ -28,6 +28,7 @@ interface Brief {
   risks: string | null;
   action: string | null;
   full_markdown: string | null;
+  extended: any;
   compliance_pass: boolean;
   compliance_flags: any;
   status: BriefStatus;
@@ -281,10 +282,32 @@ export default function AnalystQueueDashboard() {
                   )}
                 </div>
 
-                {b.full_markdown && (
-                  <div className="prose prose-invert prose-sm max-w-none text-slate-200 mt-2">
-                    <ReactMarkdown>{b.full_markdown}</ReactMarkdown>
+                {b.extended?.retail_summary && (
+                  <div className="mt-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20">
+                    <p className="text-[10px] uppercase tracking-wider text-purple-300 mb-1 font-semibold">Retail Summary</p>
+                    <p className="text-sm text-slate-200 leading-relaxed">{b.extended.retail_summary}</p>
                   </div>
+                )}
+
+                {b.extended && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {b.extended.risk_level && <Badge variant="outline" className="border-rose-500/40 text-rose-300">Risk: {b.extended.risk_level}</Badge>}
+                    {b.extended.investor_profile && <Badge variant="outline" className="border-cyan-500/40 text-cyan-300">Profile: {b.extended.investor_profile}</Badge>}
+                    {b.extended.allocation_category && <Badge variant="outline" className="border-emerald-500/40 text-emerald-300">{b.extended.allocation_category}</Badge>}
+                    {typeof b.extended.confidence_score === "number" && <Badge variant="outline" className="border-violet-500/40 text-violet-300">Confidence {b.extended.confidence_score}/100</Badge>}
+                    {Array.isArray(b.extended.suggested_tags) && b.extended.suggested_tags.slice(0, 8).map((t: string, i: number) => (
+                      <Badge key={i} variant="outline" className="border-slate-600 text-slate-300 text-[10px]">#{t}</Badge>
+                    ))}
+                  </div>
+                )}
+
+                {b.full_markdown && (
+                  <details className="mt-3 group">
+                    <summary className="cursor-pointer text-xs text-purple-300 hover:text-purple-200 font-semibold uppercase tracking-wider">View full institutional brief ▾</summary>
+                    <div className="prose prose-invert prose-sm max-w-none text-slate-200 mt-3 pt-3 border-t border-slate-700/50">
+                      <ReactMarkdown>{b.full_markdown}</ReactMarkdown>
+                    </div>
+                  </details>
                 )}
 
                 {Array.isArray(b.compliance_flags) && b.compliance_flags.length > 0 && (
