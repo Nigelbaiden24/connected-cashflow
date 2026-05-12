@@ -28,6 +28,7 @@ interface Brief {
   risks: string | null;
   action: string | null;
   full_markdown: string | null;
+  extended: any;
   compliance_pass: boolean;
   compliance_flags: any;
   status: BriefStatus;
