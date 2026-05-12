@@ -58,7 +58,7 @@ async function aiJson(systemPrompt: string, userPrompt: string, tool: any) {
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [
-        { role: "system", content: systemPrompt },
+        { role: "system", content: `${MASTER_PERSONA}\n\n---\n\nTASK:\n${systemPrompt}` },
         { role: "user", content: userPrompt },
       ],
       tools: [tool],
