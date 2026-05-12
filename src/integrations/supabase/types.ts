@@ -3820,6 +3820,81 @@ export type Database = {
         }
         Relationships: []
       }
+      discovery_engine_results: {
+        Row: {
+          analyst_sentiment: Json | null
+          asset_name: string | null
+          asset_type: string | null
+          catalysts: Json | null
+          conviction: string
+          created_at: string
+          discovery_bucket: string
+          dividend_metrics: Json | null
+          earnings_growth: Json | null
+          id: string
+          institutional_ownership: Json | null
+          momentum_metrics: Json | null
+          risks: Json | null
+          score: number
+          sector: string | null
+          sector_performance: Json | null
+          status: string
+          symbol: string
+          thesis: string | null
+          updated_at: string
+          valuation_metrics: Json | null
+          volatility_metrics: Json | null
+        }
+        Insert: {
+          analyst_sentiment?: Json | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalysts?: Json | null
+          conviction?: string
+          created_at?: string
+          discovery_bucket: string
+          dividend_metrics?: Json | null
+          earnings_growth?: Json | null
+          id?: string
+          institutional_ownership?: Json | null
+          momentum_metrics?: Json | null
+          risks?: Json | null
+          score?: number
+          sector?: string | null
+          sector_performance?: Json | null
+          status?: string
+          symbol: string
+          thesis?: string | null
+          updated_at?: string
+          valuation_metrics?: Json | null
+          volatility_metrics?: Json | null
+        }
+        Update: {
+          analyst_sentiment?: Json | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalysts?: Json | null
+          conviction?: string
+          created_at?: string
+          discovery_bucket?: string
+          dividend_metrics?: Json | null
+          earnings_growth?: Json | null
+          id?: string
+          institutional_ownership?: Json | null
+          momentum_metrics?: Json | null
+          risks?: Json | null
+          score?: number
+          sector?: string | null
+          sector_performance?: Json | null
+          status?: string
+          symbol?: string
+          thesis?: string | null
+          updated_at?: string
+          valuation_metrics?: Json | null
+          volatility_metrics?: Json | null
+        }
+        Relationships: []
+      }
       dm_finder_contacts: {
         Row: {
           company: string | null

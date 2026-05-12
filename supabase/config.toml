@@ -188,3 +188,6 @@ verify_jwt = false
 
 [functions.analyst-etf-fund-analysis]
 verify_jwt = false
+
+[functions.analyst-discovery-engine]
+verify_jwt = false
