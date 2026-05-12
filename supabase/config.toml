@@ -185,3 +185,6 @@ verify_jwt = false
 
 [functions.analyst-realtime-alerts]
 verify_jwt = false
+
+[functions.analyst-etf-fund-analysis]
+verify_jwt = false
