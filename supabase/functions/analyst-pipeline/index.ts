@@ -577,6 +577,13 @@ Return pass=false if ANY rule is violated. List the violated rule numbers with a
           investor_profile: brief.investor_profile,
           allocation_category: brief.allocation_category,
           suggested_tags: brief.suggested_tags || [],
+          asset_classification: brief.asset_classification,
+          sector_classification: brief.sector_classification,
+          sentiment_score: brief.sentiment_score,
+          target_platform: brief.target_platform,            // finance | investor | both
+          suggested_admin_tab: brief.suggested_admin_tab,    // flowpulse/admin/<tab>
+          alert_priority: brief.alert_priority,
+          source_references: brief.source_references || [],
           rules_engine: {
             deterministic_flags: deterministicFlags,
             llm_flags: llmFlags,
