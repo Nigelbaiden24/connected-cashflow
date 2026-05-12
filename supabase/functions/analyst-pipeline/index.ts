@@ -469,20 +469,50 @@ Always include bullish catalysts AND bearish risks. End full_markdown with the F
 
       if (!brief) continue;
 
-      // Compliance pass
+      // ─── RULES ENGINE: deterministic regex pre-check, then strict LLM audit ───
+      const md = String(brief.full_markdown || "");
+      const deterministicFlags: string[] = [];
+      const guaranteeRe = /\b(guaranteed|risk[- ]free|certain to|will (?:outperform|return|deliver)|definitely (?:outperform|profit|return))\b/i;
+      const adviceRe = /\b(you should (?:buy|sell|invest)|we (?:recommend|advise) (?:you|investors) (?:buy|sell|invest)|put your money)\b/i;
+      const fakeRatingRe = /\b(price target of \$?£?\d|consensus rating of|broker rating)\b/i;
+      if (guaranteeRe.test(md)) deterministicFlags.push("RULE_7_VIOLATION: investment guarantee language");
+      if (adviceRe.test(md)) deterministicFlags.push("RULE_8_VIOLATION: personal financial advice wording");
+      if (fakeRatingRe.test(md)) deterministicFlags.push("RULE_3_RISK: rating/price target requires [n] citation");
+      const numericClaims = (md.match(/[£$]\s?\d[\d,.]*\s?(?:bn|m|k|%)?/gi) || []).length;
+      const citationCount = (md.match(/\[\d+\]/g) || []).length;
+      if (numericClaims > 3 && citationCount === 0) {
+        deterministicFlags.push("RULE_4_VIOLATION: numeric claims without source citations");
+      }
+      if (!/Not advice|Capital at risk/i.test(md)) {
+        deterministicFlags.push("RULE_9_VIOLATION: missing FCA footer");
+      }
+
       const compliance = await aiJson(
-        `You are a compliance officer reviewing a buy-side brief for hallucination / unverifiable claims. Be strict.`,
-        `BRIEF:\n${brief.full_markdown}\n\nEVIDENCE:\n${evidenceText}`,
+        `You are FlowPulse's Rules Engine — a strict compliance officer. Audit the brief against these HARD RULES and FAIL it if ANY are violated:
+1. Fabricated financial data (numbers not present in evidence)
+2. Invented earnings figures, EPS, revenue, guidance
+3. Fake analyst ratings or broker price targets
+4. Uncited numeric/factual claims (must reference [n])
+5. Missing uncertainty flags on low-confidence claims
+6. Facts blurred with interpretation (must use FACT/ESTIMATE/SENTIMENT/INFERENCE markers)
+7. Investment guarantees ("will outperform", "guaranteed", "risk-free")
+8. Personal financial advice wording ("you should buy", "we recommend you invest")
+9. Missing FCA footer ("Not advice — for information only. Capital at risk.")
+
+Return pass=false if ANY rule is violated. List the violated rule numbers with a short explanation.`,
+        `BRIEF:\n${md}\n\nEVIDENCE (only these facts are verified):\n${evidenceText}\n\nDETERMINISTIC PRE-FLAGS: ${deterministicFlags.join("; ") || "none"}`,
         {
           type: "function",
           function: {
             name: "review",
-            description: "Compliance review",
+            description: "Strict rules-engine compliance review",
             parameters: {
               type: "object",
               properties: {
-                pass: { type: "boolean" },
-                flags: { type: "array", items: { type: "string" } },
+                pass: { type: "boolean", description: "false if ANY hard rule violated" },
+                flags: { type: "array", items: { type: "string" }, description: "rule numbers + short explanation" },
+                rules_violated: { type: "array", items: { type: "integer" } },
+                severity: { type: "string", enum: ["clean", "minor", "major", "critical"] },
               },
               required: ["pass", "flags"],
               additionalProperties: false,
