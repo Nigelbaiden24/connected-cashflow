@@ -227,72 +227,71 @@ export default function AnalystQueueDashboard() {
   }), [briefs]);
 
   return (
-    <div className="space-y-6 text-slate-200">
-      {/* ─── Hero header ─────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-        <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_top_right,_theme(colors.purple.500),transparent_60%)]" />
-        <div className="relative p-6 md:p-7">
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="flex items-start gap-4">
-              <div className="rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 ring-1 ring-purple-500/30 p-2.5">
-                <Brain className="w-5 h-5 text-purple-300" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-purple-300/70 font-semibold">Orchestration Layer</p>
-                  <span className="h-1 w-1 rounded-full bg-slate-600" />
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500">flowpulse / admin</p>
-                </div>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-50">Analyst AI Queue</h2>
-                <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-                  Autonomous research pipeline — scrape, classify, score, generate, validate, then route to the
-                  matching frontend tab on approval.
-                </p>
+    <div className="space-y-5 text-slate-200">
+      {/* ─── Command bar ───────────────────────────────────── */}
+      <div className="rounded-xl border border-slate-800/80 bg-slate-950/70 backdrop-blur-xl overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 border-b border-slate-800/60">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-lg bg-purple-500/20 blur-md" />
+              <div className="relative rounded-lg bg-gradient-to-br from-purple-500/30 to-fuchsia-500/10 ring-1 ring-purple-500/40 p-2">
+                <Brain className="w-4 h-4 text-purple-200" />
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2.5 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2">
-                <div className={`h-1.5 w-1.5 rounded-full ${autoscrape ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
-                <span className="text-xs text-slate-400">Autoscraper</span>
-                <Switch checked={autoscrape} onCheckedChange={toggleAutoscrape} />
+            <div>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h2 className="text-base font-semibold tracking-tight text-slate-50">Analyst AI Queue</h2>
+                <span className="text-[10px] font-mono text-slate-600">v2.4</span>
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
+                  <span className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" /> Live
+                </span>
               </div>
-              <Button variant="outline" size="sm" onClick={load}
-                className="border-slate-800 bg-slate-950/60 hover:bg-slate-900 text-slate-300">
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
-              </Button>
-              <Button onClick={runPipeline} disabled={running} size="sm"
-                className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 shadow-lg shadow-purple-900/30">
-                {running ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Play className="w-3.5 h-3.5 mr-1.5" />}
-                Run pipeline
-              </Button>
+              <p className="text-[11px] text-slate-500 leading-tight">
+                Orchestration · scrape → classify → score → generate → validate → route
+              </p>
             </div>
           </div>
 
-          {/* KPI row */}
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-            <StatTile label="Scraped"    value={lastRun?.scraped ?? 0}    icon={Database}    accent="from-blue-500/0 via-blue-500 to-blue-500/0" />
-            <StatTile label="Classified" value={lastRun?.classified ?? 0} icon={Cpu}         accent="from-cyan-500/0 via-cyan-500 to-cyan-500/0" />
-            <StatTile label="Scored"     value={lastRun?.scored ?? 0}     icon={Gauge}       accent="from-emerald-500/0 via-emerald-500 to-emerald-500/0" />
-            <StatTile label="Briefs"     value={lastRun?.generated ?? 0}  icon={FileText}    accent="from-amber-500/0 via-amber-500 to-amber-500/0" />
-            <StatTile label="Pending"    value={counts.pending}           icon={Clock}       accent="from-amber-500/0 via-amber-400 to-amber-500/0" />
-            <StatTile label="Promoted"   value={counts.promoted}          icon={ShieldCheck} accent="from-emerald-500/0 via-emerald-400 to-emerald-500/0" />
-            <StatTile
-              label="Last run"
-              value={lastRun?.duration_ms ? `${(lastRun.duration_ms / 1000).toFixed(1)}s` : "—"}
-              hint={lastRun ? new Date(lastRun.started_at).toLocaleTimeString() : "no runs yet"}
-              icon={Activity}
-              accent="from-purple-500/0 via-purple-500 to-purple-500/0"
-            />
-          </div>
-
-          {lastRun?.errors && Array.isArray(lastRun.errors) && lastRun.errors.length > 0 && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-rose-900/40 bg-rose-950/30 px-3 py-2 text-xs text-rose-300">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              {lastRun.errors.length} error(s) in last run.
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/40 px-3 py-1.5">
+              <div className={`h-1.5 w-1.5 rounded-full ${autoscrape ? "bg-emerald-400 animate-pulse" : "bg-slate-600"}`} />
+              <span className="text-[11px] uppercase tracking-wider text-slate-500 font-medium">Autoscraper</span>
+              <Switch checked={autoscrape} onCheckedChange={toggleAutoscrape} />
             </div>
-          )}
+            <Button variant="outline" size="sm" onClick={load}
+              className="h-8 border-slate-800 bg-slate-900/40 hover:bg-slate-800 text-slate-300">
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
+            </Button>
+            <Button onClick={runPipeline} disabled={running} size="sm"
+              className="h-8 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 shadow-lg shadow-purple-900/40 border border-purple-400/20">
+              {running ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Play className="w-3.5 h-3.5 mr-1.5" />}
+              Run pipeline
+            </Button>
+          </div>
         </div>
+
+        {/* KPI strip (Bloomberg-style) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 bg-gradient-to-b from-slate-950/40 to-slate-950/0">
+          <StatTile label="Scraped"    value={lastRun?.scraped ?? 0}    icon={Database} />
+          <StatTile label="Classified" value={lastRun?.classified ?? 0} icon={Cpu} />
+          <StatTile label="Scored"     value={lastRun?.scored ?? 0}     icon={Gauge} />
+          <StatTile label="Briefs"     value={lastRun?.generated ?? 0}  icon={FileText} />
+          <StatTile label="Pending"    value={counts.pending}           icon={Clock} hint="awaiting review" />
+          <StatTile label="Promoted"   value={counts.promoted}          icon={ShieldCheck} hint="published" />
+          <StatTile
+            label="Last run"
+            value={lastRun?.duration_ms ? `${(lastRun.duration_ms / 1000).toFixed(1)}s` : "—"}
+            hint={lastRun ? new Date(lastRun.started_at).toLocaleTimeString() : "no runs yet"}
+            icon={Activity}
+          />
+        </div>
+
+        {lastRun?.errors && Array.isArray(lastRun.errors) && lastRun.errors.length > 0 && (
+          <div className="flex items-center gap-2 border-t border-rose-900/40 bg-rose-950/20 px-5 py-2 text-[11px] text-rose-300">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            {lastRun.errors.length} error(s) in last pipeline run.
+          </div>
+        )}
       </div>
 
       {/* ─── Operational modules (grouped under sub-tabs) ─── */}
