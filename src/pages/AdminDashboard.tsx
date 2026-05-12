@@ -30,6 +30,7 @@ import { PlatformEnquiries } from "@/components/admin/PlatformEnquiries";
 import { InsightsAccessRequests } from "@/components/admin/InsightsAccessRequests";
 import { OpportunityUpload } from "@/components/admin/OpportunityUpload";
 import { OpportunityResearchEngine } from "@/components/admin/OpportunityResearchEngine";
+import AnalystQueueDashboard from "@/components/admin/AnalystQueueDashboard";
 import { OpportunityManager } from "@/components/admin/OpportunityManager";
 import { NewsletterComposer } from "@/components/admin/NewsletterComposer";
 import { AdminDocumentGenerator } from "@/components/admin/AdminDocumentGenerator";
@@ -1488,6 +1489,8 @@ export default function AdminDashboard() {
           {activeTab === 'fund-analyst' && <FundAnalystAdmin />}
 
           {activeTab === 'opportunity-engine' && <OpportunityResearchEngine />}
+
+          {activeTab === 'analyst-queue' && <AnalystQueueDashboard />}
 
           {activeTab === 'opportunities' && (
             <div className="space-y-6">
