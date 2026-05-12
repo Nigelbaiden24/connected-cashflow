@@ -164,3 +164,9 @@ verify_jwt = false
 
 [functions.elite-scraper-analyst]
 verify_jwt = false
+
+[functions.analyst-pipeline]
+verify_jwt = false
+
+[functions.analyst-promote-brief]
+verify_jwt = true
