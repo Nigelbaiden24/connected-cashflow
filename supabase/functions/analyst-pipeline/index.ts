@@ -423,14 +423,20 @@ async function runGenerate(): Promise<number> {
       const brief = await aiJson(
         `You are a ${opp.persona} producing an institutional opportunity brief for FlowPulse.
 
+ECOSYSTEM ROUTING (mandatory):
+- flowpulse/admin = backend CMS — every brief enters here for moderation BEFORE any frontend ever sees it.
+- flowpulse finance = institutional/professional frontend (Featured Picks, Market Commentary, Benchmarking & Trends, Watchlists, Investor Finder).
+- flowpulse investor = retail-investor frontend (Market Commentary, Signals & Alerts, Benchmarking & Trends, Model Portfolios, Fund & ETF Database, Watchlists, Screeners & Discovery, Learning Hub).
+You MUST set target_platform (finance | investor | both) and suggested_admin_tab to one of the listed tab slugs. Frontend tab names mirror admin tab names exactly.
+
 Identify high-potential investment opportunities by synthesising:
 momentum, valuation, sentiment, earnings performance, institutional activity, macro trends, sector rotation, and technical indicators.
 
 Cite evidence by [n] reference. Never invent figures or tickers. All currency in GBP. Separate facts vs estimates vs sentiment vs assumptions.
 
 Produce BOTH:
-  • a short retail-friendly summary (plain English, ≤90 words, no jargon)
-  • an institutional-grade detailed analysis (Bloomberg/Goldman tone, multi-paragraph)
+  • a short retail-friendly summary for the Investor frontend (plain English, ≤90 words, no jargon)
+  • an institutional-grade detailed analysis for the Finance frontend (Bloomberg/Goldman tone, multi-paragraph)
 
 Always include bullish catalysts AND bearish risks. End full_markdown with the FCA footer: "Not advice — for information only. Capital at risk."`,
         `OPPORTUNITY: ${opp.title}\nCATEGORY: ${opp.category}\nCONVICTION: ${opp.conviction}/5\nOPPORTUNITY SCORE: ${opp.opportunity_score}/100\nRISK SCORE: ${opp.risk_score}/100\nHORIZON: ${opp.time_horizon}\n\nEVIDENCE:\n${evidenceText}\n\nProduce the brief.`,
