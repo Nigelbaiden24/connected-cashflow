@@ -66,8 +66,8 @@ serve(async (req) => {
 
     const universe = (dbUniverse && dbUniverse.length > 0) ? dbUniverse : fallbackUniverse;
 
-    const sys = `You are an elite multi-asset analyst (institutional grade). Pick the top ${count} highest-conviction stocks and crypto from the supplied universe for TODAY. Judge PAST performance and FUTURE outlook with rigour. Score conviction strictly 0–5. Pick ONLY ids supplied. Output strict JSON.`;
-    const user = `Universe (${universe.length}): ${JSON.stringify(universe).slice(0, 120000)}\n\nReturn JSON: {"picks":[{"id":"<id>","symbol":"...","name":"...","asset_type":"stock|crypto","activity_type":"ai_pick","headline":"<one-line catchy headline like a Bloomberg alert>","summary":"2-3 sentence punchy commentary","analyst_rating":"Gold|Silver|Bronze|Neutral|Negative","conviction_score":0-5,"past_performance":"1-2 sentences on recent track record (24h, 30d, 1y)","future_outlook":"2-3 sentences on near to mid term outlook with specifics","catalysts":["...","..."],"risks":["...","..."]}]}`;
+    const sys = `You are a Wall Street-grade multi-asset analyst (CFA + portfolio manager). Pick the top ${count} highest-conviction stocks/crypto from the supplied universe for TODAY. Apply rigorous expert logic across: fundamentals, valuation vs peers, technical setup, momentum, catalysts, macro/regulatory backdrop, sector rotation, and risk/reward. Score conviction strictly 0–5 (5 = strong buy). For every pick, give a clear actionable recommendation and a crisp "why to invest" rationale a portfolio committee would accept. Pick ONLY ids supplied. Output strict JSON.`;
+    const user = `Universe (${universe.length}): ${JSON.stringify(universe).slice(0, 120000)}\n\nReturn JSON: {"picks":[{"id":"<id>","symbol":"...","name":"...","asset_type":"stock|crypto","activity_type":"ai_pick","headline":"<one-line Bloomberg-style headline>","summary":"2-3 sentence punchy commentary","recommendation":"Strong Buy|Buy|Accumulate|Hold|Reduce|Sell","why_invest":"3-4 sentences of expert rationale: edge vs peers, valuation/setup, asymmetric upside","analyst_rating":"Gold|Silver|Bronze|Neutral|Negative","conviction_score":0-5,"past_performance":"1-2 sentences (24h, 30d, 1y)","future_outlook":"2-3 sentences with specific price drivers and timeframe","catalysts":["...","..."],"risks":["...","..."]}]}`;
 
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -104,7 +104,11 @@ serve(async (req) => {
         logo_url: u.logo_url ?? null,
         activity_type: p.activity_type || "ai_pick",
         headline: p.headline || `${p.name || u.name}: AI conviction update`,
-        summary: p.summary ?? null,
+        summary: [
+          p.recommendation ? `📊 Recommendation: ${p.recommendation}` : null,
+          p.summary,
+          p.why_invest ? `\n💡 Why invest: ${p.why_invest}` : null,
+        ].filter(Boolean).join("\n") || null,
         analyst_rating: ["Gold","Silver","Bronze","Neutral","Negative"].includes(p.analyst_rating) ? p.analyst_rating : "Neutral",
         conviction_score: Math.max(0, Math.min(5, Number(p.conviction_score) || 3)),
         past_performance: p.past_performance ?? null,
@@ -115,7 +119,7 @@ serve(async (req) => {
         source: "ai_scan",
         is_promoted: promote,
         platform,
-        metadata: { stock_id: p.id, snapshot: u },
+        metadata: { stock_id: p.id, snapshot: u, recommendation: p.recommendation ?? null, why_invest: p.why_invest ?? null },
       };
     });
 

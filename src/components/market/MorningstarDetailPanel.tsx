@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -229,6 +230,8 @@ export function MorningstarDetailPanel({
 }: MorningstarDetailPanelProps) {
   const [activeTab, setActiveTab] = useState("scenario");
   const [timeRange, setTimeRange] = useState("1Y");
+  const [realHistory, setRealHistory] = useState<{ date: string; price: number }[] | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // Generate chart data based on asset
   const scenarioTrendData = useMemo(() => {
@@ -240,9 +243,39 @@ export function MorningstarDetailPanel({
     return generateScenarioMetrics(asset.priceChange1y || 8);
   }, [asset]);
 
+  // Fetch real Trading-212-style price history
+  useEffect(() => {
+    if (asset.assetType !== "stock" && asset.assetType !== "crypto") return;
+    if (!asset.symbol) return;
+    let cancelled = false;
+    setHistoryLoading(true);
+    supabase.functions
+      .invoke("fetch-asset-history", {
+        body: { symbol: asset.symbol, assetType: asset.assetType, range: timeRange },
+      })
+      .then(({ data }) => {
+        if (cancelled) return;
+        const h = (data as any)?.history;
+        if (Array.isArray(h) && h.length > 0) setRealHistory(h);
+        else setRealHistory(null);
+      })
+      .catch(() => !cancelled && setRealHistory(null))
+      .finally(() => !cancelled && setHistoryLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [asset.symbol, asset.assetType, timeRange]);
+
   const priceHistoryData = useMemo(() => {
+    if (realHistory && realHistory.length > 0) {
+      return realHistory.map((p) => ({
+        date: new Date(p.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" }),
+        price: p.price,
+        volume: 0,
+      }));
+    }
     return generatePriceHistory(asset.currentPrice || 100);
-  }, [asset]);
+  }, [asset, realHistory]);
 
   const formatCurrency = (value: number) => {
     if (!value) return "—";
@@ -564,6 +597,13 @@ export function MorningstarDetailPanel({
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-primary" />
                       <CardTitle className="text-sm font-semibold">Price History</CardTitle>
+                      {realHistory && realHistory.length > 0 ? (
+                        <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-0">Live</Badge>
+                      ) : historyLoading ? (
+                        <Badge variant="outline" className="text-[10px]">Loading…</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px]">Simulated</Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       {['1W', '1M', '3M', '6M', '1Y', 'All'].map((range) => (
