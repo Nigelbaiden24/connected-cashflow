@@ -423,14 +423,20 @@ async function runGenerate(): Promise<number> {
       const brief = await aiJson(
         `You are a ${opp.persona} producing an institutional opportunity brief for FlowPulse.
 
+ECOSYSTEM ROUTING (mandatory):
+- flowpulse/admin = backend CMS — every brief enters here for moderation BEFORE any frontend ever sees it.
+- flowpulse finance = institutional/professional frontend (Featured Picks, Market Commentary, Benchmarking & Trends, Watchlists, Investor Finder).
+- flowpulse investor = retail-investor frontend (Market Commentary, Signals & Alerts, Benchmarking & Trends, Model Portfolios, Fund & ETF Database, Watchlists, Screeners & Discovery, Learning Hub).
+You MUST set target_platform (finance | investor | both) and suggested_admin_tab to one of the listed tab slugs. Frontend tab names mirror admin tab names exactly.
+
 Identify high-potential investment opportunities by synthesising:
 momentum, valuation, sentiment, earnings performance, institutional activity, macro trends, sector rotation, and technical indicators.
 
 Cite evidence by [n] reference. Never invent figures or tickers. All currency in GBP. Separate facts vs estimates vs sentiment vs assumptions.
 
 Produce BOTH:
-  • a short retail-friendly summary (plain English, ≤90 words, no jargon)
-  • an institutional-grade detailed analysis (Bloomberg/Goldman tone, multi-paragraph)
+  • a short retail-friendly summary for the Investor frontend (plain English, ≤90 words, no jargon)
+  • an institutional-grade detailed analysis for the Finance frontend (Bloomberg/Goldman tone, multi-paragraph)
 
 Always include bullish catalysts AND bearish risks. End full_markdown with the FCA footer: "Not advice — for information only. Capital at risk."`,
         `OPPORTUNITY: ${opp.title}\nCATEGORY: ${opp.category}\nCONVICTION: ${opp.conviction}/5\nOPPORTUNITY SCORE: ${opp.opportunity_score}/100\nRISK SCORE: ${opp.risk_score}/100\nHORIZON: ${opp.time_horizon}\n\nEVIDENCE:\n${evidenceText}\n\nProduce the brief.`,
@@ -455,12 +461,19 @@ Always include bullish catalysts AND bearish risks. End full_markdown with the F
                 investor_profile: { type: "string", enum: ["Conservative", "Balanced", "Growth", "Aggressive", "Speculative"] },
                 allocation_category: { type: "string", description: "e.g. Core Equity, Satellite Growth, Tactical, Alternatives, Income" },
                 suggested_tags: { type: "array", items: { type: "string" }, description: "5-10 SEO/topic tags" },
-                retail_summary: { type: "string", description: "≤90-word plain-English summary for retail investors" },
-                detailed_analysis: { type: "string", description: "Institutional-grade multi-paragraph analysis" },
+                retail_summary: { type: "string", description: "≤90-word plain-English summary for retail investors (Investor frontend tone)" },
+                detailed_analysis: { type: "string", description: "Institutional-grade multi-paragraph analysis (Finance frontend tone)" },
                 action: { type: "string", enum: ["Watch", "Accumulate", "Reduce", "Avoid"] },
+                asset_classification: { type: "string", description: "e.g. Equity, ETF, Fund, Crypto, Commodity, Macro, Bond" },
+                sector_classification: { type: "string", description: "GICS-style sector" },
+                sentiment_score: { type: "integer", minimum: -100, maximum: 100 },
+                target_platform: { type: "string", enum: ["finance", "investor", "both"], description: "Which frontend(s) the brief should sync to after admin approval" },
+                suggested_admin_tab: { type: "string", enum: ["featured-picks", "market-commentary", "benchmarking-trends", "watchlists", "investor-finder", "signals-alerts", "model-portfolios", "fund-etf-database", "screeners-discovery", "learning-hub"], description: "Backend admin tab the brief routes to (mirrors frontend tab name)" },
+                alert_priority: { type: "string", enum: ["low", "medium", "high", "critical"] },
+                source_references: { type: "array", items: { type: "string" }, description: "Cited [n] -> source URL or origin" },
                 full_markdown: { type: "string", description: "Full brief in markdown — must contain ALL sections above (Retail Summary, Detailed Analysis, Thesis, Bullish Catalysts, Bearish Risks, Technical Overview, Valuation, Key Levels, Comparable Assets, Risk Level, Investor Profile, Allocation, Tags, Confidence) and end with the FCA footer." },
               },
-              required: ["thesis", "catalyst", "bearish_risks", "risks", "confidence_score", "risk_level", "investor_profile", "allocation_category", "suggested_tags", "retail_summary", "detailed_analysis", "action", "full_markdown"],
+              required: ["thesis", "catalyst", "bearish_risks", "risks", "confidence_score", "risk_level", "investor_profile", "allocation_category", "suggested_tags", "retail_summary", "detailed_analysis", "action", "asset_classification", "sector_classification", "sentiment_score", "target_platform", "suggested_admin_tab", "alert_priority", "full_markdown"],
               additionalProperties: false,
             },
           },
@@ -564,6 +577,13 @@ Return pass=false if ANY rule is violated. List the violated rule numbers with a
           investor_profile: brief.investor_profile,
           allocation_category: brief.allocation_category,
           suggested_tags: brief.suggested_tags || [],
+          asset_classification: brief.asset_classification,
+          sector_classification: brief.sector_classification,
+          sentiment_score: brief.sentiment_score,
+          target_platform: brief.target_platform,            // finance | investor | both
+          suggested_admin_tab: brief.suggested_admin_tab,    // flowpulse/admin/<tab>
+          alert_priority: brief.alert_priority,
+          source_references: brief.source_references || [],
           rules_engine: {
             deterministic_flags: deterministicFlags,
             llm_flags: llmFlags,
