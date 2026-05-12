@@ -173,3 +173,6 @@ verify_jwt = true
 
 [functions.analyst-market-commentary]
 verify_jwt = true
+
+[functions.analyst-benchmark-trends]
+verify_jwt = false
