@@ -235,11 +235,15 @@ async function runClassify(): Promise<number> {
     .from("analyst_raw_signals")
     .select("id, source, title, content")
     .eq("classified", false)
-    .limit(40);
+    .limit(120);
   if (!rows?.length) return 0;
+
+  // Parallelize AI classify calls in batches of 8 for speed (avoid rate-limits)
+  const BATCH = 8;
   let count = 0;
-  for (const row of rows) {
-    try {
+  for (let i = 0; i < rows.length; i += BATCH) {
+    const batch = rows.slice(i, i + BATCH);
+    const results = await Promise.allSettled(batch.map(async (row) => {
       const result = await aiJson(
         `You are a senior buy-side analyst classifying market signals. Be precise; never invent tickers.`,
         `SOURCE: ${row.source}\nTITLE: ${row.title}\nCONTENT: ${row.content?.slice(0, 1500) || ""}`,
@@ -277,12 +281,12 @@ async function runClassify(): Promise<number> {
           summary: result.summary,
         });
         await sb.from("analyst_raw_signals").update({ classified: true }).eq("id", row.id);
-        count++;
+        return true;
       }
-    } catch (e) {
-      console.warn("classify err", row.id, String(e).slice(0, 120));
-      await sb.from("analyst_raw_signals").update({ classified: true }).eq("id", row.id); // skip on error
-    }
+      await sb.from("analyst_raw_signals").update({ classified: true }).eq("id", row.id);
+      return false;
+    }));
+    count += results.filter((r) => r.status === "fulfilled" && r.value).length;
   }
   return count;
 }
