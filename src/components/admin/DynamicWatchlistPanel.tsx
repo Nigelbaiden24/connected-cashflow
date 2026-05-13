@@ -133,9 +133,12 @@ export default function DynamicWatchlistPanel() {
                 </div>
               </div>
               {e.status === "active" && (
-                <Button size="icon" variant="ghost" onClick={() => remove(e.id)} className="text-rose-300 hover:bg-rose-500/10 h-8 w-8">
-                  <Trash2 className="w-4 h-4"/>
-                </Button>
+                <div className="flex items-center gap-1">
+                  <PromoteToPlatformButton table="analyst_dynamic_watchlist" itemId={e.id} promotedStatus="promoted" onPromoted={() => refresh()} />
+                  <Button size="icon" variant="ghost" onClick={() => remove(e.id)} className="text-rose-300 hover:bg-rose-500/10 h-8 w-8">
+                    <Trash2 className="w-4 h-4"/>
+                  </Button>
+                </div>
               )}
             </div>
 
