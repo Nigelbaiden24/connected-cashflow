@@ -103,29 +103,26 @@ async function scrapeYahooMovers(): Promise<any[]> {
 }
 
 async function scrapeRedditFinance(): Promise<any[]> {
-  const subs = ["wallstreetbets", "stocks", "investing"];
-  const items: any[] = [];
-  for (const sub of subs) {
-    try {
-      const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=10`, {
-        headers: { "User-Agent": "FlowPulse-Analyst/1.0" },
-      });
-      const j = await r.json();
-      const posts = j?.data?.children ?? [];
-      for (const p of posts) {
-        const d = p.data;
-        if (!d?.title) continue;
-        items.push({
-          source: `reddit_${sub}`,
-          source_url: `https://reddit.com${d.permalink}`,
-          title: d.title.slice(0, 240),
-          content: (d.selftext || d.title).slice(0, 2000),
-          raw_payload: { score: d.score, comments: d.num_comments, sub },
-        });
-      }
-    } catch (e) { console.warn(`reddit ${sub} failed`, e); }
-  }
-  return items;
+  const subs = ["wallstreetbets", "stocks", "investing", "ValueInvesting", "options", "CryptoCurrency", "ETFs", "UKInvesting"];
+  const results = await Promise.allSettled(subs.map(async (sub) => {
+    const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=15`, {
+      headers: { "User-Agent": "FlowPulse-Analyst/1.0" },
+    });
+    const j = await r.json();
+    const posts = j?.data?.children ?? [];
+    return posts.flatMap((p: any) => {
+      const d = p.data;
+      if (!d?.title) return [];
+      return [{
+        source: `reddit_${sub}`,
+        source_url: `https://reddit.com${d.permalink}`,
+        title: d.title.slice(0, 240),
+        content: (d.selftext || d.title).slice(0, 2000),
+        raw_payload: { score: d.score, comments: d.num_comments, sub },
+      }];
+    });
+  }));
+  return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 }
 
 async function scrapeSecEdgar(): Promise<any[]> {
@@ -138,7 +135,7 @@ async function scrapeSecEdgar(): Promise<any[]> {
     const entryRe = /<entry>([\s\S]*?)<\/entry>/g;
     let m;
     let count = 0;
-    while ((m = entryRe.exec(xml)) && count < 15) {
+    while ((m = entryRe.exec(xml)) && count < 25) {
       const block = m[1];
       const title = block.match(/<title>([\s\S]*?)<\/title>/)?.[1]?.trim();
       const link = block.match(/<link[^>]*href="([^"]+)"/)?.[1];
@@ -158,49 +155,74 @@ async function scrapeSecEdgar(): Promise<any[]> {
   } catch (e) { console.warn("sec edgar failed", e); return []; }
 }
 
-async function scrapeFirecrawlNews(): Promise<any[]> {
+// Mass-scrape across all CATEGORIES — one Firecrawl query per category in parallel
+const FIRECRAWL_QUERIES = [
+  "stock market UK FTSE earnings deal announcement today",
+  "macro news inflation rates central bank policy today",
+  "sector rotation flows equities today",
+  "earnings beat miss guidance today",
+  "momentum breakout stocks today",
+  "technical breakout stock chart today",
+  "value opportunity undervalued stock today",
+  "growth stock opportunity today",
+  "ETF flow inflow outflow today",
+  "insider buying selling form 4 filings today",
+  "institutional 13F holdings today",
+  "retail sentiment options unusual activity today",
+  "geopolitical risk event market today",
+  "volatility VIX spike market today",
+];
+
+async function scrapeFirecrawlAll(): Promise<any[]> {
   if (!FIRECRAWL_API_KEY) return [];
-  try {
+  const runs = await Promise.allSettled(FIRECRAWL_QUERIES.map(async (q) => {
     const r = await fetch("https://api.firecrawl.dev/v2/search", {
       method: "POST",
       headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: "stock market UK FTSE earnings deal announcement today",
-        limit: 10,
-        tbs: "qdr:d",
-      }),
+      body: JSON.stringify({ query: q, limit: 8, tbs: "qdr:d" }),
     });
     const j = await r.json();
     const results = j?.data?.web ?? j?.data ?? [];
-    return results.slice(0, 10).map((res: any) => ({
+    return results.slice(0, 8).map((res: any) => ({
       source: "firecrawl_news",
       source_url: res.url,
       title: (res.title || "Untitled").slice(0, 240),
       content: (res.description || res.markdown || "").slice(0, 2500),
-      raw_payload: { firecrawl: true },
+      raw_payload: { firecrawl: true, query: q },
     }));
-  } catch (e) { console.warn("firecrawl news failed", e); return []; }
+  }));
+  return runs.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 }
 
 async function runScrape(): Promise<number> {
-  const all = [
-    ...(await scrapeYahooMovers()),
-    ...(await scrapeRedditFinance()),
-    ...(await scrapeSecEdgar()),
-    ...(await scrapeFirecrawlNews()),
-  ];
+  // Parallel scrape across all sources for max throughput
+  const [yahoo, reddit, sec, firecrawl] = await Promise.all([
+    scrapeYahooMovers(),
+    scrapeRedditFinance(),
+    scrapeSecEdgar(),
+    scrapeFirecrawlAll(),
+  ]);
+  const all = [...yahoo, ...reddit, ...sec, ...firecrawl];
+
+  // Pre-hash all rows in parallel
+  const rows = await Promise.all(all.map(async (item) => ({
+    source: item.source,
+    source_url: item.source_url,
+    title: item.title,
+    content: item.content,
+    raw_payload: item.raw_payload,
+    dedup_hash: await sha256((item.source_url || item.title) + item.source),
+  })));
+
+  // Bulk-insert in parallel chunks of 50; dedup_hash unique constraint silently rejects dupes
+  const chunks: typeof rows[] = [];
+  for (let i = 0; i < rows.length; i += 50) chunks.push(rows.slice(i, i + 50));
+  const inserts = await Promise.allSettled(
+    chunks.map((c) => sb.from("analyst_raw_signals").insert(c).select("id"))
+  );
   let inserted = 0;
-  for (const item of all) {
-    const hash = await sha256((item.source_url || item.title) + item.source);
-    const { error } = await sb.from("analyst_raw_signals").insert({
-      source: item.source,
-      source_url: item.source_url,
-      title: item.title,
-      content: item.content,
-      raw_payload: item.raw_payload,
-      dedup_hash: hash,
-    });
-    if (!error) inserted++;
+  for (const r of inserts) {
+    if (r.status === "fulfilled") inserted += (r.value.data?.length ?? 0);
   }
   return inserted;
 }
