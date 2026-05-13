@@ -404,7 +404,8 @@ export default function AnalystQueueDashboard() {
                   const tone = convictionTone(b.conviction);
                   return (
                     <div key={b.id}
-                      className={`group relative rounded-xl border border-slate-800/80 bg-gradient-to-br from-slate-900/60 to-slate-950/60 p-5 ring-1 ring-inset ${tone.ring} hover:border-slate-700 transition`}>
+                      className={`group relative rounded-lg border border-slate-800/80 bg-slate-950/60 border-l-2 ${tone.accent} p-4 hover:border-slate-700 hover:bg-slate-900/40 transition-all`}>
+
                       {/* top row */}
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="min-w-0 flex-1">
