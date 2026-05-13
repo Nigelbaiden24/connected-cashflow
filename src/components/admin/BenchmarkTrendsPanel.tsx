@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart3, Play, Check, X, Loader2, TrendingUp, TrendingDown, AlertTriangle, ArrowLeftRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 type Status = "pending" | "approved" | "rejected";
 
