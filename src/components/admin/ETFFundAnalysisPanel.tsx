@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Loader2, RefreshCw, ChevronDown, ChevronUp, TrendingUp, TrendingDown, X } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Analysis {
   id: string;
