@@ -115,9 +115,7 @@ export default function BenchmarkTrendsPanel() {
               </div>
               {r.status === "pending" && (
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => review(r.id, "approved")} className="bg-emerald-600 hover:bg-emerald-700">
-                    <Check className="w-4 h-4 mr-1" /> Approve
-                  </Button>
+                  <PromoteToPlatformButton table="analyst_benchmark_reports" itemId={r.id} promotedStatus="approved" onPromoted={load} />
                   <Button size="sm" variant="outline" onClick={() => review(r.id, "rejected")} className="border-rose-500/40 text-rose-300 hover:bg-rose-500/10">
                     <X className="w-4 h-4 mr-1" /> Reject
                   </Button>
