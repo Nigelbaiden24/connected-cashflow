@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Loader2, RefreshCw, ChevronDown, ChevronUp, TrendingUp, TrendingDown, X } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Analysis {
   id: string;
@@ -242,7 +243,8 @@ export default function ETFFundAnalysisPanel() {
                       <div><SectionLabel>Trend Commentary</SectionLabel><p className="text-xs text-slate-300">{a.trend_commentary}</p></div>
                     )}
 
-                    <div className="flex justify-end pt-2 border-t border-slate-800">
+                    <div className="flex justify-end pt-2 border-t border-slate-800 gap-2">
+                      <PromoteToPlatformButton table="etf_fund_analyses" itemId={a.id} promotedStatus="promoted" onPromoted={refresh} />
                       <Button size="sm" variant="ghost" onClick={() => archive(a.id)} className="text-slate-400 hover:text-rose-300">
                         <X className="h-3 w-3 mr-1" /> Archive
                       </Button>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Compass, Loader2, RefreshCw, Gem, Rocket, TrendingUp, Shield, Coins, X } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Discovery {
   id: string;
@@ -155,6 +156,7 @@ export default function DiscoveryEnginePanel() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Badge variant="outline" className={`${meta.color} border-current/30 text-[10px]`}>{meta.label}</Badge>
                     <Badge className={CONVICTION_COLOR[d.conviction] ?? ""}>{d.conviction}</Badge>
+                    <PromoteToPlatformButton table="discovery_engine_results" itemId={d.id} promotedStatus="promoted" onPromoted={() => refresh()} />
                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => archive(d.id)}>
                       <X className="h-3 w-3" />
                     </Button>

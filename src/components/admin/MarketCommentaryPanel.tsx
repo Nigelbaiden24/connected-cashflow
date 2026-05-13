@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Newspaper, Play, Check, X, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Commentary {
   id: string;
@@ -121,9 +122,7 @@ export default function MarketCommentaryPanel() {
               </div>
               {c.status === "pending" && (
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => setStatus(c.id, "promoted")} className="bg-emerald-600 hover:bg-emerald-700">
-                    <Check className="w-4 h-4 mr-1" /> Approve
-                  </Button>
+                  <PromoteToPlatformButton table="analyst_market_commentary" itemId={c.id} promotedStatus="promoted" onPromoted={load} />
                   <Button size="sm" variant="outline" onClick={() => setStatus(c.id, "rejected")} className="border-rose-500/40 text-rose-300 hover:bg-rose-500/10">
                     <X className="w-4 h-4 mr-1" /> Reject
                   </Button>

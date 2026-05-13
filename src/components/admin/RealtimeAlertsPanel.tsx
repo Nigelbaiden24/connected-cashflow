@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Bell, Loader2, RefreshCw, TrendingUp, TrendingDown, Activity, Zap, Newspaper, X } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Alert {
   id: string;
@@ -137,9 +138,12 @@ export default function RealtimeAlertsPanel() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Badge variant="outline" className={meta.color}><Icon className="h-3 w-3 mr-1" />{meta.label}</Badge>
                     {a.status === "active" && (
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => dismiss(a.id)}>
-                        <X className="h-3 w-3" />
-                      </Button>
+                      <>
+                        <PromoteToPlatformButton table="realtime_investment_alerts" itemId={a.id} promotedStatus="promoted" onPromoted={refresh} />
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => dismiss(a.id)}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

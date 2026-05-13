@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Play, Loader2 } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Segment {
   id: string;
@@ -128,6 +129,7 @@ export default function InvestorSegmentsPanel() {
                 </div>
                 <p className="text-[11px] text-slate-500 font-mono">{s.target_user_id.slice(0, 8)}…</p>
               </div>
+              <PromoteToPlatformButton table="investor_segments" itemId={s.id} promotedStatus="promoted" onPromoted={refresh} />
             </div>
 
             {s.summary && <p className="text-sm text-slate-200 mt-2 p-2 rounded bg-pink-500/5 border border-pink-500/20">{s.summary}</p>}

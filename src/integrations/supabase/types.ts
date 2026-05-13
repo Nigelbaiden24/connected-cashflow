@@ -682,6 +682,7 @@ export type Database = {
           sentiment_analysis: Json | null
           sources: Json | null
           status: string
+          target_platform: string | null
           trend_reversals: Json | null
           underperformers: Json | null
           updated_at: string
@@ -708,6 +709,7 @@ export type Database = {
           sentiment_analysis?: Json | null
           sources?: Json | null
           status?: string
+          target_platform?: string | null
           trend_reversals?: Json | null
           underperformers?: Json | null
           updated_at?: string
@@ -734,6 +736,7 @@ export type Database = {
           sentiment_analysis?: Json | null
           sources?: Json | null
           status?: string
+          target_platform?: string | null
           trend_reversals?: Json | null
           underperformers?: Json | null
           updated_at?: string
@@ -857,6 +860,7 @@ export type Database = {
           status: string
           support_resistance: string | null
           symbol: string
+          target_platform: string | null
           trigger_type: string
           updated_at: string
           watchlist_reason: string | null
@@ -878,6 +882,7 @@ export type Database = {
           status?: string
           support_resistance?: string | null
           symbol: string
+          target_platform?: string | null
           trigger_type: string
           updated_at?: string
           watchlist_reason?: string | null
@@ -899,6 +904,7 @@ export type Database = {
           status?: string
           support_resistance?: string | null
           symbol?: string
+          target_platform?: string | null
           trigger_type?: string
           updated_at?: string
           watchlist_reason?: string | null
@@ -925,6 +931,7 @@ export type Database = {
           sections: Json
           sources: Json
           status: string
+          target_platform: string | null
           updated_at: string
           why_moved: string | null
         }
@@ -947,6 +954,7 @@ export type Database = {
           sections?: Json
           sources?: Json
           status?: string
+          target_platform?: string | null
           updated_at?: string
           why_moved?: string | null
         }
@@ -969,6 +977,7 @@ export type Database = {
           sections?: Json
           sources?: Json
           status?: string
+          target_platform?: string | null
           updated_at?: string
           why_moved?: string | null
         }
@@ -3840,6 +3849,7 @@ export type Database = {
           sector_performance: Json | null
           status: string
           symbol: string
+          target_platform: string | null
           thesis: string | null
           updated_at: string
           valuation_metrics: Json | null
@@ -3864,6 +3874,7 @@ export type Database = {
           sector_performance?: Json | null
           status?: string
           symbol: string
+          target_platform?: string | null
           thesis?: string | null
           updated_at?: string
           valuation_metrics?: Json | null
@@ -3888,6 +3899,7 @@ export type Database = {
           sector_performance?: Json | null
           status?: string
           symbol?: string
+          target_platform?: string | null
           thesis?: string | null
           updated_at?: string
           valuation_metrics?: Json | null
@@ -4160,6 +4172,7 @@ export type Database = {
           status: string
           suitable_investor_types: Json | null
           summary: string | null
+          target_platform: string | null
           ticker: string
           trend_commentary: string | null
           updated_at: string
@@ -4185,6 +4198,7 @@ export type Database = {
           status?: string
           suitable_investor_types?: Json | null
           summary?: string | null
+          target_platform?: string | null
           ticker: string
           trend_commentary?: string | null
           updated_at?: string
@@ -4210,6 +4224,7 @@ export type Database = {
           status?: string
           suitable_investor_types?: Json | null
           summary?: string | null
+          target_platform?: string | null
           ticker?: string
           trend_commentary?: string | null
           updated_at?: string
@@ -5472,6 +5487,7 @@ export type Database = {
           segment_confidence: number | null
           status: string
           summary: string | null
+          target_platform: string | null
           target_user_id: string
           updated_at: string
         }
@@ -5491,6 +5507,7 @@ export type Database = {
           segment_confidence?: number | null
           status?: string
           summary?: string | null
+          target_platform?: string | null
           target_user_id: string
           updated_at?: string
         }
@@ -5510,6 +5527,7 @@ export type Database = {
           segment_confidence?: number | null
           status?: string
           summary?: string | null
+          target_platform?: string | null
           target_user_id?: string
           updated_at?: string
         }
@@ -7775,6 +7793,7 @@ export type Database = {
           source_refs: Json | null
           status: string
           symbol: string
+          target_platform: string | null
           updated_at: string
           urgency_rating: string
         }
@@ -7794,6 +7813,7 @@ export type Database = {
           source_refs?: Json | null
           status?: string
           symbol: string
+          target_platform?: string | null
           updated_at?: string
           urgency_rating?: string
         }
@@ -7813,6 +7833,7 @@ export type Database = {
           source_refs?: Json | null
           status?: string
           symbol?: string
+          target_platform?: string | null
           updated_at?: string
           urgency_rating?: string
         }
