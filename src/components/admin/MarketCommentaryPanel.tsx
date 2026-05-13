@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Newspaper, Play, Check, X, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Commentary {
   id: string;
