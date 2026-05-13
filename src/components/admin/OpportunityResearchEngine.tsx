@@ -1112,7 +1112,6 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     {opp.estimated_value && (
                       <div className="flex items-center gap-1.5 text-slate-700">
-                        <DollarSign className="h-3.5 w-3.5 text-green-600" />
                         <span className="truncate font-semibold">{toGBPDisplay(opp.estimated_value)}</span>
                       </div>
                     )}
