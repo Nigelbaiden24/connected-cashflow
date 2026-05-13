@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Compass, Loader2, RefreshCw, Gem, Rocket, TrendingUp, Shield, Coins, X } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Discovery {
   id: string;
