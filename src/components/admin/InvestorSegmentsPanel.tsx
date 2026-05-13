@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Play, Loader2 } from "lucide-react";
+import PromoteToPlatformButton from "./PromoteToPlatformButton";
 
 interface Segment {
   id: string;
