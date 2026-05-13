@@ -137,9 +137,12 @@ export default function RealtimeAlertsPanel() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Badge variant="outline" className={meta.color}><Icon className="h-3 w-3 mr-1" />{meta.label}</Badge>
                     {a.status === "active" && (
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => dismiss(a.id)}>
-                        <X className="h-3 w-3" />
-                      </Button>
+                      <>
+                        <PromoteToPlatformButton table="realtime_investment_alerts" itemId={a.id} promotedStatus="promoted" onPromoted={refresh} />
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => dismiss(a.id)}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
