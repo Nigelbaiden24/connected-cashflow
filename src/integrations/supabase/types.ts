@@ -9573,6 +9573,10 @@ export type Database = {
         Args: { _member_id: string; _user_id: string }
         Returns: boolean
       }
+      promote_analyst_market_commentary: {
+        Args: { _commentary_id: string; _platform?: string }
+        Returns: Json
+      }
       store_calendar_token: {
         Args: {
           _access_token: string
