@@ -50,17 +50,20 @@ export default function FinanceModelPortfolios() {
   const fetchPortfolios = async () => {
     try {
       setLoading(true);
-      
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('[FinanceModelPortfolios] auth uid =', sessionData.session?.user?.id ?? '(none)');
+
       // Fetch all model portfolios - admin uploads should be visible to all users
       const { data, error } = await supabase
         .from('model_portfolios')
         .select('id, title, description, file_path, thumbnail_url, created_at, updated_at, user_id')
         .order('created_at', { ascending: false });
 
+      console.log('[FinanceModelPortfolios] query result', { count: data?.length ?? 0, error, sample: data?.[0] });
       if (error) throw error;
       setPortfolios(data || []);
     } catch (error) {
-      console.error('Error fetching portfolios:', error);
+      console.error('[FinanceModelPortfolios] Error fetching portfolios:', error);
       toast.error('Failed to load model portfolios');
     } finally {
       setLoading(false);
