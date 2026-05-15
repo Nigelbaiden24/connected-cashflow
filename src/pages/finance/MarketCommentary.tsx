@@ -38,15 +38,18 @@ export default function FinanceMarketCommentary() {
   const fetchCommentaries = async () => {
     try {
       setLoading(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('[FinanceMarketCommentary] auth uid =', sessionData.session?.user?.id ?? '(none)');
       const { data, error } = await supabase
         .from('market_commentary')
         .select('*')
         .order('published_date', { ascending: false });
 
+      console.log('[FinanceMarketCommentary] query result', { count: data?.length ?? 0, error, sample: data?.[0] });
       if (error) throw error;
       setCommentaries(data || []);
     } catch (error) {
-      console.error('Error fetching commentaries:', error);
+      console.error('[FinanceMarketCommentary] Error fetching commentaries:', error);
       toast.error('Failed to load market commentaries');
     } finally {
       setLoading(false);
