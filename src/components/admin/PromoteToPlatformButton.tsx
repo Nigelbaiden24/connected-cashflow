@@ -34,36 +34,52 @@ export function PromoteToPlatformButton({
     setBusy(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const update: Record<string, any> = {
+      if (!user) throw new Error("You must be signed in as an admin to promote.");
+
+      // Verify admin role explicitly so we surface a clear message instead of an opaque RLS failure.
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!roleRow) throw new Error("Admin role required. Please sign in to the admin portal.");
+
+      const tryUpdate = async (payload: Record<string, any>) => {
+        const { error } = await supabase
+          .from(table as any)
+          .update(payload)
+          .eq("id", itemId);
+        return error;
+      };
+
+      const fullPayload: Record<string, any> = {
         status: promotedStatus,
         target_platform: platform,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: user.id,
       };
-      // best-effort optional columns
-      update.reviewed_at = new Date().toISOString();
-      if (user?.id) update.reviewed_by = user.id;
 
-      const { error } = await supabase
-        .from(table as any)
-        .update(update)
-        .eq("id", itemId);
-
-      if (error) {
-        // Retry without reviewed_* if table doesn't have those cols
-        if (/reviewed_/.test(error.message)) {
-          const { error: e2 } = await supabase
-            .from(table as any)
-            .update({ status: promotedStatus, target_platform: platform })
-            .eq("id", itemId);
-          if (e2) throw e2;
-        } else {
-          throw error;
-        }
+      let err = await tryUpdate(fullPayload);
+      // Fallback 1: drop reviewed_* if those columns don't exist on this table
+      if (err && /reviewed_|column .* does not exist/i.test(err.message)) {
+        err = await tryUpdate({ status: promotedStatus, target_platform: platform });
       }
+      // Fallback 2: drop target_platform if missing (older tables)
+      if (err && /target_platform/i.test(err.message)) {
+        err = await tryUpdate({ status: promotedStatus });
+      }
+      if (err) {
+        const detail = (err as any).details || (err as any).hint || "";
+        throw new Error(`${err.message}${detail ? ` — ${detail}` : ""}`);
+      }
+
       const dest = platform === "both" ? "Finance + Investor" : platform === "finance" ? "FlowPulse Finance" : "FlowPulse Investor";
       toast({ title: "Promoted", description: `Published to ${dest}.` });
       onPromoted?.();
     } catch (e: any) {
-      toast({ title: "Promote failed", description: e.message, variant: "destructive" });
+      console.error("[PromoteToPlatformButton] failed", { table, itemId, error: e });
+      toast({ title: "Promote failed", description: e.message || "Unknown error", variant: "destructive" });
     } finally {
       setBusy(false);
     }

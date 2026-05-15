@@ -351,20 +351,38 @@ interface SourceMetadata {
 }
 
 function parseOpportunities(text: string): ScrapedOpportunity[] {
-  try {
-    const jsonMatch = text.match(/```json\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[1]);
-      if (Array.isArray(parsed)) return parsed;
-    }
-    // Try finding a raw JSON array
-    const rawMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
-    if (rawMatch) {
-      const parsed = JSON.parse(rawMatch[0]);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch (e) {
-    console.error("Failed to parse opportunities JSON:", e);
+  const tryExtract = (raw: string): ScrapedOpportunity[] | null => {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as ScrapedOpportunity[];
+      if (parsed && typeof parsed === "object") {
+        for (const key of ["opportunities", "items", "results", "data", "list"]) {
+          if (Array.isArray((parsed as Record<string, unknown>)[key])) {
+            return (parsed as Record<string, unknown>)[key] as ScrapedOpportunity[];
+          }
+        }
+      }
+    } catch { /* ignore */ }
+    return null;
+  };
+
+  // 1) ```json ... ``` fenced block
+  const fenced = text.match(/```json\s*([\s\S]*?)```/i) ?? text.match(/```\s*([\s\S]*?)```/);
+  if (fenced) {
+    const out = tryExtract(fenced[1].trim());
+    if (out && out.length) return out;
+  }
+  // 2) Raw JSON array
+  const arr = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+  if (arr) {
+    const out = tryExtract(arr[0]);
+    if (out && out.length) return out;
+  }
+  // 3) Object containing array key
+  const obj = text.match(/\{[\s\S]*"(?:opportunities|items|results|data)"\s*:\s*\[[\s\S]*\][\s\S]*\}/);
+  if (obj) {
+    const out = tryExtract(obj[0]);
+    if (out && out.length) return out;
   }
   return [];
 }
