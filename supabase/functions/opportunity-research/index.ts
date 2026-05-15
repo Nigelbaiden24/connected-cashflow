@@ -944,14 +944,32 @@ ${combinedResearch.slice(0, 30000)}`,
           if (arrMatch) opportunities = JSON.parse(arrMatch[0]);
         } catch { /* ignore */ }
       }
-      const normalized = opportunities.map((o: any) => ({
+      // Build URL → image map from scraped search results so we can backfill any
+      // opportunities the AI returned without an image_url.
+      const imageByUrl = new Map<string, string>();
+      const imagePool: string[] = [];
+      for (const r of allSearchResults) {
+        if (r?.imageUrl) {
+          if (r.url) imageByUrl.set(String(r.url), String(r.imageUrl));
+          imagePool.push(String(r.imageUrl));
+        }
+      }
+      const pickPoolImage = (i: number) => imagePool.length ? imagePool[i % imagePool.length] : null;
+
+      const normalized = opportunities.map((o: any, idx: number) => {
+        const srcUrl = o.source_url ?? o.url ?? null;
+        const aiImg = typeof o.image_url === "string" && o.image_url.startsWith("http") ? o.image_url : null;
+        const matchedImg = srcUrl && imageByUrl.get(String(srcUrl));
+        const finalImg = aiImg ?? matchedImg ?? pickPoolImage(idx);
+        return {
         title: o.name ?? o.title ?? "Untitled",
         name: o.name ?? o.title,
         summary: o.description ?? o.summary ?? null,
         description: o.description,
-        url: o.source_url ?? o.url ?? null,
-        source_url: o.source_url ?? o.url ?? null,
-        image_url: o.image_url ?? null,
+        url: srcUrl,
+        source_url: srcUrl,
+        image_url: finalImg,
+        thumbnail_url: finalImg,
         location: o.location ?? null,
         country: o.country ?? null,
         industry: o.industry ?? null,
@@ -962,7 +980,10 @@ ${combinedResearch.slice(0, 30000)}`,
         thesis: o.investment_thesis ?? null,
         key_metrics: o.key_metrics ?? null,
         ...o,
-      }));
+        image_url: finalImg,
+        thumbnail_url: finalImg,
+        };
+      });
       return new Response(JSON.stringify({
         success: true,
         opportunities: normalized,
