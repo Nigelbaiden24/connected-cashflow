@@ -980,7 +980,10 @@ ${combinedResearch.slice(0, 30000)}`,
         thesis: o.investment_thesis ?? null,
         key_metrics: o.key_metrics ?? null,
         ...o,
-      }));
+        image_url: finalImg,
+        thumbnail_url: finalImg,
+        };
+      });
       return new Response(JSON.stringify({
         success: true,
         opportunities: normalized,
