@@ -6,7 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Newspaper, Play, Check, X, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import PromoteToPlatformButton from "./PromoteToPlatformButton";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Landmark, Briefcase, Globe2 } from "lucide-react";
 
 interface Commentary {
   id: string;
