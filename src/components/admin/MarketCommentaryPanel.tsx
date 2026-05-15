@@ -87,6 +87,24 @@ export default function MarketCommentaryPanel() {
     else { toast({ title: status === "promoted" ? "Approved" : "Rejected" }); await load(); }
   };
 
+  const promote = async (id: string, platform: "finance" | "investor" | "both") => {
+    try {
+      const { data, error } = await supabase.rpc("promote_analyst_market_commentary" as any, {
+        _commentary_id: id,
+        _platform: platform,
+      });
+      if (error) throw error;
+      const result = data as { ok?: boolean; error?: string } | null;
+      if (!result?.ok) throw new Error(result?.error || "Promotion failed");
+      const dest = platform === "both" ? "Finance + Investor" : platform === "finance" ? "FlowPulse Finance" : "FlowPulse Investor";
+      toast({ title: "Promoted", description: `Published to ${dest}.` });
+      await load();
+    } catch (e: any) {
+      console.error("[MarketCommentaryPanel] promote failed", e);
+      toast({ title: "Promote failed", description: e.message || "Unknown error", variant: "destructive" });
+    }
+  };
+
   return (
     <Card className="p-5 bg-slate-900/60 border-slate-700 backdrop-blur-xl">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -126,7 +144,33 @@ export default function MarketCommentaryPanel() {
               </div>
               {c.status === "pending" && (
                 <div className="flex gap-2">
-                  <PromoteToPlatformButton table="analyst_market_commentary" itemId={c.id} promotedStatus="promoted" onPromoted={load} />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" className="bg-emerald-600/90 hover:bg-emerald-600 text-white">
+                        <Check className="w-3.5 h-3.5 mr-1.5" /> Promote
+                        <ChevronDown className="w-3 h-3 ml-1 opacity-70" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-slate-950 border-slate-800 text-slate-200">
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">
+                        Publish to platform
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-slate-800" />
+                      <DropdownMenuItem onClick={() => promote(c.id, "finance")} className="focus:bg-slate-900 cursor-pointer">
+                        <Landmark className="w-3.5 h-3.5 mr-2 text-blue-400" />
+                        <span className="text-xs font-medium">FlowPulse Finance</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => promote(c.id, "investor")} className="focus:bg-slate-900 cursor-pointer">
+                        <Briefcase className="w-3.5 h-3.5 mr-2 text-purple-400" />
+                        <span className="text-xs font-medium">FlowPulse Investor</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-slate-800" />
+                      <DropdownMenuItem onClick={() => promote(c.id, "both")} className="focus:bg-slate-900 cursor-pointer">
+                        <Globe2 className="w-3.5 h-3.5 mr-2 text-emerald-400" />
+                        <span className="text-xs font-medium">Both platforms</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button size="sm" variant="outline" onClick={() => setStatus(c.id, "rejected")} className="border-rose-500/40 text-rose-300 hover:bg-rose-500/10">
                     <X className="w-4 h-4 mr-1" /> Reject
                   </Button>
