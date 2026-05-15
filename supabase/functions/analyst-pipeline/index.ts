@@ -214,16 +214,27 @@ async function runScrape(): Promise<number> {
     dedup_hash: await sha256((item.source_url || item.title) + item.source),
   })));
 
-  // Bulk-insert in parallel chunks of 50; dedup_hash unique constraint silently rejects dupes
+  // Bulk-upsert in parallel chunks of 50; dedup_hash unique constraint dedupes silently
   const chunks: typeof rows[] = [];
   for (let i = 0; i < rows.length; i += 50) chunks.push(rows.slice(i, i + 50));
   const inserts = await Promise.allSettled(
-    chunks.map((c) => sb.from("analyst_raw_signals").insert(c).select("id"))
+    chunks.map((c) =>
+      sb
+        .from("analyst_raw_signals")
+        .upsert(c, { onConflict: "dedup_hash", ignoreDuplicates: true })
+        .select("id")
+    )
   );
   let inserted = 0;
   for (const r of inserts) {
-    if (r.status === "fulfilled") inserted += (r.value.data?.length ?? 0);
+    if (r.status === "fulfilled") {
+      inserted += (r.value.data?.length ?? 0);
+      if (r.value.error) console.warn("raw_signals upsert error", r.value.error.message);
+    } else {
+      console.warn("raw_signals chunk rejected", String(r.reason).slice(0, 200));
+    }
   }
+  console.log(`runScrape: collected=${rows.length} inserted=${inserted}`);
   return inserted;
 }
 
