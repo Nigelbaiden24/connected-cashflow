@@ -1,0 +1,4 @@
+CREATE POLICY "Admins update investor_segments" ON public.investor_segments FOR UPDATE USING (public.is_admin(auth.uid())) WITH CHECK (public.is_admin(auth.uid()));
+CREATE POLICY "Admins update analyst_dynamic_watchlist" ON public.analyst_dynamic_watchlist FOR UPDATE USING (public.is_admin(auth.uid())) WITH CHECK (public.is_admin(auth.uid()));
+CREATE POLICY "Admins update analyst_benchmark_reports" ON public.analyst_benchmark_reports FOR UPDATE USING (public.is_admin(auth.uid())) WITH CHECK (public.is_admin(auth.uid()));
+CREATE POLICY "Admins update analyst_market_commentary" ON public.analyst_market_commentary FOR UPDATE USING (public.is_admin(auth.uid())) WITH CHECK (public.is_admin(auth.uid()));
