@@ -75,16 +75,19 @@ export default function FinanceBenchmarkingTrends() {
   const fetchMarketTrends = async () => {
     setLoadingTrends(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('[FinanceBenchmarkingTrends] auth uid =', sessionData.session?.user?.id ?? '(none)');
       const { data, error } = await supabase
         .from("market_trends")
         .select("*")
         .eq("is_published", true)
         .order("created_at", { ascending: false });
 
+      console.log('[FinanceBenchmarkingTrends] market_trends result', { count: data?.length ?? 0, error, sample: data?.[0] });
       if (error) throw error;
       setTrends(data || []);
     } catch (error) {
-      console.error("Error fetching market trends:", error);
+      console.error("[FinanceBenchmarkingTrends] Error fetching market trends:", error);
       toast.error("Failed to load market trends");
     } finally {
       setLoadingTrends(false);
