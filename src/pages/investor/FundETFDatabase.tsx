@@ -16,6 +16,7 @@ import { DataIntegrityBanner } from "@/components/fund-database/DataIntegrityBan
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
+import AiFundAnalysisFeed from "@/components/platform/AiFundAnalysisFeed";
 
 export default function FundETFDatabase() {
   const [filters, setFilters] = useState<FiltersType>({});
@@ -218,6 +219,8 @@ export default function FundETFDatabase() {
       <div className="p-6 space-y-6">
         {/* Data Integrity Banner */}
         <DataIntegrityBanner variant="verified" />
+
+        <AiFundAnalysisFeed platform="investor" />
 
         {/* Fund Analyst Activity Hub */}
         <FundAnalystActivityHub />

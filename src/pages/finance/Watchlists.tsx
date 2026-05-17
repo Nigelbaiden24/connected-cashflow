@@ -17,6 +17,7 @@ import { ContentShowcase, ShowcaseItem } from "@/components/showcase/ContentShow
 import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import AiCuratedWatchlistFeed from "@/components/platform/AiCuratedWatchlistFeed";
 
 interface Watchlist {
   id: string;
@@ -314,6 +315,7 @@ export default function FinanceWatchlists() {
   return (
     <StarryBackground className="min-h-screen">
     <div className="p-6 space-y-6">
+      <AiCuratedWatchlistFeed platform="finance" />
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">Watchlists</h1>

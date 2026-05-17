@@ -9,6 +9,7 @@ import { Upload, TrendingUp, Activity, Sparkles, FileSpreadsheet } from "lucide-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts";
+import AiBenchmarkReportsFeed from "@/components/platform/AiBenchmarkReportsFeed";
 
 const BenchmarkingTrends = () => {
   const [selectedPortfolio, setSelectedPortfolio] = useState<string | null>(null);
@@ -389,6 +390,7 @@ const BenchmarkingTrends = () => {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4 mt-6">
+          <AiBenchmarkReportsFeed platform="investor" />
           {loadingTrends ? (
             <Card>
               <CardContent className="flex items-center justify-center py-8">
