@@ -166,6 +166,23 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
 
+  // Sync auth state with Supabase session so route guards reflect reality
+  // immediately after sign-in / MFA / refresh, regardless of which login
+  // page was used.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+      setUserEmail(session?.user?.email ?? "");
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+      setUserEmail(session?.user?.email ?? "");
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleLogin = useCallback((email: string) => {
     setIsAuthenticated(true);
     setUserEmail(email);
