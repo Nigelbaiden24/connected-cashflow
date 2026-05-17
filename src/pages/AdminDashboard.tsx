@@ -85,6 +85,65 @@ export default function AdminDashboard() {
   const [crmActiveTab, setCrmActiveTab] = useState('board');
   const [activeTab, setActiveTab] = useState('users');
 
+  // Hub groupings: combine multiple legacy tabs under a single sidebar entry.
+  // The sidebar id stays the same as the FIRST child id; sub-nav lets the user
+  // pick which child renders. None of the underlying panels/logic change.
+  const hubMap: Record<string, { label: string; children: { id: string; label: string }[] }> = {
+    users: {
+      label: 'Users & Audience',
+      children: [
+        { id: 'users', label: 'Users' },
+        { id: 'demo-requests', label: 'Demo Requests' },
+        { id: 'enquiries', label: 'Enquiries' },
+      ],
+    },
+    'dm-finder': {
+      label: 'Finder Hub',
+      children: [
+        { id: 'dm-finder', label: 'DM Finder' },
+        { id: 'company-finder', label: 'Company Finder' },
+      ],
+    },
+    opportunities: {
+      label: 'Opportunities',
+      children: [
+        { id: 'opportunities', label: 'Opportunities' },
+        { id: 'opportunity-engine', label: 'Opportunity Engine' },
+      ],
+    },
+    crm: {
+      label: 'CRM & Documents',
+      children: [
+        { id: 'crm', label: 'CRM' },
+        { id: 'document-generator', label: 'Document Generator' },
+      ],
+    },
+    'insights-requests': {
+      label: 'Lead Intelligence',
+      children: [
+        { id: 'insights-requests', label: 'Insights Access Requests' },
+        { id: 'purchasable-reports', label: 'Lead Magnet Reports' },
+      ],
+    },
+    settings: {
+      label: 'Settings',
+      children: [
+        { id: 'settings', label: 'Settings' },
+        { id: 'push-notifications', label: 'Push Notifications' },
+        { id: 'api-management', label: 'API Management' },
+      ],
+    },
+  };
+
+  // Reverse lookup: child id -> hub (parent) id
+  const childToHub: Record<string, string> = {};
+  Object.entries(hubMap).forEach(([hubId, hub]) => {
+    hub.children.forEach((c) => { childToHub[c.id] = hubId; });
+  });
+
+  const sidebarActiveTab = childToHub[activeTab] ?? activeTab;
+  const activeHub = hubMap[sidebarActiveTab];
+
   // Auto-logout settings state
   const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(true);
   const [autoLogoutMinutes, setAutoLogoutMinutes] = useState(30);
@@ -752,14 +811,41 @@ export default function AdminDashboard() {
     <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Sidebar */}
       <AdminSidebar 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
+        activeTab={sidebarActiveTab} 
+        onTabChange={(id) => {
+          // If this id is a hub, land on its first child (so sub-content renders).
+          const hub = hubMap[id];
+          setActiveTab(hub ? hub.children[0].id : id);
+        }} 
         onLogout={handleLogout}
       />
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-white">
         <div className="min-h-screen bg-white p-6 space-y-6">
+          {/* Sub-navigation for combined hubs */}
+          {activeHub && activeHub.children.length > 1 && (
+            <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+              {activeHub.children.map((child) => {
+                const isActive = activeTab === child.id;
+                return (
+                  <button
+                    key={child.id}
+                    onClick={() => setActiveTab(child.id)}
+                    className={
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-all ' +
+                      (isActive
+                        ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    }
+                  >
+                    {child.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Content based on active tab */}
           {activeTab === 'users' && <UserManagement />}
 
