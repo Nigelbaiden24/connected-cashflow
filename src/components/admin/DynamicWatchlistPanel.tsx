@@ -135,7 +135,7 @@ export default function DynamicWatchlistPanel() {
               </div>
               {e.status === "active" && (
                 <div className="flex items-center gap-1">
-                  <PromoteToPlatformButton table="analyst_dynamic_watchlist" itemId={e.id} promotedStatus="promoted" onPromoted={() => refresh()} />
+                  <PromoteToPlatformButton table="analyst_dynamic_watchlist" itemId={e.id} promotedStatus="promoted" rpcName="promote_analyst_watchlist_entry" platforms={["finance"] as const} onPromoted={() => refresh()} />
                   <Button size="icon" variant="ghost" onClick={() => remove(e.id)} className="text-rose-300 hover:bg-rose-500/10 h-8 w-8">
                     <Trash2 className="w-4 h-4"/>
                   </Button>

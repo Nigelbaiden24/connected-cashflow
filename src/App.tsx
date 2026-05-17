@@ -79,6 +79,10 @@ const OpportunityDetail = lazy(() => import("./pages/OpportunityDetail"));
 const OpportunityIntelligence = lazy(() => import("./pages/OpportunityIntelligence"));
 const OpportunityDetailPage = lazy(() => import("./pages/investor/OpportunityDetailPage"));
 const DealFlowIntelligence = lazy(() => import("./pages/shared/DealFlowIntelligence"));
+const FinanceDiscoveryEngine = lazy(() => import("./pages/finance/DiscoveryEngine"));
+const FinanceInvestorSegments = lazy(() => import("./pages/finance/InvestorSegments"));
+const InvestorDiscoveryEngine = lazy(() => import("./pages/investor/DiscoveryEngine"));
+const InvestorInvestorSegments = lazy(() => import("./pages/investor/InvestorSegments"));
 const Chat = lazy(() => import("./pages/Chat"));
 const FinanceAIGenerator = lazy(() => import("./pages/FinanceAIGenerator"));
 const BusinessAIGenerator = lazy(() => import("./pages/BusinessAIGenerator"));
@@ -317,6 +321,8 @@ const App = () => {
                 <Route path="/finance/featured-picks" element={<Suspense fallback={<PageLoader />}><FinanceFeaturedPicks /></Suspense>} />
                 <Route path="/finance-ai-generator" element={<Suspense fallback={<PageLoader />}><FinanceAIGenerator /></Suspense>} />
                 <Route path="/finance/deal-flow" element={<Suspense fallback={<PageLoader />}><DealFlowIntelligence platform="finance" /></Suspense>} />
+                <Route path="/finance/discovery-engine" element={<Suspense fallback={<PageLoader />}><FinanceDiscoveryEngine /></Suspense>} />
+                <Route path="/finance/investor-segments" element={<Suspense fallback={<PageLoader />}><FinanceInvestorSegments /></Suspense>} />
               </Route>
 
               {/* Finance News has its own layout */}
@@ -382,6 +388,8 @@ const App = () => {
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
                 <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="investor" /></Suspense>} />
                 <Route path="/investor/deal-flow" element={<Suspense fallback={<PageLoader />}><DealFlowIntelligence platform="investor" /></Suspense>} />
+                <Route path="/investor/discovery-engine" element={<Suspense fallback={<PageLoader />}><InvestorDiscoveryEngine /></Suspense>} />
+                <Route path="/investor/investor-segments" element={<Suspense fallback={<PageLoader />}><InvestorInvestorSegments /></Suspense>} />
               </Route>
 
               <Route path="/investor/news" element={<InvestorNews />} />

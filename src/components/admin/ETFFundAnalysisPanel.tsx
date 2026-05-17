@@ -244,7 +244,7 @@ export default function ETFFundAnalysisPanel() {
                     )}
 
                     <div className="flex justify-end pt-2 border-t border-slate-800 gap-2">
-                      <PromoteToPlatformButton table="etf_fund_analyses" itemId={a.id} promotedStatus="promoted" onPromoted={refresh} />
+                      <PromoteToPlatformButton table="etf_fund_analyses" itemId={a.id} promotedStatus="promoted" rpcName="promote_etf_fund_analysis" onPromoted={refresh} />
                       <Button size="sm" variant="ghost" onClick={() => archive(a.id)} className="text-slate-400 hover:text-rose-300">
                         <X className="h-3 w-3 mr-1" /> Archive
                       </Button>

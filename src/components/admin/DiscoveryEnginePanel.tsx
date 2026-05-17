@@ -156,7 +156,7 @@ export default function DiscoveryEnginePanel() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Badge variant="outline" className={`${meta.color} border-current/30 text-[10px]`}>{meta.label}</Badge>
                     <Badge className={CONVICTION_COLOR[d.conviction] ?? ""}>{d.conviction}</Badge>
-                    <PromoteToPlatformButton table="discovery_engine_results" itemId={d.id} promotedStatus="promoted" onPromoted={() => refresh()} />
+                    <PromoteToPlatformButton table="discovery_engine_results" itemId={d.id} promotedStatus="promoted" rpcName="promote_analyst_discovery_pick" onPromoted={() => refresh()} />
                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => archive(d.id)}>
                       <X className="h-3 w-3" />
                     </Button>

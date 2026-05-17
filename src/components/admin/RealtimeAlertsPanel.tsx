@@ -139,7 +139,7 @@ export default function RealtimeAlertsPanel() {
                     <Badge variant="outline" className={meta.color}><Icon className="h-3 w-3 mr-1" />{meta.label}</Badge>
                     {a.status === "active" && (
                       <>
-                        <PromoteToPlatformButton table="realtime_investment_alerts" itemId={a.id} promotedStatus="promoted" onPromoted={refresh} />
+                        <PromoteToPlatformButton table="realtime_investment_alerts" itemId={a.id} promotedStatus="promoted" rpcName="promote_realtime_alert" platforms={["investor"] as const} onPromoted={refresh} />
                         <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => dismiss(a.id)}>
                           <X className="h-3 w-3" />
                         </Button>
