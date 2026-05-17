@@ -388,6 +388,8 @@ const App = () => {
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
                 <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="investor" /></Suspense>} />
                 <Route path="/investor/deal-flow" element={<Suspense fallback={<PageLoader />}><DealFlowIntelligence platform="investor" /></Suspense>} />
+                <Route path="/investor/discovery-engine" element={<Suspense fallback={<PageLoader />}><InvestorDiscoveryEngine /></Suspense>} />
+                <Route path="/investor/investor-segments" element={<Suspense fallback={<PageLoader />}><InvestorInvestorSegments /></Suspense>} />
               </Route>
 
               <Route path="/investor/news" element={<InvestorNews />} />
