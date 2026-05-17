@@ -1,79 +1,66 @@
-## Analyst AI Pipeline — End-to-End MVP
+## Goal
 
-A 6-layer autonomous research pipeline: **Scrape → Classify → Score → Generate → Validate → Approve/Publish**. Built on Lovable Cloud + Lovable AI Gateway + Firecrawl (already connected). New "Analyst Queue" admin tab is the human approval gate.
+Right now the admin "AI Queue" panels (Benchmarks & Trends, Dynamic Watchlist, ETF & Fund Analysis, Real-Time Alerts, Market Commentary, Discovery Engine, Investor Segments) only flip a `status='promoted'` flag on their source tables. The Finance / Investor frontends read from *different* display tables, so promoted items never appear publicly. This plan makes Promote actually publish to the correct frontend tab for each panel, and adds two brand-new enterprise-grade tabs.
 
-### Layer 1 — Scrapers (free + Firecrawl)
-New edge function `analyst-scrape-orchestrator` runs every 30 min via pg_cron. Sources:
-- **Yahoo Finance** (free quote/chart endpoints) — prices, movers
-- **SEC EDGAR** (free) — latest 8-K/10-Q filings
-- **Companies House** (existing scraper) — UK filings
-- **Reddit** (free .json endpoints) — r/wallstreetbets, r/stocks, r/investing sentiment
-- **Google Trends** (free serpapi-style scrape via Firecrawl) — search momentum
-- **News + X/TradingView** — Firecrawl `search` + `scrape`
-All raw rows land in `analyst_raw_signals` (one row per item, deduped by `source_url` hash).
+## Promotion routing
 
-### Layer 2 — Classification
-Edge function `analyst-classify` picks unclassified rows in batches of 25 and calls Lovable AI (`google/gemini-3-flash-preview`) with a tool-call schema returning:
-`category` (Macro News, Equity News, Earnings, Momentum, Technical Breakout, Value, Growth, ETF Flow, Insider, Institutional, Retail Sentiment, Risk Event, Volatility), `tickers[]`, `sectors[]`, `regions[]`, `sentiment` (-1..1), `urgency` (0..5).
-Writes results to `analyst_signals` (classified, enriched).
+| Admin AI-Queue panel | Source table | Target frontend tab(s) | Destination table |
+|---|---|---|---|
+| Benchmarks & Trends | `analyst_benchmark_reports` | Finance + Investor → Benchmarking & Trends | `market_trends` (existing) — new "AI Benchmark Report" section |
+| Dynamic Watchlist | `analyst_dynamic_watchlist` | Finance → Watchlists (new "AI Curated" tab) | new `platform_curated_watchlist` |
+| ETF & Fund Analysis | `etf_fund_analyses` | Finance + Investor → Fund & ETF Database (new "AI Analysis" tab) | new `platform_fund_analyses` |
+| Real-Time Alerts | `realtime_investment_alerts` | Investor → Signals & Alerts | `investor_alerts` (existing, via `alert_type='realtime_signal'`) |
+| Market Commentary | `analyst_market_commentary` | Finance + Investor → Market Commentary | `market_commentary` (existing — already wired via `promote_analyst_market_commentary`) |
+| Discovery Engine | `analyst_discovery_results` | **NEW** Discovery Engine tab on both platforms | new `platform_discovery_picks` |
+| Investor Segments | `analyst_investor_segments` | **NEW** Investor Segments tab on both platforms | new `platform_investor_segments` |
 
-### Layer 3 — Scoring Engine
-Edge function `analyst-score` aggregates signals per (ticker | theme | sector) into `analyst_opportunities` with:
-- `conviction` 0–5 (per project standard)
-- `opportunity_score` 0–100 (weighted: sentiment 25%, urgency 20%, source diversity 25%, momentum 15%, recency 15%)
-- `risk_score` 0–100
-- `time_horizon` (intraday / swing / long-term)
-- `evidence[]` — array of signal IDs that triggered it
+## Backend (single migration)
 
-### Layer 4 — Content Generation
-Edge function `analyst-generate-brief` produces analyst-grade output per opportunity, using one of 4 personas chosen by category:
-- Equity Research Analyst (Equity/Earnings)
-- Macro Strategist (Macro News, Risk Event)
-- ETF/Fund Analyst (ETF Flow, Sector Rotation)
-- Quant Screener (Momentum, Technical Breakout, Value, Growth)
-Each brief: thesis, catalyst, evidence citations, key levels, risks, suggested action. Stored in `analyst_briefs`.
+1. New tables (RLS = authenticated read, admin write):
+   - `platform_curated_watchlist` — symbol, asset_name, asset_type, trigger_type, momentum_score, urgency_score, catalyst_summary, signals jsonb, platform, expires_at
+   - `platform_fund_analyses` — ticker, fund_name, fund_type, asset_class, overall_score, summary, pros, cons, suitable_investor_types, comparative_analysis, full_payload jsonb, platform
+   - `platform_discovery_picks` — title, category, theme, conviction_score, thesis, catalysts, risks, instruments jsonb, region, time_horizon, platform
+   - `platform_investor_segments` — segment_name, segment_type, profile, allocation_model, recommended_products jsonb, risk_profile, platform
+2. SECURITY DEFINER RPCs (one per panel, mirroring `promote_analyst_market_commentary`):
+   - `promote_analyst_benchmark_report(_id, _platform)` → inserts a `market_trends` row tagged `source='ai_analyst_brief'`
+   - `promote_analyst_watchlist_entry(_id, _platform)` → inserts into `platform_curated_watchlist`
+   - `promote_etf_fund_analysis(_id, _platform)` → inserts into `platform_fund_analyses`
+   - `promote_realtime_alert(_id, _platform)` → inserts into `investor_alerts` (forces investor platform)
+   - `promote_analyst_discovery_pick(_id, _platform)` → inserts into `platform_discovery_picks`
+   - `promote_analyst_investor_segment(_id, _platform)` → inserts into `platform_investor_segments`
+   Each RPC also flips the source row to `status='promoted'`, `target_platform`, `reviewed_at`, `reviewed_by`.
 
-### Layer 5 — Compliance / Hallucination Filter
-Same edge function self-reviews with a second AI pass that returns `compliance_pass` (bool) + `flags[]`:
-- Every numeric claim must trace to an evidence signal
-- No price targets without source
-- No unverifiable forward statements
-- FCA-style "not advice" footer auto-appended
-Failed briefs get `status='quarantined'` (visible in admin but flagged red).
+## Frontend changes
 
-### Layer 6 — Admin Approval Queue
-New tab **Analyst Queue** in flowpulse/admin sidebar:
-- Card list grouped by status (Pending, Quarantined, Promoted, Rejected)
-- Each card: title, conviction badge (0–5), opportunity score ring, risk meter, persona, evidence count, full brief preview
-- **Promote** → inserts into existing `opportunities` table (Opportunity Intelligence on Finance + Investor frontends), GBP normalised
-- **Reject** → marks rejected, AI uses rejected examples as negative training context for future runs
-- Filters: category, conviction ≥, source, ticker, search
-- Auto-refresh every 60s; manual "Run pipeline now" button
+1. **`PromoteToPlatformButton`** — extend with optional `rpcName` prop. When set, instead of doing a generic `UPDATE`, it calls `supabase.rpc(rpcName, { _id, _platform })`. Falls back to current update behaviour when omitted, so nothing else breaks.
+2. **Wire each panel** to the matching RPC:
+   - `BenchmarkTrendsPanel` → `promote_analyst_benchmark_report`
+   - `DynamicWatchlistPanel` → `promote_analyst_watchlist_entry` (Finance only — hide Investor option)
+   - `ETFFundAnalysisPanel` → `promote_etf_fund_analysis`
+   - `RealtimeAlertsPanel` → `promote_realtime_alert` (Investor only)
+   - `MarketCommentaryPanel` → already wired, just confirm
+   - `DiscoveryEnginePanel`, `InvestorSegmentsPanel` → new RPCs
+3. **Finance frontend additions:**
+   - `src/pages/finance/Watchlists.tsx` — add "AI Curated" tab reading `platform_curated_watchlist` where `platform IN (finance, both, NULL)`
+   - `src/pages/finance/FundETFDatabase.tsx` — add "AI Analysis" tab reading `platform_fund_analyses`
+   - `src/pages/finance/BenchmarkingTrends.tsx` — add "AI Benchmark Reports" section reading promoted `market_trends`
+   - **NEW** `src/pages/finance/DiscoveryEngine.tsx` + sidebar entry
+   - **NEW** `src/pages/finance/InvestorSegments.tsx` + sidebar entry
+4. **Investor frontend additions:** mirror of the above (minus Watchlists), all rendered in the existing enterprise dark-glass style (slate-950 glass cards, gradient accents, conviction bars, Recharts where appropriate).
+5. **Routing:** register the four new routes in `src/App.tsx` under the existing finance/investor layouts; add sidebar items in `FinanceSidebar.tsx` and the investor sidebar.
 
-### Database (single migration)
-- `analyst_raw_signals` — raw scrape rows
-- `analyst_signals` — classified
-- `analyst_opportunities` — scored
-- `analyst_briefs` — generated content + compliance result + status
-- `analyst_pipeline_runs` — observability (rows scraped, classified, generated, errors, duration)
-- All admin-only RLS (admin role check)
-- pg_cron job: every 30 min → calls `analyst-scrape-orchestrator` which chains classify → score → generate → validate
+## Visual standard for the two new tabs
 
-### Frontend
-- New route `/admin/analyst-queue` + sidebar entry under Scraper category
-- Components: `AnalystQueueDashboard`, `AnalystBriefCard`, `PipelineRunStats`, `PromoteRejectActions`
-- Reuses existing dark slate + glassmorphism tokens, conviction 0–5 visuals from standardized scoring memory
+Elite enterprise grade: full-bleed hero with platform-themed gradient (deep blue for Finance, violet for Investor), filter rail (sector/region/conviction/horizon), grid of glass cards with conviction meter, expandable detail drawer showing thesis / catalysts / risks / suggested instruments, sparkline + sector chip row, Pitchbook-style metadata block. Matches the existing AnalystQueueDashboard aesthetic on the admin side so users feel continuity.
 
-### Out of scope (this iteration)
-- Paid APIs (Alpha Vantage, Finnhub, News API) — can add later
-- Insider trading / institutional 13F (requires paid feeds)
-- Auto-publish without human review (you chose dedicated queue with promote/reject)
+## Out of scope
 
-### Build order
-1. Migration (5 new tables + cron + RLS)
-2. Scraper orchestrator edge function
-3. Classify + Score + Generate + Validate edge functions
-4. Admin Queue UI + sidebar entry + promote/reject actions
-5. Wire pg_cron and seed first run
+- No changes to scrapers or analyst edge functions themselves — only the promotion path.
+- No changes to existing user-owned watchlists; the AI-curated list is a separate read-only tab.
 
-This is a sizable build — expect 1 migration + ~5 new edge functions + ~6 new components.
+## Order of execution
+
+1. Migration (tables + RPCs + RLS).
+2. Extend `PromoteToPlatformButton` with `rpcName` and wire all 7 panels.
+3. Add Finance + Investor frontend tabs/pages and sidebar entries.
+4. Smoke test: promote one item per panel → verify it appears in the matching frontend tab on the correct platform.
