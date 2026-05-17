@@ -5866,6 +5866,9 @@ export type Database = {
           id: string
           impact: string
           is_published: boolean | null
+          platform: string | null
+          source: string | null
+          source_id: string | null
           timeframe: string
           title: string
           updated_at: string
@@ -5877,6 +5880,9 @@ export type Database = {
           id?: string
           impact: string
           is_published?: boolean | null
+          platform?: string | null
+          source?: string | null
+          source_id?: string | null
           timeframe: string
           title: string
           updated_at?: string
@@ -5888,6 +5894,9 @@ export type Database = {
           id?: string
           impact?: string
           is_published?: boolean | null
+          platform?: string | null
+          source?: string | null
+          source_id?: string | null
           timeframe?: string
           title?: string
           updated_at?: string
@@ -7235,6 +7244,291 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      platform_curated_watchlist: {
+        Row: {
+          alert_urgency_score: number | null
+          asset_name: string | null
+          asset_type: string | null
+          catalyst_summary: string | null
+          confidence_score: number | null
+          entry_risk_level: string | null
+          expires_at: string | null
+          id: string
+          momentum_score: number | null
+          platform: string | null
+          promoted_at: string
+          promoted_by: string | null
+          signals: Json | null
+          source_id: string | null
+          status: string
+          support_resistance: string | null
+          symbol: string
+          trigger_type: string | null
+          watchlist_reason: string | null
+        }
+        Insert: {
+          alert_urgency_score?: number | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalyst_summary?: string | null
+          confidence_score?: number | null
+          entry_risk_level?: string | null
+          expires_at?: string | null
+          id?: string
+          momentum_score?: number | null
+          platform?: string | null
+          promoted_at?: string
+          promoted_by?: string | null
+          signals?: Json | null
+          source_id?: string | null
+          status?: string
+          support_resistance?: string | null
+          symbol: string
+          trigger_type?: string | null
+          watchlist_reason?: string | null
+        }
+        Update: {
+          alert_urgency_score?: number | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalyst_summary?: string | null
+          confidence_score?: number | null
+          entry_risk_level?: string | null
+          expires_at?: string | null
+          id?: string
+          momentum_score?: number | null
+          platform?: string | null
+          promoted_at?: string
+          promoted_by?: string | null
+          signals?: Json | null
+          source_id?: string | null
+          status?: string
+          support_resistance?: string | null
+          symbol?: string
+          trigger_type?: string | null
+          watchlist_reason?: string | null
+        }
+        Relationships: []
+      }
+      platform_discovery_picks: {
+        Row: {
+          analyst_sentiment: Json | null
+          asset_name: string | null
+          asset_type: string | null
+          catalysts: Json | null
+          conviction: string | null
+          discovery_bucket: string | null
+          earnings_growth: Json | null
+          id: string
+          momentum_metrics: Json | null
+          platform: string | null
+          promoted_at: string
+          promoted_by: string | null
+          risks: Json | null
+          score: number | null
+          sector: string | null
+          source_id: string | null
+          status: string
+          symbol: string | null
+          thesis: string | null
+          valuation_metrics: Json | null
+          volatility_metrics: Json | null
+        }
+        Insert: {
+          analyst_sentiment?: Json | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalysts?: Json | null
+          conviction?: string | null
+          discovery_bucket?: string | null
+          earnings_growth?: Json | null
+          id?: string
+          momentum_metrics?: Json | null
+          platform?: string | null
+          promoted_at?: string
+          promoted_by?: string | null
+          risks?: Json | null
+          score?: number | null
+          sector?: string | null
+          source_id?: string | null
+          status?: string
+          symbol?: string | null
+          thesis?: string | null
+          valuation_metrics?: Json | null
+          volatility_metrics?: Json | null
+        }
+        Update: {
+          analyst_sentiment?: Json | null
+          asset_name?: string | null
+          asset_type?: string | null
+          catalysts?: Json | null
+          conviction?: string | null
+          discovery_bucket?: string | null
+          earnings_growth?: Json | null
+          id?: string
+          momentum_metrics?: Json | null
+          platform?: string | null
+          promoted_at?: string
+          promoted_by?: string | null
+          risks?: Json | null
+          score?: number | null
+          sector?: string | null
+          source_id?: string | null
+          status?: string
+          symbol?: string | null
+          thesis?: string | null
+          valuation_metrics?: Json | null
+          volatility_metrics?: Json | null
+        }
+        Relationships: []
+      }
+      platform_fund_analyses: {
+        Row: {
+          asset_class: string | null
+          comparative_analysis: string | null
+          cons: Json | null
+          fee_analysis: Json | null
+          fund_flows: Json | null
+          fund_name: string
+          fund_type: string | null
+          historical_performance: Json | null
+          holdings_concentration: Json | null
+          id: string
+          manager_performance: Json | null
+          overall_score: number | null
+          platform: string | null
+          promoted_at: string
+          promoted_by: string | null
+          pros: Json | null
+          region: string | null
+          sector_exposure: Json | null
+          source_id: string | null
+          status: string
+          suitable_investor_types: Json | null
+          summary: string | null
+          ticker: string
+          trend_commentary: string | null
+          volatility_metrics: Json | null
+        }
+        Insert: {
+          asset_class?: string | null
+          comparative_analysis?: string | null
+          cons?: Json | null
+          fee_analysis?: Json | null
+          fund_flows?: Json | null
+          fund_name: string
+          fund_type?: string | null
+          historical_performance?: Json | null
+          holdings_concentration?: Json | null
+          id?: string
+          manager_performance?: Json | null
+          overall_score?: number | null
+          platform?: string | null
+          promoted_at?: string
+          promoted_by?: string | null
+          pros?: Json | null
+          region?: string | null
+          sector_exposure?: Json | null
+          source_id?: string | null
+          status?: string
+          suitable_investor_types?: Json | null
+          summary?: string | null
+          ticker: string
+          trend_commentary?: string | null
+          volatility_metrics?: Json | null
+        }
+        Update: {
+          asset_class?: string | null
+          comparative_analysis?: string | null
+          cons?: Json | null
+          fee_analysis?: Json | null
+          fund_flows?: Json | null
+          fund_name?: string
+          fund_type?: string | null
+          historical_performance?: Json | null
+          holdings_concentration?: Json | null
+          id?: string
+          manager_performance?: Json | null
+          overall_score?: number | null
+          platform?: string | null
+          promoted_at?: string
+          promoted_by?: string | null
+          pros?: Json | null
+          region?: string | null
+          sector_exposure?: Json | null
+          source_id?: string | null
+          status?: string
+          suitable_investor_types?: Json | null
+          summary?: string | null
+          ticker?: string
+          trend_commentary?: string | null
+          volatility_metrics?: Json | null
+        }
+        Relationships: []
+      }
+      platform_investor_segments: {
+        Row: {
+          behavioural_signals: Json | null
+          engagement_score: number | null
+          id: string
+          platform: string | null
+          primary_segment: string
+          promoted_at: string
+          promoted_by: string | null
+          recommended_alerts: Json | null
+          recommended_assets: Json | null
+          recommended_content: Json | null
+          recommended_portfolios: Json | null
+          recommended_watchlists: Json | null
+          risk_tolerance: string | null
+          secondary_segments: Json | null
+          segment_confidence: number | null
+          source_id: string | null
+          status: string
+          summary: string | null
+        }
+        Insert: {
+          behavioural_signals?: Json | null
+          engagement_score?: number | null
+          id?: string
+          platform?: string | null
+          primary_segment: string
+          promoted_at?: string
+          promoted_by?: string | null
+          recommended_alerts?: Json | null
+          recommended_assets?: Json | null
+          recommended_content?: Json | null
+          recommended_portfolios?: Json | null
+          recommended_watchlists?: Json | null
+          risk_tolerance?: string | null
+          secondary_segments?: Json | null
+          segment_confidence?: number | null
+          source_id?: string | null
+          status?: string
+          summary?: string | null
+        }
+        Update: {
+          behavioural_signals?: Json | null
+          engagement_score?: number | null
+          id?: string
+          platform?: string | null
+          primary_segment?: string
+          promoted_at?: string
+          promoted_by?: string | null
+          recommended_alerts?: Json | null
+          recommended_assets?: Json | null
+          recommended_content?: Json | null
+          recommended_portfolios?: Json | null
+          recommended_watchlists?: Json | null
+          risk_tolerance?: string | null
+          secondary_segments?: Json | null
+          segment_confidence?: number | null
+          source_id?: string | null
+          status?: string
+          summary?: string | null
         }
         Relationships: []
       }
@@ -9573,8 +9867,32 @@ export type Database = {
         Args: { _member_id: string; _user_id: string }
         Returns: boolean
       }
+      promote_analyst_benchmark_report: {
+        Args: { _id: string; _platform?: string }
+        Returns: Json
+      }
+      promote_analyst_discovery_pick: {
+        Args: { _id: string; _platform?: string }
+        Returns: Json
+      }
+      promote_analyst_investor_segment: {
+        Args: { _id: string; _platform?: string }
+        Returns: Json
+      }
       promote_analyst_market_commentary: {
         Args: { _commentary_id: string; _platform?: string }
+        Returns: Json
+      }
+      promote_analyst_watchlist_entry: {
+        Args: { _id: string; _platform?: string }
+        Returns: Json
+      }
+      promote_etf_fund_analysis: {
+        Args: { _id: string; _platform?: string }
+        Returns: Json
+      }
+      promote_realtime_alert: {
+        Args: { _id: string; _platform?: string }
         Returns: Json
       }
       store_calendar_token: {
