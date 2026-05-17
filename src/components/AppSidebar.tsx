@@ -116,6 +116,8 @@ const navGroups: NavGroup[] = [
       { title: "Opportunity Intelligence", url: "/finance/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
       { title: "Deal Flow Intelligence", url: "/finance/deal-flow", icon: Activity, gradient: "from-fuchsia-500 to-pink-600" },
       { title: "Investor Finder", url: "/finance/investor-finder", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
+      { title: "Discovery Engine", url: "/finance/discovery-engine", icon: Compass, gradient: "from-blue-500 to-cyan-600" },
+      { title: "Investor Segments", url: "/finance/investor-segments", icon: Users, gradient: "from-indigo-500 to-blue-600" },
     ],
   },
 ];
