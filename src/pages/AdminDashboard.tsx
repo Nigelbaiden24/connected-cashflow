@@ -85,6 +85,65 @@ export default function AdminDashboard() {
   const [crmActiveTab, setCrmActiveTab] = useState('board');
   const [activeTab, setActiveTab] = useState('users');
 
+  // Hub groupings: combine multiple legacy tabs under a single sidebar entry.
+  // The sidebar id stays the same as the FIRST child id; sub-nav lets the user
+  // pick which child renders. None of the underlying panels/logic change.
+  const hubMap: Record<string, { label: string; children: { id: string; label: string }[] }> = {
+    users: {
+      label: 'Users & Audience',
+      children: [
+        { id: 'users', label: 'Users' },
+        { id: 'demo-requests', label: 'Demo Requests' },
+        { id: 'enquiries', label: 'Enquiries' },
+      ],
+    },
+    'dm-finder': {
+      label: 'Finder Hub',
+      children: [
+        { id: 'dm-finder', label: 'DM Finder' },
+        { id: 'company-finder', label: 'Company Finder' },
+      ],
+    },
+    opportunities: {
+      label: 'Opportunities',
+      children: [
+        { id: 'opportunities', label: 'Opportunities' },
+        { id: 'opportunity-engine', label: 'Opportunity Engine' },
+      ],
+    },
+    crm: {
+      label: 'CRM & Documents',
+      children: [
+        { id: 'crm', label: 'CRM' },
+        { id: 'document-generator', label: 'Document Generator' },
+      ],
+    },
+    'insights-requests': {
+      label: 'Lead Intelligence',
+      children: [
+        { id: 'insights-requests', label: 'Insights Access Requests' },
+        { id: 'purchasable-reports', label: 'Lead Magnet Reports' },
+      ],
+    },
+    settings: {
+      label: 'Settings',
+      children: [
+        { id: 'settings', label: 'Settings' },
+        { id: 'push-notifications', label: 'Push Notifications' },
+        { id: 'api-management', label: 'API Management' },
+      ],
+    },
+  };
+
+  // Reverse lookup: child id -> hub (parent) id
+  const childToHub: Record<string, string> = {};
+  Object.entries(hubMap).forEach(([hubId, hub]) => {
+    hub.children.forEach((c) => { childToHub[c.id] = hubId; });
+  });
+
+  const sidebarActiveTab = childToHub[activeTab] ?? activeTab;
+  const activeHub = hubMap[sidebarActiveTab];
+
   // Auto-logout settings state
   const [autoLogoutEnabled, setAutoLogoutEnabled] = useState(true);
   const [autoLogoutMinutes, setAutoLogoutMinutes] = useState(30);
