@@ -1,4 +1,5 @@
-import { useState, lazy, Suspense, memo, useCallback, ReactNode } from "react";
+import { useState, useEffect, lazy, Suspense, memo, useCallback, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
