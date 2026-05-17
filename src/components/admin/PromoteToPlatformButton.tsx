@@ -18,6 +18,11 @@ interface Props {
   /** Compact button size */
   size?: "sm" | "default";
   onPromoted?: () => void;
+  /** If set, call this SECURITY DEFINER RPC instead of doing a generic UPDATE.
+   *  RPC signature must be (_id uuid, _platform text) → jsonb with { ok, promoted_id, error }. */
+  rpcName?: string;
+  /** Restrict the platform options shown in the dropdown. Default: all three. */
+  platforms?: Array<"finance" | "investor" | "both">;
 }
 
 /**
