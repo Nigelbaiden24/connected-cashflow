@@ -13,6 +13,7 @@ import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts";
+import AiBenchmarkReportsFeed from "@/components/platform/AiBenchmarkReportsFeed";
 
 export default function FinanceBenchmarkingTrends() {
   const [selectedPortfolio, setSelectedPortfolio] = useState<string | null>(null);
@@ -425,6 +426,7 @@ export default function FinanceBenchmarkingTrends() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4 mt-6">
+          <AiBenchmarkReportsFeed platform="finance" />
           {loadingTrends ? (
             <Card>
               <CardContent className="flex items-center justify-center py-8">

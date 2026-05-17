@@ -14,6 +14,7 @@ import { DataIntegrityBanner } from "@/components/fund-database/DataIntegrityBan
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import type { CompleteFund, FundSearchFilters as FiltersType } from "@/types/fund";
 import { useToast } from "@/hooks/use-toast";
+import AiFundAnalysisFeed from "@/components/platform/AiFundAnalysisFeed";
 
 // Lazy load heavy components
 const AIFundInsights = lazy(() => import("@/components/fund-database/AIFundInsights").then(m => ({ default: m.AIFundInsights })));
@@ -248,6 +249,8 @@ export default function FundETFDatabase() {
       <div className="p-6 space-y-6">
         {/* Data Integrity Banner */}
         <DataIntegrityBanner variant="verified" />
+
+        <AiFundAnalysisFeed platform="finance" />
 
         {/* Fund Analyst Activity Hub - Lazy loaded */}
         <Suspense fallback={<Skeleton className="h-[500px] w-full rounded-lg" />}>

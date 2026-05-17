@@ -11,6 +11,7 @@ import { Eye, Plus, TrendingUp, TrendingDown, Trash2, Loader2, Star } from "luci
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import AiCuratedWatchlistFeed from "@/components/platform/AiCuratedWatchlistFeed";
 
 interface Watchlist {
   id: string;
@@ -291,6 +292,7 @@ export default function Watchlists() {
 
   return (
     <div className="p-6 space-y-6">
+      <AiCuratedWatchlistFeed platform="investor" />
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold">Watchlists</h1>
