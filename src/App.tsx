@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, memo, useCallback, ReactNode } from "react";
+import { useState, useEffect, lazy, Suspense, memo, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -165,48 +165,71 @@ AuthGuard.displayName = "AuthGuard";
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [authLoading, setAuthLoading] = useState(true);
+  const authRevisionRef = useRef(0);
 
   // Sync auth state with Supabase session so route guards reflect reality
   // immediately after sign-in / MFA / refresh, regardless of which login
   // page was used.
   useEffect(() => {
+    let active = true;
+    const initialSessionRevision = ++authRevisionRef.current;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      authRevisionRef.current += 1;
       setIsAuthenticated(!!session);
       setUserEmail(session?.user?.email ?? "");
+      setAuthLoading(false);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active || authRevisionRef.current !== initialSessionRevision) return;
       setIsAuthenticated(!!session);
       setUserEmail(session?.user?.email ?? "");
+      setAuthLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogin = useCallback((email: string) => {
+    authRevisionRef.current += 1;
+    setAuthLoading(false);
     setIsAuthenticated(true);
     setUserEmail(email);
   }, []);
 
   const handleLogout = useCallback(() => {
+    authRevisionRef.current += 1;
+    setAuthLoading(false);
     setIsAuthenticated(false);
     setUserEmail("");
   }, []);
 
   // Persistent layout element — same instance reused across child routes
-  const financeLayoutElement = isAuthenticated ? (
+  const financeLayoutElement = authLoading ? (
+    <PageLoader />
+  ) : isAuthenticated ? (
     <FinanceLayout userEmail={userEmail} onLogout={handleLogout} />
   ) : (
     <Navigate to="/login" replace />
   );
 
-  const businessLayoutElement = isAuthenticated ? (
+  const businessLayoutElement = authLoading ? (
+    <PageLoader />
+  ) : isAuthenticated ? (
     <BusinessLayout userEmail={userEmail} onLogout={handleLogout} />
   ) : (
     <Navigate to="/login-business" replace />
   );
 
-  const investorLayoutElement = isAuthenticated ? (
+  const investorLayoutElement = authLoading ? (
+    <PageLoader />
+  ) : isAuthenticated ? (
     <InvestorLayout userEmail={userEmail} onLogout={handleLogout} />
   ) : (
     <Navigate to="/login-investor" replace />
