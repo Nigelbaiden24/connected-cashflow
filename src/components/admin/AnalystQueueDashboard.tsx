@@ -64,12 +64,6 @@ const STATUS_TABS: { value: BriefStatus; label: string; dot: string }[] = [
 ];
 
 const MODULE_TABS = [
-  { value: "commentary", label: "Market Commentary", icon: TrendingUp },
-  { value: "benchmarks", label: "Benchmarks & Trends", icon: BarChart3 },
-  { value: "watchlist", label: "Dynamic Watchlist", icon: Eye },
-  { value: "segments", label: "Investor Segments", icon: Users },
-  { value: "alerts", label: "Real-Time Alerts", icon: Bell },
-  { value: "etf", label: "ETF & Fund Analysis", icon: LineChart },
   { value: "discovery", label: "Discovery Engine", icon: Compass },
 ];
 
