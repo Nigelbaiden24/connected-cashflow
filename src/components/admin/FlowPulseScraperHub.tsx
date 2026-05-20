@@ -11,27 +11,17 @@ type AdminPlatform = "finance" | "investor";
 const STORAGE_KEY = "admin-platform";
 
 export function FlowPulseScraperHub() {
-  const [platform, setPlatform] = useState<AdminPlatform>(() => {
-    if (typeof window === "undefined") return "finance";
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "investor" ? "investor" : "finance";
-  });
+  // FlowPulse Finance is temporarily hidden — force the investor variant.
+  const [platform] = useState<AdminPlatform>("investor");
 
-  // Keep in sync if user switches platform from sidebar
   useEffect(() => {
-    const handler = () => {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      setPlatform(stored === "investor" ? "investor" : "finance");
-    };
-    window.addEventListener("storage", handler);
-    const interval = setInterval(handler, 800);
-    return () => {
-      window.removeEventListener("storage", handler);
-      clearInterval(interval);
-    };
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, "investor");
+    }
   }, []);
 
-  const isFinance = platform === "finance";
+  const isFinance = false;
+
 
   return (
     <div className="space-y-6">
