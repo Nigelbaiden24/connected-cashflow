@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Radar, Globe, Building2 } from "lucide-react";
@@ -6,32 +6,21 @@ import { FinancialResearchScraper } from "./FinancialResearchScraper";
 import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
 import { EliteScraperAnalyst } from "./EliteScraperAnalyst";
 
-type AdminPlatform = "finance" | "investor";
+// FlowPulse Finance is temporarily hidden — investor is the leading platform.
 
 const STORAGE_KEY = "admin-platform";
 
 export function FlowPulseScraperHub() {
-  const [platform, setPlatform] = useState<AdminPlatform>(() => {
-    if (typeof window === "undefined") return "finance";
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored === "investor" ? "investor" : "finance";
-  });
-
-  // Keep in sync if user switches platform from sidebar
+  // FlowPulse Finance is temporarily hidden — force the investor variant.
   useEffect(() => {
-    const handler = () => {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      setPlatform(stored === "investor" ? "investor" : "finance");
-    };
-    window.addEventListener("storage", handler);
-    const interval = setInterval(handler, 800);
-    return () => {
-      window.removeEventListener("storage", handler);
-      clearInterval(interval);
-    };
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, "investor");
+    }
   }, []);
 
-  const isFinance = platform === "finance";
+  const isFinance = false;
+
+
 
   return (
     <div className="space-y-6">

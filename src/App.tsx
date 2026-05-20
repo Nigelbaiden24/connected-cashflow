@@ -276,57 +276,56 @@ const App = () => {
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
-              {/* Opportunity Intelligence - standalone (no sidebar) */}
-              <Route path="/finance/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
-              <Route path="/finance/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
+              {/* ============ FINANCE PLATFORM — TEMPORARILY HIDDEN ============ */}
+              {/* All /finance/* and legacy Finance routes redirect to the Investor platform. */}
+              {/* Code, imports and pages are preserved on disk for future resurrection. */}
+              <Route path="/finance/opportunities" element={<Navigate to="/investor/opportunities" replace />} />
+              <Route path="/finance/opportunities/:id" element={<Navigate to="/investor/opportunities" replace />} />
+              <Route path="/finance" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/finance/reports" element={<Navigate to="/investor/research" replace />} />
+              <Route path="/finance/investor-finder" element={<Navigate to="/investor/investor-finder" replace />} />
+              <Route path="/finance/commentary" element={<Navigate to="/investor/commentary" replace />} />
+              <Route path="/finance/portfolios" element={<Navigate to="/investor/portfolios" replace />} />
+              <Route path="/finance/trends" element={<Navigate to="/investor/trends" replace />} />
+              <Route path="/finance/ai-analyst" element={<Navigate to="/investor/ai-analyst" replace />} />
+              <Route path="/finance/watchlists" element={<Navigate to="/investor/watchlists" replace />} />
+              <Route path="/finance/screeners" element={<Navigate to="/investor/screeners" replace />} />
+              <Route path="/finance/fund-database" element={<Navigate to="/investor/fund-database" replace />} />
+              <Route path="/finance/stocks-crypto" element={<Navigate to="/investor/stocks-crypto" replace />} />
+              <Route path="/finance/stocks-crypto-admin" element={<Navigate to="/investor/stocks-crypto" replace />} />
+              <Route path="/finance/languages" element={<Navigate to="/investor/languages" replace />} />
+              <Route path="/finance/featured-picks" element={<Navigate to="/investor/featured-picks" replace />} />
+              <Route path="/finance/deal-flow" element={<Navigate to="/investor/deal-flow" replace />} />
+              <Route path="/finance/discovery-engine" element={<Navigate to="/investor/discovery-engine" replace />} />
+              <Route path="/finance/investor-segments" element={<Navigate to="/investor/investor-segments" replace />} />
+              <Route path="/finance/news" element={<Navigate to="/investor/news" replace />} />
+              <Route path="/finance-payroll" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/finance-crm" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/finance-crm/:id" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/finance-ai-generator" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/dashboard" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/clients" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/clients/:id" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/onboarding" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/practice" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/theodore" element={<Navigate to="/investor/ai-analyst" replace />} />
+              <Route path="/calendar" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/market" element={<Navigate to="/investor/market-data" replace />} />
+              <Route path="/compliance" element={<Navigate to="/investor/risk-compliance" replace />} />
+              <Route path="/portfolio" element={<Navigate to="/investor/portfolios" replace />} />
+              <Route path="/financial-planning" element={<Navigate to="/investor/tools" replace />} />
+              <Route path="/financial-planning/new" element={<Navigate to="/investor/tools" replace />} />
+              <Route path="/financial-planning/:id" element={<Navigate to="/investor/tools" replace />} />
+              <Route path="/goals" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/investments" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/risk" element={<Navigate to="/investor/risk-compliance" replace />} />
+              <Route path="/scenario" element={<Navigate to="/investor/tools" replace />} />
+              <Route path="/analytics" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/security" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/automation-center" element={<Navigate to="/investor/dashboard" replace />} />
+              <Route path="/settings" element={<Navigate to="/investor/dashboard" replace />} />
 
-              {/* ============ FINANCE LAYOUT (persistent) ============ */}
-              <Route element={financeLayoutElement}>
-                <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
-                <Route path="/theodore" element={<Suspense fallback={<PageLoader />}><Chat /></Suspense>} />
-                <Route path="/calendar" element={<Suspense fallback={<PageLoader />}><Calendar /></Suspense>} />
-                <Route path="/market" element={<Suspense fallback={<PageLoader />}><MarketData /></Suspense>} />
-                <Route path="/compliance" element={<Suspense fallback={<PageLoader />}><Compliance /></Suspense>} />
-                <Route path="/portfolio" element={<Suspense fallback={<PageLoader />}><Portfolio /></Suspense>} />
-                <Route path="/financial-planning" element={<Suspense fallback={<PageLoader />}><FinancialPlanning /></Suspense>} />
-                <Route path="/financial-planning/new" element={<Suspense fallback={<PageLoader />}><CreateFinancialPlan /></Suspense>} />
-                <Route path="/financial-planning/:id" element={<Suspense fallback={<PageLoader />}><FinancialPlanDetail /></Suspense>} />
-                <Route path="/goals" element={<Suspense fallback={<PageLoader />}><GoalPlanning /></Suspense>} />
-                <Route path="/investments" element={<Suspense fallback={<PageLoader />}><InvestmentAnalysis /></Suspense>} />
-                <Route path="/risk" element={<Suspense fallback={<PageLoader />}><RiskAssessment /></Suspense>} />
-                <Route path="/scenario" element={<Suspense fallback={<PageLoader />}><ScenarioAnalysis /></Suspense>} />
-                <Route path="/clients" element={<Suspense fallback={<PageLoader />}><Clients /></Suspense>} />
-                <Route path="/clients/:id" element={<Suspense fallback={<PageLoader />}><ClientProfile /></Suspense>} />
-                <Route path="/onboarding" element={<Suspense fallback={<PageLoader />}><ClientOnboarding /></Suspense>} />
-                <Route path="/practice" element={<Suspense fallback={<PageLoader />}><PracticeManagement /></Suspense>} />
-                <Route path="/finance/reports" element={<Suspense fallback={<PageLoader />}><Reports /></Suspense>} />
-                <Route path="/finance/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="finance" /></Suspense>} />
-                <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsDashboard /></Suspense>} />
-                <Route path="/finance-payroll" element={<Suspense fallback={<PageLoader />}><FinancePayroll /></Suspense>} />
-                <Route path="/finance-crm" element={<Suspense fallback={<PageLoader />}><CRM /></Suspense>} />
-                <Route path="/finance-crm/:id" element={<Suspense fallback={<PageLoader />}><CRMContactDetail /></Suspense>} />
-                <Route path="/security" element={<Suspense fallback={<PageLoader />}><Security /></Suspense>} />
-                <Route path="/automation-center" element={<Suspense fallback={<PageLoader />}><AutomationCenter /></Suspense>} />
-                <Route path="/settings" element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
-                <Route path="/finance/commentary" element={<Suspense fallback={<PageLoader />}><FinanceMarketCommentary /></Suspense>} />
-                <Route path="/finance/portfolios" element={<Suspense fallback={<PageLoader />}><FinanceModelPortfolios /></Suspense>} />
-                <Route path="/finance/trends" element={<Suspense fallback={<PageLoader />}><FinanceBenchmarkingTrends /></Suspense>} />
-                <Route path="/finance/ai-analyst" element={<Suspense fallback={<PageLoader />}><FinanceAIAnalyst /></Suspense>} />
-                <Route path="/finance/watchlists" element={<Suspense fallback={<PageLoader />}><FinanceWatchlists /></Suspense>} />
-                <Route path="/finance/screeners" element={<Suspense fallback={<PageLoader />}><FinanceScreenersDiscovery /></Suspense>} />
-                <Route path="/finance/fund-database" element={<Suspense fallback={<PageLoader />}><FundETFDatabase /></Suspense>} />
-                <Route path="/finance/stocks-crypto" element={<Suspense fallback={<PageLoader />}><RealTimeMarketDatabase /></Suspense>} />
-                <Route path="/finance/stocks-crypto-admin" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
-                <Route path="/finance/languages" element={<Suspense fallback={<PageLoader />}><FinanceLanguages /></Suspense>} />
-                <Route path="/finance/featured-picks" element={<Suspense fallback={<PageLoader />}><FinanceFeaturedPicks /></Suspense>} />
-                <Route path="/finance-ai-generator" element={<Suspense fallback={<PageLoader />}><FinanceAIGenerator /></Suspense>} />
-                <Route path="/finance/deal-flow" element={<Suspense fallback={<PageLoader />}><DealFlowIntelligence platform="finance" /></Suspense>} />
-                <Route path="/finance/discovery-engine" element={<Suspense fallback={<PageLoader />}><FinanceDiscoveryEngine /></Suspense>} />
-                <Route path="/finance/investor-segments" element={<Suspense fallback={<PageLoader />}><FinanceInvestorSegments /></Suspense>} />
-              </Route>
 
-              {/* Finance News has its own layout */}
-              <Route path="/finance/news" element={<FinanceNews />} />
 
               <Route path="/chat" element={<Chat />} />
 
