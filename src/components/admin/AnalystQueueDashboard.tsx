@@ -14,16 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity,
   Search, Filter, Clock, Database, Cpu, Gauge, FileText, ShieldCheck,
-  TrendingUp, BarChart3, Eye, Users, Bell, LineChart, Compass, ChevronDown,
+  Compass, ChevronDown,
   Briefcase, Landmark, Globe2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import MarketCommentaryPanel from "./MarketCommentaryPanel";
-import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
-import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
-import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
-import RealtimeAlertsPanel from "./RealtimeAlertsPanel";
-import ETFFundAnalysisPanel from "./ETFFundAnalysisPanel";
 import DiscoveryEnginePanel from "./DiscoveryEnginePanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
