@@ -86,6 +86,55 @@ const CURRENCY_RATES: Record<string, { rate: number; symbol: string; locale: str
   CAD: { rate: 1.36, symbol: 'C$', locale: 'en-CA' },
 };
 
+// Logo fallback chain: stored logo_url -> Google favicon (derived from URL) -> icon placeholder.
+// Clearbit's logo API was deprecated, so stored logo URLs may now 404.
+function AssetLogo({ asset }: { asset: StockCrypto }) {
+  const deriveDomain = (url: string | null): string | null => {
+    if (!url) return null;
+    try {
+      // Handles "https://logo.clearbit.com/apple.com" -> "apple.com"
+      const u = new URL(url);
+      const last = u.pathname.replace(/^\/+|\/+$/g, '').split('/').pop();
+      if (last && last.includes('.')) return last;
+      return u.hostname;
+    } catch {
+      return null;
+    }
+  };
+
+  const domain = deriveDomain(asset.logo_url);
+  const sources = [
+    asset.logo_url || undefined,
+    domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : undefined,
+    domain ? `https://icons.duckduckgo.com/ip3/${domain}.ico` : undefined,
+  ].filter(Boolean) as string[];
+
+  const [idx, setIdx] = useState(0);
+  const src = sources[idx];
+
+  if (!src) {
+    return (
+      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center border border-slate-200/50">
+        {asset.asset_type === 'crypto' ? (
+          <Bitcoin className="h-5 w-5 text-amber-500" />
+        ) : (
+          <BarChart3 className="h-5 w-5 text-primary" />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={asset.name}
+      loading="lazy"
+      onError={() => setIdx((i) => i + 1)}
+      className="h-11 w-11 rounded-xl object-contain bg-white p-1 shadow-sm border border-slate-200/50"
+    />
+  );
+}
+
 export default function StocksCryptoDatabase() {
   const [assets, setAssets] = useState<StockCrypto[]>([]);
   const [loading, setLoading] = useState(true);
