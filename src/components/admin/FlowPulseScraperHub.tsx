@@ -12,8 +12,6 @@ const STORAGE_KEY = "admin-platform";
 
 export function FlowPulseScraperHub() {
   // FlowPulse Finance is temporarily hidden — force the investor variant.
-  const [platform] = useState<AdminPlatform>("investor");
-
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, "investor");
@@ -21,6 +19,7 @@ export function FlowPulseScraperHub() {
   }, []);
 
   const isFinance = false;
+
 
 
   return (
