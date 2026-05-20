@@ -302,13 +302,7 @@ export default function AnalystQueueDashboard() {
             </TabsList>
           </div>
           <div className="p-4">
-            <TabsContent value="commentary" className="mt-0"><MarketCommentaryPanel /></TabsContent>
-            <TabsContent value="benchmarks" className="mt-0"><BenchmarkTrendsPanel /></TabsContent>
-            <TabsContent value="watchlist"  className="mt-0"><DynamicWatchlistPanel /></TabsContent>
-            <TabsContent value="segments"   className="mt-0"><InvestorSegmentsPanel /></TabsContent>
-            <TabsContent value="alerts"     className="mt-0"><RealtimeAlertsPanel /></TabsContent>
-            <TabsContent value="etf"        className="mt-0"><ETFFundAnalysisPanel /></TabsContent>
-            <TabsContent value="discovery"  className="mt-0"><DiscoveryEnginePanel /></TabsContent>
+            <TabsContent value="discovery" className="mt-0"><DiscoveryEnginePanel /></TabsContent>
           </div>
         </Tabs>
       </Card>
