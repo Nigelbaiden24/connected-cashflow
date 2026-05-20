@@ -14,16 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Brain, Play, Check, X, AlertTriangle, Loader2, RefreshCw, Activity,
   Search, Filter, Clock, Database, Cpu, Gauge, FileText, ShieldCheck,
-  TrendingUp, BarChart3, Eye, Users, Bell, LineChart, Compass, ChevronDown,
+  Compass, ChevronDown,
   Briefcase, Landmark, Globe2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import MarketCommentaryPanel from "./MarketCommentaryPanel";
-import BenchmarkTrendsPanel from "./BenchmarkTrendsPanel";
-import DynamicWatchlistPanel from "./DynamicWatchlistPanel";
-import InvestorSegmentsPanel from "./InvestorSegmentsPanel";
-import RealtimeAlertsPanel from "./RealtimeAlertsPanel";
-import ETFFundAnalysisPanel from "./ETFFundAnalysisPanel";
 import DiscoveryEnginePanel from "./DiscoveryEnginePanel";
 
 type BriefStatus = "pending" | "promoted" | "rejected" | "quarantined";
@@ -70,12 +64,6 @@ const STATUS_TABS: { value: BriefStatus; label: string; dot: string }[] = [
 ];
 
 const MODULE_TABS = [
-  { value: "commentary", label: "Market Commentary", icon: TrendingUp },
-  { value: "benchmarks", label: "Benchmarks & Trends", icon: BarChart3 },
-  { value: "watchlist", label: "Dynamic Watchlist", icon: Eye },
-  { value: "segments", label: "Investor Segments", icon: Users },
-  { value: "alerts", label: "Real-Time Alerts", icon: Bell },
-  { value: "etf", label: "ETF & Fund Analysis", icon: LineChart },
   { value: "discovery", label: "Discovery Engine", icon: Compass },
 ];
 
@@ -314,13 +302,7 @@ export default function AnalystQueueDashboard() {
             </TabsList>
           </div>
           <div className="p-4">
-            <TabsContent value="commentary" className="mt-0"><MarketCommentaryPanel /></TabsContent>
-            <TabsContent value="benchmarks" className="mt-0"><BenchmarkTrendsPanel /></TabsContent>
-            <TabsContent value="watchlist"  className="mt-0"><DynamicWatchlistPanel /></TabsContent>
-            <TabsContent value="segments"   className="mt-0"><InvestorSegmentsPanel /></TabsContent>
-            <TabsContent value="alerts"     className="mt-0"><RealtimeAlertsPanel /></TabsContent>
-            <TabsContent value="etf"        className="mt-0"><ETFFundAnalysisPanel /></TabsContent>
-            <TabsContent value="discovery"  className="mt-0"><DiscoveryEnginePanel /></TabsContent>
+            <TabsContent value="discovery" className="mt-0"><DiscoveryEnginePanel /></TabsContent>
           </div>
         </Tabs>
       </Card>
