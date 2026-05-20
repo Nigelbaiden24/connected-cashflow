@@ -667,17 +667,7 @@ function AssetTable({
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    {asset.logo_url ? (
-                      <img src={asset.logo_url} alt={asset.name} className="h-11 w-11 rounded-xl object-cover shadow-sm" />
-                    ) : (
-                      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center border border-slate-200/50">
-                        {asset.asset_type === 'crypto' ? (
-                          <Bitcoin className="h-5 w-5 text-amber-500" />
-                        ) : (
-                          <BarChart3 className="h-5 w-5 text-primary" />
-                        )}
-                      </div>
-                    )}
+                    <AssetLogo asset={asset} />
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-slate-900">{asset.name}</span>
