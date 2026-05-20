@@ -81,16 +81,11 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Analyst Reports", url: "/investor/research", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
       { title: "Analysis Reports", url: "/investor/analysis", icon: BarChart3, gradient: "from-violet-500 to-violet-600" },
-      { title: "Market Commentary", url: "/investor/commentary", icon: TrendingUp, gradient: "from-purple-500 to-purple-600" },
-      { title: "AI Analyst", url: "/investor/ai-analyst", icon: Brain, gradient: "from-pink-500 to-rose-600" },
     ]
   },
   {
     label: "Market Intelligence",
     items: [
-      { title: "News", url: "/investor/news", icon: Newspaper, gradient: "from-emerald-500 to-emerald-600" },
-      { title: "Signals & Alerts", url: "/investor/alerts", icon: Bell, gradient: "from-amber-500 to-orange-600" },
-      { title: "Benchmarking & Trends", url: "/investor/trends", icon: LineChart, gradient: "from-cyan-500 to-cyan-600" },
       { title: "Opportunity Intelligence", url: "/investor/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
       { title: "Deal Flow Intelligence", url: "/investor/deal-flow", icon: Activity, gradient: "from-fuchsia-500 to-pink-600" },
     ]
@@ -98,10 +93,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Investments",
     items: [
-      { title: "Model Portfolios", url: "/investor/portfolios", icon: Briefcase, gradient: "from-teal-500 to-teal-600" },
-      { title: "Fund & ETF Database", url: "/investor/fund-database", icon: Database, gradient: "from-sky-500 to-sky-600" },
       { title: "Stocks & Crypto", url: "/investor/stocks-crypto", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
-      { title: "Watchlists", url: "/investor/watchlists", icon: Eye, gradient: "from-slate-500 to-slate-600" },
     ]
   },
   {
@@ -111,22 +103,17 @@ const navGroups: NavGroup[] = [
       { title: "Investor Finder", url: "/investor/investor-finder", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
       { title: "Discovery Engine", url: "/investor/discovery-engine", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
       { title: "Investor Segments", url: "/investor/investor-segments", icon: Compass, gradient: "from-fuchsia-500 to-pink-600" },
-      { title: "Market Data Hub", url: "/investor/market-data", icon: Database, gradient: "from-blue-500 to-indigo-600" },
-      { title: "Tools & Calculators", url: "/investor/tools", icon: Calculator, gradient: "from-rose-500 to-rose-600" },
     ]
   },
   {
     label: "Resources",
     items: [
-      { title: "Learning Hub", url: "/investor/learning", icon: GraduationCap, gradient: "from-fuchsia-500 to-fuchsia-600" },
       { title: "Newsletters", url: "/investor/newsletters", icon: Mail, gradient: "from-lime-500 to-green-600" },
-      { title: "Risk & Compliance", url: "/investor/risk-compliance", icon: Shield, gradient: "from-red-500 to-red-600" },
     ]
   },
   {
     label: "Workspace",
     items: [
-      { title: "Tasks", url: "/investor/tasks", icon: ClipboardList, gradient: "from-stone-500 to-stone-600" },
       { title: "Languages", url: "/investor/languages", icon: Languages, gradient: "from-zinc-500 to-zinc-600" },
     ]
   },
