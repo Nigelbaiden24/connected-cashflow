@@ -35,6 +35,7 @@ const MarketCommentary = () => {
       const { data, error } = await supabase
         .from('market_commentary')
         .select('*')
+        .or('platform.eq.investor,platform.eq.both,platform.is.null')
         .order('published_date', { ascending: false });
 
       if (error) throw error;
