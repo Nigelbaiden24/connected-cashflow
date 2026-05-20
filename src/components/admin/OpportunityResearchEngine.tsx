@@ -544,6 +544,27 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
       const cat = PROMOTE_CATEGORY_MAP[category] || "businesses";
       const sub = subCategory || categoryConfig[category]?.label || "General";
       const priceGBP = opp.estimated_value ? toGBPNumber(opp.estimated_value) : null;
+
+      // Prefer the scraped image; fall back to the source page's own metadata image
+      // captured during scraping, then to a category-appropriate hero so we never
+      // store a single generic placeholder for every opportunity.
+      const sourceImage = (sourceMetadata?.searchResults || []).find(
+        (s) => s.url && opp.source_url && s.url === opp.source_url && s.imageUrl
+      )?.imageUrl;
+      const categoryFallback = (() => {
+        const c = `${cat} ${sub} ${category}`.toLowerCase();
+        if (/property|real[_ -]?estate/.test(c)) return "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80";
+        if (/vehicle|car|auto/.test(c)) return "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80";
+        if (/crypto|blockchain/.test(c)) return "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=1200&q=80";
+        if (/stock|equity|market|derivative|copy|thematic/.test(c)) return "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=80";
+        if (/watch|timepiece|luxury|collect|memorabilia|music/.test(c)) return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200&q=80";
+        if (/commodit|gold|oil|energy|infra/.test(c)) return "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=1200&q=80";
+        if (/fund|etf|fixed|esg|bond|pension|savings|cash/.test(c)) return "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&q=80";
+        if (/venture|startup|private[_ -]equity|crowd|sme|debt/.test(c)) return "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=1200&q=80";
+        return "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80";
+      })();
+      const finalImage = opp.image_url || sourceImage || categoryFallback;
+
       const { data: { session } } = await supabase.auth.getSession();
       const { error } = await supabase.from("opportunity_products").insert({
         title: opp.name,
@@ -555,8 +576,8 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
         price_currency: "GBP",
         location: opp.location || null,
         country: opp.location || null,
-        thumbnail_url: opp.image_url || null,
-        gallery_images: opp.image_url ? [opp.image_url] : null,
+        thumbnail_url: finalImage,
+        gallery_images: [finalImage],
         analyst_rating: mapAnalystRating(opp.analyst_rating),
         investment_thesis: opp.investment_thesis || null,
         risks: opp.risk_level ? `${opp.risk_level} risk` : null,
@@ -568,6 +589,9 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
           scraped_date: opp.scraped_date,
           original_value: opp.estimated_value,
           promoted_via: "opportunity-research-engine",
+          scraped_image: opp.image_url || null,
+          source_page_image: sourceImage || null,
+          resolved_image: finalImage,
         },
         status: "active",
         uploaded_by: session?.user?.id ?? null,
@@ -581,7 +605,7 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
     } finally {
       setBusyId(null);
     }
-  }, [category, subCategory]);
+  }, [category, subCategory, sourceMetadata]);
 
   const rejectOpportunity = useCallback((opp: ScrapedOpportunity) => {
     const id = opp.name + (opp.source_url || "");

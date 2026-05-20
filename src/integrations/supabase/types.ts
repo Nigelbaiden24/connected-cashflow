@@ -5828,7 +5828,10 @@ export type Database = {
           description: string | null
           file_path: string
           id: string
+          platform: string | null
           published_date: string | null
+          source: string | null
+          source_id: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string | null
@@ -5839,7 +5842,10 @@ export type Database = {
           description?: string | null
           file_path: string
           id?: string
+          platform?: string | null
           published_date?: string | null
+          source?: string | null
+          source_id?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string | null
@@ -5850,7 +5856,10 @@ export type Database = {
           description?: string | null
           file_path?: string
           id?: string
+          platform?: string | null
           published_date?: string | null
+          source?: string | null
+          source_id?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string | null

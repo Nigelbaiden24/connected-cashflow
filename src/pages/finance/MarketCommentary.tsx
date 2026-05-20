@@ -43,6 +43,7 @@ export default function FinanceMarketCommentary() {
       const { data, error } = await supabase
         .from('market_commentary')
         .select('*')
+        .or('platform.eq.finance,platform.eq.both,platform.is.null')
         .order('published_date', { ascending: false });
 
       console.log('[FinanceMarketCommentary] query result', { count: data?.length ?? 0, error, sample: data?.[0] });
