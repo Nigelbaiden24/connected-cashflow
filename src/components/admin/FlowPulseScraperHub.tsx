@@ -6,7 +6,7 @@ import { FinancialResearchScraper } from "./FinancialResearchScraper";
 import { CompaniesHouseScraper } from "@/components/crm/CompaniesHouseScraper";
 import { EliteScraperAnalyst } from "./EliteScraperAnalyst";
 
-type AdminPlatform = "finance" | "investor";
+// FlowPulse Finance is temporarily hidden — investor is the leading platform.
 
 const STORAGE_KEY = "admin-platform";
 
