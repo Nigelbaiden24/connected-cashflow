@@ -49,7 +49,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
         .limit(60);
       if (!mounted) return;
       if (error) toast.error(error.message);
-      setItems((data ?? []) as PromotedReport[]);
+      setItems((data ?? []) as unknown as PromotedReport[]);
       setLoading(false);
     })();
     return () => { mounted = false; };

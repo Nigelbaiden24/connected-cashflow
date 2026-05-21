@@ -62,7 +62,7 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) toast.error(error.message);
-    setItems((data ?? []) as GeneratedReport[]);
+    setItems((data ?? []) as unknown as GeneratedReport[]);
     setLoading(false);
   };
 
