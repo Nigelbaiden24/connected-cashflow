@@ -47,10 +47,14 @@ interface AnalystPick {
   created_at: string;
 }
 
-export function FeaturedAnalystPicksSection() {
+interface FeaturedAnalystPicksSectionProps {
+  lockAssetType?: 'fund' | 'stock' | 'crypto' | 'alternative';
+}
+
+export function FeaturedAnalystPicksSection({ lockAssetType }: FeaturedAnalystPicksSectionProps = {}) {
   const [picks, setPicks] = useState<AnalystPick[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>(lockAssetType ?? 'all');
   const [expandedPick, setExpandedPick] = useState<string | null>(null);
 
   useEffect(() => {
@@ -176,23 +180,25 @@ export function FeaturedAnalystPicksSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Filter Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-            <TabsTrigger value="fund" className="text-xs gap-1">
-              <BarChart3 className="h-3 w-3" /> Funds
-            </TabsTrigger>
-            <TabsTrigger value="stock" className="text-xs gap-1">
-              <TrendingUp className="h-3 w-3" /> Stocks
-            </TabsTrigger>
-            <TabsTrigger value="crypto" className="text-xs gap-1">
-              <Bitcoin className="h-3 w-3" /> Crypto
-            </TabsTrigger>
-            <TabsTrigger value="alternative" className="text-xs gap-1">
-              <Building2 className="h-3 w-3" /> Alt
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {!lockAssetType && (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+              <TabsTrigger value="fund" className="text-xs gap-1">
+                <BarChart3 className="h-3 w-3" /> Funds
+              </TabsTrigger>
+              <TabsTrigger value="stock" className="text-xs gap-1">
+                <TrendingUp className="h-3 w-3" /> Stocks
+              </TabsTrigger>
+              <TabsTrigger value="crypto" className="text-xs gap-1">
+                <Bitcoin className="h-3 w-3" /> Crypto
+              </TabsTrigger>
+              <TabsTrigger value="alternative" className="text-xs gap-1">
+                <Building2 className="h-3 w-3" /> Alt
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         {/* Picks Grid */}
         <div className="space-y-3">
