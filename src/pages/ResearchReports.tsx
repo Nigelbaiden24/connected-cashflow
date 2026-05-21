@@ -22,6 +22,7 @@ import { ViewModeToggle } from '@/components/showcase/ViewModeToggle';
 import { ShowcaseDarkToggle } from '@/components/showcase/ShowcaseDarkToggle';
 import { ContentShowcase, ShowcaseItem } from '@/components/showcase/ContentShowcase';
 import { StarryBackground } from '@/components/showcase/StarryBackground';
+import { FeaturedAnalystPicksSection } from '@/components/market/FeaturedAnalystPicksSection';
 
 interface ResearchReportsProps {
   lockAssetType?: 'stock' | 'crypto' | 'fund' | 'etf';
