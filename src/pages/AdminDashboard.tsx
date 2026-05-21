@@ -40,6 +40,8 @@ import { FinancialResearchScraper } from "@/components/admin/FinancialResearchSc
 import { AIAutoScanner } from "@/components/admin/AIAutoScanner";
 import { FlowPulseScraperHub } from "@/components/admin/FlowPulseScraperHub";
 import { SavedScrapes } from "@/components/admin/SavedScrapes";
+import { StockReportScraper } from "@/components/admin/StockReportScraper";
+import { CryptoReportScraper } from "@/components/admin/CryptoReportScraper";
 import { PipelineDashboard } from "@/components/admin/PipelineDashboard";
 import { DMFinderPanel } from "@/components/admin/DMFinderPanel";
 import { CompanyFinderPanel } from "@/components/admin/CompanyFinderPanel";
@@ -853,6 +855,8 @@ export default function AdminDashboard() {
 
           {activeTab === 'saved-scrapes' && <SavedScrapes />}
           {activeTab === 'data-pipeline' && <PipelineDashboard />}
+          {activeTab === 'stock-report-scraper' && <StockReportScraper />}
+          {activeTab === 'crypto-report-scraper' && <CryptoReportScraper />}
           {activeTab === 'dm-finder' && <DMFinderPanel />}
           {activeTab === 'company-finder' && <CompanyFinderPanel />}
           

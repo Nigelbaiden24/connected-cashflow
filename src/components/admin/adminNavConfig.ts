@@ -26,6 +26,8 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "users", label: "Users & Audience", icon: Users, gradient: "from-blue-500 to-blue-600", platforms: ["finance", "investor"] },
   { id: "saved-scrapes", label: "Saved Scrapes", icon: Archive, gradient: "from-rose-500 to-pink-600", platforms: ["finance", "investor"] },
   { id: "data-pipeline", label: "Data Pipeline", icon: Activity, gradient: "from-fuchsia-500 to-purple-600", platforms: ["finance", "investor"] },
+  { id: "stock-report-scraper", label: "Stock Report Scraper", icon: TrendingUp, gradient: "from-blue-500 to-cyan-600", platforms: ["finance", "investor"] },
+  { id: "crypto-report-scraper", label: "Crypto Report Scraper", icon: Zap, gradient: "from-orange-500 to-yellow-600", platforms: ["finance", "investor"] },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700", platforms: ["finance", "investor"] },
 
   // ── FlowPulse Finance ─────────────────────────────────────────────────
