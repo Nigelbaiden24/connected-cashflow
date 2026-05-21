@@ -1542,3 +1542,26 @@ html.pwa-standalone #root {
     background-color: hsl(var(--accent));
   }
 }
+
+/* ── Cryptonary-style article rendering for generated research reports ── */
+.cryptonary-article { font-family: 'Georgia', 'Cambria', serif; line-height: 1.75; color: hsl(var(--foreground)); }
+.cryptonary-article h2 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.75rem; font-weight: 800; margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
+.cryptonary-article h3 { font-family: 'Inter', system-ui, sans-serif; font-size: 1.25rem; font-weight: 700; margin: 1.75rem 0 0.75rem; }
+.cryptonary-article p { margin: 0 0 1.25rem; font-size: 1.0625rem; }
+.cryptonary-article .lede { font-size: 1.25rem; line-height: 1.65; color: hsl(var(--foreground) / 0.85); font-style: italic; border-left: 3px solid hsl(var(--primary)); padding-left: 1rem; }
+.cryptonary-article blockquote { border-left: 4px solid hsl(var(--primary)); padding: 0.25rem 0 0.25rem 1.25rem; margin: 1.5rem 0; font-style: italic; color: hsl(var(--muted-foreground)); }
+.cryptonary-article ul, .cryptonary-article ol { padding-left: 1.5rem; margin: 0 0 1.25rem; }
+.cryptonary-article li { margin: 0.35rem 0; }
+.cryptonary-article a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 3px; }
+.cryptonary-article sup a { text-decoration: none; font-weight: 600; padding: 0 2px; }
+.cryptonary-article .callout { background: linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.02)); border: 1px solid hsl(var(--primary) / 0.25); border-radius: 12px; padding: 1.25rem 1.5rem; margin: 1.75rem 0; font-family: 'Inter', system-ui, sans-serif; font-size: 1rem; }
+.cryptonary-article .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin: 1.5rem 0; }
+.cryptonary-article .stat { background: hsl(var(--muted)); border-radius: 10px; padding: 0.9rem 1.1rem; }
+.cryptonary-article .stat .label { display: block; font-family: 'Inter', sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground)); margin-bottom: 0.25rem; }
+.cryptonary-article .stat .value { display: block; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.4rem; color: hsl(var(--foreground)); }
+.cryptonary-article table.data-table { border-collapse: collapse; width: 100%; margin: 1.5rem 0; font-family: 'Inter', sans-serif; font-size: 0.9rem; }
+.cryptonary-article table.data-table th { background: hsl(var(--muted)); text-align: left; padding: 0.6rem 0.75rem; font-weight: 700; border-bottom: 2px solid hsl(var(--border)); }
+.cryptonary-article table.data-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid hsl(var(--border)); }
+.cryptonary-article figure { margin: 1.75rem 0; }
+.cryptonary-article figure img { width: 100%; border-radius: 12px; }
+.cryptonary-article figcaption { text-align: center; font-size: 0.85rem; color: hsl(var(--muted-foreground)); margin-top: 0.5rem; font-family: 'Inter', sans-serif; }
