@@ -23,7 +23,13 @@ import { ShowcaseDarkToggle } from '@/components/showcase/ShowcaseDarkToggle';
 import { ContentShowcase, ShowcaseItem } from '@/components/showcase/ContentShowcase';
 import { StarryBackground } from '@/components/showcase/StarryBackground';
 
-export default function ResearchReports() {
+interface ResearchReportsProps {
+  lockAssetType?: 'stock' | 'crypto' | 'fund' | 'etf';
+  title?: string;
+  description?: string;
+}
+
+export default function ResearchReports({ lockAssetType, title, description }: ResearchReportsProps = {}) {
   const { 
     reports, 
     selectedReport, 
@@ -35,7 +41,7 @@ export default function ResearchReports() {
     setSelectedReport 
   } = useResearchReports();
 
-  const [assetTypeFilter, setAssetTypeFilter] = useState<string>('all');
+  const [assetTypeFilter, setAssetTypeFilter] = useState<string>(lockAssetType ?? 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>('generated_at');
   const [viewMode, setViewMode] = useState<string>('grid');
@@ -43,6 +49,7 @@ export default function ResearchReports() {
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
+
 
   const filteredReports = reports
     .filter(report => {
