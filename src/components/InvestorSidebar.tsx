@@ -72,31 +72,9 @@ const navGroups: NavGroup[] = [
     ]
   },
   {
-    label: "Research & Analysis",
-    items: [
-      { title: "Analyst Reports", url: "/investor/research", icon: FileText, gradient: "from-indigo-500 to-indigo-600" },
-      { title: "Analysis Reports", url: "/investor/analysis", icon: BarChart3, gradient: "from-violet-500 to-violet-600" },
-    ]
-  },
-  {
     label: "Market Intelligence",
     items: [
       { title: "Opportunity Intelligence", url: "/investor/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
-      { title: "Deal Flow Intelligence", url: "/investor/deal-flow", icon: Activity, gradient: "from-fuchsia-500 to-pink-600" },
-    ]
-  },
-  {
-    label: "Investments",
-    items: [
-      { title: "Stocks & Crypto", url: "/investor/stocks-crypto", icon: TrendingUp, gradient: "from-green-500 to-emerald-600" },
-    ]
-  },
-  {
-    label: "Discovery & Tools",
-    items: [
-      { title: "Investor Finder", url: "/investor/investor-finder", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
-      { title: "Discovery Engine", url: "/investor/discovery-engine", icon: Compass, gradient: "from-violet-500 to-fuchsia-600" },
-      { title: "Investor Segments", url: "/investor/investor-segments", icon: Compass, gradient: "from-fuchsia-500 to-pink-600" },
     ]
   },
   {
