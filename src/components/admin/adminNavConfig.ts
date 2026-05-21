@@ -33,7 +33,7 @@ export const adminNavItems: AdminNavItem[] = [
   // ── FlowPulse Finance ─────────────────────────────────────────────────
   { id: "featured-picks", label: "Featured Picks", icon: Star, gradient: "from-amber-500 to-orange-600", platforms: ["finance"] },
   { id: "reports", label: "Manual Reports", icon: FileText, gradient: "from-indigo-500 to-indigo-600", platforms: ["finance"] },
-  { id: "newsletters", label: "Newsletters", icon: Newspaper, gradient: "from-emerald-500 to-emerald-600", platforms: ["finance"] },
+  { id: "newsletters", label: "Newsletters", icon: Newspaper, gradient: "from-emerald-500 to-emerald-600", platforms: ["finance", "investor"] },
   { id: "portfolios", label: "Portfolios", icon: TrendingUp, gradient: "from-cyan-500 to-cyan-600", platforms: ["finance"] },
   { id: "commentary", label: "Commentary", icon: FileText, gradient: "from-violet-500 to-violet-600", platforms: ["finance"] },
   { id: "learning", label: "Learning", icon: BookOpen, gradient: "from-pink-500 to-pink-600", platforms: ["finance"] },
