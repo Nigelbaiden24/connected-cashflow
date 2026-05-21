@@ -75,8 +75,11 @@ const navGroups: NavGroup[] = [
     label: "Market Intelligence",
     items: [
       { title: "Opportunity Intelligence", url: "/investor/opportunities", icon: Lightbulb, gradient: "from-yellow-500 to-amber-600" },
+      { title: "Stock Research Reports", url: "/investor/stock-research", icon: LineChart, gradient: "from-blue-500 to-cyan-600" },
+      { title: "Crypto Research Reports", url: "/investor/crypto-research", icon: Database, gradient: "from-orange-500 to-yellow-600" },
     ]
   },
+
   {
     label: "Resources",
     items: [
