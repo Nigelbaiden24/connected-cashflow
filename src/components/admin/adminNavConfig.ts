@@ -1,6 +1,6 @@
 import {
   Users, MessageSquare, Calendar, FileText, Newspaper, TrendingUp, BookOpen,
-  Video, List, Shield, Bell, ShoppingBag, Star, Lightbulb, Bitcoin, FlaskConical,
+  Video, List, Shield, Bell, ShoppingBag, Star, Lightbulb,
   Sparkles, Bot, Contact, ClipboardList, Globe, Settings, Radar, Calculator,
   Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive, Brain,
 } from "lucide-react";
@@ -42,9 +42,6 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "fund-analyst", label: "Fund Analyst", icon: TrendingUp, gradient: "from-teal-500 to-teal-600", platforms: ["finance"] },
   { id: "crm", label: "CRM & Documents", icon: Contact, gradient: "from-blue-500 to-blue-600", platforms: ["finance"] },
 
-  // ── FlowPulse Investor ────────────────────────────────────────────────
-  { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600", platforms: ["finance", "investor"] },
-  { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600", platforms: ["investor"] },
 ];
 
 
