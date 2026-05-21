@@ -111,9 +111,9 @@ export default function ResearchReports({ lockAssetType, title, description }: R
       {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Analyst Reports</h1>
+            <h1 className="text-3xl font-bold">{title ?? 'Analyst Reports'}</h1>
             <p className="text-muted-foreground">
-              Institutional-grade investment research across all asset classes
+              {description ?? 'Institutional-grade investment research across all asset classes'}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function ResearchReports({ lockAssetType, title, description }: R
             <ShowcaseDarkToggle />
             <Badge variant="secondary" className="text-sm">
               <FileText className="h-4 w-4 mr-1" />
-              {reports.length} Reports
+              {lockAssetType ? filteredReports.length : reports.length} Reports
             </Badge>
           </div>
         </div>
@@ -139,28 +139,31 @@ export default function ResearchReports({ lockAssetType, title, description }: R
                   className="pl-10"
                 />
               </div>
-              <Tabs value={assetTypeFilter} onValueChange={setAssetTypeFilter} className="w-full md:w-auto">
-                <TabsList>
-                  <TabsTrigger value="all">All ({assetTypeCounts.all})</TabsTrigger>
-                  <TabsTrigger value="stock" className="hidden md:flex">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    Stocks ({assetTypeCounts.stock})
-                  </TabsTrigger>
-                  <TabsTrigger value="crypto" className="hidden md:flex">
-                    <Coins className="h-4 w-4 mr-1" />
-                    Crypto ({assetTypeCounts.crypto})
-                  </TabsTrigger>
-                  <TabsTrigger value="fund" className="hidden md:flex">
-                    <PiggyBank className="h-4 w-4 mr-1" />
-                    Funds ({assetTypeCounts.fund})
-                  </TabsTrigger>
-                  <TabsTrigger value="etf" className="hidden md:flex">
-                    <BarChart3 className="h-4 w-4 mr-1" />
-                    ETFs ({assetTypeCounts.etf})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              {!lockAssetType && (
+                <Tabs value={assetTypeFilter} onValueChange={setAssetTypeFilter} className="w-full md:w-auto">
+                  <TabsList>
+                    <TabsTrigger value="all">All ({assetTypeCounts.all})</TabsTrigger>
+                    <TabsTrigger value="stock" className="hidden md:flex">
+                      <TrendingUp className="h-4 w-4 mr-1" />
+                      Stocks ({assetTypeCounts.stock})
+                    </TabsTrigger>
+                    <TabsTrigger value="crypto" className="hidden md:flex">
+                      <Coins className="h-4 w-4 mr-1" />
+                      Crypto ({assetTypeCounts.crypto})
+                    </TabsTrigger>
+                    <TabsTrigger value="fund" className="hidden md:flex">
+                      <PiggyBank className="h-4 w-4 mr-1" />
+                      Funds ({assetTypeCounts.fund})
+                    </TabsTrigger>
+                    <TabsTrigger value="etf" className="hidden md:flex">
+                      <BarChart3 className="h-4 w-4 mr-1" />
+                      ETFs ({assetTypeCounts.etf})
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              )}
               <Select value={sortBy} onValueChange={setSortBy}>
+
                 <SelectTrigger className="w-[180px]">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="Sort by" />
