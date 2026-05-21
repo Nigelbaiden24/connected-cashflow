@@ -4,9 +4,6 @@ import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
 import { prefetchHandlers } from "@/lib/routePrefetch";
 import { 
-  FileText,
-  BarChart3,
-  TrendingUp,
   Briefcase,
   Bell,
   Mail,
@@ -22,13 +19,11 @@ import {
   Languages,
   ClipboardList,
   Lightbulb,
-  Activity,
   Newspaper,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
   Sparkles,
-  Compass,
 } from "lucide-react";
 import {
   Sidebar,
