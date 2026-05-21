@@ -24,11 +24,8 @@ export interface AdminNavItem {
 export const adminNavItems: AdminNavItem[] = [
   // ── Shared (operational) ──────────────────────────────────────────────
   { id: "users", label: "Users & Audience", icon: Users, gradient: "from-blue-500 to-blue-600", platforms: ["finance", "investor"] },
-  { id: "flowpulse-scraper", label: "FlowPulse Scraper", icon: Crosshair, gradient: "from-fuchsia-500 to-rose-600", platforms: ["finance", "investor"] },
   { id: "saved-scrapes", label: "Saved Scrapes", icon: Archive, gradient: "from-rose-500 to-pink-600", platforms: ["finance", "investor"] },
   { id: "data-pipeline", label: "Data Pipeline", icon: Activity, gradient: "from-fuchsia-500 to-purple-600", platforms: ["finance", "investor"] },
-  { id: "dm-finder", label: "Finder Hub", icon: Crosshair, gradient: "from-fuchsia-600 to-purple-700", platforms: ["finance", "investor"] },
-  { id: "calendar", label: "Calendar", icon: Calendar, gradient: "from-blue-500 to-cyan-600", platforms: ["finance", "investor"] },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700", platforms: ["finance", "investor"] },
 
   // ── FlowPulse Finance ─────────────────────────────────────────────────
@@ -46,19 +43,10 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "crm", label: "CRM & Documents", icon: Contact, gradient: "from-blue-500 to-blue-600", platforms: ["finance"] },
 
   // ── FlowPulse Investor ────────────────────────────────────────────────
-  { id: "opportunities", label: "Opportunities", icon: Lightbulb, gradient: "from-purple-500 to-purple-600", platforms: ["finance", "investor"] },
-  { id: "analyst-queue", label: "Analyst AI Queue", icon: Sparkles, gradient: "from-fuchsia-500 to-pink-600", platforms: ["finance", "investor"] },
   { id: "stocks-crypto", label: "Stocks & Crypto", icon: Bitcoin, gradient: "from-cyan-500 to-cyan-600", platforms: ["finance", "investor"] },
   { id: "research-engine", label: "Research Engine", icon: FlaskConical, gradient: "from-indigo-500 to-indigo-600", platforms: ["investor"] },
-  { id: "research-ai", label: "Research AI", icon: Bot, gradient: "from-rose-500 to-pink-600", platforms: ["investor"] },
-  { id: "alerts", label: "Signals & Alerts", icon: Bell, gradient: "from-rose-500 to-rose-600", platforms: ["investor"] },
-  { id: "investor-finder", label: "Investor Finder", icon: Users, gradient: "from-violet-500 to-purple-600", platforms: ["investor"] },
-  { id: "startup-discovery", label: "Startup Discovery", icon: Sparkles, gradient: "from-emerald-500 to-emerald-600", platforms: ["investor"] },
-  // New Phase 5 modules (UI placeholders surface in Phase 5)
-  { id: "deal-flow", label: "Deal Flow Intelligence", icon: Activity, gradient: "from-fuchsia-500 to-pink-600", platforms: ["finance", "investor"] },
-  { id: "company-registry", label: "Company Registry", icon: Building2, gradient: "from-blue-500 to-indigo-600", platforms: ["investor"] },
-  { id: "funding-signals", label: "Funding Signals", icon: Database, gradient: "from-amber-500 to-rose-600", platforms: ["investor"] },
 ];
+
 
 export const platformMeta: Record<AdminPlatform, { label: string; tagline: string; gradient: string }> = {
   finance: {
