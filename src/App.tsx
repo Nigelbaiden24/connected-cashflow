@@ -383,6 +383,9 @@ const App = () => {
                 <Route path="/investor/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
                 <Route path="/investor/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
                 <Route path="/investor/stocks-crypto" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
+                <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage lockAssetType="stock" title="Stock Research Reports" description="Institutional-grade equity research and analyst coverage" /></Suspense>} />
+                <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage lockAssetType="crypto" title="Crypto Research Reports" description="Deep-dive digital asset research and on-chain analysis" /></Suspense>} />
+
                 <Route path="/investor/featured-picks" element={<Suspense fallback={<PageLoader />}><InvestorFeaturedPicks /></Suspense>} />
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
                 <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="investor" /></Suspense>} />
