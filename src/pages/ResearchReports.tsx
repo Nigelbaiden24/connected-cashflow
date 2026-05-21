@@ -23,6 +23,7 @@ import { ShowcaseDarkToggle } from '@/components/showcase/ShowcaseDarkToggle';
 import { ContentShowcase, ShowcaseItem } from '@/components/showcase/ContentShowcase';
 import { StarryBackground } from '@/components/showcase/StarryBackground';
 import { FeaturedAnalystPicksSection } from '@/components/market/FeaturedAnalystPicksSection';
+import { CryptonaryReportsFeed } from '@/components/research/CryptonaryReportsFeed';
 
 interface ResearchReportsProps {
   lockAssetType?: 'stock' | 'crypto' | 'fund' | 'etf';
@@ -245,12 +246,16 @@ export default function ResearchReports({ lockAssetType, title, description }: R
 
           if (lockAssetType === 'stock' || lockAssetType === 'crypto') {
             return (
-              <Tabs defaultValue="reports" className="w-full">
+              <Tabs defaultValue="analyst" className="w-full">
                 <TabsList>
-                  <TabsTrigger value="reports">Research Reports</TabsTrigger>
+                  <TabsTrigger value="analyst">Analyst Reports</TabsTrigger>
+                  <TabsTrigger value="quant">Quant Models</TabsTrigger>
                   <TabsTrigger value="picks">Featured Picks</TabsTrigger>
                 </TabsList>
-                <TabsContent value="reports" className="space-y-6 mt-6">
+                <TabsContent value="analyst" className="mt-6">
+                  <CryptonaryReportsFeed assetType={lockAssetType} />
+                </TabsContent>
+                <TabsContent value="quant" className="space-y-6 mt-6">
                   {reportsAndFilters}
                 </TabsContent>
                 <TabsContent value="picks" className="mt-6">
