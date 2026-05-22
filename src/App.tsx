@@ -272,7 +272,7 @@ const App = () => {
               <Route path="/enterprise-data/:slug" element={<Suspense fallback={<PageLoader />}><EnterpriseDataCategory /></Suspense>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/organisation" element={<OrganisationSettings />} />
-              <Route path="/reports" element={<PublicReports />} />
+              <Route path="/reports" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/reports/:id" element={<ReportDetail />} />
               <Route path="/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
