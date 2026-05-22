@@ -272,34 +272,33 @@ function ReportCard({
   return (
     <Card
       onClick={onOpen}
-      className={`group relative overflow-hidden cursor-pointer border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_60px_-15px_rgba(251,191,36,0.25)] ${
-        blurred ? "select-none" : ""
-      }`}
+      className={`group relative overflow-hidden cursor-pointer border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_60px_-15px_rgba(251,191,36,0.25)] ${blurred ? "select-none" : ""}`}
     >
-      {/* Accent bar */}
-      <div
-        className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${
-          isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"
-        }`}
-      />
+      <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
 
-      <CardContent className={`p-6 ${blurred ? "blur-md" : ""}`}>
-        {/* Top row */}
-        <div className="flex items-start justify-between gap-3 mb-4">
+      {/* First-page paper thumbnail */}
+      <div className="relative h-72 overflow-hidden bg-gradient-to-br from-slate-800/40 to-slate-900/60 p-3">
+        <div className={`relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02] ${blurred ? "blur-[6px] saturate-75" : ""}`}>
+          <FirstPagePreview report={report} />
+        </div>
+        {blurred && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/70 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
+              <Lock className="h-3.5 w-3.5" /> Sign in to read
+            </div>
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
-                isStock
-                  ? "border-sky-400/30 bg-sky-500/10 text-sky-300"
-                  : "border-amber-400/30 bg-amber-500/10 text-amber-300"
-              }`}
-            >
-              {isStock ? <TrendingUp className="h-5 w-5" /> : <Coins className="h-5 w-5" />}
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${isStock ? "border-sky-400/30 bg-sky-500/10 text-sky-300" : "border-amber-400/30 bg-amber-500/10 text-amber-300"}`}>
+              {isStock ? <TrendingUp className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
             </div>
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-widest text-slate-500">
-                {report.asset_type}
-                {report.asset_symbol ? ` · ${report.asset_symbol}` : ""}
+                {report.asset_type}{report.asset_symbol ? ` · ${report.asset_symbol}` : ""}
               </div>
               <h3 className="text-base font-semibold text-white truncate group-hover:text-amber-300 transition-colors">
                 {report.asset_name}
@@ -309,16 +308,7 @@ function ReportCard({
           <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
         </div>
 
-        {/* Scores */}
-        <div className="grid grid-cols-2 gap-x-5 gap-y-3 mb-5">
-          <ScoreBar label="Quality" value={report.overall_quality_score} tint="bg-gradient-to-r from-emerald-400 to-emerald-500" />
-          <ScoreBar label="Valuation" value={report.valuation_score} tint="bg-gradient-to-r from-sky-400 to-indigo-500" />
-          <ScoreBar label="Risk" value={report.risk_score} tint="bg-gradient-to-r from-amber-400 to-orange-500" />
-          <ScoreBar label="ESG" value={report.esg_score} tint="bg-gradient-to-r from-fuchsia-400 to-purple-500" />
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+        <div className="flex items-center justify-between pt-3 border-t border-white/5">
           <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
             {report.confidence_level ?? "n/a"} confidence
           </Badge>
@@ -326,5 +316,79 @@ function ReportCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function FirstPagePreview({ report }: { report: ResearchRow }) {
+  const isStock = report.asset_type === "stock";
+  const scores = [
+    { label: "Quality", v: report.overall_quality_score },
+    { label: "Valuation", v: report.valuation_score },
+    { label: "Risk", v: report.risk_score },
+    { label: "ESG", v: report.esg_score },
+  ];
+  const lines = [94, 88, 96, 78, 92, 84, 70, 90, 82];
+
+  return (
+    <div className="flex h-full w-full flex-col p-3 text-slate-900">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+        <div className="flex items-center gap-1">
+          <div className={`h-1.5 w-1.5 rounded-full ${isStock ? "bg-sky-600" : "bg-amber-500"}`} />
+          <span className="text-[7px] font-bold uppercase tracking-[0.2em] text-slate-700">
+            FlowPulse Research
+          </span>
+        </div>
+        <span className="text-[6px] uppercase tracking-widest text-slate-400">
+          {report.asset_type} · {format(new Date(report.generated_at), "MMM yyyy")}
+        </span>
+      </div>
+
+      <div className="mt-1.5">
+        <div className="text-[7px] font-semibold uppercase tracking-wider text-slate-400">
+          {report.asset_symbol ?? "Equity Research"}
+        </div>
+        <h4 className="mt-0.5 text-[11px] font-bold leading-tight text-slate-900 line-clamp-2">
+          {report.asset_name}
+        </h4>
+        <div className="mt-0.5 text-[6px] italic text-slate-500">
+          Institutional coverage · Confidence: {report.confidence_level ?? "medium"}
+        </div>
+      </div>
+
+      <div className="mt-1.5 grid grid-cols-4 gap-1">
+        {scores.map((s) => (
+          <div key={s.label} className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5">
+            <div className="text-[5.5px] uppercase tracking-wider text-slate-500">{s.label}</div>
+            <div className="text-[9px] font-bold text-slate-900 tabular-nums">{s.v ?? 0}</div>
+            <div className="mt-0.5 h-[2px] w-full rounded-full bg-slate-200">
+              <div className={`h-full rounded-full ${isStock ? "bg-sky-600" : "bg-amber-500"}`} style={{ width: `${Math.max(0, Math.min(100, s.v ?? 0))}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-1.5 text-[7px] font-bold uppercase tracking-wider text-slate-700">
+        Executive Summary
+      </div>
+      <div className="mt-1 space-y-[3px]">
+        {lines.map((w, i) => (
+          <div key={i} className="h-[2.5px] rounded-full bg-slate-200" style={{ width: `${w}%` }} />
+        ))}
+      </div>
+
+      <div className="mt-1.5 text-[7px] font-bold uppercase tracking-wider text-slate-700">
+        Key Risks
+      </div>
+      <div className="mt-1 space-y-[3px]">
+        {[80, 72, 64].map((w, i) => (
+          <div key={i} className="h-[2.5px] rounded-full bg-slate-200" style={{ width: `${w}%` }} />
+        ))}
+      </div>
+
+      <div className="mt-auto flex items-center justify-between border-t border-slate-200 pt-1">
+        <span className="text-[6px] uppercase tracking-widest text-slate-400">Page 1 / 12</span>
+        <span className="text-[6px] uppercase tracking-widest text-slate-400">flowpulse.co.uk</span>
+      </div>
+    </div>
   );
 }
