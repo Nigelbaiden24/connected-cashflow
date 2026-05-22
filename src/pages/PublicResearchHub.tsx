@@ -22,26 +22,15 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-
-interface ResearchRow {
-  id: string;
-  asset_type: "stock" | "crypto";
-  asset_name: string;
-  asset_symbol: string | null;
-  overall_quality_score: number | null;
-  risk_score: number | null;
-  valuation_score: number | null;
-  esg_score: number | null;
-  confidence_level: "high" | "medium" | "low" | null;
-  generated_at: string;
-}
+import { ResearchReportDetail } from "@/components/research/ResearchReportDetail";
+import type { ResearchReport } from "@/hooks/useResearchReports";
 
 export default function PublicResearchHub() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
 
-  const [reports, setReports] = useState<ResearchRow[]>([]);
+  const [reports, setReports] = useState<ResearchReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">("stock");
 
@@ -50,13 +39,11 @@ export default function PublicResearchHub() {
       setLoading(true);
       const { data } = await supabase
         .from("asset_research_reports")
-        .select(
-          "id,asset_type,asset_name,asset_symbol,overall_quality_score,risk_score,valuation_score,esg_score,confidence_level,generated_at"
-        )
+        .select("*")
         .in("asset_type", ["stock", "crypto"])
         .order("generated_at", { ascending: false })
         .limit(60);
-      setReports((data ?? []) as unknown as ResearchRow[]);
+      setReports((data ?? []) as unknown as ResearchReport[]);
       setLoading(false);
     })();
   }, []);
@@ -66,13 +53,14 @@ export default function PublicResearchHub() {
     [reports, tab]
   );
 
-  const handleOpen = (r: ResearchRow) => {
+  const handleOpen = (r: ResearchReport) => {
     if (!isAuthed) {
       navigate(`/login-investor?redirect=/investor/${r.asset_type}-research`);
       return;
     }
     navigate(`/investor/${r.asset_type}-research`);
   };
+
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 selection:bg-amber-400/30">
