@@ -84,10 +84,10 @@ export default function PublicResearchHub() {
 
   const handleOpen = (r: PublicResearchPreview) => {
     if (!isAuthed) {
-      openAuth(`/investor/${r.asset_type}-research`, r.title);
+      openAuth(`/investor/research?asset=${r.asset_type}&id=${r.id}`, r.title);
       return;
     }
-    navigate(`/investor/${r.asset_type}-research`);
+    navigate(`/investor/research?asset=${r.asset_type}&id=${r.id}`);
   };
 
 
