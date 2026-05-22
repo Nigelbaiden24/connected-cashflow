@@ -113,10 +113,10 @@ export default function PublicResearchHub() {
           <div className="flex items-center gap-2">
             {!isAuthed && (
               <>
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => navigate("/login-investor")}>
+                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth()}>
                   Sign in
                 </Button>
-                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => navigate("/login-investor")}>
+                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => openAuth()}>
                   Get access <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </>
