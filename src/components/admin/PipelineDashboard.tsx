@@ -176,6 +176,21 @@ export const PipelineDashboard = () => {
     const platform = override?.platform ?? r.platform;
     setPending(p => p.filter(x => x.id !== id));
     try {
+      // Generate a bespoke AI thumbnail for Opportunity Intelligence promotions
+      // so each opportunity card has a visually-specific image (not a generic stock photo).
+      if (target === "opportunity_products" || target === "investor_finder_opportunities" || target === "opportunities") {
+        try {
+          const { data: thumb, error: thumbErr } = await supabase.functions.invoke(
+            "generate-opportunity-thumbnail",
+            { body: { item_id: id } }
+          );
+          if (thumbErr || !(thumb as any)?.ok) {
+            console.warn("[approveItem] thumbnail generation failed, proceeding without", thumbErr ?? thumb);
+          }
+        } catch (te) {
+          console.warn("[approveItem] thumbnail generation threw, proceeding without", te);
+        }
+      }
       const { data, error } = await supabase.rpc("approve_pending_item" as any, {
         _item_id: id,
         _target_table: target,

@@ -201,3 +201,6 @@ verify_jwt = true
 
 [functions.run-research-scraper-schedules]
 verify_jwt = false
+
+[functions.generate-opportunity-thumbnail]
+verify_jwt = true
