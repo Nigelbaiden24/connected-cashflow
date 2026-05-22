@@ -22,26 +22,15 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-
-interface ResearchRow {
-  id: string;
-  asset_type: "stock" | "crypto";
-  asset_name: string;
-  asset_symbol: string | null;
-  overall_quality_score: number | null;
-  risk_score: number | null;
-  valuation_score: number | null;
-  esg_score: number | null;
-  confidence_level: "high" | "medium" | "low" | null;
-  generated_at: string;
-}
+import { ResearchReportDetail } from "@/components/research/ResearchReportDetail";
+import type { ResearchReport } from "@/hooks/useResearchReports";
 
 export default function PublicResearchHub() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
 
-  const [reports, setReports] = useState<ResearchRow[]>([]);
+  const [reports, setReports] = useState<ResearchReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">("stock");
 
@@ -50,13 +39,11 @@ export default function PublicResearchHub() {
       setLoading(true);
       const { data } = await supabase
         .from("asset_research_reports")
-        .select(
-          "id,asset_type,asset_name,asset_symbol,overall_quality_score,risk_score,valuation_score,esg_score,confidence_level,generated_at"
-        )
+        .select("*")
         .in("asset_type", ["stock", "crypto"])
         .order("generated_at", { ascending: false })
         .limit(60);
-      setReports((data ?? []) as unknown as ResearchRow[]);
+      setReports((data ?? []) as unknown as ResearchReport[]);
       setLoading(false);
     })();
   }, []);
@@ -66,13 +53,14 @@ export default function PublicResearchHub() {
     [reports, tab]
   );
 
-  const handleOpen = (r: ResearchRow) => {
+  const handleOpen = (r: ResearchReport) => {
     if (!isAuthed) {
       navigate(`/login-investor?redirect=/investor/${r.asset_type}-research`);
       return;
     }
     navigate(`/investor/${r.asset_type}-research`);
   };
+
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 selection:bg-amber-400/30">
@@ -253,7 +241,7 @@ function ReportCard({
   blurred,
   onOpen,
 }: {
-  report: ResearchRow;
+  report: ResearchReport;
   blurred: boolean;
   onOpen: () => void;
 }) {
@@ -276,19 +264,33 @@ function ReportCard({
     >
       <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
 
-      {/* First-page paper thumbnail */}
-      <div className="relative h-72 overflow-hidden bg-gradient-to-br from-slate-800/40 to-slate-900/60 p-3">
-        <div className={`relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02] ${blurred ? "blur-[6px] saturate-75" : ""}`}>
-          <FirstPagePreview report={report} />
+      {/* Real first-page of the report, scaled down */}
+      <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-800/40 to-slate-900/60 p-3">
+        <div className={`relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02] ${blurred ? "blur-[7px] saturate-75" : ""}`}>
+          <div
+            className="pointer-events-none origin-top-left"
+            style={{
+              width: "1280px",
+              transform: "scale(0.235)",
+              transformOrigin: "top left",
+            }}
+          >
+            <div className="bg-white p-6 text-slate-900">
+              <ResearchReportDetail report={report} changeLogs={[]} onBack={() => {}} />
+            </div>
+          </div>
+          {/* Fade bottom edge so it reads as a page peek */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
         </div>
         {blurred && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/70 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
+            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
               <Lock className="h-3.5 w-3.5" /> Sign in to read
             </div>
           </div>
         )}
       </div>
+
 
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -319,76 +321,3 @@ function ReportCard({
   );
 }
 
-function FirstPagePreview({ report }: { report: ResearchRow }) {
-  const isStock = report.asset_type === "stock";
-  const scores = [
-    { label: "Quality", v: report.overall_quality_score },
-    { label: "Valuation", v: report.valuation_score },
-    { label: "Risk", v: report.risk_score },
-    { label: "ESG", v: report.esg_score },
-  ];
-  const lines = [94, 88, 96, 78, 92, 84, 70, 90, 82];
-
-  return (
-    <div className="flex h-full w-full flex-col p-3 text-slate-900">
-      <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
-        <div className="flex items-center gap-1">
-          <div className={`h-1.5 w-1.5 rounded-full ${isStock ? "bg-sky-600" : "bg-amber-500"}`} />
-          <span className="text-[7px] font-bold uppercase tracking-[0.2em] text-slate-700">
-            FlowPulse Research
-          </span>
-        </div>
-        <span className="text-[6px] uppercase tracking-widest text-slate-400">
-          {report.asset_type} · {format(new Date(report.generated_at), "MMM yyyy")}
-        </span>
-      </div>
-
-      <div className="mt-1.5">
-        <div className="text-[7px] font-semibold uppercase tracking-wider text-slate-400">
-          {report.asset_symbol ?? "Equity Research"}
-        </div>
-        <h4 className="mt-0.5 text-[11px] font-bold leading-tight text-slate-900 line-clamp-2">
-          {report.asset_name}
-        </h4>
-        <div className="mt-0.5 text-[6px] italic text-slate-500">
-          Institutional coverage · Confidence: {report.confidence_level ?? "medium"}
-        </div>
-      </div>
-
-      <div className="mt-1.5 grid grid-cols-4 gap-1">
-        {scores.map((s) => (
-          <div key={s.label} className="rounded border border-slate-200 bg-slate-50 px-1 py-0.5">
-            <div className="text-[5.5px] uppercase tracking-wider text-slate-500">{s.label}</div>
-            <div className="text-[9px] font-bold text-slate-900 tabular-nums">{s.v ?? 0}</div>
-            <div className="mt-0.5 h-[2px] w-full rounded-full bg-slate-200">
-              <div className={`h-full rounded-full ${isStock ? "bg-sky-600" : "bg-amber-500"}`} style={{ width: `${Math.max(0, Math.min(100, s.v ?? 0))}%` }} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-1.5 text-[7px] font-bold uppercase tracking-wider text-slate-700">
-        Executive Summary
-      </div>
-      <div className="mt-1 space-y-[3px]">
-        {lines.map((w, i) => (
-          <div key={i} className="h-[2.5px] rounded-full bg-slate-200" style={{ width: `${w}%` }} />
-        ))}
-      </div>
-
-      <div className="mt-1.5 text-[7px] font-bold uppercase tracking-wider text-slate-700">
-        Key Risks
-      </div>
-      <div className="mt-1 space-y-[3px]">
-        {[80, 72, 64].map((w, i) => (
-          <div key={i} className="h-[2.5px] rounded-full bg-slate-200" style={{ width: `${w}%` }} />
-        ))}
-      </div>
-
-      <div className="mt-auto flex items-center justify-between border-t border-slate-200 pt-1">
-        <span className="text-[6px] uppercase tracking-widest text-slate-400">Page 1 / 12</span>
-        <span className="text-[6px] uppercase tracking-widest text-slate-400">flowpulse.co.uk</span>
-      </div>
-    </div>
-  );
-}
