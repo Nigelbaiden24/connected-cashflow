@@ -49,4 +49,19 @@ interface Schedule {
   frequency_hours: number;
   enabled: boolean;
   last_run_at: string | null;
-  last_run_status
+  last_run_status: string | null;
+  last_run_error: string | null;
+  next_run_at: string;
+}
+
+interface Props {
+  assetType: AssetType;
+  title: string;
+  description: string;
+  iconGradient: string;
+  Icon: React.ElementType;
+}
+
+const FREQ_OPTIONS = [
+  { v: 1, l: "Every hour" },
+  { v: 3, l: "
