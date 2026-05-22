@@ -4554,6 +4554,75 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_research_reports: {
+        Row: {
+          ai_score: number | null
+          ai_tags: string[] | null
+          asset_type: string
+          author_name: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          hero_image_url: string | null
+          html_content: string
+          id: string
+          pdf_path: string | null
+          promoted_at: string | null
+          promoted_by: string | null
+          reading_time_minutes: number | null
+          slug: string
+          sources: Json | null
+          status: string
+          ticker: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_score?: number | null
+          ai_tags?: string[] | null
+          asset_type: string
+          author_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          hero_image_url?: string | null
+          html_content: string
+          id?: string
+          pdf_path?: string | null
+          promoted_at?: string | null
+          promoted_by?: string | null
+          reading_time_minutes?: number | null
+          slug: string
+          sources?: Json | null
+          status?: string
+          ticker?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_score?: number | null
+          ai_tags?: string[] | null
+          asset_type?: string
+          author_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          hero_image_url?: string | null
+          html_content?: string
+          id?: string
+          pdf_path?: string | null
+          promoted_at?: string | null
+          promoted_by?: string | null
+          reading_time_minutes?: number | null
+          slug?: string
+          sources?: Json | null
+          status?: string
+          ticker?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       income_sources: {
         Row: {
           annual_amount: number
