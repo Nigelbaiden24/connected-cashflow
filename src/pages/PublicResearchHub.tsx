@@ -320,7 +320,10 @@ function ReportCard({
           <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
             <div className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              {format(new Date(report.generated_at), "MMM d, yyyy")}
+              {(() => {
+                const d = report.generated_at ? new Date(report.generated_at) : null;
+                return d && !isNaN(d.getTime()) ? format(d, "MMM d, yyyy") : "—";
+              })()}
             </div>
             <span>v{report.version}</span>
           </div>
