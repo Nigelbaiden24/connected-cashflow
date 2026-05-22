@@ -42,17 +42,25 @@ interface PublicResearchPreview {
   first_page_html: string;
 }
 
-export default function PublicResearchHub() {
+interface PublicResearchHubProps {
+  initialTab?: "stock" | "crypto";
+}
+
+export default function PublicResearchHub({ initialTab = "stock" }: PublicResearchHubProps = {}) {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
 
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"stock" | "crypto">("stock");
+  const [tab, setTab] = useState<"stock" | "crypto">(initialTab);
   const [authOpen, setAuthOpen] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | undefined>();
   const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
+
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     (async () => {
