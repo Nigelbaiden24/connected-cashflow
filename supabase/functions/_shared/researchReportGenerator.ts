@@ -223,7 +223,12 @@ HTML RULES PER PAGE (Cryptonary-quality, enterprise grade):
 - Use <table class='data-table'> for comparable metrics, financials, on-chain stats.
 - Cite sources inline as <sup><a href='URL'>[n]</a></sup>.
 - Final page MUST end with a "Sources" <ol> listing every cited URL.
-- Brand voice: confident, data-driven, institutional. No hype, no emojis, no marketing fluff.`;
+- Brand voice: confident, data-driven, institutional. No hype, no emojis, no marketing fluff.
+
+CURRENCY RULES (CRITICAL):
+- ALL monetary figures MUST be expressed in GBP (£ pound sterling). Never use $, USD, US$, or dollar amounts anywhere in the report (titles, excerpt, tables, KPIs, valuations, price targets, market cap, revenue, anything).
+- If a source quotes USD, convert to GBP using a reasonable recent FX rate and present as £ (e.g. "£1.2bn"). You may add "(approx.)" once where appropriate.
+- Use £ symbol with UK conventions: £1.25, £3.4m, £12bn, £450k. Do not write "GBP" alongside the symbol.`;
 
   const userPrompt = `ASSET TYPE: ${assetType}
 TOPIC / COMPANY / THEME: ${topic}${ticker ? ` (${ticker})` : ""}
