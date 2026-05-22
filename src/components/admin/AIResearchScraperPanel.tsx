@@ -93,6 +93,21 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
   const [newTicker, setNewTicker] = useState("");
   const [newFreq, setNewFreq] = useState(24);
   const [addingSched, setAddingSched] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [autopilotBusy, setAutopilotBusy] = useState(false);
+
+  const autopilot = useMemo(
+    () => schedules.find((s) => (s.topic || "").startsWith("__AUTOPILOT__")) ?? null,
+    [schedules],
+  );
+  const autopilotCount = useMemo(() => {
+    const m = autopilot?.topic?.match(/__AUTOPILOT__(?::(\d+))?/);
+    return Math.min(5, Math.max(1, Number(m?.[1]) || 3));
+  }, [autopilot]);
+  const customSchedules = useMemo(
+    () => schedules.filter((s) => !(s.topic || "").startsWith("__AUTOPILOT__")),
+    [schedules],
+  );
 
   const load = async () => {
     setLoading(true);
