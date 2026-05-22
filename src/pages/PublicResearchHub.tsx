@@ -58,6 +58,8 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   const [authOpen, setAuthOpen] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | undefined>();
   const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
+  const [readerOpen, setReaderOpen] = useState(false);
+  const [readerReportId, setReaderReportId] = useState<string | null>(null);
 
   useEffect(() => {
     setTab(initialTab);
