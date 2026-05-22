@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Sparkles, Eye, CheckCircle2, Trash2, Globe, RefreshCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Sparkles, Eye, CheckCircle2, Trash2, RefreshCw, Clock, Play, Pause, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
 type AssetType = "stock" | "crypto";
 
@@ -24,6 +27,9 @@ interface GeneratedReport {
   excerpt: string | null;
   hero_image_url: string | null;
   html_content: string;
+  pages: Array<{ title: string; html: string }> | null;
+  page_count: number | null;
+  report_date: string | null;
   ai_score: number | null;
   ai_tags: string[] | null;
   status: "draft" | "promoted" | "archived";
@@ -31,6 +37,20 @@ interface GeneratedReport {
   reading_time_minutes: number | null;
   created_at: string;
   promoted_at: string | null;
+}
+
+interface Schedule {
+  id: string;
+  asset_type: AssetType;
+  topic: string;
+  ticker: string | null;
+  extra_urls: string[];
+  frequency_hours: number;
+  enabled: boolean;
+  last_run_at: string | null;
+  last_run_status: string | null;
+  last_run_error: string | null;
+  next_run_at: string;
 }
 
 interface Props {
@@ -41,69 +61,119 @@ interface Props {
   Icon: React.ElementType;
 }
 
+const FREQ_OPTIONS = [
+  { v: 1, l: "Every hour" },
+  { v: 3, l: "Every 3 hours" },
+  { v: 6, l: "Every 6 hours" },
+  { v: 12, l: "Every 12 hours" },
+  { v: 24, l: "Daily" },
+  { v: 72, l: "Every 3 days" },
+  { v: 168, l: "Weekly" },
+];
+
 export function AIResearchScraperPanel({ assetType, title, description, iconGradient, Icon }: Props) {
+  // Manual generation form
   const [topic, setTopic] = useState("");
   const [ticker, setTicker] = useState("");
   const [extraUrls, setExtraUrls] = useState("");
   const [generating, setGenerating] = useState(false);
 
+  // Reports queue
   const [items, setItems] = useState<GeneratedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"draft" | "promoted" | "archived">("draft");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [preview, setPreview] = useState<GeneratedReport | null>(null);
+  const [pageIdx, setPageIdx] = useState(0);
+
+  // Schedules
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [newTopic, setNewTopic] = useState("");
+  const [newTicker, setNewTicker] = useState("");
+  const [newFreq, setNewFreq] = useState(24);
+  const [addingSched, setAddingSched] = useState(false);
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("generated_research_reports")
-      .select("*")
-      .eq("asset_type", assetType)
-      .order("created_at", { ascending: false })
-      .limit(200);
-    if (error) toast.error(error.message);
-    setItems((data ?? []) as unknown as GeneratedReport[]);
+    const [reports, sched] = await Promise.all([
+      supabase.from("generated_research_reports").select("*").eq("asset_type", assetType).order("created_at", { ascending: false }).limit(200),
+      supabase.from("research_scraper_schedules").select("*").eq("asset_type", assetType).order("created_at", { ascending: false }),
+    ]);
+    if (reports.error) toast.error(reports.error.message);
+    if (sched.error) toast.error(sched.error.message);
+    setItems((reports.data ?? []) as unknown as GeneratedReport[]);
+    setSchedules((sched.data ?? []) as unknown as Schedule[]);
     setLoading(false);
   };
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assetType]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [assetType]);
 
   const filtered = useMemo(() => items.filter((i) => i.status === tab), [items, tab]);
 
   const handleGenerate = async () => {
-    if (!topic.trim()) {
-      toast.error("Enter a topic, ticker, or company name");
-      return;
-    }
+    if (!topic.trim()) return toast.error("Enter a topic, ticker, or company name");
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-research-report-ai", {
         body: {
-          assetType,
-          topic: topic.trim(),
-          ticker: ticker.trim() || undefined,
-          extraUrls: extraUrls
-            .split(/[\n,]/)
-            .map((s) => s.trim())
-            .filter((s) => /^https?:\/\//.test(s)),
+          assetType, topic: topic.trim(), ticker: ticker.trim() || undefined,
+          extraUrls: extraUrls.split(/[\n,]/).map((s) => s.trim()).filter((s) => /^https?:\/\//.test(s)),
         },
       });
       if (error) throw error;
       if (!(data as any)?.success) throw new Error((data as any)?.error || "Generation failed");
-      toast.success(`Report drafted from ${(data as any).sourceCount} sources`);
-      setTopic("");
-      setTicker("");
-      setExtraUrls("");
-      setTab("draft");
+      toast.success(`Report drafted: ${(data as any).pageCount} pages from ${(data as any).sourceCount} sources`);
+      setTopic(""); setTicker(""); setExtraUrls(""); setTab("draft");
       await load();
     } catch (e: any) {
       toast.error(e.message || "Generation failed");
-    } finally {
-      setGenerating(false);
-    }
+    } finally { setGenerating(false); }
+  };
+
+  const addSchedule = async () => {
+    if (!newTopic.trim()) return toast.error("Enter a topic for the schedule");
+    setAddingSched(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u?.user) throw new Error("Not authenticated");
+      const { error } = await supabase.from("research_scraper_schedules").insert({
+        asset_type: assetType,
+        topic: newTopic.trim(),
+        ticker: newTicker.trim() || null,
+        frequency_hours: newFreq,
+        enabled: true,
+        created_by: u.user.id,
+        next_run_at: new Date(Date.now() + 60 * 1000).toISOString(),
+      });
+      if (error) throw error;
+      toast.success("Auto-scraper scheduled");
+      setNewTopic(""); setNewTicker(""); setNewFreq(24);
+      await load();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setAddingSched(false); }
+  };
+
+  const toggleSchedule = async (s: Schedule) => {
+    const { error } = await supabase.from("research_scraper_schedules").update({ enabled: !s.enabled }).eq("id", s.id);
+    if (error) return toast.error(error.message);
+    await load();
+  };
+  const runScheduleNow = async (s: Schedule) => {
+    const { error } = await supabase.from("research_scraper_schedules").update({ next_run_at: new Date().toISOString() }).eq("id", s.id);
+    if (error) return toast.error(error.message);
+    toast.success("Will run within 15 minutes (or trigger Run Due now)");
+  };
+  const deleteSchedule = async (id: string) => {
+    if (!confirm("Delete this auto-scraper schedule?")) return;
+    const { error } = await supabase.from("research_scraper_schedules").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    await load();
+  };
+  const runAllDueNow = async () => {
+    const { data, error } = await supabase.functions.invoke("run-research-scraper-schedules", { body: {} });
+    if (error) return toast.error(error.message);
+    toast.success(`Processed ${(data as any)?.processed ?? 0} due schedule(s)`);
+    await load();
   };
 
   const updateStatus = async (ids: string[], status: "promoted" | "archived" | "draft") => {
@@ -113,33 +183,27 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
       const { data: u } = await supabase.auth.getUser();
       if (u?.user) patch.promoted_by = u.user.id;
     }
-    const { error } = await supabase
-      .from("generated_research_reports")
-      .update(patch)
-      .in("id", ids);
+    const { error } = await supabase.from("generated_research_reports").update(patch).in("id", ids);
     if (error) return toast.error(error.message);
     toast.success(`${ids.length} report${ids.length > 1 ? "s" : ""} ${status}`);
-    setSelected(new Set());
-    await load();
+    setSelected(new Set()); await load();
   };
 
   const deleteItem = async (id: string) => {
     if (!confirm("Delete this report permanently?")) return;
     const { error } = await supabase.from("generated_research_reports").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Deleted");
-    await load();
+    toast.success("Deleted"); await load();
   };
 
   const toggleSel = (id: string) =>
-    setSelected((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+    setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+
+  const previewPages = preview?.pages?.length ? preview.pages : (preview ? [{ title: preview.title, html: preview.html_content }] : []);
 
   return (
     <div className="space-y-6">
+      {/* Manual scrape */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -156,46 +220,102 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
           <div className="grid md:grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Topic / Company / Theme</label>
-              <Input
-                placeholder={assetType === "crypto" ? "e.g. Ethereum L2 ecosystem 2026" : "e.g. NVIDIA AI infrastructure thesis"}
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-              />
+              <Input placeholder={assetType === "crypto" ? "e.g. Ethereum L2 ecosystem 2026" : "e.g. NVIDIA AI infrastructure thesis"}
+                value={topic} onChange={(e) => setTopic(e.target.value)} />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Ticker (optional)</label>
-              <Input
-                placeholder={assetType === "crypto" ? "ETH" : "NVDA"}
-                value={ticker}
-                onChange={(e) => setTicker(e.target.value)}
-              />
+              <Input placeholder={assetType === "crypto" ? "ETH" : "NVDA"} value={ticker} onChange={(e) => setTicker(e.target.value)} />
             </div>
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1 block">
               Extra source URLs (optional, one per line — added to curated + broad web sweep)
             </label>
-            <Textarea
-              rows={2}
-              value={extraUrls}
-              onChange={(e) => setExtraUrls(e.target.value)}
-              placeholder="https://..."
-            />
+            <Textarea rows={2} value={extraUrls} onChange={(e) => setExtraUrls(e.target.value)} placeholder="https://..." />
           </div>
           <div className="flex justify-end">
             <Button onClick={handleGenerate} disabled={generating} size="lg" className="gap-2">
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {generating ? "Scraping + Generating…" : "Scrape & Generate Report"}
+              {generating ? "Scraping + Generating multi-page report…" : "Manual Scrape & Generate Report"}
             </Button>
           </div>
         </CardContent>
       </Card>
 
+      {/* Auto schedules */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Auto-Scrape Schedules</CardTitle>
+            <CardDescription>AI scrapes the web on your chosen cadence and auto-drafts enterprise reports. Runs every 15 minutes.</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={runAllDueNow} className="gap-1">
+            <Play className="h-4 w-4" /> Run Due Now
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-[1fr_160px_180px_auto] gap-2 items-end p-3 border rounded-lg bg-muted/30">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Topic</label>
+              <Input placeholder={assetType === "crypto" ? "Bitcoin halving cycle" : "S&P 500 earnings season"} value={newTopic} onChange={(e) => setNewTopic(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Ticker</label>
+              <Input placeholder="Optional" value={newTicker} onChange={(e) => setNewTicker(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Frequency</label>
+              <Select value={String(newFreq)} onValueChange={(v) => setNewFreq(Number(v))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FREQ_OPTIONS.map((o) => <SelectItem key={o.v} value={String(o.v)}>{o.l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={addSchedule} disabled={addingSched} className="gap-1">
+              {addingSched ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add
+            </Button>
+          </div>
+
+          {schedules.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No auto-scrapers yet. Add one above to run continuously.</p>
+          ) : (
+            <div className="divide-y border rounded-lg">
+              {schedules.map((s) => (
+                <div key={s.id} className="p-3 flex items-center gap-3 flex-wrap">
+                  <Switch checked={s.enabled} onCheckedChange={() => toggleSchedule(s)} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium truncate">{s.topic}</span>
+                      {s.ticker && <Badge variant="secondary">{s.ticker}</Badge>}
+                      <Badge variant="outline">{FREQ_OPTIONS.find((o) => o.v === s.frequency_hours)?.l ?? `${s.frequency_hours}h`}</Badge>
+                      {s.last_run_status === "error" && <Badge variant="destructive">Last run failed</Badge>}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {s.last_run_at ? `Last run ${formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true })}` : "Never run"}
+                      {" · "}Next run {formatDistanceToNow(new Date(s.next_run_at), { addSuffix: true })}
+                    </div>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => runScheduleNow(s)} title="Queue for next cycle">
+                    <Play className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => deleteSchedule(s.id)} title="Delete">
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Queue */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Report Queue</CardTitle>
-            <CardDescription>Review AI-generated reports, then promote to {assetType === "crypto" ? "Crypto" : "Stock"} Research Reports on the Investor sidebar.</CardDescription>
+            <CardDescription>Review AI-generated multi-page reports, then promote to {assetType === "crypto" ? "Crypto" : "Stock"} Research Reports on the Investor sidebar.</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={load}>
             <RefreshCw className="h-4 w-4 mr-2" /> Refresh
@@ -235,17 +355,13 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
                 <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>
               ) : filtered.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">
-                  {tab === "draft" ? "No drafts yet — generate one above." : `No ${tab} reports.`}
+                  {tab === "draft" ? "No drafts yet — generate one above or add an auto-scraper." : `No ${tab} reports.`}
                 </div>
               ) : (
                 <div className="divide-y border rounded-lg">
                   {filtered.map((r) => (
                     <div key={r.id} className="p-4 flex gap-3 items-start hover:bg-muted/40 transition">
-                      <Checkbox
-                        checked={selected.has(r.id)}
-                        onCheckedChange={() => toggleSel(r.id)}
-                        className="mt-1"
-                      />
+                      <Checkbox checked={selected.has(r.id)} onCheckedChange={() => toggleSel(r.id)} className="mt-1" />
                       {r.hero_image_url && (
                         <img src={r.hero_image_url} alt="" className="w-24 h-16 object-cover rounded-md flex-shrink-0" />
                       )}
@@ -253,6 +369,7 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-semibold truncate">{r.title}</h4>
                           {r.ticker && <Badge variant="secondary">{r.ticker}</Badge>}
+                          <Badge variant="outline">{r.page_count ?? 1} pages</Badge>
                           {typeof r.ai_score === "number" && (
                             <Badge variant="outline" className="gap-1">★ {r.ai_score.toFixed(1)}/5</Badge>
                           )}
@@ -267,7 +384,7 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
                         </div>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <Button size="icon" variant="ghost" onClick={() => setPreview(r)} title="Preview">
+                        <Button size="icon" variant="ghost" onClick={() => { setPreview(r); setPageIdx(0); }} title="Preview">
                           <Eye className="h-4 w-4" />
                         </Button>
                         {r.status === "draft" && (
@@ -291,21 +408,31 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
       <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{preview?.title}</DialogTitle>
+            <div className="flex items-center gap-3 pb-3 border-b">
+              <img src={flowpulseLogo} alt="FlowPulse" className="h-9 w-9 rounded object-contain" />
+              <div className="flex-1">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">FlowPulse Research · {preview?.report_date ?? ""}</div>
+                <DialogTitle className="text-left">{preview?.title}</DialogTitle>
+              </div>
+            </div>
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
               {preview.hero_image_url && (
-                <img src={preview.hero_image_url} alt="" className="w-full h-64 object-cover rounded-lg" />
+                <img src={preview.hero_image_url} alt="" className="w-full h-56 object-cover rounded-lg" />
               )}
               <div className="flex gap-2 flex-wrap">
                 {preview.ai_tags?.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}
               </div>
-              <div
-                className="cryptonary-article prose prose-slate dark:prose-invert max-w-none"
-                // sanitized
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(preview.html_content) }}
-              />
+              {previewPages.length > 1 && (
+                <div className="flex items-center justify-between gap-2 sticky top-0 bg-background z-10 py-2 border-b">
+                  <Button size="sm" variant="outline" disabled={pageIdx === 0} onClick={() => setPageIdx((i) => Math.max(0, i - 1))}>← Prev</Button>
+                  <div className="text-sm font-medium">Page {pageIdx + 1} of {previewPages.length} · {previewPages[pageIdx]?.title}</div>
+                  <Button size="sm" variant="outline" disabled={pageIdx >= previewPages.length - 1} onClick={() => setPageIdx((i) => Math.min(previewPages.length - 1, i + 1))}>Next →</Button>
+                </div>
+              )}
+              <div className="cryptonary-article prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewPages[pageIdx]?.html ?? "") }} />
               {preview.status === "draft" && (
                 <div className="flex justify-end gap-2 sticky bottom-0 bg-background py-3 border-t">
                   <Button variant="outline" onClick={() => { updateStatus([preview.id], "archived"); setPreview(null); }}>Archive</Button>
