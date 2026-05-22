@@ -297,6 +297,17 @@ const Index = () => {
                     variant="ghost"
                     className="w-full justify-start font-semibold"
                     onClick={() => {
+                      navigate("/research");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Reports
+                  </Button>
+
+                   <Button
+                    variant="ghost"
+                    className="w-full justify-start font-semibold"
+                    onClick={() => {
                       navigate("/pricing");
                       setMobileMenuOpen(false);
                     }}
