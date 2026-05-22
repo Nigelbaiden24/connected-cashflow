@@ -26,6 +26,37 @@ import {
   Zap, Factory, Shield, Music, Leaf, Repeat, Layers, PieChart
 } from "lucide-react";
 
+// Category default thumbnail images
+import thumbRealEstate from "@/assets/opportunities/real_estate.jpg";
+import thumbCommodities from "@/assets/opportunities/commodities.jpg";
+import thumbAlternatives from "@/assets/opportunities/alternatives.jpg";
+import thumbEsg from "@/assets/opportunities/esg.jpg";
+import thumbFractionalPeVc from "@/assets/opportunities/fractional_pe_vc.jpg";
+import thumbPrivateMarketPlatforms from "@/assets/opportunities/private_market_platforms.jpg";
+import thumbCapitalProtectedNotes from "@/assets/opportunities/capital_protected_notes.jpg";
+import thumbThematicsPackaged from "@/assets/opportunities/thematics_packaged.jpg";
+import thumbCopyTrading from "@/assets/opportunities/copy_trading.jpg";
+import thumbMusicRoyalties from "@/assets/opportunities/music_royalties.jpg";
+import thumbBusinesses from "@/assets/opportunities/businesses.jpg";
+import thumbMiniBonds from "@/assets/opportunities/mini_bonds.jpg";
+import thumbTimepieces from "@/assets/opportunities/timepieces.jpg";
+
+const categoryThumbnailMap: Record<string, string> = {
+  real_estate: thumbRealEstate,
+  commodities: thumbCommodities,
+  alternatives: thumbAlternatives,
+  esg: thumbEsg,
+  fractional_pe_vc: thumbFractionalPeVc,
+  private_market_platforms: thumbPrivateMarketPlatforms,
+  capital_protected_notes: thumbCapitalProtectedNotes,
+  thematics_packaged: thumbThematicsPackaged,
+  copy_trading: thumbCopyTrading,
+  music_royalties: thumbMusicRoyalties,
+  businesses: thumbBusinesses,
+  mini_bonds: thumbMiniBonds,
+  timepieces: thumbTimepieces,
+};
+
 interface OpportunityProduct {
   id: string;
   title: string;
