@@ -70,6 +70,88 @@ function extractJsonBlock(text: string): any | null {
   try { return JSON.parse(raw.slice(start, end + 1)); } catch { return null; }
 }
 
+function imageBytesFromDataUrl(dataUrl: string): { bytes: Uint8Array; contentType: string } | null {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!match) return null;
+  const binary = atob(match[2]);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return { bytes, contentType: match[1] };
+}
+
+function cleanForPrompt(value: unknown, limit = 700): string {
+  return String(value ?? "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, limit);
+}
+
+async function createReportThumbnail(opts: {
+  assetType: "stock" | "crypto";
+  topic: string;
+  ticker?: string;
+  title: string;
+  excerpt?: string;
+  tags?: string[];
+  firstPageHtml?: string;
+  slug: string;
+  admin: ReturnType<typeof createClient>;
+}): Promise<string | null> {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) return null;
+
+  const visualBrief = [
+    `Report title: ${cleanForPrompt(opts.title, 220)}`,
+    `Original topic: ${cleanForPrompt(opts.topic, 180)}`,
+    opts.ticker ? `Ticker / asset: ${cleanForPrompt(opts.ticker, 40)}` : "",
+    opts.excerpt ? `Report summary: ${cleanForPrompt(opts.excerpt, 360)}` : "",
+    opts.tags?.length ? `Themes: ${opts.tags.slice(0, 6).map((t) => cleanForPrompt(t, 40)).join(", ")}` : "",
+    opts.firstPageHtml ? `Evidence from report: ${cleanForPrompt(opts.firstPageHtml, 650)}` : "",
+  ].filter(Boolean).join("\n");
+
+  const prompt = `Create a bespoke 16:9 editorial thumbnail image for a FlowPulse institutional ${opts.assetType === "stock" ? "stock equity" : "crypto asset"} research report.
+
+${visualBrief}
+
+Image direction:
+- Make the subject matter visibly specific to this report, not a generic finance background.
+- Translate the company, sector, asset, catalyst, or macro theme into concrete visual symbols.
+- Premium institutional research aesthetic: dark slate/black base, deep blue accents for stocks, refined purple/blue accents for crypto, realistic cinematic lighting.
+- No readable text, no captions, no UI mockups, no brand logos, no watermarks.
+- Sharp, high-end thumbnail composition with clear focal point and enough contrast for a report card image.`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: prompt }],
+        modalities: ["image", "text"],
+      }),
+    });
+    if (!response.ok) throw new Error(`image gateway ${response.status}: ${(await response.text()).slice(0, 180)}`);
+    const data = await response.json();
+    const imageUrl: string | undefined = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const decoded = imageUrl ? imageBytesFromDataUrl(imageUrl) : null;
+    if (!decoded) throw new Error("image gateway returned no usable image");
+
+    const extension = decoded.contentType.includes("jpeg") || decoded.contentType.includes("jpg") ? "jpg" : "png";
+    const filePath = `research-thumbnails/${opts.assetType}/${opts.slug}.${extension}`;
+    const { error: uploadError } = await opts.admin.storage
+      .from("reports")
+      .upload(filePath, decoded.bytes, { contentType: decoded.contentType, upsert: true });
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrl } = opts.admin.storage.from("reports").getPublicUrl(filePath);
+    return publicUrl?.publicUrl ?? null;
+  } catch (error) {
+    console.error("AI thumbnail generation failed:", (error as Error).message);
+    return null;
+  }
+}
+
 export async function runGeneration(opts: {
   assetType: "stock" | "crypto";
   topic: string;
@@ -186,9 +268,23 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
 
   const title = String(parsed.title).slice(0, 200);
   const slug = slugify(title);
+  const excerpt = String(parsed.excerpt ?? "").slice(0, 500);
+  const aiTags = Array.isArray(parsed.ai_tags) ? parsed.ai_tags.slice(0, 8).map(String) : [];
+
+  const generatedHero = await createReportThumbnail({
+    assetType,
+    topic,
+    ticker,
+    title,
+    excerpt,
+    tags: aiTags,
+    firstPageHtml: pages[0]?.html,
+    slug,
+    admin,
+  });
 
   // Curated, verified Unsplash photo IDs (no ixid/ix params — those expire and 404).
-  // Rotate deterministically per topic so each report gets a distinct hero.
+  // Safety fallback only. Primary thumbnails are AI-generated from the actual report.
   const STOCK_HEROES = [
     "photo-1611974789855-9c2a0a7236a3", // bull statue
     "photo-1590283603385-17ffb3a7f29f", // trading floor
@@ -233,14 +329,14 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
       title,
       slug,
       ticker: ticker || null,
-      excerpt: String(parsed.excerpt ?? "").slice(0, 500),
-      hero_image_url: heroFallback,
+      excerpt,
+      hero_image_url: generatedHero ?? heroFallback,
       html_content: combinedHtml,
       pages,
       page_count: pages.length,
       report_date: reportDate,
       ai_score: Math.max(0, Math.min(5, Number(parsed.ai_score ?? 3))),
-      ai_tags: Array.isArray(parsed.ai_tags) ? parsed.ai_tags.slice(0, 8).map(String) : [],
+      ai_tags: aiTags,
       sources: sources.map((s) => ({ url: s.url, title: s.title ?? null })),
       reading_time_minutes: Number(parsed.reading_time_minutes ?? Math.max(5, pages.length * 3)),
       status: "draft",
