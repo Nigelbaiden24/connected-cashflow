@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LayoutGrid } from "lucide-react";
 
-// Sector thumbnail imports
+// Sector thumbnail imports (legacy)
 import ukPropertyImg from "@/assets/sectors/uk-property.jpg";
 import vehiclesImg from "@/assets/sectors/vehicles.jpg";
 import overseasPropertyImg from "@/assets/sectors/overseas-property.jpg";
@@ -19,6 +19,17 @@ import privateCreditImg from "@/assets/sectors/private-credit.jpg";
 import infrastructureEnergyImg from "@/assets/sectors/infrastructure-energy.jpg";
 import bondsImg from "@/assets/sectors/bonds.jpg";
 import timepiecesImg from "@/assets/sectors/timepieces.jpg";
+
+// New AI-generated category thumbnails
+import thumbRealEstate from "@/assets/opportunities/real_estate.jpg";
+import thumbAlternatives from "@/assets/opportunities/alternatives.jpg";
+import thumbEsg from "@/assets/opportunities/esg.jpg";
+import thumbFractionalPeVc from "@/assets/opportunities/fractional_pe_vc.jpg";
+import thumbPrivateMarketPlatforms from "@/assets/opportunities/private_market_platforms.jpg";
+import thumbCapitalProtectedNotes from "@/assets/opportunities/capital_protected_notes.jpg";
+import thumbThematicsPackaged from "@/assets/opportunities/thematics_packaged.jpg";
+import thumbCopyTrading from "@/assets/opportunities/copy_trading.jpg";
+import thumbMusicRoyalties from "@/assets/opportunities/music_royalties.jpg";
 
 export const sectorThumbnails: Record<string, string> = {
   uk_property: ukPropertyImg,
@@ -36,6 +47,16 @@ export const sectorThumbnails: Record<string, string> = {
   infrastructure_energy: infrastructureEnergyImg,
   bonds: bondsImg,
   timepieces: timepiecesImg,
+  // New categories
+  real_estate: thumbRealEstate,
+  alternatives: thumbAlternatives,
+  esg: thumbEsg,
+  fractional_pe_vc: thumbFractionalPeVc,
+  private_market_platforms: thumbPrivateMarketPlatforms,
+  capital_protected_notes: thumbCapitalProtectedNotes,
+  thematics_packaged: thumbThematicsPackaged,
+  copy_trading: thumbCopyTrading,
+  music_royalties: thumbMusicRoyalties,
 };
 
 interface SectorFolderGridProps {
