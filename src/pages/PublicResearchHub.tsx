@@ -241,7 +241,7 @@ function ReportCard({
   blurred,
   onOpen,
 }: {
-  report: ResearchRow;
+  report: ResearchReport;
   blurred: boolean;
   onOpen: () => void;
 }) {
@@ -307,7 +307,7 @@ function ReportCard({
   );
 }
 
-function FirstPagePreview({ report }: { report: ResearchRow }) {
+function FirstPagePreview({ report }: { report: ResearchReport }) {
   const isStock = report.asset_type === "stock";
   const scores = [
     { label: "Quality", v: report.overall_quality_score },
