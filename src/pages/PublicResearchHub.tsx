@@ -257,6 +257,12 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         redirectPath={authRedirect}
         reportTitle={authReportTitle}
       />
+
+      <ResearchReportReader
+        open={readerOpen}
+        onOpenChange={setReaderOpen}
+        reportId={readerReportId}
+      />
     </div>
   );
 }
