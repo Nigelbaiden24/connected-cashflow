@@ -238,6 +238,13 @@ export default function PublicResearchHub() {
           ))}
         </Tabs>
       </section>
+
+      <ResearchAuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        redirectPath={authRedirect}
+        reportTitle={authReportTitle}
+      />
     </div>
   );
 }
