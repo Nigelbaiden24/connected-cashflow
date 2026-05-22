@@ -35,7 +35,6 @@ const JenrateStandalone = lazy(() => import("./pages/JenrateStandalone"));
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const InvestorDashboard = lazy(() => import("./pages/InvestorDashboard"));
-const InvestorResearchReports = lazy(() => import("./pages/investor/ResearchReports"));
 const ResearchReportsPage = lazy(() => import("./pages/ResearchReports"));
 const PublicResearchHub = lazy(() => import("./pages/PublicResearchHub"));
 const OrchestratedReportsPage = lazy(() => import("./pages/OrchestratedReports"));
@@ -284,7 +283,7 @@ const App = () => {
               <Route path="/finance/opportunities" element={<Navigate to="/investor/opportunities" replace />} />
               <Route path="/finance/opportunities/:id" element={<Navigate to="/investor/opportunities" replace />} />
               <Route path="/finance" element={<Navigate to="/investor/dashboard" replace />} />
-              <Route path="/finance/reports" element={<Navigate to="/investor/research" replace />} />
+              <Route path="/finance/reports" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/finance/investor-finder" element={<Navigate to="/investor/investor-finder" replace />} />
               <Route path="/finance/commentary" element={<Navigate to="/investor/commentary" replace />} />
               <Route path="/finance/portfolios" element={<Navigate to="/investor/portfolios" replace />} />
@@ -364,9 +363,11 @@ const App = () => {
               } />
 
               {/* ============ INVESTOR LAYOUT (persistent) ============ */}
+              <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
+              <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="stock" /></Suspense>} />
+              <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="crypto" /></Suspense>} />
               <Route element={investorLayoutElement}>
                 <Route path="/investor/dashboard" element={<Suspense fallback={<PageLoader />}><InvestorDashboard /></Suspense>} />
-                <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><InvestorResearchReports /></Suspense>} />
                 <Route path="/investor/analysis" element={<Suspense fallback={<PageLoader />}><AnalysisReports /></Suspense>} />
                 <Route path="/investor/commentary" element={<Suspense fallback={<PageLoader />}><MarketCommentary /></Suspense>} />
                 <Route path="/investor/portfolios" element={<Suspense fallback={<PageLoader />}><ModelPortfolios /></Suspense>} />
@@ -385,9 +386,6 @@ const App = () => {
                 <Route path="/investor/opportunities" element={<Suspense fallback={<PageLoader />}><OpportunityIntelligence /></Suspense>} />
                 <Route path="/investor/opportunities/:id" element={<Suspense fallback={<PageLoader />}><OpportunityDetailPage /></Suspense>} />
                 <Route path="/investor/stocks-crypto" element={<Suspense fallback={<PageLoader />}><StocksCryptoDatabase /></Suspense>} />
-                <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage lockAssetType="stock" title="Stock Research Reports" description="Institutional-grade equity research and analyst coverage" /></Suspense>} />
-                <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage lockAssetType="crypto" title="Crypto Research Reports" description="Deep-dive digital asset research and on-chain analysis" /></Suspense>} />
-
                 <Route path="/investor/featured-picks" element={<Suspense fallback={<PageLoader />}><InvestorFeaturedPicks /></Suspense>} />
                 <Route path="/investor/tasks" element={<Suspense fallback={<PageLoader />}><InvestorTasks /></Suspense>} />
                 <Route path="/investor/investor-finder" element={<Suspense fallback={<PageLoader />}><InvestorFinderOpportunities variant="investor" /></Suspense>} />
