@@ -21,9 +21,9 @@ import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
 import { 
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
-  LayoutGrid, List, Car, Globe, LineChart, Bitcoin, Users, Award, Package,
+  LayoutGrid, List, Globe, Users, Award, Package,
   Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
-  Zap, Factory, Shield, Music
+  Zap, Factory, Shield, Music, Leaf, Repeat, Layers, PieChart
 } from "lucide-react";
 
 interface OpportunityProduct {
@@ -51,22 +51,19 @@ interface OpportunityProduct {
 }
 
 const categoryConfig = {
-  uk_property: { label: "UK Property", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["B2F", "B2L", "HMO", "R2R", "B2SA", "Commercial Property", "Land", "Parking Spaces"] },
-  vehicles: { label: "Vehicles", icon: Car, color: "bg-orange-500/10 text-orange-500", subCategories: ["Classic Cars", "Luxury Vehicles", "Motorcycles", "Commercial Vehicles"] },
-  overseas_property: { label: "Overseas Property & Land", icon: Globe, color: "bg-teal-500/10 text-teal-500", subCategories: ["Residential Overseas", "Commercial Overseas", "Land Overseas", "Development Projects"] },
+  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["R2R", "R2SA", "UK Land", "International Land", "International Real Estate", "Commercial Property", "Residential Property"] },
+  commodities: { label: "Commodities", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Gold", "Oil", "Agriculture", "Natural Resources", "Precious Metals"] },
+  alternatives: { label: "Alternative Investments", icon: Gem, color: "bg-purple-500/10 text-purple-500", subCategories: ["Hedge Funds", "Art", "Wine", "Collectibles", "Whisky"] },
+  esg: { label: "ESG & Impact Investing", icon: Leaf, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Funds", "Carbon Credits"] },
+  fractional_pe_vc: { label: "Fractional PE / VC", icon: PieChart, color: "bg-violet-500/10 text-violet-500", subCategories: ["Crowdfunding", "Syndicates", "Fractional Deals", "Angel Co-Investment"] },
+  private_market_platforms: { label: "Private Market Platforms", icon: Layers, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Secondary Shares", "Pre-IPO", "Tender Offers", "Marketplace Deals"] },
+  capital_protected_notes: { label: "Capital-Protected & Income Notes", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Structured Notes", "Capital Protection", "Autocallables", "Income Notes"] },
+  thematics_packaged: { label: "Thematics & Packaged Investing", icon: Landmark, color: "bg-orange-500/10 text-orange-500", subCategories: ["Thematic Baskets", "Smart Beta", "Robo Portfolios", "Model Portfolios"] },
+  copy_trading: { label: "Copy Trading", icon: Repeat, color: "bg-teal-500/10 text-teal-500", subCategories: ["Mirror Trading", "Social Trading", "Lead Traders", "Strategy Following"] },
+  music_royalties: { label: "Music Royalties", icon: Music, color: "bg-fuchsia-500/10 text-fuchsia-500", subCategories: ["Catalogue Acquisitions", "Song Royalties", "Publishing Rights", "Master Recordings", "Streaming Royalties"] },
   businesses: { label: "Businesses", icon: Briefcase, color: "bg-green-500/10 text-green-500", subCategories: ["SMEs", "Startups", "Franchises", "Established Businesses"] },
-  stocks: { label: "Stocks", icon: LineChart, color: "bg-indigo-500/10 text-indigo-500", subCategories: ["UK Equities", "US Equities", "International Equities", "Penny Stocks"] },
-  crypto: { label: "Crypto & Digital Assets", icon: Bitcoin, color: "bg-amber-500/10 text-amber-500", subCategories: ["Cryptocurrency", "NFTs", "Digital Tokens", "DeFi"] },
-  private_equity: { label: "Private Equity", icon: Users, color: "bg-purple-500/10 text-purple-500", subCategories: ["Growth Equity", "Buyouts", "Venture Capital", "Mezzanine"] },
-  memorabilia: { label: "Memorabilia", icon: Award, color: "bg-pink-500/10 text-pink-500", subCategories: ["Sports Memorabilia", "Entertainment", "Historical Items", "Signed Items"] },
-  commodities: { label: "Commodities & Hard Assets", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Gold", "Silver", "Precious Metals", "Raw Materials"] },
-  funds: { label: "Funds & ETFs", icon: Landmark, color: "bg-slate-500/10 text-slate-500", subCategories: ["Mutual Funds", "ETFs", "Hedge Funds", "REITs", "Index Funds"] },
-  mini_bonds: { label: "Mini Bonds", icon: Banknote, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Convertible Mini Bonds"] },
-  private_credit: { label: "Private Credit & Lending", icon: HandCoins, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Peer-to-Peer Lending", "Private Debt Funds", "Real Estate Lending", "SME Lending", "Invoice Financing"] },
-  infrastructure_energy: { label: "Infrastructure & Energy", icon: Factory, color: "bg-lime-500/10 text-lime-600", subCategories: ["Renewable Energy Projects", "Infrastructure Funds", "Energy Transition", "Solar Farms", "Wind Energy", "EV Charging"] },
-  bonds: { label: "Bonds", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Government Bonds", "Corporate Bonds", "High Yield Bonds", "Green Bonds", "Inflation-Linked Bonds"] },
-  timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600", subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade", "Pocket Watches"] },
-  music_royalties: { label: "Music Royalties", icon: Music, color: "bg-fuchsia-500/10 text-fuchsia-500", subCategories: ["Catalogue Acquisitions", "Song Royalties", "Publishing Rights", "Master Recordings", "Streaming Royalties", "Sync Rights"] },
+  mini_bonds: { label: "Mini Bonds", icon: Banknote, color: "bg-lime-500/10 text-lime-600", subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Convertible Mini Bonds"] },
+  timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600", subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade"] },
 };
 
 const ratingColors: Record<string, string> = {
