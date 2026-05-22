@@ -37,6 +37,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const InvestorDashboard = lazy(() => import("./pages/InvestorDashboard"));
 const InvestorResearchReports = lazy(() => import("./pages/investor/ResearchReports"));
 const ResearchReportsPage = lazy(() => import("./pages/ResearchReports"));
+const PublicResearchHub = lazy(() => import("./pages/PublicResearchHub"));
 const OrchestratedReportsPage = lazy(() => import("./pages/OrchestratedReports"));
 const AnalysisReports = lazy(() => import("./pages/investor/AnalysisReports"));
 const MarketCommentary = lazy(() => import("./pages/investor/MarketCommentary"));
