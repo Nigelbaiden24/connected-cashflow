@@ -559,6 +559,24 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
       "https://www.zulutrade.com/",
     ],
   },
+  real_estate: {
+    queries: [
+      "UK commercial residential property investment opportunities 2025",
+      "rent to rent R2R serviced accommodation R2SA UK deals",
+      "UK land investment opportunities planning permission",
+      "international real estate investment opportunities 2025",
+      "international land investment opportunities emerging markets",
+      "commercial property investment UK Europe high yield",
+      "off plan property developments investment opportunities",
+    ],
+    urls: [
+      "https://www.propertyinvestortoday.co.uk/",
+      "https://www.savills.co.uk/insight-and-opinion/",
+      "https://www.brickowner.com/",
+      "https://www.allsop.co.uk/",
+      "https://www.knightfrank.com/research",
+    ],
+  },
 };
 
 interface SourceRecord {
