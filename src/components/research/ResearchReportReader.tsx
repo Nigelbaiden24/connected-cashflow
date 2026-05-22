@@ -43,7 +43,7 @@ export function ResearchReportReader({ reportId, open, onOpenChange }: Props) {
         .eq("id", reportId)
         .maybeSingle();
       if (error) console.error(error);
-      setReport(data as FullReport | null);
+      setReport((data as unknown) as FullReport | null);
       setLoading(false);
     })();
   }, [open, reportId]);
