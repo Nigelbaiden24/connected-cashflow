@@ -295,52 +295,140 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
 
   return (
     <div className="space-y-6">
-      {/* Manual scrape */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${iconGradient} shadow-md`}>
-              <Icon className="h-5 w-5 text-white" />
+      {/* AI Autopilot — primary mode */}
+      <Card className="relative overflow-hidden border-primary/30">
+        <div className={`absolute inset-0 opacity-10 bg-gradient-to-br ${iconGradient} pointer-events-none`} />
+        <CardHeader className="relative">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl bg-gradient-to-br ${iconGradient} shadow-lg`}>
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  AI Autopilot
+                  <Badge variant="secondary" className="gap-1"><Zap className="h-3 w-3" /> Always-on</Badge>
+                </CardTitle>
+                <CardDescription>
+                  AI selects the most timely {assetType === "crypto" ? "digital-asset" : "equity"} topics, scrapes the web, and drafts enterprise reports — no manual input required.
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle>{title}</CardTitle>
-              <CardDescription>{description}</CardDescription>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">{autopilot?.enabled ? "Enabled" : "Paused"}</span>
+              <Switch
+                checked={!!autopilot?.enabled}
+                disabled={autopilotBusy}
+                onCheckedChange={(v) => setAutopilotEnabled(!!v)}
+              />
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-3">
+        <CardContent className="relative space-y-4">
+          <div className="grid md:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Topic / Company / Theme</label>
-              <Input placeholder={assetType === "crypto" ? "e.g. Ethereum L2 ecosystem 2026" : "e.g. NVIDIA AI infrastructure thesis"}
-                value={topic} onChange={(e) => setTopic(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Cadence</label>
+              <Select
+                value={String(autopilot?.frequency_hours ?? 12)}
+                onValueChange={(v) => updateAutopilot({ frequency_hours: Number(v) })}
+                disabled={!autopilot}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FREQ_OPTIONS.map((o) => <SelectItem key={o.v} value={String(o.v)}>{o.l}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Ticker (optional)</label>
-              <Input placeholder={assetType === "crypto" ? "ETH" : "NVDA"} value={ticker} onChange={(e) => setTicker(e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Reports per run</label>
+              <Select
+                value={String(autopilotCount)}
+                onValueChange={(v) => updateAutopilot({ count: Number(v) })}
+                disabled={!autopilot}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} report{n>1?"s":""}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Button onClick={runAutopilotNow} disabled={!autopilot || autopilotBusy} className="w-full gap-2">
+                {autopilotBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                Run AI Autopilot Now
+              </Button>
             </div>
           </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">
-              Extra source URLs (optional, one per line — added to curated + broad web sweep)
-            </label>
-            <Textarea rows={2} value={extraUrls} onChange={(e) => setExtraUrls(e.target.value)} placeholder="https://..." />
-          </div>
-          <div className="flex justify-end">
-            <Button onClick={handleGenerate} disabled={generating} size="lg" className="gap-2">
-              {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {generating ? "Scraping + Generating multi-page report…" : "Manual Scrape & Generate Report"}
-            </Button>
-          </div>
+          {autopilot && (
+            <div className="text-xs text-muted-foreground flex items-center gap-3 flex-wrap">
+              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />
+                {autopilot.last_run_at ? `Last run ${formatDistanceToNow(new Date(autopilot.last_run_at), { addSuffix: true })}` : "Awaiting first run"}
+              </span>
+              <span>·</span>
+              <span>Next run {formatDistanceToNow(new Date(autopilot.next_run_at), { addSuffix: true })}</span>
+              {autopilot.last_run_status === "error" && (
+                <Badge variant="destructive">Last run failed: {autopilot.last_run_error?.slice(0, 80)}</Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Auto schedules */}
+      {/* Manual scrape (collapsed by default) */}
+      <Card>
+        <Collapsible open={manualOpen} onOpenChange={setManualOpen}>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/40 transition">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">Manual Scrape (optional)</CardTitle>
+                    <CardDescription>Override the AI and generate a one-off report for a specific topic.</CardDescription>
+                  </div>
+                </div>
+                <ChevronDown className={`h-4 w-4 transition-transform ${manualOpen ? "rotate-180" : ""}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Topic / Company / Theme</label>
+                  <Input placeholder={assetType === "crypto" ? "e.g. Ethereum L2 ecosystem 2026" : "e.g. NVIDIA AI infrastructure thesis"}
+                    value={topic} onChange={(e) => setTopic(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Ticker (optional)</label>
+                  <Input placeholder={assetType === "crypto" ? "ETH" : "NVDA"} value={ticker} onChange={(e) => setTicker(e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                  Extra source URLs (optional, one per line — added to curated + broad web sweep)
+                </label>
+                <Textarea rows={2} value={extraUrls} onChange={(e) => setExtraUrls(e.target.value)} placeholder="https://..." />
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleGenerate} disabled={generating} size="lg" className="gap-2">
+                  {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {generating ? "Scraping + Generating multi-page report…" : "Manual Scrape & Generate Report"}
+                </Button>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+
+      {/* Custom auto schedules (pinned topics) */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Auto-Scrape Schedules</CardTitle>
-            <CardDescription>AI scrapes the web on your chosen cadence and auto-drafts enterprise reports. Runs every 15 minutes.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" /> Pinned Auto-Scrape Topics</CardTitle>
+            <CardDescription>Optional. Force the scraper to cover specific topics on a fixed cadence in addition to Autopilot.</CardDescription>
           </div>
           <Button variant="outline" size="sm" onClick={runAllDueNow} className="gap-1">
             <Play className="h-4 w-4" /> Run Due Now
@@ -370,11 +458,11 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
             </Button>
           </div>
 
-          {schedules.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No auto-scrapers yet. Add one above to run continuously.</p>
+          {customSchedules.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No pinned topics. Autopilot is handling discovery automatically.</p>
           ) : (
             <div className="divide-y border rounded-lg">
-              {schedules.map((s) => (
+              {customSchedules.map((s) => (
                 <div key={s.id} className="p-3 flex items-center gap-3 flex-wrap">
                   <Switch checked={s.enabled} onCheckedChange={() => toggleSchedule(s)} />
                   <div className="flex-1 min-w-0">
@@ -401,6 +489,7 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
           )}
         </CardContent>
       </Card>
+
 
       {/* Queue */}
       <Card>
