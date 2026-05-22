@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Lock,
@@ -22,28 +21,48 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-import { ResearchReportDetail } from "@/components/research/ResearchReportDetail";
-import type { ResearchReport } from "@/hooks/useResearchReports";
+import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview";
+
+interface PublicResearchPreview {
+  id: string;
+  asset_type: "stock" | "crypto";
+  title: string;
+  ticker: string | null;
+  excerpt: string | null;
+  ai_score: number | null;
+  ai_tags: string[] | null;
+  reading_time_minutes: number | null;
+  author_name: string | null;
+  page_count: number | null;
+  report_date: string | null;
+  promoted_at: string | null;
+  created_at: string;
+  first_page_title: string;
+  first_page_html: string;
+}
 
 export default function PublicResearchHub() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
 
-  const [reports, setReports] = useState<ResearchReport[]>([]);
+  const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">("stock");
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from("asset_research_reports")
-        .select("*")
-        .in("asset_type", ["stock", "crypto"])
-        .order("generated_at", { ascending: false })
-        .limit(60);
-      setReports((data ?? []) as unknown as ResearchReport[]);
+      const { data, error } = await supabase.functions.invoke("public-research-previews", {
+        body: { asset_types: ["stock", "crypto"], limit: 60 },
+      });
+
+      if (error) {
+        console.error("Error loading public research previews:", error);
+        setReports([]);
+      } else {
+        setReports((data?.reports ?? []) as PublicResearchPreview[]);
+      }
       setLoading(false);
     })();
   }, []);
@@ -53,7 +72,7 @@ export default function PublicResearchHub() {
     [reports, tab]
   );
 
-  const handleOpen = (r: ResearchReport) => {
+  const handleOpen = (r: PublicResearchPreview) => {
     if (!isAuthed) {
       navigate(`/login-investor?redirect=/investor/${r.asset_type}-research`);
       return;
