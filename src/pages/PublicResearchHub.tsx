@@ -66,6 +66,16 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   }, [initialTab]);
 
   useEffect(() => {
+    if (!isAuthed) return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (id) {
+      setReaderReportId(id);
+      setReaderOpen(true);
+    }
+  }, [isAuthed]);
+
+  useEffect(() => {
     (async () => {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
