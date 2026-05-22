@@ -274,6 +274,7 @@ const App = () => {
               <Route path="/organisation" element={<OrganisationSettings />} />
               <Route path="/reports" element={<PublicReports />} />
               <Route path="/reports/:id" element={<ReportDetail />} />
+              <Route path="/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
