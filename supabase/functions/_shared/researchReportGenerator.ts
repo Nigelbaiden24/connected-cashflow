@@ -234,7 +234,7 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
       slug,
       ticker: ticker || null,
       excerpt: String(parsed.excerpt ?? "").slice(0, 500),
-      hero_image_url: String(parsed.hero_image_url || heroFallback),
+      hero_image_url: heroFallback,
       html_content: combinedHtml,
       pages,
       page_count: pages.length,
