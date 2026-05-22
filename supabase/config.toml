@@ -204,3 +204,6 @@ verify_jwt = false
 
 [functions.generate-opportunity-thumbnail]
 verify_jwt = true
+
+[functions.public-research-previews]
+verify_jwt = false
