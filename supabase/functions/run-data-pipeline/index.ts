@@ -39,10 +39,9 @@ const INVESTOR_RESEARCH_CATEGORIES = [
 // All opportunity-research categories supported by the scraper (must match
 // CATEGORY_RESEARCH_SOURCES keys in opportunity-research/index.ts).
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
-  "uk_property","overseas_property","vehicles","businesses","stocks","crypto",
-  "private_equity","memorabilia","commodities","funds","blockchain","crowdfunding",
-  "startup_funding","property_opportunities","infrastructure","infrastructure_energy",
-  "mini_bonds","private_credit","bonds","timepieces",
+  "real_estate","commodities","alternatives","esg","fractional_pe_vc",
+  "private_market_platforms","capital_protected_notes","thematics_packaged",
+  "copy_trading","music_royalties","businesses","mini_bonds","timepieces",
 ];
 const COMPANIES_HOUSE_QUERIES = [
   "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
