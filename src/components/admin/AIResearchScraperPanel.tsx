@@ -124,6 +124,82 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [assetType]);
 
+  // Auto-provision an AI Autopilot schedule on first load so scraping is never
+  // dependent on a human entering topics. Manual scraping remains an option.
+  useEffect(() => {
+    if (loading) return;
+    if (schedules.length === 0) {
+      (async () => {
+        const { data: u } = await supabase.auth.getUser();
+        if (!u?.user) return;
+        await supabase.from("research_scraper_schedules").insert({
+          asset_type: assetType,
+          topic: "__AUTOPILOT__:3",
+          ticker: null,
+          frequency_hours: 12,
+          enabled: true,
+          created_by: u.user.id,
+          next_run_at: new Date(Date.now() + 60 * 1000).toISOString(),
+        });
+        await load();
+      })();
+    }
+    // eslint-disable-next-line
+  }, [loading]);
+
+  const setAutopilotEnabled = async (enabled: boolean) => {
+    setAutopilotBusy(true);
+    try {
+      if (autopilot) {
+        const { error } = await supabase
+          .from("research_scraper_schedules")
+          .update({ enabled, next_run_at: enabled ? new Date(Date.now() + 60 * 1000).toISOString() : autopilot.next_run_at })
+          .eq("id", autopilot.id);
+        if (error) throw error;
+      } else {
+        const { data: u } = await supabase.auth.getUser();
+        if (!u?.user) throw new Error("Not authenticated");
+        const { error } = await supabase.from("research_scraper_schedules").insert({
+          asset_type: assetType,
+          topic: "__AUTOPILOT__:3",
+          frequency_hours: 12,
+          enabled,
+          created_by: u.user.id,
+          next_run_at: new Date(Date.now() + 60 * 1000).toISOString(),
+        });
+        if (error) throw error;
+      }
+      await load();
+    } catch (e: any) { toast.error(e.message); }
+    finally { setAutopilotBusy(false); }
+  };
+
+  const updateAutopilot = async (patch: { frequency_hours?: number; count?: number }) => {
+    if (!autopilot) return;
+    const update: any = {};
+    if (patch.frequency_hours) update.frequency_hours = patch.frequency_hours;
+    if (patch.count) update.topic = `__AUTOPILOT__:${patch.count}`;
+    const { error } = await supabase.from("research_scraper_schedules").update(update).eq("id", autopilot.id);
+    if (error) return toast.error(error.message);
+    await load();
+  };
+
+  const runAutopilotNow = async () => {
+    if (!autopilot) return;
+    setAutopilotBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("run-research-scraper-schedules", {
+        body: { scheduleId: autopilot.id },
+      });
+      if (error) throw error;
+      const gen = (data as any)?.results?.[0]?.generated ?? [];
+      const ok = gen.filter((g: any) => g.ok).length;
+      toast.success(`AI Autopilot drafted ${ok} report${ok === 1 ? "" : "s"}`);
+      await load();
+    } catch (e: any) { toast.error(e.message || "Autopilot failed"); }
+    finally { setAutopilotBusy(false); }
+  };
+
   const filtered = useMemo(() => items.filter((i) => i.status === tab), [items, tab]);
 
   const handleGenerate = async () => {
