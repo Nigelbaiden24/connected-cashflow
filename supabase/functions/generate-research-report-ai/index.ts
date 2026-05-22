@@ -1,7 +1,7 @@
 // AI-powered research report generator.
-// Scrapes the web (broad search + curated finance/crypto sources) via Firecrawl,
-// then asks Lovable AI to produce a Cryptonary-style branded HTML article and
-// stores it in `generated_research_reports` as a `draft` for admin review.
+// Scrapes the web (broad search + curated sources) via Firecrawl, then asks
+// Lovable AI to produce a multi-page enterprise-grade branded research report
+// and stores it in `generated_research_reports` as a `draft` for admin review.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -10,11 +10,11 @@ const corsHeaders = {
 };
 
 const CURATED_STOCK = [
-  "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=10-K&dateb=&owner=include&count=10",
   "https://finance.yahoo.com",
   "https://www.marketwatch.com/latest-news",
   "https://seekingalpha.com",
   "https://www.ft.com/markets",
+  "https://www.bloomberg.com/markets",
 ];
 const CURATED_CRYPTO = [
   "https://www.coindesk.com",
@@ -43,14 +43,9 @@ async function firecrawlSearch(query: string, limit: number): Promise<ScrapedSou
     const d = await r.json();
     const list = d?.data ?? d?.web?.results ?? [];
     return (Array.isArray(list) ? list : []).slice(0, limit).map((x: any) => ({
-      url: x.url,
-      title: x.title,
-      excerpt: x.description,
-      markdown: x.markdown,
+      url: x.url, title: x.title, excerpt: x.description, markdown: x.markdown,
     }));
-  } catch (_) {
-    return [];
-  }
+  } catch (_) { return []; }
 }
 
 async function firecrawlScrape(url: string): Promise<ScrapedSource | null> {
@@ -65,17 +60,12 @@ async function firecrawlScrape(url: string): Promise<ScrapedSource | null> {
     const d = await r.json();
     const doc = d?.data ?? d;
     return { url, title: doc?.metadata?.title, markdown: (doc?.markdown ?? "").slice(0, 8000) };
-  } catch (_) {
-    return null;
-  }
+  } catch (_) { return null; }
 }
 
 function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80) + "-" + Math.random().toString(36).slice(2, 7);
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
+    + "-" + Math.random().toString(36).slice(2, 7);
 }
 
 function extractJsonBlock(text: string): any | null {
@@ -87,141 +77,210 @@ function extractJsonBlock(text: string): any | null {
   try { return JSON.parse(raw.slice(start, end + 1)); } catch { return null; }
 }
 
+export async function runGeneration(opts: {
+  assetType: "stock" | "crypto";
+  topic: string;
+  ticker?: string;
+  extraUrls?: string[];
+  createdBy: string;
+  admin: ReturnType<typeof createClient>;
+}) {
+  const { assetType, topic, ticker = "", extraUrls = [], createdBy, admin } = opts;
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+  // 1) Gather sources
+  const year = new Date().getFullYear();
+  const searchQuery = `${topic} ${assetType === "crypto" ? "cryptocurrency on-chain fundamentals analyst report" : "stock equity research earnings outlook"} ${year}`;
+  const curated = assetType === "crypto" ? CURATED_CRYPTO : CURATED_STOCK;
+  const tasks: Promise<any>[] = [
+    firecrawlSearch(searchQuery, 8),
+    ...curated.slice(0, 3).map((u) => firecrawlScrape(u)),
+    ...extraUrls.slice(0, 5).map((u) => firecrawlScrape(u)),
+  ];
+  const results = await Promise.all(tasks);
+  const [searchResults, ...rest] = results;
+  const sources: ScrapedSource[] = [
+    ...(searchResults as ScrapedSource[]),
+    ...(rest.filter(Boolean) as ScrapedSource[]),
+  ].filter((s) => s && (s.markdown || s.excerpt)).slice(0, 12);
+
+  const context = sources.map((s, i) =>
+    `### Source ${i + 1}: ${s.title ?? s.url}\nURL: ${s.url}\n${(s.markdown || s.excerpt || "").slice(0, 2800)}`
+  ).join("\n\n---\n\n");
+
+  // 2) Multi-page enterprise prompt
+  const reportDate = new Date().toISOString().slice(0, 10);
+  const systemPrompt = `You are FlowPulse Research, an institutional-grade ${assetType === "crypto" ? "digital-asset" : "equity"} analyst producing elite enterprise research reports for sophisticated investors.
+
+OUTPUT STRICT JSON only, no commentary, with this exact shape:
+{
+  "title": "concise institutional headline (<= 90 chars)",
+  "excerpt": "compelling 2-sentence summary (<= 240 chars)",
+  "hero_image_url": "https unsplash URL relevant to the topic",
+  "ai_score": number 0-5 (conviction; one decimal),
+  "ai_tags": ["3-6 short tags"],
+  "reading_time_minutes": number,
+  "pages": [ { "title": "Page title", "html": "page HTML body" }, ... ]
+}
+
+PAGE COUNT RULES (CRITICAL):
+- Decide the number of pages based on information load, depth, and relevance of the gathered context.
+- Minimum 3 pages, maximum 12 pages. Use more pages only when there is genuinely meaningful additional analysis to add — no padding, no filler.
+- Each page should be a coherent, fully-developed section of ~400-900 words of substantive analysis.
+
+REQUIRED SECTION FLOW (combine or expand into pages as the content warrants):
+1. Executive Summary & Key Takeaways
+2. Market Context & Macro Backdrop
+3. ${assetType === "crypto" ? "Fundamental & On-chain Analysis" : "Fundamental & Financial Analysis"}
+4. Competitive Landscape
+5. Catalysts & Roadmap
+6. Risks & Bear Case
+7. Valuation & Price Targets
+8. Scenario Analysis (Bull / Base / Bear)
+9. Conviction, Positioning & Recommendations
+10. Appendix & Methodology
+
+HTML RULES PER PAGE (Cryptonary-quality, enterprise grade):
+- Use ONLY inner article markup: <h2>, <h3>, <p>, <ul>, <li>, <blockquote>, <table>, <figure>, <figcaption>, <div>, <span>, <sup>, <a>, <strong>, <em>.
+- NEVER include <html>, <head>, <body>, <script>, <link>, or external CSS.
+- First page opens with a <p class='lede'> 2-paragraph lede.
+- Use <div class='callout'> for key takeaways.
+- Use <div class='stat-grid'><div class='stat'><span class='label'>...</span><span class='value'>...</span></div></div> for KPI tiles (3-6 per use).
+- Use <table class='data-table'> for comparable metrics, financials, on-chain stats.
+- Cite sources inline as <sup><a href='URL'>[n]</a></sup>.
+- Final page MUST end with a "Sources" <ol> listing every cited URL.
+- Brand voice: confident, data-driven, institutional. No hype, no emojis, no marketing fluff.`;
+
+  const userPrompt = `ASSET TYPE: ${assetType}
+TOPIC / COMPANY / THEME: ${topic}${ticker ? ` (${ticker})` : ""}
+REPORT DATE: ${reportDate}
+PUBLISHER: FlowPulse Research
+
+RESEARCH CONTEXT (${sources.length} sources):
+${context || "(no external context available — rely on general institutional knowledge and clearly mark assumptions)"}
+
+Decide the appropriate page count (3-12) based on the depth and richness of the above context. Produce the JSON now.`;
+
+  const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+  if (!aiRes.ok) {
+    const t = await aiRes.text();
+    throw new Error(`AI gateway ${aiRes.status}: ${t.slice(0, 200)}`);
+  }
+  const aiJson = await aiRes.json();
+  const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
+  const parsed = extractJsonBlock(content);
+  if (!parsed?.title || !Array.isArray(parsed?.pages) || parsed.pages.length === 0) {
+    throw new Error("AI did not return required fields (title + pages[])");
+  }
+
+  // Normalize pages
+  const pages = parsed.pages
+    .slice(0, 12)
+    .map((p: any, i: number) => ({
+      title: String(p?.title ?? `Page ${i + 1}`).slice(0, 200),
+      html: String(p?.html ?? ""),
+    }))
+    .filter((p: any) => p.html.trim().length > 0);
+  if (pages.length === 0) throw new Error("AI returned no usable pages");
+
+  const title = String(parsed.title).slice(0, 200);
+  const slug = slugify(title);
+  const heroFallback = assetType === "crypto"
+    ? "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=1600&q=80"
+    : "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&q=80";
+
+  // Build combined html_content (used by feed + PDF) as page-separated sections
+  const combinedHtml = pages.map((p: any, i: number) =>
+    `<section class="report-page" data-page="${i + 1}">
+       <header class="report-page-header"><span class="page-number">Page ${i + 1} of ${pages.length}</span><h2 class="page-title">${p.title}</h2></header>
+       <div class="report-page-body">${p.html}</div>
+     </section>`
+  ).join("\n");
+
+  const { data: inserted, error: insErr } = await admin
+    .from("generated_research_reports")
+    .insert({
+      asset_type: assetType,
+      title,
+      slug,
+      ticker: ticker || null,
+      excerpt: String(parsed.excerpt ?? "").slice(0, 500),
+      hero_image_url: String(parsed.hero_image_url || heroFallback),
+      html_content: combinedHtml,
+      pages,
+      page_count: pages.length,
+      report_date: reportDate,
+      ai_score: Math.max(0, Math.min(5, Number(parsed.ai_score ?? 3))),
+      ai_tags: Array.isArray(parsed.ai_tags) ? parsed.ai_tags.slice(0, 8).map(String) : [],
+      sources: sources.map((s) => ({ url: s.url, title: s.title ?? null })),
+      reading_time_minutes: Number(parsed.reading_time_minutes ?? Math.max(5, pages.length * 3)),
+      status: "draft",
+      created_by: createdBy,
+    })
+    .select("id, slug, page_count")
+    .single();
+  if (insErr) throw insErr;
+
+  return { report: inserted, sourceCount: sources.length, pageCount: pages.length };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Admin auth via caller's JWT
     const authHeader = req.headers.get("Authorization") ?? "";
     const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: userData } = await userClient.auth.getUser();
     const user = userData?.user;
-    if (!user) return new Response(JSON.stringify({ error: "Unauthenticated" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthenticated" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     const { data: isAdmin } = await admin.rpc("is_admin", { _user_id: user.id });
-    if (!isAdmin) return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Admin only" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const body = await req.json();
     const assetType: "stock" | "crypto" = body.assetType === "crypto" ? "crypto" : "stock";
     const topic: string = (body.topic || body.ticker || "").trim();
-    const ticker: string = (body.ticker || "").trim().toUpperCase();
-    const extraUrls: string[] = Array.isArray(body.extraUrls) ? body.extraUrls.slice(0, 5) : [];
     if (!topic) throw new Error("topic is required");
 
-    // 1) Gather sources
-    const searchQuery = `${topic} ${assetType === "crypto" ? "cryptocurrency analysis on-chain fundamentals" : "stock analysis earnings fundamentals outlook"} ${new Date().getFullYear()}`;
-    const curated = assetType === "crypto" ? CURATED_CRYPTO : CURATED_STOCK;
-    const [searchResults, ...curatedScrapes] = await Promise.all([
-      firecrawlSearch(searchQuery, 6),
-      ...curated.slice(0, 3).map((u) => firecrawlScrape(`${u} ${topic}`.startsWith("http") ? u : u)),
-      ...extraUrls.map((u) => firecrawlScrape(u)),
-    ]);
-    const sources: ScrapedSource[] = [
-      ...searchResults,
-      ...curatedScrapes.filter(Boolean) as ScrapedSource[],
-    ].filter((s) => s && (s.markdown || s.excerpt)).slice(0, 10);
-
-    // 2) Build context bundle
-    const context = sources.map((s, i) =>
-      `### Source ${i + 1}: ${s.title ?? s.url}\nURL: ${s.url}\n${(s.markdown || s.excerpt || "").slice(0, 2500)}`
-    ).join("\n\n---\n\n");
-
-    // 3) Ask Lovable AI for branded HTML article (Cryptonary-style)
-    const systemPrompt = `You are FlowPulse Research, an institutional-grade ${assetType === "crypto" ? "digital-asset" : "equity"} analyst. Produce a Cryptonary-style premium research article.
-
-OUTPUT STRICT JSON only, no commentary, with this shape:
-{
-  "title": "string (concise headline, <= 90 chars)",
-  "excerpt": "string (compelling 2-sentence summary, <= 220 chars)",
-  "hero_image_url": "string (unsplash URL relevant to the topic)",
-  "ai_score": number 0-5 (conviction),
-  "ai_tags": ["3-6 short tags"],
-  "reading_time_minutes": number,
-  "html": "string (full article HTML, see rules below)"
-}
-
-HTML RULES (Cryptonary aesthetic):
-- Use semantic tags: <article>, <h2>, <h3>, <p>, <ul>, <li>, <blockquote>, <table>, <figure>, <figcaption>.
-- Open with a 2-paragraph lede in <p class='lede'> tone.
-- Sections: "Executive Summary", "Market Context", "Fundamental / On-chain Analysis", "Catalysts", "Risks", "Valuation & Price Targets", "Conviction & Positioning", "Sources".
-- Use <div class='callout'> for key takeaways.
-- Use <div class='stat-grid'><div class='stat'><span class='label'>...</span><span class='value'>...</span></div></div> for KPIs.
-- Use <table class='data-table'> for comparable metrics.
-- Cite sources inline as superscript <sup><a href='URL'>[n]</a></sup>.
-- End with a "Sources" <ol> listing each cited URL.
-- Do NOT include <html>, <head>, <body>, scripts, or external CSS — only the inner article markup.
-- Branded FlowPulse voice: confident, data-driven, institutional. No hype.`;
-
-    const userPrompt = `ASSET TYPE: ${assetType}
-TOPIC / TICKER: ${topic}${ticker ? ` (${ticker})` : ""}
-CURRENT DATE: ${new Date().toISOString().slice(0, 10)}
-
-RESEARCH CONTEXT:
-${context || "(no external context available — rely on general institutional knowledge and clearly mark assumptions)"}
-
-Produce the JSON now.`;
-
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
+    const result = await runGeneration({
+      assetType,
+      topic,
+      ticker: (body.ticker || "").trim().toUpperCase(),
+      extraUrls: Array.isArray(body.extraUrls) ? body.extraUrls : [],
+      createdBy: user.id,
+      admin,
     });
-    if (!aiRes.ok) {
-      const t = await aiRes.text();
-      throw new Error(`AI gateway ${aiRes.status}: ${t.slice(0, 200)}`);
-    }
-    const aiJson = await aiRes.json();
-    const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
-    const parsed = extractJsonBlock(content);
-    if (!parsed?.html || !parsed?.title) throw new Error("AI did not return required fields");
 
-    const title = String(parsed.title).slice(0, 200);
-    const slug = slugify(title);
-    const heroFallback = assetType === "crypto"
-      ? "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=1600&q=80"
-      : "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&q=80";
-
-    const { data: inserted, error: insErr } = await admin
-      .from("generated_research_reports")
-      .insert({
-        asset_type: assetType,
-        title,
-        slug,
-        ticker: ticker || null,
-        excerpt: String(parsed.excerpt ?? "").slice(0, 500),
-        hero_image_url: String(parsed.hero_image_url || heroFallback),
-        html_content: String(parsed.html),
-        ai_score: Math.max(0, Math.min(5, Number(parsed.ai_score ?? 3))),
-        ai_tags: Array.isArray(parsed.ai_tags) ? parsed.ai_tags.slice(0, 8).map(String) : [],
-        sources: sources.map((s) => ({ url: s.url, title: s.title ?? null })),
-        reading_time_minutes: Number(parsed.reading_time_minutes ?? 6),
-        status: "draft",
-        created_by: user.id,
-      })
-      .select("id, slug")
-      .single();
-    if (insErr) throw insErr;
-
-    return new Response(JSON.stringify({ success: true, report: inserted, sourceCount: sources.length }), {
+    return new Response(JSON.stringify({ success: true, ...result }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("generate-research-report-ai error:", e);
     return new Response(JSON.stringify({ success: false, error: (e as Error).message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
