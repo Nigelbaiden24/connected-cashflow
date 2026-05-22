@@ -232,47 +232,25 @@ export default function PublicResearchHub() {
   );
 }
 
-function ScoreBar({
-  label,
-  value,
-  tint,
-}: {
-  label: string;
-  value: number | null;
-  tint: string;
-}) {
-  const v = Math.max(0, Math.min(100, value ?? 0));
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-[11px] text-slate-400">
-        <span>{label}</span>
-        <span className="text-slate-200 font-medium tabular-nums">{value ?? 0}</span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
-        <div className={`h-full rounded-full ${tint}`} style={{ width: `${v}%` }} />
-      </div>
-    </div>
-  );
-}
-
 function ReportCard({
   report,
   blurred,
   onOpen,
 }: {
-  report: ResearchReport;
+  report: PublicResearchPreview;
   blurred: boolean;
   onOpen: () => void;
 }) {
-  const dateStr = format(new Date(report.generated_at), "PP");
+  const dateStr = format(new Date(report.report_date ?? report.promoted_at ?? report.created_at), "PP");
   const isStock = report.asset_type === "stock";
+  const score = typeof report.ai_score === "number" ? report.ai_score : null;
 
   const confidenceColor =
-    report.confidence_level === "high"
+    score !== null && score >= 4
       ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-      : report.confidence_level === "medium"
+      : score !== null && score >= 3
       ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
-      : report.confidence_level === "low"
+      : score !== null
       ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
       : "bg-white/5 text-slate-300 border-white/10";
 
@@ -283,24 +261,9 @@ function ReportCard({
     >
       <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
 
-      {/* Real first-page of the report, scaled down */}
+      {/* Actual generated report PDF page, scaled down */}
       <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-800/40 to-slate-900/60 p-3">
-        <div className={`relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02] ${blurred ? "blur-[7px] saturate-75" : ""}`}>
-          <div
-            className="pointer-events-none origin-top-left"
-            style={{
-              width: "1280px",
-              transform: "scale(0.235)",
-              transformOrigin: "top left",
-            }}
-          >
-            <div className="bg-white p-6 text-slate-900">
-              <ResearchReportDetail report={report} changeLogs={[]} onBack={() => {}} />
-            </div>
-          </div>
-          {/* Fade bottom edge so it reads as a page peek */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
-        </div>
+        <ReportPdfPagePreview report={report} blurred={blurred} />
         {blurred && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
@@ -319,10 +282,10 @@ function ReportCard({
             </div>
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-widest text-slate-500">
-                {report.asset_type}{report.asset_symbol ? ` · ${report.asset_symbol}` : ""}
+                {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
               </div>
               <h3 className="text-base font-semibold text-white truncate group-hover:text-amber-300 transition-colors">
-                {report.asset_name}
+                {report.title}
               </h3>
             </div>
           </div>
@@ -331,7 +294,7 @@ function ReportCard({
 
         <div className="flex items-center justify-between pt-3 border-t border-white/5">
           <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
-            {report.confidence_level ?? "n/a"} confidence
+            {score !== null ? `${score.toFixed(1)}/5 conviction` : "Research"}
           </Badge>
           <span className="text-[11px] text-slate-500">{dateStr}</span>
         </div>
