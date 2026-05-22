@@ -82,28 +82,28 @@ export default function PublicResearchHub() {
 
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 selection:bg-amber-400/30">
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-amber-400/30">
       {/* Ambient gradient backdrop */}
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[700px] w-[1200px] rounded-full bg-gradient-to-br from-indigo-600/20 via-sky-500/10 to-transparent blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[500px] w-[800px] rounded-full bg-gradient-to-tl from-amber-500/10 to-transparent blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.04)_1px,transparent_0)] [background-size:24px_24px]" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[700px] w-[1200px] rounded-full bg-gradient-to-br from-indigo-500/[0.07] via-sky-400/[0.04] to-transparent blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-[500px] w-[800px] rounded-full bg-gradient-to-tl from-amber-400/[0.06] to-transparent blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.03)_1px,transparent_0)] [background-size:24px_24px]" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/5 bg-[#070b14]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-2.5">
             <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
-            <span className="font-semibold tracking-tight text-white">FlowPulse</span>
-            <Badge variant="outline" className="ml-2 border-white/10 text-[10px] uppercase tracking-widest text-slate-300">
+            <span className="font-semibold tracking-tight text-slate-900">FlowPulse</span>
+            <Badge variant="outline" className="ml-2 border-slate-200 text-[10px] uppercase tracking-widest text-slate-500">
               Research
             </Badge>
           </button>
           <div className="flex items-center gap-2">
             {!isAuthed && (
               <>
-                <Button variant="ghost" className="text-slate-200 hover:text-white hover:bg-white/5" onClick={() => navigate("/login-investor")}>
+                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => navigate("/login-investor")}>
                   Sign in
                 </Button>
                 <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => navigate("/login-investor")}>
@@ -117,25 +117,25 @@ export default function PublicResearchHub() {
 
       {/* Hero */}
       <section className="container mx-auto px-4 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-slate-300 backdrop-blur">
-          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs text-slate-600 backdrop-blur">
+          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
           Institutional-grade analyst desk
         </div>
-        <h1 className="mt-6 text-5xl md:text-6xl font-bold tracking-tight text-white">
-          The FlowPulse <span className="bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">Research Vault</span>
+        <h1 className="mt-6 text-5xl md:text-6xl font-bold tracking-tight text-slate-900">
+          The FlowPulse <span className="bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">Research Vault</span>
         </h1>
-        <p className="text-slate-400 mt-5 max-w-2xl mx-auto text-lg leading-relaxed">
+        <p className="text-slate-500 mt-5 max-w-2xl mx-auto text-lg leading-relaxed">
           Deep-dive equity and digital asset research curated by our analyst desk. Quality, risk, valuation and ESG scored on a 0–5 institutional scale.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs text-slate-400">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Independent coverage
+        <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs text-slate-500">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Independent coverage
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
-            <Activity className="h-3.5 w-3.5 text-sky-400" /> Updated continuously
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">
+            <Activity className="h-3.5 w-3.5 text-sky-500" /> Updated continuously
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
-            <Gauge className="h-3.5 w-3.5 text-amber-400" /> 0–5 conviction scoring
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5">
+            <Gauge className="h-3.5 w-3.5 text-amber-500" /> 0–5 conviction scoring
           </span>
         </div>
       </section>
@@ -144,16 +144,16 @@ export default function PublicResearchHub() {
       <section className="container mx-auto px-4 pb-24">
         <Tabs value={tab} onValueChange={(v) => setTab(v as "stock" | "crypto")} className="w-full">
           <div className="flex justify-center mb-10">
-            <TabsList className="bg-white/5 border border-white/10 backdrop-blur p-1 h-auto">
+            <TabsList className="bg-slate-100 border border-slate-200 backdrop-blur p-1 h-auto">
               <TabsTrigger
                 value="stock"
-                className="data-[state=active]:bg-white data-[state=active]:text-slate-950 text-slate-300 px-6 py-2.5 rounded-md"
+                className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm text-slate-600 px-6 py-2.5 rounded-md"
               >
                 <TrendingUp className="h-4 w-4 mr-2" /> Stock Research
               </TabsTrigger>
               <TabsTrigger
                 value="crypto"
-                className="data-[state=active]:bg-white data-[state=active]:text-slate-950 text-slate-300 px-6 py-2.5 rounded-md"
+                className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm text-slate-600 px-6 py-2.5 rounded-md"
               >
                 <Coins className="h-4 w-4 mr-2" /> Crypto Research
               </TabsTrigger>
@@ -164,13 +164,13 @@ export default function PublicResearchHub() {
             <TabsContent key={t} value={t}>
               {loading || authLoading ? (
                 <div className="flex items-center justify-center py-24">
-                  <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
+                  <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
                 </div>
               ) : filtered.length === 0 ? (
-                <Card className="border-white/10 bg-white/[0.02]">
+                <Card className="border-slate-200 bg-slate-50">
                   <CardContent className="py-20 text-center">
-                    <FileText className="h-12 w-12 mx-auto text-slate-600 mb-3" />
-                    <p className="text-slate-400">No {t} reports published yet.</p>
+                    <FileText className="h-12 w-12 mx-auto text-slate-400 mb-3" />
+                    <p className="text-slate-500">No {t} reports published yet.</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -191,15 +191,15 @@ export default function PublicResearchHub() {
                   </div>
 
                   {!isAuthed && filtered.length > 3 && (
-                    <div className="absolute inset-x-0 bottom-0 h-[500px] bg-gradient-to-t from-[#070b14] via-[#070b14]/95 to-transparent flex flex-col items-center justify-end pb-12">
+                    <div className="absolute inset-x-0 bottom-0 h-[500px] bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-center justify-end pb-12">
                       <div className="text-center w-full max-w-lg mx-auto px-4">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-5">
-                          <Lock className="h-7 w-7 text-amber-400" />
+                          <Lock className="h-7 w-7 text-amber-500" />
                         </div>
-                        <h3 className="text-3xl font-bold text-white mb-3 tracking-tight">
+                        <h3 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
                           Unlock the full research desk
                         </h3>
-                        <p className="text-slate-400 mb-6 leading-relaxed">
+                        <p className="text-slate-500 mb-6 leading-relaxed">
                           Sign in to access complete reports, download institutional PDFs, and receive live coverage updates from our analyst team.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -213,7 +213,7 @@ export default function PublicResearchHub() {
                           <Button
                             size="lg"
                             variant="outline"
-                            className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                            className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
                             onClick={() => navigate("/login-investor")}
                           >
                             Create account
