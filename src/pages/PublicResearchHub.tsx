@@ -22,6 +22,7 @@ import {
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview";
+import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
 
 interface PublicResearchPreview {
   id: string;
@@ -49,6 +50,9 @@ export default function PublicResearchHub() {
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">("stock");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authRedirect, setAuthRedirect] = useState<string | undefined>();
+  const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
 
   useEffect(() => {
     (async () => {
@@ -72,9 +76,15 @@ export default function PublicResearchHub() {
     [reports, tab]
   );
 
+  const openAuth = (redirect?: string, title?: string) => {
+    setAuthRedirect(redirect);
+    setAuthReportTitle(title);
+    setAuthOpen(true);
+  };
+
   const handleOpen = (r: PublicResearchPreview) => {
     if (!isAuthed) {
-      navigate(`/login-investor?redirect=/investor/${r.asset_type}-research`);
+      openAuth(`/investor/${r.asset_type}-research`, r.title);
       return;
     }
     navigate(`/investor/${r.asset_type}-research`);
@@ -103,10 +113,10 @@ export default function PublicResearchHub() {
           <div className="flex items-center gap-2">
             {!isAuthed && (
               <>
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => navigate("/login-investor")}>
+                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth()}>
                   Sign in
                 </Button>
-                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => navigate("/login-investor")}>
+                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => openAuth()}>
                   Get access <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </>
@@ -206,7 +216,7 @@ export default function PublicResearchHub() {
                           <Button
                             size="lg"
                             className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                            onClick={() => navigate("/login-investor")}
+                            onClick={() => openAuth()}
                           >
                             Sign in to read <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
@@ -214,7 +224,7 @@ export default function PublicResearchHub() {
                             size="lg"
                             variant="outline"
                             className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                            onClick={() => navigate("/login-investor")}
+                            onClick={() => openAuth()}
                           >
                             Create account
                           </Button>
@@ -228,6 +238,13 @@ export default function PublicResearchHub() {
           ))}
         </Tabs>
       </section>
+
+      <ResearchAuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        redirectPath={authRedirect}
+        reportTitle={authReportTitle}
+      />
     </div>
   );
 }
