@@ -98,7 +98,8 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
       openAuth(`/investor/research?asset=${r.asset_type}&id=${r.id}`, r.title);
       return;
     }
-    navigate(`/investor/research?asset=${r.asset_type}&id=${r.id}`);
+    setReaderReportId(r.id);
+    setReaderOpen(true);
   };
 
 
