@@ -26,6 +26,37 @@ import {
   Zap, Factory, Shield, Music, Leaf, Repeat, Layers, PieChart
 } from "lucide-react";
 
+// Category default thumbnail images
+import thumbRealEstate from "@/assets/opportunities/real_estate.jpg";
+import thumbCommodities from "@/assets/opportunities/commodities.jpg";
+import thumbAlternatives from "@/assets/opportunities/alternatives.jpg";
+import thumbEsg from "@/assets/opportunities/esg.jpg";
+import thumbFractionalPeVc from "@/assets/opportunities/fractional_pe_vc.jpg";
+import thumbPrivateMarketPlatforms from "@/assets/opportunities/private_market_platforms.jpg";
+import thumbCapitalProtectedNotes from "@/assets/opportunities/capital_protected_notes.jpg";
+import thumbThematicsPackaged from "@/assets/opportunities/thematics_packaged.jpg";
+import thumbCopyTrading from "@/assets/opportunities/copy_trading.jpg";
+import thumbMusicRoyalties from "@/assets/opportunities/music_royalties.jpg";
+import thumbBusinesses from "@/assets/opportunities/businesses.jpg";
+import thumbMiniBonds from "@/assets/opportunities/mini_bonds.jpg";
+import thumbTimepieces from "@/assets/opportunities/timepieces.jpg";
+
+const categoryThumbnailMap: Record<string, string> = {
+  real_estate: thumbRealEstate,
+  commodities: thumbCommodities,
+  alternatives: thumbAlternatives,
+  esg: thumbEsg,
+  fractional_pe_vc: thumbFractionalPeVc,
+  private_market_platforms: thumbPrivateMarketPlatforms,
+  capital_protected_notes: thumbCapitalProtectedNotes,
+  thematics_packaged: thumbThematicsPackaged,
+  copy_trading: thumbCopyTrading,
+  music_royalties: thumbMusicRoyalties,
+  businesses: thumbBusinesses,
+  mini_bonds: thumbMiniBonds,
+  timepieces: thumbTimepieces,
+};
+
 interface OpportunityProduct {
   id: string;
   title: string;
@@ -171,8 +202,8 @@ export default function OpportunityIntelligence() {
     return (
       <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer border-border/50 hover:border-primary/30">
         <div className="relative aspect-video overflow-hidden bg-muted">
-          {opportunity.thumbnail_url ? (
-            <img src={opportunity.thumbnail_url} alt={opportunity.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          {(opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]) ? (
+            <img src={opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]} alt={opportunity.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted-foreground/10">
               <Icon className="h-12 w-12 text-muted-foreground/40" />
@@ -233,7 +264,7 @@ export default function OpportunityIntelligence() {
         <TableCell className="pl-4">
           <div className="flex items-center gap-3">
             <div className="relative h-12 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
-              {opportunity.thumbnail_url ? <img src={opportunity.thumbnail_url} alt={opportunity.title} className="w-full h-full object-cover" /> :
+              {(opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]) ? <img src={opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]} alt={opportunity.title} className="w-full h-full object-cover" loading="lazy" /> :
                 <div className="w-full h-full flex items-center justify-center"><Icon className="h-5 w-5 text-muted-foreground/40" /></div>}
             </div>
             <div className="space-y-1">
