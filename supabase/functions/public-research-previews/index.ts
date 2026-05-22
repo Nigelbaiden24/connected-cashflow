@@ -11,46 +11,26 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const requestedTypes = Array.isArray(body.asset_types) ? body.asset_types : ["stock", "crypto"];
-    const assetTypes = requestedTypes.filter((type: unknown) => type === "stock" || type === "crypto");
+    const assetTypes = requestedTypes.filter((t: unknown) => t === "stock" || t === "crypto");
     const limit = Math.min(Math.max(Number(body.limit) || 60, 1), 60);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const admin = createClient(supabaseUrl, serviceKey);
 
+    // Pull the same data the investor Stock/Crypto Research Reports tabs render.
     const { data, error } = await admin
-      .from("generated_research_reports")
-      .select("id, asset_type, title, ticker, excerpt, ai_score, ai_tags, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages")
-      .eq("status", "promoted")
+      .from("asset_research_reports")
+      .select(
+        "id, asset_type, asset_id, asset_name, asset_symbol, overall_quality_score, risk_score, valuation_score, esg_score, confidence_level, quality_analysis, version, generated_at, data_as_of, created_at, updated_at"
+      )
       .in("asset_type", assetTypes.length ? assetTypes : ["stock", "crypto"])
-      .order("promoted_at", { ascending: false, nullsFirst: false })
+      .order("generated_at", { ascending: false })
       .limit(limit);
 
     if (error) throw error;
 
-    const reports = (data ?? []).map((report: any) => {
-      const pages = Array.isArray(report.pages) ? report.pages : [];
-      const firstPage = pages[0] ?? {};
-      return {
-        id: report.id,
-        asset_type: report.asset_type,
-        title: report.title,
-        ticker: report.ticker,
-        excerpt: report.excerpt,
-        ai_score: report.ai_score,
-        ai_tags: report.ai_tags ?? [],
-        reading_time_minutes: report.reading_time_minutes,
-        author_name: report.author_name,
-        page_count: report.page_count,
-        report_date: report.report_date,
-        promoted_at: report.promoted_at,
-        created_at: report.created_at,
-        first_page_title: firstPage.title ?? "Executive Summary & Key Takeaways",
-        first_page_html: firstPage.html ?? report.excerpt ?? "",
-      };
-    });
-
-    return new Response(JSON.stringify({ reports }), {
+    return new Response(JSON.stringify({ reports: data ?? [] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
