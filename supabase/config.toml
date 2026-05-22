@@ -195,3 +195,9 @@ verify_jwt = false
 [functions.firecrawl-scrape]
 verify_jwt = true
 
+
+[functions.generate-research-report-ai]
+verify_jwt = true
+
+[functions.run-research-scraper-schedules]
+verify_jwt = false
