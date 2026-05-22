@@ -186,9 +186,38 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
 
   const title = String(parsed.title).slice(0, 200);
   const slug = slugify(title);
-  const heroFallback = assetType === "crypto"
-    ? "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=1600&q=80"
-    : "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&q=80";
+
+  // Curated, verified Unsplash photo IDs (no ixid/ix params — those expire and 404).
+  // Rotate deterministically per topic so each report gets a distinct hero.
+  const STOCK_HEROES = [
+    "photo-1611974789855-9c2a0a7236a3", // bull statue
+    "photo-1590283603385-17ffb3a7f29f", // trading floor
+    "photo-1554260570-9140fd3b7614",   // financial district
+    "photo-1590283603385-17ffb3a7f29f",
+    "photo-1559526324-4b87b5e36e44",   // charts
+    "photo-1604594849809-dfedbc827105", // skyscrapers
+    "photo-1611324586060-04bcc4eee1b9", // ticker
+    "photo-1642784353700-3aef5f8b9396", // candlesticks
+    "photo-1591696205602-2f950c417cb9", // wall street
+    "photo-1607968565043-36af90dde238", // boardroom
+  ];
+  const CRYPTO_HEROES = [
+    "photo-1518546305927-5a555bb7020d", // bitcoin
+    "photo-1639762681485-074b7f938ba0", // crypto chart
+    "photo-1640340434855-6084b1f4901c", // eth coin
+    "photo-1621932953986-15fcfb2d6669", // crypto neon
+    "photo-1620321023374-d1a68fbc720d", // chart blue
+    "photo-1641932969982-21a13d4a8b14", // crypto data
+    "photo-1622630998477-20aa696ecb05", // bitcoin city
+    "photo-1518544866330-95a2bec01dc3", // chains
+    "photo-1639825988283-39e5408b75e8", // server
+    "photo-1640161339155-3d76a3b3a1c8", // tokens
+  ];
+  const pool = assetType === "crypto" ? CRYPTO_HEROES : STOCK_HEROES;
+  let hashSeed = 0;
+  for (const ch of title) hashSeed = (hashSeed * 31 + ch.charCodeAt(0)) >>> 0;
+  const heroId = pool[hashSeed % pool.length];
+  const heroFallback = `https://images.unsplash.com/${heroId}?w=1600&q=80&auto=format&fit=crop`;
 
   const combinedHtml = pages.map((p: any, i: number) =>
     `<section class="report-page" data-page="${i + 1}">
@@ -205,7 +234,7 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
       slug,
       ticker: ticker || null,
       excerpt: String(parsed.excerpt ?? "").slice(0, 500),
-      hero_image_url: String(parsed.hero_image_url || heroFallback),
+      hero_image_url: heroFallback,
       html_content: combinedHtml,
       pages,
       page_count: pages.length,
