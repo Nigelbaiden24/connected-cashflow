@@ -264,19 +264,33 @@ function ReportCard({
     >
       <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
 
-      {/* First-page paper thumbnail */}
-      <div className="relative h-72 overflow-hidden bg-gradient-to-br from-slate-800/40 to-slate-900/60 p-3">
-        <div className={`relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02] ${blurred ? "blur-[6px] saturate-75" : ""}`}>
-          <FirstPagePreview report={report} />
+      {/* Real first-page of the report, scaled down */}
+      <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-800/40 to-slate-900/60 p-3">
+        <div className={`relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)] transition-all duration-500 group-hover:scale-[1.02] ${blurred ? "blur-[7px] saturate-75" : ""}`}>
+          <div
+            className="pointer-events-none origin-top-left"
+            style={{
+              width: "1280px",
+              transform: "scale(0.235)",
+              transformOrigin: "top left",
+            }}
+          >
+            <div className="bg-white p-6 text-slate-900">
+              <ResearchReportDetail report={report} changeLogs={[]} onBack={() => {}} />
+            </div>
+          </div>
+          {/* Fade bottom edge so it reads as a page peek */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
         </div>
         {blurred && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/70 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
+            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-950/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
               <Lock className="h-3.5 w-3.5" /> Sign in to read
             </div>
           </div>
         )}
       </div>
+
 
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
