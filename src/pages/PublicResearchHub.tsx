@@ -5,39 +5,43 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Lock, TrendingUp, Coins, ArrowRight, Sparkles, Loader2, FileText } from "lucide-react";
+import {
+  Lock,
+  TrendingUp,
+  Coins,
+  ArrowRight,
+  Sparkles,
+  Loader2,
+  FileText,
+  ShieldCheck,
+  Activity,
+  Gauge,
+  ChevronRight,
+} from "lucide-react";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 
-interface PromotedReport {
+interface ResearchRow {
   id: string;
   asset_type: "stock" | "crypto";
-  title: string;
-  slug: string;
-  ticker: string | null;
-  excerpt: string | null;
-  hero_image_url: string | null;
-  ai_score: number | null;
-  ai_tags: string[] | null;
-  reading_time_minutes: number | null;
-  promoted_at: string | null;
-  created_at: string;
+  asset_name: string;
+  asset_symbol: string | null;
+  overall_quality_score: number | null;
+  risk_score: number | null;
+  valuation_score: number | null;
+  esg_score: number | null;
+  confidence_level: "high" | "medium" | "low" | null;
+  generated_at: string;
 }
-
-const FALLBACK_IMG = [
-  "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=80",
-  "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&q=80",
-  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80",
-  "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=1200&q=80",
-];
 
 export default function PublicResearchHub() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
 
-  const [reports, setReports] = useState<PromotedReport[]>([]);
+  const [reports, setReports] = useState<ResearchRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">("stock");
 
@@ -45,13 +49,14 @@ export default function PublicResearchHub() {
     (async () => {
       setLoading(true);
       const { data } = await supabase
-        .from("generated_research_reports")
-        .select("id,asset_type,title,slug,ticker,excerpt,hero_image_url,ai_score,ai_tags,reading_time_minutes,promoted_at,created_at")
-        .eq("status", "promoted")
+        .from("asset_research_reports")
+        .select(
+          "id,asset_type,asset_name,asset_symbol,overall_quality_score,risk_score,valuation_score,esg_score,confidence_level,generated_at"
+        )
         .in("asset_type", ["stock", "crypto"])
-        .order("promoted_at", { ascending: false })
+        .order("generated_at", { ascending: false })
         .limit(60);
-      setReports((data ?? []) as unknown as PromotedReport[]);
+      setReports((data ?? []) as unknown as ResearchRow[]);
       setLoading(false);
     })();
   }, []);
@@ -61,7 +66,7 @@ export default function PublicResearchHub() {
     [reports, tab]
   );
 
-  const handleOpen = (r: PromotedReport) => {
+  const handleOpen = (r: ResearchRow) => {
     if (!isAuthed) {
       navigate(`/login-investor?redirect=/investor/${r.asset_type}-research`);
       return;
@@ -70,19 +75,33 @@ export default function PublicResearchHub() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
+    <div className="min-h-screen bg-[#070b14] text-slate-100 selection:bg-amber-400/30">
+      {/* Ambient gradient backdrop */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[700px] w-[1200px] rounded-full bg-gradient-to-br from-indigo-600/20 via-sky-500/10 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-[500px] w-[800px] rounded-full bg-gradient-to-tl from-amber-500/10 to-transparent blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.04)_1px,transparent_0)] [background-size:24px_24px]" />
+      </div>
+
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-xl sticky top-0 z-30">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2">
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-[#070b14]/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2.5">
             <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
-            <span className="font-bold text-slate-900">FlowPulse</span>
+            <span className="font-semibold tracking-tight text-white">FlowPulse</span>
+            <Badge variant="outline" className="ml-2 border-white/10 text-[10px] uppercase tracking-widest text-slate-300">
+              Research
+            </Badge>
           </button>
           <div className="flex items-center gap-2">
             {!isAuthed && (
               <>
-                <Button variant="ghost" onClick={() => navigate("/login-investor")}>Sign in</Button>
-                <Button onClick={() => navigate("/login-investor")}>Get access</Button>
+                <Button variant="ghost" className="text-slate-200 hover:text-white hover:bg-white/5" onClick={() => navigate("/login-investor")}>
+                  Sign in
+                </Button>
+                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => navigate("/login-investor")}>
+                  Get access <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Button>
               </>
             )}
           </div>
@@ -90,68 +109,106 @@ export default function PublicResearchHub() {
       </header>
 
       {/* Hero */}
-      <section className="container mx-auto px-4 pt-12 pb-8 text-center">
-        <Badge variant="secondary" className="mb-3"><Sparkles className="h-3 w-3 mr-1" /> Institutional research</Badge>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">Reports</h1>
-        <p className="text-slate-600 mt-3 max-w-2xl mx-auto">
-          Stock and crypto research reports curated by FlowPulse analysts. Sign in to read in full.
+      <section className="container mx-auto px-4 pt-16 pb-10 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs text-slate-300 backdrop-blur">
+          <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+          Institutional-grade analyst desk
+        </div>
+        <h1 className="mt-6 text-5xl md:text-6xl font-bold tracking-tight text-white">
+          The FlowPulse <span className="bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">Research Vault</span>
+        </h1>
+        <p className="text-slate-400 mt-5 max-w-2xl mx-auto text-lg leading-relaxed">
+          Deep-dive equity and digital asset research curated by our analyst desk. Quality, risk, valuation and ESG scored on a 0–5 institutional scale.
         </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs text-slate-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Independent coverage
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+            <Activity className="h-3.5 w-3.5 text-sky-400" /> Updated continuously
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
+            <Gauge className="h-3.5 w-3.5 text-amber-400" /> 0–5 conviction scoring
+          </span>
+        </div>
       </section>
 
-      {/* Tabs */}
-      <section className="container mx-auto px-4 pb-16">
+      {/* Tabs + Grid */}
+      <section className="container mx-auto px-4 pb-24">
         <Tabs value={tab} onValueChange={(v) => setTab(v as "stock" | "crypto")} className="w-full">
-          <div className="flex justify-center mb-6">
-            <TabsList>
-              <TabsTrigger value="stock"><TrendingUp className="h-4 w-4 mr-2" />Stock Research</TabsTrigger>
-              <TabsTrigger value="crypto"><Coins className="h-4 w-4 mr-2" />Crypto Research</TabsTrigger>
+          <div className="flex justify-center mb-10">
+            <TabsList className="bg-white/5 border border-white/10 backdrop-blur p-1 h-auto">
+              <TabsTrigger
+                value="stock"
+                className="data-[state=active]:bg-white data-[state=active]:text-slate-950 text-slate-300 px-6 py-2.5 rounded-md"
+              >
+                <TrendingUp className="h-4 w-4 mr-2" /> Stock Research
+              </TabsTrigger>
+              <TabsTrigger
+                value="crypto"
+                className="data-[state=active]:bg-white data-[state=active]:text-slate-950 text-slate-300 px-6 py-2.5 rounded-md"
+              >
+                <Coins className="h-4 w-4 mr-2" /> Crypto Research
+              </TabsTrigger>
             </TabsList>
           </div>
 
           {(["stock", "crypto"] as const).map((t) => (
             <TabsContent key={t} value={t}>
               {loading || authLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="flex items-center justify-center py-24">
+                  <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
                 </div>
               ) : filtered.length === 0 ? (
-                <Card>
-                  <CardContent className="py-16 text-center">
-                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                    <p className="text-slate-600">No {t} reports published yet.</p>
+                <Card className="border-white/10 bg-white/[0.02]">
+                  <CardContent className="py-20 text-center">
+                    <FileText className="h-12 w-12 mx-auto text-slate-600 mb-3" />
+                    <p className="text-slate-400">No {t} reports published yet.</p>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="relative">
-                  <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 ${!isAuthed ? "max-h-[1100px] overflow-hidden" : ""}`}>
+                  <div
+                    className={`grid gap-5 md:grid-cols-2 lg:grid-cols-3 ${
+                      !isAuthed ? "max-h-[1200px] overflow-hidden" : ""
+                    }`}
+                  >
                     {filtered.map((r, i) => (
                       <ReportCard
                         key={r.id}
                         report={r}
-                        index={i}
                         blurred={!isAuthed && i >= 3}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
                   </div>
 
-                  {!isAuthed && filtered.length > 0 && (
-                    <div className="absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-end justify-end pb-10">
-                      <div className="text-center w-full max-w-md mx-auto px-4">
-                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
-                          <Lock className="h-7 w-7 text-primary" />
+                  {!isAuthed && filtered.length > 3 && (
+                    <div className="absolute inset-x-0 bottom-0 h-[500px] bg-gradient-to-t from-[#070b14] via-[#070b14]/95 to-transparent flex flex-col items-center justify-end pb-12">
+                      <div className="text-center w-full max-w-lg mx-auto px-4">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-5">
+                          <Lock className="h-7 w-7 text-amber-400" />
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                        <h3 className="text-3xl font-bold text-white mb-3 tracking-tight">
                           Unlock the full research desk
                         </h3>
-                        <p className="text-slate-600 mb-5">
-                          Create a free account or sign in to read the complete reports, download PDFs, and access live updates.
+                        <p className="text-slate-400 mb-6 leading-relaxed">
+                          Sign in to access complete reports, download institutional PDFs, and receive live coverage updates from our analyst team.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                          <Button size="lg" onClick={() => navigate("/login-investor")}>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                          <Button
+                            size="lg"
+                            className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
+                            onClick={() => navigate("/login-investor")}
+                          >
                             Sign in to read <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
-                          <Button size="lg" variant="outline" onClick={() => navigate("/login-investor")}>
+                          <Button
+                            size="lg"
+                            variant="outline"
+                            className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                            onClick={() => navigate("/login-investor")}
+                          >
                             Create account
                           </Button>
                         </div>
@@ -168,58 +225,104 @@ export default function PublicResearchHub() {
   );
 }
 
+function ScoreBar({
+  label,
+  value,
+  tint,
+}: {
+  label: string;
+  value: number | null;
+  tint: string;
+}) {
+  const v = Math.max(0, Math.min(100, value ?? 0));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-[11px] text-slate-400">
+        <span>{label}</span>
+        <span className="text-slate-200 font-medium tabular-nums">{value ?? 0}</span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+        <div className={`h-full rounded-full ${tint}`} style={{ width: `${v}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function ReportCard({
   report,
-  index,
   blurred,
   onOpen,
 }: {
-  report: PromotedReport;
-  index: number;
+  report: ResearchRow;
   blurred: boolean;
   onOpen: () => void;
 }) {
-  const img = report.hero_image_url || FALLBACK_IMG[index % FALLBACK_IMG.length];
-  const dateStr = report.promoted_at
-    ? format(new Date(report.promoted_at), "PP")
-    : format(new Date(report.created_at), "PP");
+  const dateStr = format(new Date(report.generated_at), "PP");
+  const isStock = report.asset_type === "stock";
+
+  const confidenceColor =
+    report.confidence_level === "high"
+      ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+      : report.confidence_level === "medium"
+      ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+      : report.confidence_level === "low"
+      ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+      : "bg-white/5 text-slate-300 border-white/10";
 
   return (
     <Card
       onClick={onOpen}
-      className={`group cursor-pointer overflow-hidden hover:shadow-xl transition-all duration-300 ${
+      className={`group relative overflow-hidden cursor-pointer border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_60px_-15px_rgba(251,191,36,0.25)] ${
         blurred ? "select-none" : ""
       }`}
     >
-      <div className="relative h-44 overflow-hidden bg-slate-200">
-        <img
-          src={img}
-          alt={report.title}
-          className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
-            blurred ? "blur-md" : ""
-          }`}
-          loading="lazy"
-        />
-        <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className="uppercase text-[10px] tracking-wide">{report.asset_type}</Badge>
-          {report.ticker && <Badge variant="secondary" className="text-[10px]">{report.ticker}</Badge>}
-        </div>
-        {typeof report.ai_score === "number" && (
-          <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
-            {report.ai_score.toFixed(1)}/5
+      {/* Accent bar */}
+      <div
+        className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${
+          isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"
+        }`}
+      />
+
+      <CardContent className={`p-6 ${blurred ? "blur-md" : ""}`}>
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <div
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
+                isStock
+                  ? "border-sky-400/30 bg-sky-500/10 text-sky-300"
+                  : "border-amber-400/30 bg-amber-500/10 text-amber-300"
+              }`}
+            >
+              {isStock ? <TrendingUp className="h-5 w-5" /> : <Coins className="h-5 w-5" />}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-widest text-slate-500">
+                {report.asset_type}
+                {report.asset_symbol ? ` · ${report.asset_symbol}` : ""}
+              </div>
+              <h3 className="text-base font-semibold text-white truncate group-hover:text-amber-300 transition-colors">
+                {report.asset_name}
+              </h3>
+            </div>
           </div>
-        )}
-      </div>
-      <CardContent className={`p-5 ${blurred ? "blur-sm" : ""}`}>
-        <h3 className="font-semibold text-slate-900 line-clamp-2 group-hover:text-primary transition-colors">
-          {report.title}
-        </h3>
-        {report.excerpt && (
-          <p className="text-sm text-slate-600 mt-2 line-clamp-3">{report.excerpt}</p>
-        )}
-        <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
-          <span>{dateStr}</span>
-          <span>{report.reading_time_minutes ?? 6} min read</span>
+          <ChevronRight className="h-4 w-4 text-slate-500 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
+        </div>
+
+        {/* Scores */}
+        <div className="grid grid-cols-2 gap-x-5 gap-y-3 mb-5">
+          <ScoreBar label="Quality" value={report.overall_quality_score} tint="bg-gradient-to-r from-emerald-400 to-emerald-500" />
+          <ScoreBar label="Valuation" value={report.valuation_score} tint="bg-gradient-to-r from-sky-400 to-indigo-500" />
+          <ScoreBar label="Risk" value={report.risk_score} tint="bg-gradient-to-r from-amber-400 to-orange-500" />
+          <ScoreBar label="ESG" value={report.esg_score} tint="bg-gradient-to-r from-fuchsia-400 to-purple-500" />
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+          <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
+            {report.confidence_level ?? "n/a"} confidence
+          </Badge>
+          <span className="text-[11px] text-slate-500">{dateStr}</span>
         </div>
       </CardContent>
     </Card>
