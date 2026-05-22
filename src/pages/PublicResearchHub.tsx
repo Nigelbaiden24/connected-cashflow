@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
+import { ResearchReportReader } from "@/components/research/ResearchReportReader";
 
 interface PublicResearchPreview {
   id: string;
@@ -57,10 +58,22 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   const [authOpen, setAuthOpen] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | undefined>();
   const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
+  const [readerOpen, setReaderOpen] = useState(false);
+  const [readerReportId, setReaderReportId] = useState<string | null>(null);
 
   useEffect(() => {
     setTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (id) {
+      setReaderReportId(id);
+      setReaderOpen(true);
+    }
+  }, [isAuthed]);
 
   useEffect(() => {
     (async () => {
@@ -95,7 +108,8 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
       openAuth(`/investor/research?asset=${r.asset_type}&id=${r.id}`, r.title);
       return;
     }
-    navigate(`/investor/research?asset=${r.asset_type}&id=${r.id}`);
+    setReaderReportId(r.id);
+    setReaderOpen(true);
   };
 
 
@@ -252,6 +266,12 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         onOpenChange={setAuthOpen}
         redirectPath={authRedirect}
         reportTitle={authReportTitle}
+      />
+
+      <ResearchReportReader
+        open={readerOpen}
+        onOpenChange={setReaderOpen}
+        reportId={readerReportId}
       />
     </div>
   );
