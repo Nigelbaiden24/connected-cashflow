@@ -192,10 +192,9 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
         body: { scheduleId: autopilot.id },
       });
       if (error) throw error;
-      const gen = (data as any)?.results?.[0]?.generated ?? [];
-      const ok = gen.filter((g: any) => g.ok).length;
-      toast.success(`AI Autopilot drafted ${ok} report${ok === 1 ? "" : "s"}`);
-      await load();
+      toast.success((data as any)?.message || "AI Autopilot started — drafts will appear in a minute or two.");
+      // Refresh after a delay to pick up newly drafted reports
+      setTimeout(() => { load(); }, 8000);
     } catch (e: any) { toast.error(e.message || "Autopilot failed"); }
     finally { setAutopilotBusy(false); }
   };
