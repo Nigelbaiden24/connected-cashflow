@@ -264,7 +264,7 @@ export default function OpportunityIntelligence() {
         <TableCell className="pl-4">
           <div className="flex items-center gap-3">
             <div className="relative h-12 w-16 rounded overflow-hidden bg-muted flex-shrink-0">
-              {opportunity.thumbnail_url ? <img src={opportunity.thumbnail_url} alt={opportunity.title} className="w-full h-full object-cover" /> :
+              {(opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]) ? <img src={opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]} alt={opportunity.title} className="w-full h-full object-cover" loading="lazy" /> :
                 <div className="w-full h-full flex items-center justify-center"><Icon className="h-5 w-5 text-muted-foreground/40" /></div>}
             </div>
             <div className="space-y-1">
