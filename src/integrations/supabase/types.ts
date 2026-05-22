@@ -4566,10 +4566,13 @@ export type Database = {
           hero_image_url: string | null
           html_content: string
           id: string
+          page_count: number
+          pages: Json
           pdf_path: string | null
           promoted_at: string | null
           promoted_by: string | null
           reading_time_minutes: number | null
+          report_date: string
           slug: string
           sources: Json | null
           status: string
@@ -4588,10 +4591,13 @@ export type Database = {
           hero_image_url?: string | null
           html_content: string
           id?: string
+          page_count?: number
+          pages?: Json
           pdf_path?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           reading_time_minutes?: number | null
+          report_date?: string
           slug: string
           sources?: Json | null
           status?: string
@@ -4610,10 +4616,13 @@ export type Database = {
           hero_image_url?: string | null
           html_content?: string
           id?: string
+          page_count?: number
+          pages?: Json
           pdf_path?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           reading_time_minutes?: number | null
+          report_date?: string
           slug?: string
           sources?: Json | null
           status?: string
@@ -8500,6 +8509,57 @@ export type Database = {
           scheduled_for?: string | null
           started_at?: string | null
           status?: string | null
+        }
+        Relationships: []
+      }
+      research_scraper_schedules: {
+        Row: {
+          asset_type: string
+          created_at: string
+          created_by: string
+          enabled: boolean
+          extra_urls: string[]
+          frequency_hours: number
+          id: string
+          last_run_at: string | null
+          last_run_error: string | null
+          last_run_status: string | null
+          next_run_at: string
+          ticker: string | null
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          created_by: string
+          enabled?: boolean
+          extra_urls?: string[]
+          frequency_hours?: number
+          id?: string
+          last_run_at?: string | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          next_run_at?: string
+          ticker?: string | null
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          created_by?: string
+          enabled?: boolean
+          extra_urls?: string[]
+          frequency_hours?: number
+          id?: string
+          last_run_at?: string | null
+          last_run_error?: string | null
+          last_run_status?: string | null
+          next_run_at?: string
+          ticker?: string | null
+          topic?: string
+          updated_at?: string
         }
         Relationships: []
       }
