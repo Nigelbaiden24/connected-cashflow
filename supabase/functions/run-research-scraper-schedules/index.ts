@@ -88,71 +88,79 @@ Deno.serve(async (req) => {
       ? await q.eq("id", forcedId).limit(1)
       : await q.lte("next_run_at", new Date().toISOString()).limit(10);
     if (error) throw error;
+    const items = due ?? [];
 
-    const results: any[] = [];
-    for (const s of due ?? []) {
-      const startedAt = new Date();
-      try {
-        const isAutopilot = (s.topic || "").startsWith(AUTOPILOT_TOKEN);
-        if (isAutopilot) {
-          // Allow "__AUTOPILOT__:5" to override count
-          const m = (s.topic as string).match(/__AUTOPILOT__(?::(\d+))?/);
-          const count = Math.min(5, Math.max(1, Number(m?.[1]) || 3));
-          const picks = await pickAutopilotTopics(s.asset_type, count, admin);
-          const generated: any[] = [];
-          for (const p of picks) {
-            try {
-              const r = await runGeneration({
-                assetType: s.asset_type,
-                topic: p.topic,
-                ticker: p.ticker ?? "",
-                extraUrls: s.extra_urls ?? [],
-                createdBy: s.created_by,
-                admin,
-              });
-              generated.push({ topic: p.topic, ok: true, ...r });
-            } catch (inner) {
-              generated.push({ topic: p.topic, ok: false, error: (inner as Error).message });
+    // Long-running work: process in background so the HTTP caller doesn't time out.
+    // pg_cron triggers don't care about the response body either.
+    const processAll = async () => {
+      for (const s of items) {
+        const startedAt = new Date();
+        try {
+          const isAutopilot = (s.topic || "").startsWith(AUTOPILOT_TOKEN);
+          if (isAutopilot) {
+            const m = (s.topic as string).match(/__AUTOPILOT__(?::(\d+))?/);
+            const count = Math.min(5, Math.max(1, Number(m?.[1]) || 3));
+            const picks = await pickAutopilotTopics(s.asset_type, count, admin);
+            for (const p of picks) {
+              try {
+                await runGeneration({
+                  assetType: s.asset_type,
+                  topic: p.topic,
+                  ticker: p.ticker ?? "",
+                  extraUrls: s.extra_urls ?? [],
+                  createdBy: s.created_by,
+                  admin,
+                });
+              } catch (inner) {
+                console.error(`[autopilot] topic "${p.topic}" failed:`, (inner as Error).message);
+              }
             }
+            await admin.from("research_scraper_schedules").update({
+              last_run_at: startedAt.toISOString(),
+              last_run_status: "success",
+              last_run_error: null,
+              next_run_at: new Date(Date.now() + s.frequency_hours * 3600 * 1000).toISOString(),
+            }).eq("id", s.id);
+          } else {
+            await runGeneration({
+              assetType: s.asset_type,
+              topic: s.topic,
+              ticker: s.ticker ?? "",
+              extraUrls: s.extra_urls ?? [],
+              createdBy: s.created_by,
+              admin,
+            });
+            await admin.from("research_scraper_schedules").update({
+              last_run_at: startedAt.toISOString(),
+              last_run_status: "success",
+              last_run_error: null,
+              next_run_at: new Date(Date.now() + s.frequency_hours * 3600 * 1000).toISOString(),
+            }).eq("id", s.id);
           }
+        } catch (e) {
+          console.error(`[schedule ${s.id}] failed:`, (e as Error).message);
           await admin.from("research_scraper_schedules").update({
             last_run_at: startedAt.toISOString(),
-            last_run_status: "success",
-            last_run_error: null,
+            last_run_status: "error",
+            last_run_error: (e as Error).message.slice(0, 500),
             next_run_at: new Date(Date.now() + s.frequency_hours * 3600 * 1000).toISOString(),
           }).eq("id", s.id);
-          results.push({ id: s.id, ok: true, autopilot: true, generated });
-        } else {
-          const r = await runGeneration({
-            assetType: s.asset_type,
-            topic: s.topic,
-            ticker: s.ticker ?? "",
-            extraUrls: s.extra_urls ?? [],
-            createdBy: s.created_by,
-            admin,
-          });
-          await admin.from("research_scraper_schedules").update({
-            last_run_at: startedAt.toISOString(),
-            last_run_status: "success",
-            last_run_error: null,
-            next_run_at: new Date(Date.now() + s.frequency_hours * 3600 * 1000).toISOString(),
-          }).eq("id", s.id);
-          results.push({ id: s.id, ok: true, ...r });
         }
-      } catch (e) {
-        await admin.from("research_scraper_schedules").update({
-          last_run_at: startedAt.toISOString(),
-          last_run_status: "error",
-          last_run_error: (e as Error).message.slice(0, 500),
-          next_run_at: new Date(Date.now() + s.frequency_hours * 3600 * 1000).toISOString(),
-        }).eq("id", s.id);
-        results.push({ id: s.id, ok: false, error: (e as Error).message });
       }
+    };
+
+    // @ts-ignore EdgeRuntime is provided by Supabase edge runtime
+    if (typeof EdgeRuntime !== "undefined" && (EdgeRuntime as any)?.waitUntil) {
+      // @ts-ignore
+      (EdgeRuntime as any).waitUntil(processAll());
+    } else {
+      processAll().catch((e) => console.error("processAll error:", e));
     }
 
-    return new Response(JSON.stringify({ success: true, processed: results.length, results }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: true, accepted: items.length, message: "Autopilot started in background. New draft reports will appear in a minute or two." }),
+      { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error("run-research-scraper-schedules error:", e);
     return new Response(JSON.stringify({ success: false, error: (e as Error).message }), {
