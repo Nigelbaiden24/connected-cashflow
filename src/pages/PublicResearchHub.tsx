@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,6 +49,7 @@ interface PublicResearchHubProps {
 
 export default function PublicResearchHub({ initialTab = "stock" }: PublicResearchHubProps = {}) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
 
@@ -66,14 +67,23 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   }, [initialTab]);
 
   useEffect(() => {
-    if (!isAuthed) return;
-    const params = new URLSearchParams(window.location.search);
+    if (authLoading) return;
+    const params = new URLSearchParams(location.search);
     const id = params.get("id");
-    if (id) {
+    const asset = params.get("asset");
+    if (asset === "stock" || asset === "crypto") setTab(asset);
+    if (!id) return;
+
+    if (isAuthed) {
+      setAuthOpen(false);
       setReaderReportId(id);
       setReaderOpen(true);
+      return;
     }
-  }, [isAuthed]);
+
+    const report = reports.find((r) => r.id === id);
+    openAuth(`/investor/research?asset=${report?.asset_type ?? asset ?? tab}&id=${id}`, report?.title);
+  }, [authLoading, isAuthed, location.search, reports, tab]);
 
   useEffect(() => {
     (async () => {
@@ -104,7 +114,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   };
 
   const handleOpen = (r: PublicResearchPreview) => {
-    if (!isAuthed) {
+    if (!isAuthed || authLoading) {
       openAuth(`/investor/research?asset=${r.asset_type}&id=${r.id}`, r.title);
       return;
     }
