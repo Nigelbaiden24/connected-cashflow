@@ -50,6 +50,9 @@ export default function PublicResearchHub() {
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">("stock");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authRedirect, setAuthRedirect] = useState<string | undefined>();
+  const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
 
   useEffect(() => {
     (async () => {
@@ -73,9 +76,15 @@ export default function PublicResearchHub() {
     [reports, tab]
   );
 
+  const openAuth = (redirect?: string, title?: string) => {
+    setAuthRedirect(redirect);
+    setAuthReportTitle(title);
+    setAuthOpen(true);
+  };
+
   const handleOpen = (r: PublicResearchPreview) => {
     if (!isAuthed) {
-      navigate(`/login-investor?redirect=/investor/${r.asset_type}-research`);
+      openAuth(`/investor/${r.asset_type}-research`, r.title);
       return;
     }
     navigate(`/investor/${r.asset_type}-research`);
