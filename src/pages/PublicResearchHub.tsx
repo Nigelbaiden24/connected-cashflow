@@ -216,7 +216,7 @@ export default function PublicResearchHub() {
                           <Button
                             size="lg"
                             className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                            onClick={() => navigate("/login-investor")}
+                            onClick={() => openAuth()}
                           >
                             Sign in to read <ArrowRight className="ml-2 h-4 w-4" />
                           </Button>
@@ -224,7 +224,7 @@ export default function PublicResearchHub() {
                             size="lg"
                             variant="outline"
                             className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                            onClick={() => navigate("/login-investor")}
+                            onClick={() => openAuth()}
                           >
                             Create account
                           </Button>
