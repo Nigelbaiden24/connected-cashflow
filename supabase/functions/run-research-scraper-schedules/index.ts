@@ -4,7 +4,7 @@
 //  - AI autopilot:    topic === "__AUTOPILOT__" — Lovable AI picks 3 trending
 //                     topics for the asset_type and drafts a report for each
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { runGeneration } from "../generate-research-report-ai/index.ts";
+import { runGeneration } from "../_shared/researchReportGenerator.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
