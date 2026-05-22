@@ -202,8 +202,8 @@ export default function OpportunityIntelligence() {
     return (
       <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden cursor-pointer border-border/50 hover:border-primary/30">
         <div className="relative aspect-video overflow-hidden bg-muted">
-          {opportunity.thumbnail_url ? (
-            <img src={opportunity.thumbnail_url} alt={opportunity.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          {(opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]) ? (
+            <img src={opportunity.thumbnail_url || categoryThumbnailMap[opportunity.category]} alt={opportunity.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted-foreground/10">
               <Icon className="h-12 w-12 text-muted-foreground/40" />
