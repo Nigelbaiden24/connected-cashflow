@@ -130,21 +130,19 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, p
             <ScrollArea className="flex-1">
               <div className="mx-auto max-w-3xl px-8 py-10 relative">
                 {current ? (
-                  <div className="relative">
+                  <div className={`relative ${!isAuthed ? "min-h-[560px]" : ""}`}>
                     <article
                       className={`prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-amber-600 ${
-                        !isAuthed ? "max-h-[520px] overflow-hidden" : ""
+                        !isAuthed ? "max-h-[560px] overflow-hidden select-none blur-[3px] opacity-60 pointer-events-none" : ""
                       }`}
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(current.html || "") }}
                     />
 
                     {!isAuthed && (
                       <>
-                        {/* Fade overlay */}
-                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-white via-white/95 to-transparent" />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/20 via-white/80 to-white" />
 
-                        {/* Inline paywall */}
-                        <div className="mt-6 relative rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white p-8 text-center shadow-[0_20px_60px_-15px_rgba(245,158,11,0.25)]">
+                        <div className="absolute left-1/2 top-28 z-20 w-[min(100%,34rem)] -translate-x-1/2 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white p-8 text-center shadow-[0_24px_80px_-18px_rgba(15,23,42,0.35)]">
                           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/40 mb-4">
                             <Lock className="h-6 w-6 text-amber-600" />
                           </div>
