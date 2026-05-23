@@ -273,7 +273,11 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         open={readerOpen}
         onOpenChange={setReaderOpen}
         reportId={readerReportId}
+        isAuthed={isAuthed}
+        preview={activeReader}
+        onRequestAuth={() => openAuth(undefined, activeReader?.title)}
       />
+
     </div>
   );
 }
