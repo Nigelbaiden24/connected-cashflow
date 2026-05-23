@@ -276,7 +276,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         reportId={readerReportId}
         isAuthed={isAuthed}
         preview={activeReader}
-        onRequestAuth={() => openAuth(undefined, activeReader?.title)}
+        onRequestAuth={() => openAuth(undefined, activeReader?.title, "signup")}
       />
 
       <ResearchAuthDialog
@@ -284,6 +284,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         onOpenChange={setAuthOpen}
         redirectPath={authRedirect}
         reportTitle={authReportTitle}
+        initialMode={authMode}
       />
 
     </div>
