@@ -148,10 +148,10 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
           <div className="flex items-center gap-2">
             {!isAuthed && (
               <>
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth()}>
+                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
                   Sign in
                 </Button>
-                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => openAuth()}>
+                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => openAuth(undefined, undefined, "signup")}>
                   Get access <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </>
@@ -247,7 +247,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                         <Button
                           size="lg"
                           className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                          onClick={() => openAuth()}
+                          onClick={() => openAuth(undefined, undefined, "signup")}
                         >
                           Create free account <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
@@ -255,7 +255,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                           size="lg"
                           variant="outline"
                           className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                          onClick={() => openAuth()}
+                          onClick={() => openAuth(undefined, undefined, "signin")}
                         >
                           Sign in
                         </Button>
