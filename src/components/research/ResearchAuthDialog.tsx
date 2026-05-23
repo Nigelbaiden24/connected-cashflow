@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -21,14 +21,19 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   redirectPath?: string;
   reportTitle?: string;
+  initialMode?: "signin" | "signup";
 }
 
-export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTitle }: Props) {
+export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTitle, initialMode = "signin" }: Props) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open) setMode(initialMode);
+  }, [initialMode, open]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
