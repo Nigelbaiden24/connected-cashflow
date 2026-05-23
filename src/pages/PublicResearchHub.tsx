@@ -226,7 +226,8 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                       <ReportCard
                         key={r.id}
                         report={r}
-                        blurred={!isAuthed && i >= 3}
+                        locked={!isAuthed || authLoading}
+                        blurred={!isAuthed || authLoading}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
@@ -289,10 +290,12 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
 
 function ReportCard({
   report,
+  locked,
   blurred,
   onOpen,
 }: {
   report: PublicResearchPreview;
+  locked: boolean;
   blurred: boolean;
   onOpen: () => void;
 }) {
@@ -312,17 +315,31 @@ function ReportCard({
   return (
     <Card
       onClick={onOpen}
-      className={`group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] ${blurred ? "select-none" : ""}`}
+      onMouseDown={(event) => locked && event.preventDefault()}
+      className={`group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] ${locked ? "select-none" : ""}`}
     >
       <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
+
+      {locked && (
+        <button
+          type="button"
+          aria-label={`Sign in or create account to read ${report.title}`}
+          className="absolute inset-0 z-30 cursor-pointer bg-transparent"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onOpen();
+          }}
+        />
+      )}
 
       {/* Actual generated report PDF page, scaled down */}
       <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
         <ReportPdfPagePreview report={report} blurred={blurred} />
-        {blurred && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        {locked && (
+          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/10">
             <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
-              <Lock className="h-3.5 w-3.5" /> Sign in to read
+              <Lock className="h-3.5 w-3.5" /> Sign in or create account
             </div>
           </div>
         )}
