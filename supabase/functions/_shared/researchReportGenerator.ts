@@ -185,19 +185,26 @@ export async function runGeneration(opts: {
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
   const year = new Date().getFullYear();
-  const searchQuery = `${topic} ${assetType === "crypto" ? "cryptocurrency on-chain fundamentals analyst report" : "stock equity research earnings outlook"} ${year}`;
+  const baseQuery = `${topic} ${assetType === "crypto" ? "cryptocurrency on-chain fundamentals analyst report" : "stock equity research earnings outlook"} ${year}`;
+  const discoveryQuery = assetType === "crypto"
+    ? `${topic} low cap altcoin micro-cap memecoin high potential ${year}`
+    : `${topic} small-cap micro-cap penny stock catalyst breakout ${year}`;
   const curated = assetType === "crypto" ? CURATED_CRYPTO : CURATED_STOCK;
+  // Rotate curated sources so low-cap / discovery domains are picked up across runs
+  const shuffled = [...curated].sort(() => Math.random() - 0.5);
   const tasks: Promise<any>[] = [
-    firecrawlSearch(searchQuery, 8),
-    ...curated.slice(0, 3).map((u) => firecrawlScrape(u)),
+    firecrawlSearch(baseQuery, 6),
+    firecrawlSearch(discoveryQuery, 6),
+    ...shuffled.slice(0, 5).map((u) => firecrawlScrape(u)),
     ...extraUrls.slice(0, 5).map((u) => firecrawlScrape(u)),
   ];
   const results = await Promise.all(tasks);
-  const [searchResults, ...rest] = results;
+  const [mainSearch, discoverySearch, ...rest] = results;
   const sources: ScrapedSource[] = [
-    ...(searchResults as ScrapedSource[]),
+    ...((mainSearch as ScrapedSource[]) ?? []),
+    ...((discoverySearch as ScrapedSource[]) ?? []),
     ...(rest.filter(Boolean) as ScrapedSource[]),
-  ].filter((s) => s && (s.markdown || s.excerpt)).slice(0, 12);
+  ].filter((s) => s && (s.markdown || s.excerpt)).slice(0, 16);
 
   const context = sources.map((s, i) =>
     `### Source ${i + 1}: ${s.title ?? s.url}\nURL: ${s.url}\n${(s.markdown || s.excerpt || "").slice(0, 2800)}`
