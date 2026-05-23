@@ -108,6 +108,9 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   const handleOpen = (r: PublicResearchPreview) => {
     setReaderReportId(r.id);
     setReaderOpen(true);
+    if (!isAuthed) {
+      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title);
+    }
   };
 
   const activeReader = useMemo(
@@ -262,13 +265,6 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         </Tabs>
       </section>
 
-      <ResearchAuthDialog
-        open={authOpen}
-        onOpenChange={setAuthOpen}
-        redirectPath={authRedirect}
-        reportTitle={authReportTitle}
-      />
-
       <ResearchReportReader
         open={readerOpen}
         onOpenChange={setReaderOpen}
@@ -276,6 +272,13 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         isAuthed={isAuthed}
         preview={activeReader}
         onRequestAuth={() => openAuth(undefined, activeReader?.title)}
+      />
+
+      <ResearchAuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        redirectPath={authRedirect}
+        reportTitle={authReportTitle}
       />
 
     </div>

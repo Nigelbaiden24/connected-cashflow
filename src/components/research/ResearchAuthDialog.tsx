@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +71,10 @@ export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTit
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="p-0 overflow-hidden border-slate-200 max-w-4xl w-[95vw] bg-white">
+        <DialogTitle className="sr-only">Sign in or create account to unlock this report</DialogTitle>
+        <DialogDescription className="sr-only">
+          Create a free FlowPulse account or sign in to access the full research report.
+        </DialogDescription>
         <div className="grid md:grid-cols-2">
           {/* Left brand panel */}
           <div className="relative hidden md:flex flex-col justify-between bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-10 text-white overflow-hidden">
