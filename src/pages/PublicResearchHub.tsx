@@ -73,17 +73,9 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
-
-    if (isAuthed) {
-      setAuthOpen(false);
-      setReaderReportId(id);
-      setReaderOpen(true);
-      return;
-    }
-
-    const report = reports.find((r) => r.id === id);
-    openAuth(`/investor/research?asset=${report?.asset_type ?? asset ?? tab}&id=${id}`, report?.title);
-  }, [authLoading, isAuthed, location.search, reports, tab]);
+    setReaderReportId(id);
+    setReaderOpen(true);
+  }, [authLoading, location.search]);
 
   useEffect(() => {
     (async () => {
@@ -114,13 +106,16 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   };
 
   const handleOpen = (r: PublicResearchPreview) => {
-    if (!isAuthed || authLoading) {
-      openAuth(`/investor/research?asset=${r.asset_type}&id=${r.id}`, r.title);
-      return;
-    }
     setReaderReportId(r.id);
     setReaderOpen(true);
   };
+
+  const activeReader = useMemo(
+    () => reports.find((r) => r.id === readerReportId) ?? null,
+    [reports, readerReportId]
+  );
+
+
 
 
   return (
@@ -217,56 +212,51 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                 </Card>
               ) : (
                 <div className="relative">
-                  <div
-                    className={`grid gap-5 md:grid-cols-2 lg:grid-cols-3 ${
-                      !isAuthed ? "max-h-[1200px] overflow-hidden" : ""
-                    }`}
-                  >
-                    {filtered.map((r, i) => (
+                  <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {filtered.map((r) => (
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={!isAuthed || authLoading}
-                        blurred={!isAuthed || authLoading}
+                        locked={false}
+                        blurred={false}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
                   </div>
 
-                  {!isAuthed && filtered.length > 3 && (
-                    <div className="absolute inset-x-0 bottom-0 h-[500px] bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-center justify-end pb-12">
-                      <div className="text-center w-full max-w-lg mx-auto px-4">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-5">
-                          <Lock className="h-7 w-7 text-amber-500" />
-                        </div>
-                        <h3 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
-                          Unlock the full research desk
-                        </h3>
-                        <p className="text-slate-500 mb-6 leading-relaxed">
-                          Sign in to access complete reports, download institutional PDFs, and receive live coverage updates from our analyst team.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                          <Button
-                            size="lg"
-                            className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                            onClick={() => openAuth()}
-                          >
-                            Sign in to read <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="lg"
-                            variant="outline"
-                            className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                            onClick={() => openAuth()}
-                          >
-                            Create account
-                          </Button>
-                        </div>
+                  {!isAuthed && filtered.length > 0 && (
+                    <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/30 p-8 text-center">
+                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-4">
+                        <Lock className="h-6 w-6 text-amber-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
+                        Unlock the full research desk
+                      </h3>
+                      <p className="text-slate-500 mb-6 leading-relaxed max-w-xl mx-auto">
+                        Read previews freely. Create a free account to access complete reports, conviction scoring, and downloadable PDFs.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Button
+                          size="lg"
+                          className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
+                          onClick={() => openAuth()}
+                        >
+                          Create free account <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+                          onClick={() => openAuth()}
+                        >
+                          Sign in
+                        </Button>
                       </div>
                     </div>
                   )}
                 </div>
               )}
+
             </TabsContent>
           ))}
         </Tabs>
@@ -283,7 +273,11 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         open={readerOpen}
         onOpenChange={setReaderOpen}
         reportId={readerReportId}
+        isAuthed={isAuthed}
+        preview={activeReader}
+        onRequestAuth={() => openAuth(undefined, activeReader?.title)}
       />
+
     </div>
   );
 }
