@@ -73,17 +73,9 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
-
-    if (isAuthed) {
-      setAuthOpen(false);
-      setReaderReportId(id);
-      setReaderOpen(true);
-      return;
-    }
-
-    const report = reports.find((r) => r.id === id);
-    openAuth(`/investor/research?asset=${report?.asset_type ?? asset ?? tab}&id=${id}`, report?.title);
-  }, [authLoading, isAuthed, location.search, reports, tab]);
+    setReaderReportId(id);
+    setReaderOpen(true);
+  }, [authLoading, location.search]);
 
   useEffect(() => {
     (async () => {
@@ -114,13 +106,16 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   };
 
   const handleOpen = (r: PublicResearchPreview) => {
-    if (!isAuthed || authLoading) {
-      openAuth(`/investor/research?asset=${r.asset_type}&id=${r.id}`, r.title);
-      return;
-    }
     setReaderReportId(r.id);
     setReaderOpen(true);
   };
+
+  const activeReader = useMemo(
+    () => reports.find((r) => r.id === readerReportId) ?? null,
+    [reports, readerReportId]
+  );
+
+
 
 
   return (
