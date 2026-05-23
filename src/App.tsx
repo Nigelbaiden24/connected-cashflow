@@ -37,6 +37,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const InvestorDashboard = lazy(() => import("./pages/InvestorDashboard"));
 const ResearchReportsPage = lazy(() => import("./pages/ResearchReports"));
 const PublicResearchHub = lazy(() => import("./pages/PublicResearchHub"));
+const PublicOpportunities = lazy(() => import("./pages/PublicOpportunities"));
 const OrchestratedReportsPage = lazy(() => import("./pages/OrchestratedReports"));
 const AnalysisReports = lazy(() => import("./pages/investor/AnalysisReports"));
 const MarketCommentary = lazy(() => import("./pages/investor/MarketCommentary"));
@@ -274,6 +275,7 @@ const App = () => {
               <Route path="/reports" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/reports/:id" element={<ReportDetail />} />
               <Route path="/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
+              <Route path="/intelligence" element={<Suspense fallback={<PageLoader />}><PublicOpportunities /></Suspense>} />
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
