@@ -217,8 +217,8 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={false}
-                        blurred={false}
+                        locked={!isAuthed}
+                        blurred={!isAuthed}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
