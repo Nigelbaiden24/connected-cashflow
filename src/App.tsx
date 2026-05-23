@@ -274,6 +274,7 @@ const App = () => {
               <Route path="/reports" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/reports/:id" element={<ReportDetail />} />
               <Route path="/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
+              <Route path="/intelligence" element={<Suspense fallback={<PageLoader />}><PublicOpportunities /></Suspense>} />
               <Route path="/subscription-success" element={<SubscriptionSuccess />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
 
