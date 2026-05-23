@@ -3,18 +3,38 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const CURATED_STOCK = [
+  // Mainstream / mega-cap coverage
   "https://finance.yahoo.com",
   "https://www.marketwatch.com/latest-news",
   "https://seekingalpha.com",
   "https://www.ft.com/markets",
   "https://www.bloomberg.com/markets",
+  // Small-cap, micro-cap, penny-stock, and high-potential discovery sources
+  "https://www.benzinga.com/small-cap",
+  "https://www.smallcaps.com.au",
+  "https://www.stockhouse.com/news/penny-stock-news",
+  "https://www.proactiveinvestors.co.uk/companies/news",
+  "https://www.investorshub.advfn.com",
+  "https://www.streetinsider.com/Small+Cap+News.html",
+  "https://www.fool.com/investing/small-cap-stocks/",
+  "https://www.nasdaq.com/market-activity/stocks/screener",
 ];
 const CURATED_CRYPTO = [
+  // Major coverage
   "https://www.coindesk.com",
   "https://decrypt.co",
   "https://cointelegraph.com",
   "https://messari.io/research",
   "https://defillama.com",
+  // Low-cap, micro-cap, memecoin and high-potential discovery sources
+  "https://www.coingecko.com/en/categories/small-cap",
+  "https://www.coingecko.com/en/new-cryptocurrencies",
+  "https://dexscreener.com/new-pairs",
+  "https://www.coinmarketcap.com/new/",
+  "https://www.coinmarketcap.com/gainers-losers/",
+  "https://cryptoslate.com/coins/",
+  "https://birdeye.so/find-gems",
+  "https://www.bankless.com",
 ];
 
 interface ScrapedSource {
@@ -165,19 +185,26 @@ export async function runGeneration(opts: {
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
   const year = new Date().getFullYear();
-  const searchQuery = `${topic} ${assetType === "crypto" ? "cryptocurrency on-chain fundamentals analyst report" : "stock equity research earnings outlook"} ${year}`;
+  const baseQuery = `${topic} ${assetType === "crypto" ? "cryptocurrency on-chain fundamentals analyst report" : "stock equity research earnings outlook"} ${year}`;
+  const discoveryQuery = assetType === "crypto"
+    ? `${topic} low cap altcoin micro-cap memecoin high potential ${year}`
+    : `${topic} small-cap micro-cap penny stock catalyst breakout ${year}`;
   const curated = assetType === "crypto" ? CURATED_CRYPTO : CURATED_STOCK;
+  // Rotate curated sources so low-cap / discovery domains are picked up across runs
+  const shuffled = [...curated].sort(() => Math.random() - 0.5);
   const tasks: Promise<any>[] = [
-    firecrawlSearch(searchQuery, 8),
-    ...curated.slice(0, 3).map((u) => firecrawlScrape(u)),
+    firecrawlSearch(baseQuery, 6),
+    firecrawlSearch(discoveryQuery, 6),
+    ...shuffled.slice(0, 5).map((u) => firecrawlScrape(u)),
     ...extraUrls.slice(0, 5).map((u) => firecrawlScrape(u)),
   ];
   const results = await Promise.all(tasks);
-  const [searchResults, ...rest] = results;
+  const [mainSearch, discoverySearch, ...rest] = results;
   const sources: ScrapedSource[] = [
-    ...(searchResults as ScrapedSource[]),
+    ...((mainSearch as ScrapedSource[]) ?? []),
+    ...((discoverySearch as ScrapedSource[]) ?? []),
     ...(rest.filter(Boolean) as ScrapedSource[]),
-  ].filter((s) => s && (s.markdown || s.excerpt)).slice(0, 12);
+  ].filter((s) => s && (s.markdown || s.excerpt)).slice(0, 16);
 
   const context = sources.map((s, i) =>
     `### Source ${i + 1}: ${s.title ?? s.url}\nURL: ${s.url}\n${(s.markdown || s.excerpt || "").slice(0, 2800)}`
