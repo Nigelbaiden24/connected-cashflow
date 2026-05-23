@@ -59,6 +59,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   const [authOpen, setAuthOpen] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | undefined>();
   const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerReportId, setReaderReportId] = useState<string | null>(null);
 
@@ -99,18 +100,22 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     [reports, tab]
   );
 
-  const openAuth = (redirect?: string, title?: string) => {
+  const openAuth = (redirect?: string, title?: string, mode: "signin" | "signup" = "signup") => {
     setAuthRedirect(redirect);
     setAuthReportTitle(title);
+    setAuthMode(mode);
     setAuthOpen(true);
   };
 
   const handleOpen = (r: PublicResearchPreview) => {
+    if (!isAuthed) {
+      setReaderReportId(r.id);
+      setReaderOpen(false);
+      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
+      return;
+    }
     setReaderReportId(r.id);
     setReaderOpen(true);
-    if (!isAuthed) {
-      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title);
-    }
   };
 
   const activeReader = useMemo(
