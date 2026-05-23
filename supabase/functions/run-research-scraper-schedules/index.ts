@@ -25,10 +25,27 @@ async function pickAutopilotTopics(
 ): Promise<AutopilotTopic[]> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) {
-    // Sensible fallback so autopilot still runs without AI
+    // Sensible fallback so autopilot still runs without AI — mix of mega-caps,
+    // mid/small caps, and high-potential low-value names.
     return assetType === "crypto"
-      ? [{ topic: "Bitcoin macro outlook", ticker: "BTC" }, { topic: "Ethereum L2 ecosystem", ticker: "ETH" }, { topic: "Solana DeFi growth", ticker: "SOL" }].slice(0, count)
-      : [{ topic: "NVIDIA AI infrastructure thesis", ticker: "NVDA" }, { topic: "Apple services growth", ticker: "AAPL" }, { topic: "S&P 500 earnings momentum", ticker: "SPY" }].slice(0, count);
+      ? [
+          { topic: "Bitcoin macro outlook", ticker: "BTC" },
+          { topic: "Ethereum L2 ecosystem", ticker: "ETH" },
+          { topic: "Solana DeFi growth", ticker: "SOL" },
+          { topic: "Small-cap AI token thesis (RNDR / FET / TAO)", ticker: "TAO" },
+          { topic: "High-potential sub-$0.10 altcoin watchlist (DePIN + RWA)", ticker: "" },
+          { topic: "Emerging Solana memecoin liquidity rotation", ticker: "" },
+          { topic: "Micro-cap Layer-2 and modular blockchain plays", ticker: "" },
+        ].slice(0, count)
+      : [
+          { topic: "NVIDIA AI infrastructure thesis", ticker: "NVDA" },
+          { topic: "Apple services growth", ticker: "AAPL" },
+          { topic: "S&P 500 earnings momentum", ticker: "SPY" },
+          { topic: "Russell 2000 small-cap rotation thesis", ticker: "IWM" },
+          { topic: "High-potential US micro-cap biotech catalysts", ticker: "" },
+          { topic: "Sub-$5 penny stock breakout watchlist (AI, uranium, lithium)", ticker: "" },
+          { topic: "AIM / LSE small-cap UK value opportunities", ticker: "" },
+        ].slice(0, count);
   }
 
   // Avoid duplicating very recent topics
@@ -37,11 +54,15 @@ async function pickAutopilotTopics(
     .select("title")
     .eq("asset_type", assetType)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(40);
   const recentTitles = (recent ?? []).map((r: any) => r.title).join("\n");
 
-  const sys = `You are the head of research for an elite institutional ${assetType === "crypto" ? "digital-asset" : "equity"} desk. Pick the ${count} most timely, high-conviction research topics to publish today. Avoid topics already covered recently. Today is ${new Date().toISOString().slice(0,10)}.`;
-  const user = `Recently covered (avoid repeating):\n${recentTitles || "(none)"}\n\nReturn ONLY valid JSON of the form {"topics":[{"topic":"...","ticker":"..."}]} with ${count} entries. Each topic must be a concrete, scrape-worthy research angle (company thesis, sector catalyst, macro pivot, on-chain trend, etc.), not a generic theme. Ticker optional.`;
+  const universeRule = assetType === "crypto"
+    ? `Coverage MUST span the FULL digital-asset universe — not just majors. Across the ${count} picks, deliberately include a mix of: (a) mega-cap majors (BTC, ETH, SOL), (b) mid-cap L1/L2s and DeFi blue-chips, (c) small-cap and micro-cap tokens (sub-$500M market cap), (d) low-priced high-potential altcoins (sub-$0.10), (e) emerging narratives like DePIN, RWA, AI agents, restaking, Bitcoin L2s, memecoins with on-chain momentum, and brand-new launches on Solana / Base / Hyperliquid. Lesser-known, under-covered tokens are PREFERRED over repeating majors.`
+    : `Coverage MUST span the FULL equity universe — not just mega-caps. Across the ${count} picks, deliberately include a mix of: (a) mega-cap leaders, (b) mid-caps with catalysts, (c) small-caps and micro-caps (sub-$2B), (d) penny stocks and sub-$5 high-potential names with concrete catalysts (clinical readouts, contract wins, short squeezes, breakouts), (e) under-followed AIM / LSE / TSX / Nasdaq small-caps, (f) emerging-sector plays (AI infra, uranium, lithium, defense, quantum, fusion, robotics, gene-editing). Lesser-known, under-covered tickers are PREFERRED over repeating mega-caps.`;
+
+  const sys = `You are the head of research for an elite institutional ${assetType === "crypto" ? "digital-asset" : "equity"} desk that publishes BOTH blue-chip coverage AND high-alpha discovery research on overlooked, low-valuation, high-potential names. Pick the ${count} most timely, high-conviction research topics to publish today. Avoid topics already covered recently. Today is ${new Date().toISOString().slice(0,10)}.\n\n${universeRule}`;
+  const user = `Recently covered (avoid repeating):\n${recentTitles || "(none)"}\n\nReturn ONLY valid JSON of the form {"topics":[{"topic":"...","ticker":"..."}]} with ${count} entries. Each topic must be a concrete, scrape-worthy research angle (specific company thesis, sector catalyst, macro pivot, on-chain trend, small-cap discovery, penny-stock setup, low-cap altcoin thesis, etc.), not a generic theme. Bias the mix toward under-covered, low-value, high-potential names per the coverage rule. Ticker optional but include it whenever the topic targets a specific instrument.`;
 
   try {
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
