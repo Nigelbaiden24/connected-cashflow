@@ -3,18 +3,38 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const CURATED_STOCK = [
+  // Mainstream / mega-cap coverage
   "https://finance.yahoo.com",
   "https://www.marketwatch.com/latest-news",
   "https://seekingalpha.com",
   "https://www.ft.com/markets",
   "https://www.bloomberg.com/markets",
+  // Small-cap, micro-cap, penny-stock, and high-potential discovery sources
+  "https://www.benzinga.com/small-cap",
+  "https://www.smallcaps.com.au",
+  "https://www.stockhouse.com/news/penny-stock-news",
+  "https://www.proactiveinvestors.co.uk/companies/news",
+  "https://www.investorshub.advfn.com",
+  "https://www.streetinsider.com/Small+Cap+News.html",
+  "https://www.fool.com/investing/small-cap-stocks/",
+  "https://www.nasdaq.com/market-activity/stocks/screener",
 ];
 const CURATED_CRYPTO = [
+  // Major coverage
   "https://www.coindesk.com",
   "https://decrypt.co",
   "https://cointelegraph.com",
   "https://messari.io/research",
   "https://defillama.com",
+  // Low-cap, micro-cap, memecoin and high-potential discovery sources
+  "https://www.coingecko.com/en/categories/small-cap",
+  "https://www.coingecko.com/en/new-cryptocurrencies",
+  "https://dexscreener.com/new-pairs",
+  "https://www.coinmarketcap.com/new/",
+  "https://www.coinmarketcap.com/gainers-losers/",
+  "https://cryptoslate.com/coins/",
+  "https://birdeye.so/find-gems",
+  "https://www.bankless.com",
 ];
 
 interface ScrapedSource {
