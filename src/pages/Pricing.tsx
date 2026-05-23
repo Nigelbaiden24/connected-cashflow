@@ -313,7 +313,29 @@ const Pricing = () => {
               256-bit SSL encryption · PCI DSS compliant · GDPR compliant
             </p>
           </div>
-        </p>
+        </div>
+
+        {/* Enterprise CTA */}
+        <div className="text-center pb-16">
+          <Card className="max-w-3xl mx-auto bg-gradient-to-br from-primary/5 via-card to-secondary/5 border-border/30 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-2xl font-space-grotesk">Need a Custom Solution?</CardTitle>
+              <CardDescription className="text-base">
+                Volume discounts, custom integrations & dedicated account management
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="justify-center pb-8">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground rounded-xl px-8"
+                onClick={handleContactSales}
+              >
+                Contact Enterprise Sales
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   );
