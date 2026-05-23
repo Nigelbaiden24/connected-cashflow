@@ -108,14 +108,9 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   };
 
   const handleOpen = (r: PublicResearchPreview) => {
-    if (!isAuthed) {
-      setReaderReportId(r.id);
-      setReaderOpen(false);
-      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
-      return;
-    }
     setReaderReportId(r.id);
-    setReaderOpen(true);
+    setReaderOpen(false);
+    openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
   };
 
   const activeReader = useMemo(
@@ -225,8 +220,8 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={!isAuthed}
-                        blurred={!isAuthed}
+                        locked={true}
+                        blurred={true}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
