@@ -106,6 +106,10 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   };
 
   const handleOpen = (r: PublicResearchPreview) => {
+    if (!isAuthed) {
+      openAuth(undefined, r.title);
+      return;
+    }
     setReaderReportId(r.id);
     setReaderOpen(true);
   };
