@@ -211,7 +211,7 @@ const Pricing = () => {
               Secure Payments Powered By
             </p>
           </div>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 px-6 py-5 bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20">
+          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-10 px-6 py-5 bg-card/40 backdrop-blur-sm rounded-2xl border border-border/20">
             <div className="opacity-50 hover:opacity-100 transition-opacity">
               <div className="bg-primary text-primary-foreground font-bold text-lg px-3 py-1 rounded italic">VISA</div>
             </div>
@@ -226,11 +226,20 @@ const Pricing = () => {
             <div className="opacity-50 hover:opacity-100 transition-opacity">
               <span className="text-primary font-bold text-lg">stripe</span>
             </div>
-            <div className="opacity-50 hover:opacity-100 transition-opacity text-muted-foreground font-semibold text-sm">
-              Apple Pay
+            <div className="opacity-50 hover:opacity-100 transition-opacity flex items-center gap-1.5 bg-foreground text-background rounded-md px-2.5 py-1.5">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.72 9.73c.03-1.55.92-2.95 2.3-3.73-.87-1.26-2.27-1.95-3.78-1.95-1.6 0-2.9.94-3.8.94-.96 1.04-2.36 1.73-3.82 1.73-2.44 1.14-4.16 3.6-4.16 6.48 0 1.95.78 3.73 2.05 5.03.7.7 1.6 1.08 2.56 1.08 1.12 0 2.04-.66 3.04-.66.95 0 2.08.7 3.36.7 2.1 1.03 3.5-1.6 3.5-3.2-.02-.08-.04-.16-.04-.24 0-.06.02-.12.02-.18zM14.9 5.4c.9-1.1 1.5-2.5 1.34-3.98-1.3.06-2.86.9-3.78 2.03-.82.98-1.54 2.54-1.34 3.96 1.44.12 2.9-.86 3.78-2.01z"/>
+              </svg>
+              <span className="font-semibold text-xs">Pay</span>
             </div>
-            <div className="opacity-50 hover:opacity-100 transition-opacity text-muted-foreground font-semibold text-sm">
-              Google Pay
+            <div className="opacity-50 hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-white rounded-md px-2 py-1">
+              <span className="text-[#4285F4] font-bold text-sm">G</span>
+              <span className="text-[#EA4335] font-bold text-sm">o</span>
+              <span className="text-[#FBBC05] font-bold text-sm">o</span>
+              <span className="text-[#4285F4] font-bold text-sm">g</span>
+              <span className="text-[#34A853] font-bold text-sm">l</span>
+              <span className="text-[#EA4335] font-bold text-sm">e</span>
+              <span className="text-foreground font-semibold text-xs ml-1">Pay</span>
             </div>
           </div>
           <div className="text-center mt-4">
