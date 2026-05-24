@@ -73,6 +73,8 @@ serve(async (req) => {
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       ...(customerId ? { customer: customerId } : { customer_email: customerEmail }),
+      payment_method_types: ['card'],
+      billing_address_collection: 'auto',
       line_items: [
         {
           price_data: {
