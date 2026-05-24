@@ -81,6 +81,10 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      // Apple Pay & Google Pay are surfaced automatically by Stripe via the 'card' payment method
+      // when the customer's device/browser supports them (Safari/iOS for Apple Pay, Chrome/Android for Google Pay).
+      payment_method_types: ['card'],
+      billing_address_collection: 'auto',
       line_items: [
         {
           price_data: {
