@@ -17,25 +17,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrapeItemView } from "./ScrapeItemView";
 
-type TargetTable = "investor_finder_opportunities" | "opportunity_products" | "opportunities" | "intel_events";
-type TargetPlatform = "finance" | "investor" | "both";
+type TargetTable = "opportunity_products";
+type TargetPlatform = "investor";
 
+// Data Pipeline = HNW / individual investor opportunities only, within the
+// FlowPulse Investor investment-type catalogue. Every staged item is routed
+// to the Opportunity Intelligence tab on the Investor platform.
 const TARGET_OPTIONS: { value: TargetTable; label: string; sidebar: string; platforms: TargetPlatform[] }[] = [
-  { value: "investor_finder_opportunities", label: "Investor Finder", sidebar: "Investor Finder tab", platforms: ["finance", "investor", "both"] },
-  { value: "opportunity_products",          label: "Opportunity Intelligence", sidebar: "Opportunity Intelligence tab", platforms: ["finance", "investor", "both"] },
-  { value: "opportunities",                 label: "Business Opportunities", sidebar: "Opportunities (Business) tab", platforms: ["finance", "investor", "both"] },
-  { value: "intel_events",                  label: "Intelligence Events", sidebar: "Company Intelligence tab", platforms: ["both"] },
+  { value: "opportunity_products", label: "Opportunity Intelligence", sidebar: "FlowPulse Investor → Opportunity Intelligence", platforms: ["investor"] },
 ];
 
-const defaultTargetFor = (p: Pending): TargetTable => {
-  if (p.source === "opportunity-research") return "investor_finder_opportunities";
-  const t = (p.target_table as TargetTable) ?? "opportunity_products";
-  return (TARGET_OPTIONS.find(o => o.value === t)?.value) ?? "opportunity_products";
-};
-const defaultPlatformFor = (p: Pending): TargetPlatform => {
-  if (p.target_platform === "finance" || p.target_platform === "investor") return p.target_platform;
-  return "both";
-};
+const defaultTargetFor = (_p: Pending): TargetTable => "opportunity_products";
+const defaultPlatformFor = (_p: Pending): TargetPlatform => "investor";
 
 interface Schedule {
   source: string; enabled: boolean; cadence_minutes: number; next_run_at: string;
@@ -85,7 +78,7 @@ export const PipelineDashboard = () => {
   const [busyItem, setBusyItem] = useState<string | null>(null);
   const [reviewItem, setReviewItem] = useState<Pending | null>(null);
   const [query, setQuery] = useState("");
-  const [filterPlatform, setFilterPlatform] = useState<"all" | "finance" | "investor" | "both">("all");
+  const [filterPlatform, setFilterPlatform] = useState<"all" | "investor">("all");
   const [autoScrapeEnabled, setAutoScrapeEnabled] = useState<boolean>(false);
   const [savingMaster, setSavingMaster] = useState(false);
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -95,7 +88,7 @@ export const PipelineDashboard = () => {
     const [{ data: s }, { data: r }, { data: p }] = await Promise.all([
       supabase.from("pipeline_schedule" as any).select("*").order("source"),
       supabase.from("pipeline_runs" as any).select("*").order("started_at", { ascending: false }).limit(20),
-      supabase.from("pipeline_pending_items" as any).select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(80),
+      supabase.from("pipeline_pending_items" as any).select("*").eq("status", "pending").eq("target_table", "opportunity_products").in("source", ["investor-research","opportunity-research"]).order("created_at", { ascending: false }).limit(80),
     ]);
     startTransition(() => {
       setSchedules((s as any) ?? []);
@@ -377,7 +370,7 @@ export const PipelineDashboard = () => {
               />
             </div>
             <div className="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5">
-              {(["all","finance","investor","both"] as const).map(p => (
+              {(["all","investor"] as const).map(p => (
                 <button
                   key={p}
                   onClick={() => setFilterPlatform(p)}
@@ -428,29 +421,10 @@ export const PipelineDashboard = () => {
                             <ExternalLink className="h-3 w-3" /> {p.source_url}
                           </a>
                         )}
-                        {(() => { const r = getRouting(p); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
-                          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Destination tab</label>
-                              <Select value={r.target} onValueChange={(v) => setItemRouting(p.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
-                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                              <div className="text-[10px] text-slate-500 mt-1">→ {tgt.sidebar}</div>
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Platform</label>
-                              <Select value={r.platform} onValueChange={(v) => setItemRouting(p.id, { platform: v as TargetPlatform })}>
-                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        ); })()}
+                        <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
+                          <Badge variant="outline" className="text-[10px] border-cyan-400/30 text-cyan-700 bg-cyan-500/5">FlowPulse Investor</Badge>
+                          <span className="text-[11px] text-slate-600">→ Opportunity Intelligence</span>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">
                         <Button size="icon" variant="secondary" className="h-7 w-7 bg-slate-100 hover:bg-slate-200 border border-slate-200" onClick={() => setReviewItem(p)} title="Review full data">
@@ -536,18 +510,12 @@ export const PipelineDashboard = () => {
           )}
 
           <DialogFooter className="gap-2 flex-wrap sm:flex-nowrap items-stretch sm:items-center">
-            {reviewItem && (() => { const r = getRouting(reviewItem); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
-              <div className="flex-1 grid grid-cols-2 gap-2 mr-auto">
-                <Select value={r.target} onValueChange={(v) => setItemRouting(reviewItem.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
-                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200"><SelectValue placeholder="Destination tab" /></SelectTrigger>
-                  <SelectContent>{TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label} — {o.sidebar}</SelectItem>)}</SelectContent>
-                </Select>
-                <Select value={r.platform} onValueChange={(v) => setItemRouting(reviewItem.id, { platform: v as TargetPlatform })}>
-                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200"><SelectValue placeholder="Platform" /></SelectTrigger>
-                  <SelectContent>{tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}</SelectContent>
-                </Select>
+            {reviewItem && (
+              <div className="flex-1 mr-auto text-xs text-slate-600 inline-flex items-center gap-2">
+                <Badge variant="outline" className="text-[10px] border-cyan-400/30 text-cyan-700 bg-cyan-500/5">FlowPulse Investor</Badge>
+                <span>→ Opportunity Intelligence</span>
               </div>
-            ); })()}
+            )}
             <Button variant="outline" className="border-slate-200" onClick={() => reviewItem && rejectItem(reviewItem.id)} disabled={!reviewItem || busyItem === reviewItem?.id}>
               <XCircle className="h-4 w-4 mr-1" /> Reject
             </Button>
