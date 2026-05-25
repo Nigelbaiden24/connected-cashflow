@@ -12,15 +12,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-// Map scheduler source key → scraper edge function + target table
+// Data Pipeline = specific opportunity discovery across EVERY investment type.
+// Only opportunity-producing scrapers belong here. Intel/news/finder/companies-house
+// pipelines have been removed — they live on their own admin tabs.
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
   "financial-research":   { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "finance"  },
   "investor-research":    { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "investor" },
-  "intel-orchestrate":    { fn: "intel-orchestrate",          targetTable: "intel_events",         platform: "both"     },
   "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "both"     },
-  "investor-finder":      { fn: "investor-finder-scraper",    targetTable: "opportunities",        platform: "investor" },
-  "elite-scraper":        { fn: "elite-scraper-analyst",      targetTable: "opportunities",        platform: "finance"  },
-  "companies-house":      { fn: "companies-house-scraper",    targetTable: "opportunities",        platform: "both"     },
 };
 
 // Finance platform investment categories (Opportunity Intelligence — Finance)
@@ -36,42 +34,22 @@ const INVESTOR_RESEARCH_CATEGORIES = [
   "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
   "thematics-packaged","copy-trading","music-royalties",
 ];
-// All opportunity-research categories supported by the scraper (must match
-// CATEGORY_RESEARCH_SOURCES keys in opportunity-research/index.ts).
+// All opportunity-research categories supported by the scraper.
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "real_estate","commodities","alternatives","esg","fractional_pe_vc",
   "private_market_platforms","capital_protected_notes","thematics_packaged",
   "copy_trading","music_royalties","businesses","mini_bonds","timepieces",
 ];
-const COMPANIES_HOUSE_QUERIES = [
-  "investment","capital","ventures","holdings","partners","equity","property","fintech","biotech","energy",
-];
-function rotate<T>(arr: T[]): T {
-  // Rotate every 3h tick so each run picks a fresh category
-  const idx = Math.floor(Date.now() / (3 * 60 * 60 * 1000)) % arr.length;
-  return arr[idx];
-}
-// Pick N distinct categories per run (broader coverage)
-function pickN<T>(arr: T[], n: number): T[] {
-  const out: T[] = [];
-  const base = Math.floor(Date.now() / (3 * 60 * 60 * 1000));
-  for (let i = 0; i < Math.min(n, arr.length); i++) {
-    out.push(arr[(base + i) % arr.length]);
-  }
-  return out;
-}
+
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
+  // Single-call fallback (only used if fan-out is bypassed)
   switch (source) {
     case "financial-research":
-      return { categoryKey: rotate(FINANCE_RESEARCH_CATEGORIES), platform: "finance", ...baseConfig };
+      return { categoryKey: FINANCE_RESEARCH_CATEGORIES[0], platform: "finance", deep: true, ...baseConfig };
     case "investor-research":
-      return { categoryKey: rotate(INVESTOR_RESEARCH_CATEGORIES), platform: "investor", ...baseConfig };
+      return { categoryKey: INVESTOR_RESEARCH_CATEGORIES[0], platform: "investor", deep: true, ...baseConfig };
     case "opportunity-research":
-      return { category: rotate(OPPORTUNITY_RESEARCH_CATEGORIES), stream: false, ...baseConfig };
-    case "elite-scraper":
-      return { mode: "explain", platform: "finance", categoryLabel: "Multi-asset Investment Opportunities", scrapedData: "Auto-pipeline run: gather and structure current investment opportunities across asset classes.", ...baseConfig };
-    case "companies-house":
-      return { action: "full_scrape", query: rotate(COMPANIES_HOUSE_QUERIES), searchType: "companies", maxPages: 1, ...baseConfig };
+      return { category: OPPORTUNITY_RESEARCH_CATEGORIES[0], stream: false, deep: true, ...baseConfig };
     default:
       return baseConfig;
   }
@@ -231,50 +209,44 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
 
-  // Build list of bodies — for category-driven sources, fan out across multiple categories AND global regions per run
+  // Build list of bodies — fan out across ALL specified investment types so every
+  // category produces fresh, specific opportunities in full detail every run.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
-  const GLOBAL_REGIONS_PIPELINE = [
-    "United Kingdom & Ireland", "Western Europe", "Southern Europe", "Eastern Europe", "Nordics",
-    "North America", "Latin America", "Middle East", "Africa", "Asia Pacific",
-    "Southeast Asia", "South Asia", "Greater China",
-  ];
-  const pickRegions = (n: number): string[] => {
-    const out: string[] = [];
-    const base = Math.floor(Date.now() / (6 * 60 * 60 * 1000));
-    for (let i = 0; i < n; i++) out.push(GLOBAL_REGIONS_PIPELINE[(base + i) % GLOBAL_REGIONS_PIPELINE.length]);
-    return out;
-  };
   const bodies: Record<string, unknown>[] = [];
   if (source === "financial-research") {
-    for (const cat of pickN(FINANCE_RESEARCH_CATEGORIES, 4)) bodies.push({ categoryKey: cat, platform: "finance", ...baseCfg });
+    for (const cat of FINANCE_RESEARCH_CATEGORIES) {
+      bodies.push({ categoryKey: cat, platform: "finance", deep: true, detail: "full", ...baseCfg });
+    }
   } else if (source === "investor-research") {
-    for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 4)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
+    for (const cat of INVESTOR_RESEARCH_CATEGORIES) {
+      bodies.push({ categoryKey: cat, platform: "investor", deep: true, detail: "full", ...baseCfg });
+    }
   } else if (source === "opportunity-research") {
-    // Elite enterprise: rotate categories × global regions for full continent coverage every cycle
-    const cats = pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 4);
-    const regions = pickRegions(3);
-    for (const cat of cats) for (const r of regions) bodies.push({ category: cat, region: r, stream: false, ...baseCfg });
-  } else if (source === "companies-house") {
-    for (const q of pickN(COMPANIES_HOUSE_QUERIES, 4)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
+    for (const cat of OPPORTUNITY_RESEARCH_CATEGORIES) {
+      bodies.push({ category: cat, stream: false, deep: true, detail: "full", ...baseCfg });
+    }
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
 
-  // Run scraper passes (with one retry per pass)
+  // Run scraper passes in parallel batches (with one retry per pass)
   const payloads: any[] = [];
-  for (const body of bodies) {
-    let pl: any = null;
+  const runOne = async (body: Record<string, unknown>) => {
     for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        pl = await callScraper(def.fn, body);
-        break;
-      } catch (e: any) {
-        errors.push({ pass: bodies.indexOf(body), attempt, error: String(e.message ?? e) });
-        if (attempt === 2) break;
-        await new Promise(r => setTimeout(r, 1200));
+      try { return await callScraper(def.fn, body); }
+      catch (e: any) {
+        errors.push({ body, attempt, error: String(e.message ?? e) });
+        if (attempt === 2) return null;
+        await new Promise(r => setTimeout(r, 1000));
       }
     }
-    if (pl) payloads.push(pl);
+    return null;
+  };
+  const BATCH = 5;
+  for (let i = 0; i < bodies.length; i += BATCH) {
+    const slice = bodies.slice(i, i + BATCH);
+    const results = await Promise.all(slice.map(runOne));
+    for (const r of results) if (r) payloads.push(r);
   }
 
   if (payloads.length === 0) {
