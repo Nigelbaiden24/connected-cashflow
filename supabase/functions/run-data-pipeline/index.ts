@@ -12,29 +12,24 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-// Data Pipeline = specific opportunity discovery across EVERY investment type.
-// Only opportunity-producing scrapers belong here. Intel/news/finder/companies-house
-// pipelines have been removed — they live on their own admin tabs.
+// Data Pipeline = investor-platform investment opportunity discovery ONLY.
+// Stocks and crypto are explicitly excluded — they live on their own dedicated
+// admin scrapers (Stock / Crypto Search Reports). Everything staged here is an
+// alternative / private-market / real-asset opportunity priced in GBP.
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
-  "financial-research":   { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "finance"  },
   "investor-research":    { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "investor" },
-  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "both"     },
+  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "investor" },
 };
 
-// Finance platform investment categories (Opportunity Intelligence — Finance)
-const FINANCE_RESEARCH_CATEGORIES = [
-  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
-  "funds-etfs","alternatives","esg","private-equity","venture-capital","infrastructure",
-  "sme-acquisitions","distressed","debt-lending",
-];
-// Investor platform investment categories (Opportunity Intelligence — Investor)
+// Investor platform investment categories — stocks-equities and crypto-digital
+// are intentionally omitted from the Data Pipeline.
 const INVESTOR_RESEARCH_CATEGORIES = [
-  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
+  "real-estate","fixed-income","commodities","fx",
   "funds-etfs","alternatives","esg","fractional-pe-vc","private-market-platforms",
   "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
   "thematics-packaged","copy-trading","music-royalties",
 ];
-// All opportunity-research categories supported by the scraper.
+// All opportunity-research categories supported by the scraper (no stocks/crypto here).
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "real_estate","commodities","alternatives","esg","fractional_pe_vc",
   "private_market_platforms","capital_protected_notes","thematics_packaged",
