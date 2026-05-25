@@ -111,16 +111,43 @@ Deno.serve(async (req) => {
     if (error) throw error;
     const items = due ?? [];
 
+    // Hard parity cap: cap each asset_type at the same number of reports per
+    // rolling 24h so the stock scraper can never run away ahead of crypto
+    // (or vice-versa). Default cap = 5 per asset_type per day.
+    const DAILY_CAP_PER_ASSET = 5;
+    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const todayCounts: Record<string, number> = { stock: 0, crypto: 0 };
+    {
+      const { data: recent } = await admin
+        .from("generated_research_reports")
+        .select("asset_type")
+        .gte("created_at", since);
+      for (const r of (recent ?? []) as any[]) {
+        todayCounts[r.asset_type] = (todayCounts[r.asset_type] ?? 0) + 1;
+      }
+    }
+
     // Long-running work: process in background so the HTTP caller doesn't time out.
-    // pg_cron triggers don't care about the response body either.
     const processAll = async () => {
       for (const s of items) {
         const startedAt = new Date();
         try {
+          const remaining = Math.max(0, DAILY_CAP_PER_ASSET - (todayCounts[s.asset_type] ?? 0));
+          if (remaining === 0) {
+            console.log(`[schedule ${s.id}] skipped — ${s.asset_type} hit daily cap (${DAILY_CAP_PER_ASSET})`);
+            await admin.from("research_scraper_schedules").update({
+              last_run_at: startedAt.toISOString(),
+              last_run_status: "skipped_cap",
+              last_run_error: `Daily cap of ${DAILY_CAP_PER_ASSET} ${s.asset_type} reports reached`,
+              next_run_at: new Date(Date.now() + s.frequency_hours * 3600 * 1000).toISOString(),
+            }).eq("id", s.id);
+            continue;
+          }
           const isAutopilot = (s.topic || "").startsWith(AUTOPILOT_TOKEN);
           if (isAutopilot) {
             const m = (s.topic as string).match(/__AUTOPILOT__(?::(\d+))?/);
-            const count = Math.min(5, Math.max(1, Number(m?.[1]) || 3));
+            const requested = Math.min(5, Math.max(1, Number(m?.[1]) || 3));
+            const count = Math.min(requested, remaining);
             const picks = await pickAutopilotTopics(s.asset_type, count, admin);
             for (const p of picks) {
               try {
@@ -132,6 +159,7 @@ Deno.serve(async (req) => {
                   createdBy: s.created_by,
                   admin,
                 });
+                todayCounts[s.asset_type] = (todayCounts[s.asset_type] ?? 0) + 1;
               } catch (inner) {
                 console.error(`[autopilot] topic "${p.topic}" failed:`, (inner as Error).message);
               }
@@ -151,6 +179,7 @@ Deno.serve(async (req) => {
               createdBy: s.created_by,
               admin,
             });
+            todayCounts[s.asset_type] = (todayCounts[s.asset_type] ?? 0) + 1;
             await admin.from("research_scraper_schedules").update({
               last_run_at: startedAt.toISOString(),
               last_run_status: "success",
