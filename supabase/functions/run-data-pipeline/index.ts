@@ -12,29 +12,24 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
-// Data Pipeline = specific opportunity discovery across EVERY investment type.
-// Only opportunity-producing scrapers belong here. Intel/news/finder/companies-house
-// pipelines have been removed — they live on their own admin tabs.
+// Data Pipeline = investor-platform investment opportunity discovery ONLY.
+// Stocks and crypto are explicitly excluded — they live on their own dedicated
+// admin scrapers (Stock / Crypto Search Reports). Everything staged here is an
+// alternative / private-market / real-asset opportunity priced in GBP.
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
-  "financial-research":   { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "finance"  },
   "investor-research":    { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "investor" },
-  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "both"     },
+  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "investor" },
 };
 
-// Finance platform investment categories (Opportunity Intelligence — Finance)
-const FINANCE_RESEARCH_CATEGORIES = [
-  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
-  "funds-etfs","alternatives","esg","private-equity","venture-capital","infrastructure",
-  "sme-acquisitions","distressed","debt-lending",
-];
-// Investor platform investment categories (Opportunity Intelligence — Investor)
+// Investor platform investment categories — stocks-equities and crypto-digital
+// are intentionally omitted from the Data Pipeline.
 const INVESTOR_RESEARCH_CATEGORIES = [
-  "stocks-equities","crypto-digital","real-estate","fixed-income","commodities","fx",
+  "real-estate","fixed-income","commodities","fx",
   "funds-etfs","alternatives","esg","fractional-pe-vc","private-market-platforms",
   "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
   "thematics-packaged","copy-trading","music-royalties",
 ];
-// All opportunity-research categories supported by the scraper.
+// All opportunity-research categories supported by the scraper (no stocks/crypto here).
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "real_estate","commodities","alternatives","esg","fractional_pe_vc",
   "private_market_platforms","capital_protected_notes","thematics_packaged",
@@ -44,14 +39,70 @@ const OPPORTUNITY_RESEARCH_CATEGORIES = [
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   // Single-call fallback (only used if fan-out is bypassed)
   switch (source) {
-    case "financial-research":
-      return { categoryKey: FINANCE_RESEARCH_CATEGORIES[0], platform: "finance", deep: true, ...baseConfig };
     case "investor-research":
       return { categoryKey: INVESTOR_RESEARCH_CATEGORIES[0], platform: "investor", deep: true, ...baseConfig };
     case "opportunity-research":
       return { category: OPPORTUNITY_RESEARCH_CATEGORIES[0], stream: false, deep: true, ...baseConfig };
     default:
       return baseConfig;
+  }
+}
+
+// Generate a bespoke 16:9 thumbnail for an opportunity (no generic stock images).
+// Uploads to the public `reports` bucket and returns the public URL, or null on failure.
+async function generateOpportunityThumbnail(opts: {
+  title: string;
+  summary?: string;
+  category?: string;
+  tags?: string[];
+  itemKey: string;
+  admin: any;
+}): Promise<string | null> {
+  if (!LOVABLE_API_KEY) return null;
+  const clean = (s: unknown, n = 240) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, n);
+  const tagText = (opts.tags ?? []).slice(0, 6).map((t) => clean(t, 40)).filter(Boolean).join(", ");
+  const prompt = `Create a bespoke 16:9 editorial photograph for a FlowPulse institutional investment opportunity.
+
+Opportunity title: ${clean(opts.title, 200)}
+Category: ${clean(opts.category) || "Alternative investment"}
+${tagText ? `Themes: ${tagText}\n` : ""}Summary: ${clean(opts.summary, 600) || "Institutional alternative investment opportunity"}
+
+Strict requirements:
+- 16:9 cinematic editorial photograph, sharp focus, premium magazine cover quality
+- Subject MUST be visually specific to THIS exact opportunity (real subject matter: e.g. a UK terrace house for UK property, a vineyard for agriculture, a luxury watch for timepieces, a wind farm for renewables, a factory floor for industrials, a vault of gold bars for commodities, a luxury yacht for marine assets, etc.)
+- ABSOLUTELY NO generic finance imagery: no glowing charts, no abstract graphs, no handshake stock photos, no ticker boards, no generic skyline-with-arrows
+- No people's faces, no readable text, no captions, no brand logos, no watermarks
+- Dramatic but tasteful lighting, refined colour grading`;
+  try {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: prompt }],
+        modalities: ["image", "text"],
+      }),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const url: string | undefined = j?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const m = url?.match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
+    if (!m) return null;
+    const mime = m[1].toLowerCase();
+    const ext = mime.includes("png") ? "png" : mime.includes("webp") ? "webp" : "jpg";
+    const bin = atob(m[2]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const slug = (opts.title || "opportunity").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "opportunity";
+    const path = `opportunity-thumbnails/${slug}-${opts.itemKey.slice(0, 10)}.${ext}`;
+    const { error: upErr } = await opts.admin.storage.from("reports")
+      .upload(path, bytes, { contentType: mime, upsert: true });
+    if (upErr) { console.warn("[thumb upload]", upErr.message); return null; }
+    const { data } = opts.admin.storage.from("reports").getPublicUrl(path);
+    return data?.publicUrl ?? null;
+  } catch (e) {
+    console.warn("[thumb gen]", (e as Error).message);
+    return null;
   }
 }
 
@@ -79,7 +130,7 @@ async function callScraper(fn: string, body: unknown): Promise<any> {
 
 async function aiEnrich(item: { title: string; summary?: string; url?: string; raw?: any }) {
   if (!LOVABLE_API_KEY) {
-    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general" };
+    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
   try {
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -88,8 +139,17 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are a financial-intelligence enrichment assistant. Reply ONLY with compact JSON: {summary, tags:[<=5], score:0-5 number, category}. score = conviction." },
-          { role: "user", content: `Title: ${item.title}\nURL: ${item.url ?? ""}\nContext: ${(item.summary ?? "").slice(0, 800)}\nRaw: ${JSON.stringify(item.raw ?? {}).slice(0, 600)}` },
+          {
+            role: "system",
+            content:
+              "You are an alternative-investment enrichment assistant. Reply ONLY with compact JSON: " +
+              "{summary, tags:[<=5], score:0-5 number, category, price_gbp:number|null}. " +
+              "price_gbp MUST be the realistic GBP entry price / minimum ticket / asking price / valuation " +
+              "for THIS specific opportunity, as a plain number of pounds (no commas, no symbols, no abbreviations). " +
+              "Convert USD/EUR to GBP using a reasonable recent FX rate. " +
+              "If no defensible GBP figure exists in the source, return price_gbp: null — never guess.",
+          },
+          { role: "user", content: `Title: ${item.title}\nURL: ${item.url ?? ""}\nContext: ${(item.summary ?? "").slice(0, 1200)}\nRaw: ${JSON.stringify(item.raw ?? {}).slice(0, 1200)}` },
         ],
       }),
     });
@@ -98,15 +158,18 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     const txt = j.choices?.[0]?.message?.content ?? "{}";
     const cleaned = txt.replace(/```json\s*|```/g, "").trim();
     const parsed = JSON.parse(cleaned);
+    const rawPrice = parsed.price_gbp;
+    const price_gbp = typeof rawPrice === "number" && isFinite(rawPrice) && rawPrice > 0 ? rawPrice : null;
     return {
       summary: String(parsed.summary ?? item.summary ?? item.title).slice(0, 1200),
       tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5).map(String) : [],
       score: Math.max(0, Math.min(5, Number(parsed.score) || 3)),
       category: String(parsed.category ?? "general").slice(0, 64),
+      price_gbp,
     };
   } catch (e) {
     console.warn("[aiEnrich] fallback:", e);
-    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general" };
+    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
 }
 
@@ -213,11 +276,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   // category produces fresh, specific opportunities in full detail every run.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
   const bodies: Record<string, unknown>[] = [];
-  if (source === "financial-research") {
-    for (const cat of FINANCE_RESEARCH_CATEGORIES) {
-      bodies.push({ categoryKey: cat, platform: "finance", deep: true, detail: "full", ...baseCfg });
-    }
-  } else if (source === "investor-research") {
+  if (source === "investor-research") {
     for (const cat of INVESTOR_RESEARCH_CATEGORIES) {
       bodies.push({ categoryKey: cat, platform: "investor", deep: true, detail: "full", ...baseCfg });
     }
@@ -293,6 +352,15 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
 
   for (const it of items) {
     try {
+      // Drop stocks/crypto items even if a scraper slips one through
+      const titleLower = it.title.toLowerCase();
+      const rawText = JSON.stringify(it.raw ?? {}).toLowerCase();
+      if (/\b(stock|equity|equities|ticker|nasdaq|nyse|lse:|share price)\b/.test(titleLower) ||
+          /\b(crypto|cryptocurrency|token|altcoin|memecoin|defi|on-chain|blockchain coin)\b/.test(titleLower) ||
+          /\bcategory["']?\s*:\s*["']?(stocks?|equities|crypto|cryptocurrency)/.test(rawText)) {
+        continue;
+      }
+
       const dedupBasis = `${source}::${it.url ?? it.title.toLowerCase()}`;
       const dedup_hash = await sha256(dedupBasis);
 
@@ -305,6 +373,38 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
       const ai = await aiEnrich(it);
       enriched++;
 
+      // Pricing must be defensible — skip items the AI could not price in GBP
+      if (ai.price_gbp == null) {
+        errors.push({ item: it.title, error: "skipped_no_price" });
+        continue;
+      }
+
+      // Bespoke 16:9 thumbnail (no generic stock images allowed)
+      const thumbnailUrl = await generateOpportunityThumbnail({
+        title: it.title,
+        summary: ai.summary,
+        category: ai.category,
+        tags: ai.tags,
+        itemKey: dedup_hash,
+        admin: supabase,
+      });
+
+      const enrichedPayload: Record<string, unknown> = {
+        ...it.raw,
+        ai_summary: ai.summary,
+        ai_tags: ai.tags,
+        ai_score: ai.score,
+        price: ai.price_gbp,
+        price_currency: "GBP",
+        currency: "GBP",
+      };
+      if (thumbnailUrl) {
+        enrichedPayload.generated_thumbnail_url = thumbnailUrl;
+        enrichedPayload.ai_thumbnail_url = thumbnailUrl;
+        enrichedPayload.thumbnail_url = thumbnailUrl;
+        enrichedPayload.image_url = thumbnailUrl;
+      }
+
       const { error } = await supabase.from("pipeline_pending_items").insert({
         run_id: runId,
         source,
@@ -316,7 +416,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
         category: ai.category,
         source_url: it.url,
         raw_payload: it.raw as never,
-        enriched_payload: { ...it.raw, ai_summary: ai.summary, ai_tags: ai.tags, ai_score: ai.score } as never,
+        enriched_payload: enrichedPayload as never,
         ai_tags: ai.tags,
         ai_score: ai.score,
       });
