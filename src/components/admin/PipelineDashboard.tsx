@@ -370,7 +370,7 @@ export const PipelineDashboard = () => {
               />
             </div>
             <div className="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5">
-              {(["all","finance","investor","both"] as const).map(p => (
+              {(["all","investor"] as const).map(p => (
                 <button
                   key={p}
                   onClick={() => setFilterPlatform(p)}
