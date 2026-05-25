@@ -355,7 +355,15 @@ export const PipelineDashboard = () => {
                     <div className="text-[11px] text-slate-500 mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
                       <div><span className="text-slate-500">Next</span> <span className="text-slate-700">{formatDistanceToNow(new Date(s.next_run_at), { addSuffix: true })}</span></div>
                       <div><span className="text-slate-500">Last</span> <span className="text-slate-700">{s.last_run_at ? formatDistanceToNow(new Date(s.last_run_at), { addSuffix: true }) : "never"}</span></div>
-                      <div className="col-span-2"><span className="text-slate-500">Cadence</span> <span className="text-slate-700">{s.cadence_minutes}m</span></div>
+                      <div className="col-span-2 flex items-center gap-2 mt-1">
+                        <span className="text-slate-500 shrink-0">Cadence</span>
+                        <Select value={String(s.cadence_minutes)} onValueChange={(v) => updateCadence(s.source, Number(v))}>
+                          <SelectTrigger className="h-7 text-[11px] bg-white border-slate-200 flex-1"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {CADENCE_OPTIONS.map(o => <SelectItem key={o.v} value={String(o.v)} className="text-xs">{o.l}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     {s.last_error && <div className="text-[11px] text-rose-400 mt-2 line-clamp-2">{s.last_error}</div>}
                   </div>
