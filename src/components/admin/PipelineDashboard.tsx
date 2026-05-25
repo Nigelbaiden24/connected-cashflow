@@ -155,6 +155,26 @@ export const PipelineDashboard = () => {
     if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); void load(); }
   };
 
+  const updateCadence = async (source: string, cadence_minutes: number) => {
+    setSchedules(prev => prev.map(s => s.source === source ? { ...s, cadence_minutes } : s));
+    const next_run_at = new Date(Date.now() + cadence_minutes * 60_000).toISOString();
+    const { error } = await supabase.from("pipeline_schedule" as any)
+      .update({ cadence_minutes, next_run_at }).eq("source", source);
+    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); void load(); }
+    else toast({ title: "Schedule updated", description: `${source} now runs every ${cadence_minutes >= 60 ? `${Math.round(cadence_minutes/60)}h` : `${cadence_minutes}m`}.` });
+  };
+
+  const CADENCE_OPTIONS = [
+    { v: 30,    l: "Every 30 min" },
+    { v: 60,    l: "Every hour" },
+    { v: 180,   l: "Every 3 hours" },
+    { v: 360,   l: "Every 6 hours" },
+    { v: 720,   l: "Every 12 hours" },
+    { v: 1440,  l: "Daily" },
+    { v: 4320,  l: "Every 3 days" },
+    { v: 10080, l: "Weekly" },
+  ];
+
   const [routing, setRouting] = useState<Record<string, { target: TargetTable; platform: TargetPlatform }>>({});
   const getRouting = (p: Pending) => routing[p.id] ?? { target: defaultTargetFor(p), platform: defaultPlatformFor(p) };
   const setItemRouting = (id: string, patch: Partial<{ target: TargetTable; platform: TargetPlatform }>) =>
