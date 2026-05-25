@@ -421,29 +421,10 @@ export const PipelineDashboard = () => {
                             <ExternalLink className="h-3 w-3" /> {p.source_url}
                           </a>
                         )}
-                        {(() => { const r = getRouting(p); const tgt = TARGET_OPTIONS.find(o=>o.value===r.target)!; return (
-                          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Destination tab</label>
-                              <Select value={r.target} onValueChange={(v) => setItemRouting(p.id, { target: v as TargetTable, platform: TARGET_OPTIONS.find(o=>o.value===v)?.platforms.includes(r.platform) ? r.platform : "both" })}>
-                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {TARGET_OPTIONS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                              <div className="text-[10px] text-slate-500 mt-1">→ {tgt.sidebar}</div>
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wide text-slate-500 font-semibold">Platform</label>
-                              <Select value={r.platform} onValueChange={(v) => setItemRouting(p.id, { platform: v as TargetPlatform })}>
-                                <SelectTrigger className="h-8 text-xs mt-1 bg-white border-slate-200"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {tgt.platforms.map(pl => <SelectItem key={pl} value={pl} className="text-xs capitalize">{pl === "both" ? "Both platforms" : pl}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        ); })()}
+                        <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
+                          <Badge variant="outline" className="text-[10px] border-cyan-400/30 text-cyan-700 bg-cyan-500/5">FlowPulse Investor</Badge>
+                          <span className="text-[11px] text-slate-600">→ Opportunity Intelligence</span>
+                        </div>
                       </div>
                       <div className="flex flex-col gap-1.5 shrink-0">
                         <Button size="icon" variant="secondary" className="h-7 w-7 bg-slate-100 hover:bg-slate-200 border border-slate-200" onClick={() => setReviewItem(p)} title="Review full data">
