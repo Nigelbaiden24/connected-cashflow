@@ -23,7 +23,8 @@ import {
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Globe, Users, Award, Package,
   Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
-  Zap, Factory, Shield, Music, Leaf, Repeat, Layers, PieChart
+  Zap, Factory, Shield, Music, Leaf, Repeat, Layers, PieChart,
+  Palette, Wine, Plane, Trophy, Film, HeartHandshake
 } from "lucide-react";
 
 // Category default thumbnail images
@@ -51,7 +52,7 @@ const categoryThumbnailMap: Record<string, string> = {
   capital_protected_notes: thumbCapitalProtectedNotes,
   thematics_packaged: thumbThematicsPackaged,
   copy_trading: thumbCopyTrading,
-  music_royalties: thumbMusicRoyalties,
+  royalties: thumbMusicRoyalties,
   businesses: thumbBusinesses,
   mini_bonds: thumbMiniBonds,
   timepieces: thumbTimepieces,
@@ -81,20 +82,29 @@ interface OpportunityProduct {
   risk_score: number | null;
 }
 
+// Investor-curated opportunity taxonomy. Each category mirrors the admin
+// Data Pipeline scrape topics and groups granular sub-categories.
 const categoryConfig = {
-  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["R2R", "R2SA", "UK Land", "International Land", "International Real Estate", "Commercial Property", "Residential Property"] },
-  commodities: { label: "Commodities", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Gold", "Oil", "Agriculture", "Natural Resources", "Precious Metals"] },
-  alternatives: { label: "Alternative Investments", icon: Gem, color: "bg-purple-500/10 text-purple-500", subCategories: ["Hedge Funds", "Art", "Wine", "Collectibles", "Whisky"] },
+  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["Rent to Rent", "Rent to Serviced Accommodation", "Residential Property", "Commercial Property", "Industrial Property", "Student Housing", "Holiday Rentals", "Build-to-Rent", "Land Banking", "Farmland", "International Property & Land"] },
+  commodities: { label: "Commodities", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Oil", "Natural Gas", "Wheat", "Coffee", "Livestock"] },
+  alternatives: { label: "Alternative Investments", icon: Gem, color: "bg-purple-500/10 text-purple-500", subCategories: ["Hedge Funds", "Multi-Strategy", "Structured Alternatives"] },
   esg: { label: "ESG & Impact Investing", icon: Leaf, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Funds", "Carbon Credits"] },
   fractional_pe_vc: { label: "Fractional PE / VC", icon: PieChart, color: "bg-violet-500/10 text-violet-500", subCategories: ["Crowdfunding", "Syndicates", "Fractional Deals", "Angel Co-Investment"] },
-  private_market_platforms: { label: "Private Market Platforms", icon: Layers, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Secondary Shares", "Pre-IPO", "Tender Offers", "Marketplace Deals"] },
+  private_market_platforms: { label: "Private Market Platforms", icon: Layers, color: "bg-cyan-500/10 text-cyan-500", subCategories: ["Pre-IPO", "Secondary Shares", "Tender Offers", "Marketplace Deals"] },
   capital_protected_notes: { label: "Capital-Protected & Income Notes", icon: Shield, color: "bg-rose-500/10 text-rose-500", subCategories: ["Structured Notes", "Capital Protection", "Autocallables", "Income Notes"] },
   thematics_packaged: { label: "Thematics & Packaged Investing", icon: Landmark, color: "bg-orange-500/10 text-orange-500", subCategories: ["Thematic Baskets", "Smart Beta", "Robo Portfolios", "Model Portfolios"] },
   copy_trading: { label: "Copy Trading", icon: Repeat, color: "bg-teal-500/10 text-teal-500", subCategories: ["Mirror Trading", "Social Trading", "Lead Traders", "Strategy Following"] },
-  music_royalties: { label: "Music Royalties", icon: Music, color: "bg-fuchsia-500/10 text-fuchsia-500", subCategories: ["Catalogue Acquisitions", "Song Royalties", "Publishing Rights", "Master Recordings", "Streaming Royalties"] },
+  royalties: { label: "Royalties", icon: Music, color: "bg-fuchsia-500/10 text-fuchsia-500", subCategories: ["Music Royalties", "Film Royalties", "Publishing Royalties", "Patent Royalties"] },
   businesses: { label: "Businesses", icon: Briefcase, color: "bg-green-500/10 text-green-500", subCategories: ["SMEs", "Startups", "Franchises", "Established Businesses"] },
-  mini_bonds: { label: "Mini Bonds", icon: Banknote, color: "bg-lime-500/10 text-lime-600", subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Convertible Mini Bonds"] },
-  timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600", subCategories: ["Luxury Watches", "Vintage Watches", "Limited Editions", "Investment Grade"] },
+  mini_bonds: { label: "Mini Bonds & Loan Notes", icon: Banknote, color: "bg-lime-500/10 text-lime-600", subCategories: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Loan Notes"] },
+  timepieces: { label: "Timepieces", icon: Clock, color: "bg-amber-600/10 text-amber-600", subCategories: ["Rolex", "Patek Philippe", "Audemars Piguet", "Vintage", "Limited Editions"] },
+  fine_wine: { label: "Fine Wine", icon: Wine, color: "bg-red-700/10 text-red-700", subCategories: ["Bordeaux", "Burgundy", "Champagne", "Rare Whisky"] },
+  art: { label: "Art", icon: Palette, color: "bg-pink-500/10 text-pink-500", subCategories: ["Fine Art", "Contemporary", "Blue Chip Artists", "Editions"] },
+  collectibles: { label: "Collectibles", icon: Award, color: "bg-indigo-500/10 text-indigo-500", subCategories: ["Rare Whisky", "Sneakers", "Comics", "Trading Cards", "Memorabilia"] },
+  luxury_assets: { label: "Luxury Assets", icon: Plane, color: "bg-amber-500/10 text-amber-500", subCategories: ["Yachts", "Jets", "Supercars", "Rare Handbags", "Jewelry"] },
+  entertainment_finance: { label: "Entertainment Finance", icon: Film, color: "bg-purple-600/10 text-purple-600", subCategories: ["Film Financing", "TV Production Finance", "Sports Rights", "Esports Organizations"] },
+  insurance_investments: { label: "Insurance-Based Investments", icon: HeartHandshake, color: "bg-sky-500/10 text-sky-600", subCategories: ["Annuities", "Whole Life Insurance", "Universal Life Policies", "Premium Finance Structures", "Life Settlements"] },
+  sports_investments: { label: "Sports Investments", icon: Trophy, color: "bg-orange-600/10 text-orange-600", subCategories: ["Football Clubs", "Athlete-Backed Ventures", "Sports Trading Cards", "Racehorses"] },
 };
 
 const ratingColors: Record<string, string> = {
