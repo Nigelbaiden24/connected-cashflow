@@ -39,14 +39,70 @@ const OPPORTUNITY_RESEARCH_CATEGORIES = [
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   // Single-call fallback (only used if fan-out is bypassed)
   switch (source) {
-    case "financial-research":
-      return { categoryKey: FINANCE_RESEARCH_CATEGORIES[0], platform: "finance", deep: true, ...baseConfig };
     case "investor-research":
       return { categoryKey: INVESTOR_RESEARCH_CATEGORIES[0], platform: "investor", deep: true, ...baseConfig };
     case "opportunity-research":
       return { category: OPPORTUNITY_RESEARCH_CATEGORIES[0], stream: false, deep: true, ...baseConfig };
     default:
       return baseConfig;
+  }
+}
+
+// Generate a bespoke 16:9 thumbnail for an opportunity (no generic stock images).
+// Uploads to the public `reports` bucket and returns the public URL, or null on failure.
+async function generateOpportunityThumbnail(opts: {
+  title: string;
+  summary?: string;
+  category?: string;
+  tags?: string[];
+  itemKey: string;
+  admin: any;
+}): Promise<string | null> {
+  if (!LOVABLE_API_KEY) return null;
+  const clean = (s: unknown, n = 240) => String(s ?? "").replace(/\s+/g, " ").trim().slice(0, n);
+  const tagText = (opts.tags ?? []).slice(0, 6).map((t) => clean(t, 40)).filter(Boolean).join(", ");
+  const prompt = `Create a bespoke 16:9 editorial photograph for a FlowPulse institutional investment opportunity.
+
+Opportunity title: ${clean(opts.title, 200)}
+Category: ${clean(opts.category) || "Alternative investment"}
+${tagText ? `Themes: ${tagText}\n` : ""}Summary: ${clean(opts.summary, 600) || "Institutional alternative investment opportunity"}
+
+Strict requirements:
+- 16:9 cinematic editorial photograph, sharp focus, premium magazine cover quality
+- Subject MUST be visually specific to THIS exact opportunity (real subject matter: e.g. a UK terrace house for UK property, a vineyard for agriculture, a luxury watch for timepieces, a wind farm for renewables, a factory floor for industrials, a vault of gold bars for commodities, a luxury yacht for marine assets, etc.)
+- ABSOLUTELY NO generic finance imagery: no glowing charts, no abstract graphs, no handshake stock photos, no ticker boards, no generic skyline-with-arrows
+- No people's faces, no readable text, no captions, no brand logos, no watermarks
+- Dramatic but tasteful lighting, refined colour grading`;
+  try {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: prompt }],
+        modalities: ["image", "text"],
+      }),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const url: string | undefined = j?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const m = url?.match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
+    if (!m) return null;
+    const mime = m[1].toLowerCase();
+    const ext = mime.includes("png") ? "png" : mime.includes("webp") ? "webp" : "jpg";
+    const bin = atob(m[2]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const slug = (opts.title || "opportunity").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "opportunity";
+    const path = `opportunity-thumbnails/${slug}-${opts.itemKey.slice(0, 10)}.${ext}`;
+    const { error: upErr } = await opts.admin.storage.from("reports")
+      .upload(path, bytes, { contentType: mime, upsert: true });
+    if (upErr) { console.warn("[thumb upload]", upErr.message); return null; }
+    const { data } = opts.admin.storage.from("reports").getPublicUrl(path);
+    return data?.publicUrl ?? null;
+  } catch (e) {
+    console.warn("[thumb gen]", (e as Error).message);
+    return null;
   }
 }
 
