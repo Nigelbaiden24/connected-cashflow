@@ -209,50 +209,44 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
 
-  // Build list of bodies — for category-driven sources, fan out across multiple categories AND global regions per run
+  // Build list of bodies — fan out across ALL specified investment types so every
+  // category produces fresh, specific opportunities in full detail every run.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
-  const GLOBAL_REGIONS_PIPELINE = [
-    "United Kingdom & Ireland", "Western Europe", "Southern Europe", "Eastern Europe", "Nordics",
-    "North America", "Latin America", "Middle East", "Africa", "Asia Pacific",
-    "Southeast Asia", "South Asia", "Greater China",
-  ];
-  const pickRegions = (n: number): string[] => {
-    const out: string[] = [];
-    const base = Math.floor(Date.now() / (6 * 60 * 60 * 1000));
-    for (let i = 0; i < n; i++) out.push(GLOBAL_REGIONS_PIPELINE[(base + i) % GLOBAL_REGIONS_PIPELINE.length]);
-    return out;
-  };
   const bodies: Record<string, unknown>[] = [];
   if (source === "financial-research") {
-    for (const cat of pickN(FINANCE_RESEARCH_CATEGORIES, 4)) bodies.push({ categoryKey: cat, platform: "finance", ...baseCfg });
+    for (const cat of FINANCE_RESEARCH_CATEGORIES) {
+      bodies.push({ categoryKey: cat, platform: "finance", deep: true, detail: "full", ...baseCfg });
+    }
   } else if (source === "investor-research") {
-    for (const cat of pickN(INVESTOR_RESEARCH_CATEGORIES, 4)) bodies.push({ categoryKey: cat, platform: "investor", ...baseCfg });
+    for (const cat of INVESTOR_RESEARCH_CATEGORIES) {
+      bodies.push({ categoryKey: cat, platform: "investor", deep: true, detail: "full", ...baseCfg });
+    }
   } else if (source === "opportunity-research") {
-    // Elite enterprise: rotate categories × global regions for full continent coverage every cycle
-    const cats = pickN(OPPORTUNITY_RESEARCH_CATEGORIES, 4);
-    const regions = pickRegions(3);
-    for (const cat of cats) for (const r of regions) bodies.push({ category: cat, region: r, stream: false, ...baseCfg });
-  } else if (source === "companies-house") {
-    for (const q of pickN(COMPANIES_HOUSE_QUERIES, 4)) bodies.push({ action: "full_scrape", query: q, searchType: "companies", maxPages: 1, ...baseCfg });
+    for (const cat of OPPORTUNITY_RESEARCH_CATEGORIES) {
+      bodies.push({ category: cat, stream: false, deep: true, detail: "full", ...baseCfg });
+    }
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
 
-  // Run scraper passes (with one retry per pass)
+  // Run scraper passes in parallel batches (with one retry per pass)
   const payloads: any[] = [];
-  for (const body of bodies) {
-    let pl: any = null;
+  const runOne = async (body: Record<string, unknown>) => {
     for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        pl = await callScraper(def.fn, body);
-        break;
-      } catch (e: any) {
-        errors.push({ pass: bodies.indexOf(body), attempt, error: String(e.message ?? e) });
-        if (attempt === 2) break;
-        await new Promise(r => setTimeout(r, 1200));
+      try { return await callScraper(def.fn, body); }
+      catch (e: any) {
+        errors.push({ body, attempt, error: String(e.message ?? e) });
+        if (attempt === 2) return null;
+        await new Promise(r => setTimeout(r, 1000));
       }
     }
-    if (pl) payloads.push(pl);
+    return null;
+  };
+  const BATCH = 5;
+  for (let i = 0; i < bodies.length; i += BATCH) {
+    const slice = bodies.slice(i, i + BATCH);
+    const results = await Promise.all(slice.map(runOne));
+    for (const r of results) if (r) payloads.push(r);
   }
 
   if (payloads.length === 0) {
