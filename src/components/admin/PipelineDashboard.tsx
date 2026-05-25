@@ -78,7 +78,7 @@ export const PipelineDashboard = () => {
   const [busyItem, setBusyItem] = useState<string | null>(null);
   const [reviewItem, setReviewItem] = useState<Pending | null>(null);
   const [query, setQuery] = useState("");
-  const [filterPlatform, setFilterPlatform] = useState<"all" | "finance" | "investor" | "both">("all");
+  const [filterPlatform, setFilterPlatform] = useState<"all" | "investor">("all");
   const [autoScrapeEnabled, setAutoScrapeEnabled] = useState<boolean>(false);
   const [savingMaster, setSavingMaster] = useState(false);
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
