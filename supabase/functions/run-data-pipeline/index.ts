@@ -276,11 +276,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   // category produces fresh, specific opportunities in full detail every run.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
   const bodies: Record<string, unknown>[] = [];
-  if (source === "financial-research") {
-    for (const cat of FINANCE_RESEARCH_CATEGORIES) {
-      bodies.push({ categoryKey: cat, platform: "finance", deep: true, detail: "full", ...baseCfg });
-    }
-  } else if (source === "investor-research") {
+  if (source === "investor-research") {
     for (const cat of INVESTOR_RESEARCH_CATEGORIES) {
       bodies.push({ categoryKey: cat, platform: "investor", deep: true, detail: "full", ...baseCfg });
     }
