@@ -130,7 +130,7 @@ async function callScraper(fn: string, body: unknown): Promise<any> {
 
 async function aiEnrich(item: { title: string; summary?: string; url?: string; raw?: any }) {
   if (!LOVABLE_API_KEY) {
-    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general" };
+    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
   try {
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -139,8 +139,17 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are a financial-intelligence enrichment assistant. Reply ONLY with compact JSON: {summary, tags:[<=5], score:0-5 number, category}. score = conviction." },
-          { role: "user", content: `Title: ${item.title}\nURL: ${item.url ?? ""}\nContext: ${(item.summary ?? "").slice(0, 800)}\nRaw: ${JSON.stringify(item.raw ?? {}).slice(0, 600)}` },
+          {
+            role: "system",
+            content:
+              "You are an alternative-investment enrichment assistant. Reply ONLY with compact JSON: " +
+              "{summary, tags:[<=5], score:0-5 number, category, price_gbp:number|null}. " +
+              "price_gbp MUST be the realistic GBP entry price / minimum ticket / asking price / valuation " +
+              "for THIS specific opportunity, as a plain number of pounds (no commas, no symbols, no abbreviations). " +
+              "Convert USD/EUR to GBP using a reasonable recent FX rate. " +
+              "If no defensible GBP figure exists in the source, return price_gbp: null — never guess.",
+          },
+          { role: "user", content: `Title: ${item.title}\nURL: ${item.url ?? ""}\nContext: ${(item.summary ?? "").slice(0, 1200)}\nRaw: ${JSON.stringify(item.raw ?? {}).slice(0, 1200)}` },
         ],
       }),
     });
@@ -149,15 +158,18 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     const txt = j.choices?.[0]?.message?.content ?? "{}";
     const cleaned = txt.replace(/```json\s*|```/g, "").trim();
     const parsed = JSON.parse(cleaned);
+    const rawPrice = parsed.price_gbp;
+    const price_gbp = typeof rawPrice === "number" && isFinite(rawPrice) && rawPrice > 0 ? rawPrice : null;
     return {
       summary: String(parsed.summary ?? item.summary ?? item.title).slice(0, 1200),
       tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5).map(String) : [],
       score: Math.max(0, Math.min(5, Number(parsed.score) || 3)),
       category: String(parsed.category ?? "general").slice(0, 64),
+      price_gbp,
     };
   } catch (e) {
     console.warn("[aiEnrich] fallback:", e);
-    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general" };
+    return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
 }
 
