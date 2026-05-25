@@ -352,6 +352,15 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
 
   for (const it of items) {
     try {
+      // Drop stocks/crypto items even if a scraper slips one through
+      const titleLower = it.title.toLowerCase();
+      const rawText = JSON.stringify(it.raw ?? {}).toLowerCase();
+      if (/\b(stock|equity|equities|ticker|nasdaq|nyse|lse:|share price)\b/.test(titleLower) ||
+          /\b(crypto|cryptocurrency|token|altcoin|memecoin|defi|on-chain|blockchain coin)\b/.test(titleLower) ||
+          /\bcategory["']?\s*:\s*["']?(stocks?|equities|crypto|cryptocurrency)/.test(rawText)) {
+        continue;
+      }
+
       const dedupBasis = `${source}::${it.url ?? it.title.toLowerCase()}`;
       const dedup_hash = await sha256(dedupBasis);
 
@@ -364,6 +373,38 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
       const ai = await aiEnrich(it);
       enriched++;
 
+      // Pricing must be defensible — skip items the AI could not price in GBP
+      if (ai.price_gbp == null) {
+        errors.push({ item: it.title, error: "skipped_no_price" });
+        continue;
+      }
+
+      // Bespoke 16:9 thumbnail (no generic stock images allowed)
+      const thumbnailUrl = await generateOpportunityThumbnail({
+        title: it.title,
+        summary: ai.summary,
+        category: ai.category,
+        tags: ai.tags,
+        itemKey: dedup_hash,
+        admin: supabase,
+      });
+
+      const enrichedPayload: Record<string, unknown> = {
+        ...it.raw,
+        ai_summary: ai.summary,
+        ai_tags: ai.tags,
+        ai_score: ai.score,
+        price: ai.price_gbp,
+        price_currency: "GBP",
+        currency: "GBP",
+      };
+      if (thumbnailUrl) {
+        enrichedPayload.generated_thumbnail_url = thumbnailUrl;
+        enrichedPayload.ai_thumbnail_url = thumbnailUrl;
+        enrichedPayload.thumbnail_url = thumbnailUrl;
+        enrichedPayload.image_url = thumbnailUrl;
+      }
+
       const { error } = await supabase.from("pipeline_pending_items").insert({
         run_id: runId,
         source,
@@ -375,7 +416,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
         category: ai.category,
         source_url: it.url,
         raw_payload: it.raw as never,
-        enriched_payload: { ...it.raw, ai_summary: ai.summary, ai_tags: ai.tags, ai_score: ai.score } as never,
+        enriched_payload: enrichedPayload as never,
         ai_tags: ai.tags,
         ai_score: ai.score,
       });
