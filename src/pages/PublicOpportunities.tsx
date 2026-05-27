@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
+import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
 
 interface OpportunityPreview {
   id: string;
