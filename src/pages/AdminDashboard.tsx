@@ -811,7 +811,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Sidebar */}
+      {/* Sidebar (desktop only — auto-hides below md) */}
       <AdminSidebar 
         activeTab={sidebarActiveTab} 
         onTabChange={(id) => {
@@ -822,9 +822,32 @@ export default function AdminDashboard() {
         onLogout={handleLogout}
       />
 
+      {/* Mobile sidebar drawer */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            aria-label="Open admin navigation"
+            className="md:hidden fixed top-3 left-3 z-50 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 shadow-lg backdrop-blur-xl"
+          >
+            <Menu className="h-5 w-5 text-slate-700" />
+          </button>
+        </SheetTrigger>
+        <SheetContent side="left" className="p-0 w-[85vw] max-w-[20rem] overflow-y-auto">
+          <AdminSidebarMobile
+            activeTab={sidebarActiveTab}
+            onTabChange={(id) => {
+              const hub = hubMap[id];
+              setActiveTab(hub ? hub.children[0].id : id);
+            }}
+            onLogout={handleLogout}
+          />
+        </SheetContent>
+      </Sheet>
+
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-white">
-        <div className="min-h-screen bg-white p-6 space-y-6">
+      <main className="flex-1 overflow-auto bg-white min-w-0">
+        <div className="min-h-screen bg-white p-4 pt-16 md:p-6 md:pt-6 space-y-6 safe-area-bottom">
           {/* Sub-navigation for combined hubs */}
           {activeHub && activeHub.children.length > 1 && (
             <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
