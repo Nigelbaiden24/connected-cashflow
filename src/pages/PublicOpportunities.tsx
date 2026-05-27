@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
+import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
 
 interface OpportunityPreview {
   id: string;
@@ -122,7 +123,7 @@ export default function PublicOpportunities() {
 
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
           <button onClick={() => navigate("/")} className="flex items-center gap-2.5">
             <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
             <span className="font-semibold tracking-tight text-slate-900">FlowPulse</span>
@@ -130,6 +131,7 @@ export default function PublicOpportunities() {
               Intelligence
             </Badge>
           </button>
+          <HomepageNavLinks />
           <div className="flex items-center gap-2">
             {!isAuthed && (
               <>
