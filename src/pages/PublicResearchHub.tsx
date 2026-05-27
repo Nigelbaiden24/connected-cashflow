@@ -311,65 +311,87 @@ function ReportCard({
       ? "bg-rose-50 text-rose-700 border-rose-200"
       : "bg-slate-50 text-slate-600 border-slate-200";
 
+  const description = report.excerpt?.trim() || report.first_page_title || "Institutional-grade analyst research with conviction, risk, valuation and ESG scoring.";
+
   return (
-    <Card
-      onClick={onOpen}
-      onMouseDown={(event) => locked && event.preventDefault()}
-      className={`group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] ${locked ? "select-none" : ""}`}
-    >
-      <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
+    <HoverCard openDelay={150} closeDelay={80}>
+      <HoverCardTrigger asChild>
+        <Card
+          onClick={onOpen}
+          onMouseDown={(event) => locked && event.preventDefault()}
+          className={`group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] ${locked ? "select-none" : ""}`}
+        >
+          <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
 
-      {locked && (
-        <button
-          type="button"
-          aria-label={`Sign in or create account to read ${report.title}`}
-          className="absolute inset-0 z-30 cursor-pointer bg-transparent"
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onOpen();
-          }}
-        />
-      )}
+          {locked && (
+            <button
+              type="button"
+              aria-label={`Sign in or create account to read ${report.title}`}
+              className="absolute inset-0 z-30 cursor-pointer bg-transparent"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onOpen();
+              }}
+            />
+          )}
 
-      {/* Actual generated report PDF page, scaled down */}
-      <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
-        <ReportPdfPagePreview report={report} blurred={blurred} />
-        {locked && (
-          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/10">
-            <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
-              <Lock className="h-3.5 w-3.5" /> Sign in or create account
-            </div>
-          </div>
-        )}
-      </div>
-
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${isStock ? "border-sky-200 bg-sky-50 text-sky-600" : "border-amber-200 bg-amber-50 text-amber-600"}`}>
-              {isStock ? <TrendingUp className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
-            </div>
-            <div className="min-w-0">
-              <div className="text-[10px] uppercase tracking-widest text-slate-400">
-                {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
+          {/* Actual generated report PDF page, scaled down */}
+          <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
+            <ReportPdfPagePreview report={report} blurred={blurred} />
+            {locked && (
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/10">
+                <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
+                  <Lock className="h-3.5 w-3.5" /> Sign in or create account
+                </div>
               </div>
-              <h3 className="text-base font-semibold text-slate-900 truncate group-hover:text-amber-600 transition-colors">
-                {report.title}
-              </h3>
-            </div>
+            )}
           </div>
-          <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
-        </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-          <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
-            {score !== null ? `${score.toFixed(1)}/5 conviction` : "Research"}
-          </Badge>
-          <span className="text-[11px] text-slate-400">{dateStr}</span>
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${isStock ? "border-sky-200 bg-sky-50 text-sky-600" : "border-amber-200 bg-amber-50 text-amber-600"}`}>
+                  {isStock ? <TrendingUp className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-widest text-slate-400">
+                    {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
+                  </div>
+                  <h3 className="text-base font-semibold text-slate-900 truncate group-hover:text-amber-600 transition-colors">
+                    {report.title}
+                  </h3>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
+                {score !== null ? `${score.toFixed(1)}/5 conviction` : "Research"}
+              </Badge>
+              <span className="text-[11px] text-slate-400">{dateStr}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </HoverCardTrigger>
+      <HoverCardContent side="top" align="center" className="w-80 border-slate-200 bg-white text-slate-700 shadow-xl">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            {isStock ? <TrendingUp className="h-3.5 w-3.5 text-sky-500" /> : <Coins className="h-3.5 w-3.5 text-amber-500" />}
+            <span className="text-[10px] uppercase tracking-widest text-slate-400">
+              {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
+            </span>
+          </div>
+          <h4 className="text-sm font-semibold text-slate-900 leading-snug">{report.title}</h4>
+          <p className="text-xs text-slate-600 leading-relaxed line-clamp-5">{description}</p>
+          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
+            <span>{score !== null ? `${score.toFixed(1)}/5 conviction` : "Analyst report"}</span>
+            <span>{dateStr}</span>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 
