@@ -39,7 +39,8 @@ export function AdminSidebar({ activeTab, onTabChange, onLogout }: AdminSidebarP
   return (
     <div
       className={cn(
-        "relative flex flex-col h-screen sticky top-0 border-r transition-all duration-300 ease-in-out",
+        "relative flex-col h-screen sticky top-0 border-r transition-all duration-300 ease-in-out",
+        "hidden md:flex",
         "bg-gradient-to-b from-white/95 via-white/90 to-slate-50/95",
         "backdrop-blur-xl border-slate-200/60",
         "shadow-[4px_0_24px_-2px_rgba(0,0,0,0.08)]",
