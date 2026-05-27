@@ -14,8 +14,12 @@ const Install = () => {
   const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    const ua = navigator.userAgent || "";
+    setIsIOS(/iphone|ipad|ipod/i.test(ua));
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -23,8 +27,11 @@ const Install = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Check if already installed (covers both standard PWA + iOS Safari)
+    if (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true
+    ) {
       setInstalled(true);
     }
 
@@ -32,6 +39,7 @@ const Install = () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
   }, []);
+
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
