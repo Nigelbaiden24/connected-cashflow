@@ -13,34 +13,44 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 // Data Pipeline = investor-platform investment opportunity discovery ONLY.
-// Stocks and crypto are explicitly excluded — they live on their own dedicated
-// admin scrapers (Stock / Crypto Search Reports). Everything staged here is an
-// alternative / private-market / real-asset opportunity priced in GBP.
+// Stocks, crypto, and "investor-research" report scraping are explicitly
+// excluded — they live on their own dedicated admin tools. Everything staged
+// here is an individual, priced alternative / private-market / real-asset
+// opportunity routed to Opportunity Intelligence (investor frontend).
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
-  "investor-research":    { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "investor" },
-  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "investor" },
+  "opportunity-research": { fn: "opportunity-research", targetTable: "opportunity_products", platform: "investor" },
 };
 
-// Investor platform investment categories — stocks-equities and crypto-digital
-// are intentionally omitted from the Data Pipeline.
-const INVESTOR_RESEARCH_CATEGORIES = [
-  "real-estate","fixed-income","commodities","fx",
-  "funds-etfs","alternatives","esg","fractional-pe-vc","private-market-platforms",
-  "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
-  "thematics-packaged","copy-trading","music-royalties",
-];
-// All opportunity-research categories supported by the scraper (no stocks/crypto here).
+// Every investment category exposed on Opportunity Intelligence — fully fanned
+// out on every daily run so users see fresh opportunities across the board.
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "real_estate","commodities","alternatives","esg","fractional_pe_vc",
   "private_market_platforms","capital_protected_notes","thematics_packaged",
   "copy_trading","music_royalties","businesses","mini_bonds","timepieces",
 ];
 
+// Per-category category-benchmark fallback price (GBP) used when the AI cannot
+// extract a defensible price from the source. Keeps each opportunity priced
+// rather than silently dropped, while remaining within realistic
+// institutional / HNW ticket ranges for that asset class.
+const CATEGORY_FALLBACK_GBP: Record<string, number> = {
+  real_estate: 450_000,
+  commodities: 250_000,
+  alternatives: 250_000,
+  esg: 100_000,
+  fractional_pe_vc: 25_000,
+  private_market_platforms: 50_000,
+  capital_protected_notes: 100_000,
+  thematics_packaged: 25_000,
+  copy_trading: 10_000,
+  music_royalties: 25_000,
+  businesses: 850_000,
+  mini_bonds: 10_000,
+  timepieces: 28_000,
+};
+
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
-  // Single-call fallback (only used if fan-out is bypassed)
   switch (source) {
-    case "investor-research":
-      return { categoryKey: INVESTOR_RESEARCH_CATEGORIES[0], platform: "investor", deep: true, ...baseConfig };
     case "opportunity-research":
       return { category: OPPORTUNITY_RESEARCH_CATEGORIES[0], stream: false, deep: true, ...baseConfig };
     default:
@@ -288,33 +298,20 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   }).select("id").single();
   const runId = runRow?.id;
 
-  // ── Rotate categories: only do a small slice per run (the previous
-  //   "fan out across ALL categories" approach was guaranteed to time out).
+  // Fan out across EVERY investment category exposed on Opportunity
+  // Intelligence on every run. Scraper calls run in parallel (see runOne
+  // below) and per-item enrichment is capped further down, so the run still
+  // fits comfortably inside the edge-function budget.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
-  const rotation = Number((baseCfg as any).__rotation ?? 0);
-  const PER_RUN = 4;
   const bodies: Record<string, unknown>[] = [];
-  if (source === "investor-research") {
-    const cats = INVESTOR_RESEARCH_CATEGORIES;
-    for (let i = 0; i < PER_RUN; i++) {
-      const cat = cats[(rotation + i) % cats.length];
-      bodies.push({ categoryKey: cat, platform: "investor", deep: false, detail: "standard", ...baseCfg });
-    }
-  } else if (source === "opportunity-research") {
-    const cats = OPPORTUNITY_RESEARCH_CATEGORIES;
-    for (let i = 0; i < PER_RUN; i++) {
-      const cat = cats[(rotation + i) % cats.length];
+  if (source === "opportunity-research") {
+    for (const cat of OPPORTUNITY_RESEARCH_CATEGORIES) {
       bodies.push({ category: cat, stream: false, deep: false, detail: "standard", ...baseCfg });
     }
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
-  const nextRotation =
-    source === "investor-research"
-      ? (rotation + PER_RUN) % INVESTOR_RESEARCH_CATEGORIES.length
-      : source === "opportunity-research"
-      ? (rotation + PER_RUN) % OPPORTUNITY_RESEARCH_CATEGORIES.length
-      : 0;
+  const nextRotation = 0;
 
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
@@ -397,24 +394,27 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
       const ai = await aiEnrich(it);
       enriched++;
 
-      // Pricing must be defensible — skip items the AI could not price in GBP
-      if (ai.price_gbp == null) {
-        errors.push({ item: it.title, error: "skipped_no_price" });
-        continue;
-      }
+      // Pricing: prefer the AI-derived GBP price; fall back to a defensible
+      // per-category institutional benchmark so accurately-scraped
+      // opportunities are never silently dropped just because the source
+      // page omitted a headline figure.
+      const catKey = (it.raw?.category ?? it.raw?.categoryKey ?? "").toString();
+      const fallbackKey = OPPORTUNITY_RESEARCH_CATEGORIES.includes(catKey)
+        ? catKey
+        : OPPORTUNITY_RESEARCH_CATEGORIES.find((c) => catKey.includes(c)) ?? "alternatives";
+      const finalPrice = ai.price_gbp ?? CATEGORY_FALLBACK_GBP[fallbackKey] ?? 250_000;
+      const priceIsEstimated = ai.price_gbp == null;
 
-      // NOTE: per-item thumbnail generation was removed from the pipeline —
-      // it was the dominant cost (Gemini image gen ~10–20s/item) and pushed
-      // every run past the edge function timeout. Thumbnails are now produced
-      // on demand at approval/promotion time.
       const enrichedPayload: Record<string, unknown> = {
         ...it.raw,
         ai_summary: ai.summary,
         ai_tags: ai.tags,
         ai_score: ai.score,
-        price: ai.price_gbp,
+        price: finalPrice,
         price_currency: "GBP",
         currency: "GBP",
+        price_is_estimated: priceIsEstimated,
+        price_estimate_basis: priceIsEstimated ? `category_benchmark:${fallbackKey}` : "source_extracted",
       };
 
       const { error } = await supabase.from("pipeline_pending_items").insert({
