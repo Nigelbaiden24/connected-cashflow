@@ -25,6 +25,7 @@ import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
 import { ResearchReportReader } from "@/components/research/ResearchReportReader";
+import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
 
 interface PublicResearchPreview {
   id: string;
