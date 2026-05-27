@@ -13,34 +13,44 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 // Data Pipeline = investor-platform investment opportunity discovery ONLY.
-// Stocks and crypto are explicitly excluded — they live on their own dedicated
-// admin scrapers (Stock / Crypto Search Reports). Everything staged here is an
-// alternative / private-market / real-asset opportunity priced in GBP.
+// Stocks, crypto, and "investor-research" report scraping are explicitly
+// excluded — they live on their own dedicated admin tools. Everything staged
+// here is an individual, priced alternative / private-market / real-asset
+// opportunity routed to Opportunity Intelligence (investor frontend).
 const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: string }> = {
-  "investor-research":    { fn: "financial-research-scraper", targetTable: "opportunity_products", platform: "investor" },
-  "opportunity-research": { fn: "opportunity-research",       targetTable: "opportunity_products", platform: "investor" },
+  "opportunity-research": { fn: "opportunity-research", targetTable: "opportunity_products", platform: "investor" },
 };
 
-// Investor platform investment categories — stocks-equities and crypto-digital
-// are intentionally omitted from the Data Pipeline.
-const INVESTOR_RESEARCH_CATEGORIES = [
-  "real-estate","fixed-income","commodities","fx",
-  "funds-etfs","alternatives","esg","fractional-pe-vc","private-market-platforms",
-  "derivatives","capital-protected-notes","savings-cash-yield","pensions-tax-wrappers",
-  "thematics-packaged","copy-trading","music-royalties",
-];
-// All opportunity-research categories supported by the scraper (no stocks/crypto here).
+// Every investment category exposed on Opportunity Intelligence — fully fanned
+// out on every daily run so users see fresh opportunities across the board.
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "real_estate","commodities","alternatives","esg","fractional_pe_vc",
   "private_market_platforms","capital_protected_notes","thematics_packaged",
   "copy_trading","music_royalties","businesses","mini_bonds","timepieces",
 ];
 
+// Per-category category-benchmark fallback price (GBP) used when the AI cannot
+// extract a defensible price from the source. Keeps each opportunity priced
+// rather than silently dropped, while remaining within realistic
+// institutional / HNW ticket ranges for that asset class.
+const CATEGORY_FALLBACK_GBP: Record<string, number> = {
+  real_estate: 450_000,
+  commodities: 250_000,
+  alternatives: 250_000,
+  esg: 100_000,
+  fractional_pe_vc: 25_000,
+  private_market_platforms: 50_000,
+  capital_protected_notes: 100_000,
+  thematics_packaged: 25_000,
+  copy_trading: 10_000,
+  music_royalties: 25_000,
+  businesses: 850_000,
+  mini_bonds: 10_000,
+  timepieces: 28_000,
+};
+
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
-  // Single-call fallback (only used if fan-out is bypassed)
   switch (source) {
-    case "investor-research":
-      return { categoryKey: INVESTOR_RESEARCH_CATEGORIES[0], platform: "investor", deep: true, ...baseConfig };
     case "opportunity-research":
       return { category: OPPORTUNITY_RESEARCH_CATEGORIES[0], stream: false, deep: true, ...baseConfig };
     default:
