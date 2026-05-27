@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     if (validation?.client_id) {
       await supabase.from("api_usage_logs").insert({
         api_client_id: validation.client_id,
-        api_key: apiKey.substring(0, 8) + "...",
+        api_key_prefix: apiKey.substring(0, 8) + "...",
         endpoint: resource,
         method: req.method,
         response_status: status,
@@ -177,7 +177,7 @@ async function logUsage(
 ) {
   await supabase.from("api_usage_logs").insert({
     api_client_id: clientId,
-    api_key: apiKey.substring(0, 8) + "...",
+    api_key_prefix: apiKey.substring(0, 8) + "...",
     endpoint,
     method: req.method,
     response_status: status,
