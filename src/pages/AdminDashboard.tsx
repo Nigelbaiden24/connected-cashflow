@@ -836,14 +836,44 @@ export default function AdminDashboard() {
           </button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-[85vw] max-w-[20rem] overflow-y-auto">
-          <AdminSidebarMobile
-            activeTab={sidebarActiveTab}
-            onTabChange={(id) => {
-              const hub = hubMap[id];
-              setActiveTab(hub ? hub.children[0].id : id);
-            }}
-            onLogout={handleLogout}
-          />
+          <div className="flex flex-col h-full bg-gradient-to-b from-white to-slate-50">
+            <div className="px-4 py-4 border-b border-slate-200/60">
+              <h2 className="text-base font-bold text-slate-900">FlowPulse Admin</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Mobile navigation</p>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+              {filterNavByPlatform('finance').map((item) => {
+                const Icon = item.icon;
+                const isActive = sidebarActiveTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      const hub = hubMap[item.id];
+                      setActiveTab(hub ? hub.children[0].id : item.id);
+                    }}
+                    className={
+                      "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors min-h-[44px] " +
+                      (isActive
+                        ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow"
+                        : "text-slate-700 hover:bg-slate-100")
+                    }
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate text-left">{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="p-3 border-t border-slate-200/60">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 min-h-[44px]"
+              >
+                <LogOut className="h-4 w-4" /> Logout
+              </button>
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
 
