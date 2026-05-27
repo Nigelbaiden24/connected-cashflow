@@ -774,8 +774,8 @@ export default function FinancialPlanningEnhanced() {
               ))}
             </div>
           ) : (
-            <div className="rounded-md border">
-              <table className="w-full">
+            <div className="rounded-md border overflow-x-auto -webkit-overflow-scrolling-touch">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="p-4 text-left">
