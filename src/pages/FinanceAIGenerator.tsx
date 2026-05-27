@@ -1036,6 +1036,7 @@ ELITE DOCUMENT REQUIREMENTS:
             ).join("");
 
             const tableHtml = `
+              <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
               <table style="width: 100%; border-collapse: collapse; min-width: 480px;">
                 <thead>
                   <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
@@ -1051,6 +1052,7 @@ ELITE DOCUMENT REQUIREMENTS:
                   ${bodyRows}
                 </tbody>
               </table>
+              </div>
             `;
 
             const newSection: any = {
