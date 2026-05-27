@@ -298,33 +298,20 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   }).select("id").single();
   const runId = runRow?.id;
 
-  // ── Rotate categories: only do a small slice per run (the previous
-  //   "fan out across ALL categories" approach was guaranteed to time out).
+  // Fan out across EVERY investment category exposed on Opportunity
+  // Intelligence on every run. Scraper calls run in parallel (see runOne
+  // below) and per-item enrichment is capped further down, so the run still
+  // fits comfortably inside the edge-function budget.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
-  const rotation = Number((baseCfg as any).__rotation ?? 0);
-  const PER_RUN = 4;
   const bodies: Record<string, unknown>[] = [];
-  if (source === "investor-research") {
-    const cats = INVESTOR_RESEARCH_CATEGORIES;
-    for (let i = 0; i < PER_RUN; i++) {
-      const cat = cats[(rotation + i) % cats.length];
-      bodies.push({ categoryKey: cat, platform: "investor", deep: false, detail: "standard", ...baseCfg });
-    }
-  } else if (source === "opportunity-research") {
-    const cats = OPPORTUNITY_RESEARCH_CATEGORIES;
-    for (let i = 0; i < PER_RUN; i++) {
-      const cat = cats[(rotation + i) % cats.length];
+  if (source === "opportunity-research") {
+    for (const cat of OPPORTUNITY_RESEARCH_CATEGORIES) {
       bodies.push({ category: cat, stream: false, deep: false, detail: "standard", ...baseCfg });
     }
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
-  const nextRotation =
-    source === "investor-research"
-      ? (rotation + PER_RUN) % INVESTOR_RESEARCH_CATEGORIES.length
-      : source === "opportunity-research"
-      ? (rotation + PER_RUN) % OPPORTUNITY_RESEARCH_CATEGORIES.length
-      : 0;
+  const nextRotation = 0;
 
   const errors: any[] = [];
   let fetched = 0, staged = 0, enriched = 0, isNew = 0;
