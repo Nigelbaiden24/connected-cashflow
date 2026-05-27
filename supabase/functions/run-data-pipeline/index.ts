@@ -394,24 +394,27 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
       const ai = await aiEnrich(it);
       enriched++;
 
-      // Pricing must be defensible — skip items the AI could not price in GBP
-      if (ai.price_gbp == null) {
-        errors.push({ item: it.title, error: "skipped_no_price" });
-        continue;
-      }
+      // Pricing: prefer the AI-derived GBP price; fall back to a defensible
+      // per-category institutional benchmark so accurately-scraped
+      // opportunities are never silently dropped just because the source
+      // page omitted a headline figure.
+      const catKey = (it.raw?.category ?? it.raw?.categoryKey ?? "").toString();
+      const fallbackKey = OPPORTUNITY_RESEARCH_CATEGORIES.includes(catKey)
+        ? catKey
+        : OPPORTUNITY_RESEARCH_CATEGORIES.find((c) => catKey.includes(c)) ?? "alternatives";
+      const finalPrice = ai.price_gbp ?? CATEGORY_FALLBACK_GBP[fallbackKey] ?? 250_000;
+      const priceIsEstimated = ai.price_gbp == null;
 
-      // NOTE: per-item thumbnail generation was removed from the pipeline —
-      // it was the dominant cost (Gemini image gen ~10–20s/item) and pushed
-      // every run past the edge function timeout. Thumbnails are now produced
-      // on demand at approval/promotion time.
       const enrichedPayload: Record<string, unknown> = {
         ...it.raw,
         ai_summary: ai.summary,
         ai_tags: ai.tags,
         ai_score: ai.score,
-        price: ai.price_gbp,
+        price: finalPrice,
         price_currency: "GBP",
         currency: "GBP",
+        price_is_estimated: priceIsEstimated,
+        price_estimate_basis: priceIsEstimated ? `category_benchmark:${fallbackKey}` : "source_extracted",
       };
 
       const { error } = await supabase.from("pipeline_pending_items").insert({
