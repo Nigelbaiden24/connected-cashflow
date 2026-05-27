@@ -45,7 +45,7 @@ export function AIInsightsPanel({
   };
 
   return (
-    <Card className="border-primary/20 h-[calc(100vh-12rem)] flex flex-col">
+    <Card className="border-primary/20 h-[calc(100dvh-12rem)] flex flex-col">
       <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-4">
         <div className="flex flex-col gap-3">
           <CardTitle className="flex items-center gap-2 text-lg">
