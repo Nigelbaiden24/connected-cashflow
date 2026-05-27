@@ -501,15 +501,23 @@ Deno.serve(async (req) => {
       due = data ?? [];
     }
 
-    const results: any[] = [];
-    for (const sched of due) {
-      sched.triggered_by = triggeredBy;
-      results.push(await runOneSource(supabase, sched));
-    }
+    // Kick off each due source in the background so the HTTP request returns
+    // immediately. This prevents the edge function timeout from leaving runs
+    // stuck in "running" and the schedule pinned at a stale next_run_at.
+    const task = (async () => {
+      for (const sched of due) {
+        sched.triggered_by = triggeredBy;
+        try { await runOneSource(supabase, sched); }
+        catch (e) { console.error("[runOneSource] uncaught", sched.source, e); }
+      }
+    })();
+    // @ts-ignore Deno Deploy EdgeRuntime
+    if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(task);
 
-    return new Response(JSON.stringify({ ok: true, ran: results.length, results }), {
+    return new Response(JSON.stringify({ ok: true, queued: due.length, sources: due.map((d: any) => d.source) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (err: any) {
     console.error("run-data-pipeline error:", err);
     return new Response(JSON.stringify({ ok: false, error: String(err?.message ?? err) }), {
