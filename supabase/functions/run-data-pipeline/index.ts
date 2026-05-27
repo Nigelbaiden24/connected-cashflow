@@ -159,7 +159,12 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     const cleaned = txt.replace(/```json\s*|```/g, "").trim();
     const parsed = JSON.parse(cleaned);
     const rawPrice = parsed.price_gbp;
-    const price_gbp = typeof rawPrice === "number" && isFinite(rawPrice) && rawPrice > 0 ? rawPrice : null;
+    // Defensible pricing: must be a positive finite number within a sane range
+    // (£1k floor avoids junk, £50bn ceiling avoids hallucinated valuations).
+    const price_gbp =
+      typeof rawPrice === "number" && isFinite(rawPrice) && rawPrice >= 1_000 && rawPrice <= 50_000_000_000
+        ? Math.round(rawPrice)
+        : null;
     return {
       summary: String(parsed.summary ?? item.summary ?? item.title).slice(0, 1200),
       tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5).map(String) : [],
@@ -172,6 +177,7 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
 }
+
 
 // Normalise scraper outputs into a flat list of candidate items
 function extractItems(source: string, payload: any): Array<{ title: string; summary?: string; url?: string; raw: any }> {
