@@ -231,7 +231,7 @@ export function MobileMenu({ platform = "business", userEmail = "" }: MobileMenu
           )}
         </div>
 
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className="h-[calc(100dvh-200px)]">
           <div className="p-4 space-y-6">
             {navGroups.map((group) => (
               <div key={group.label} className="space-y-2">
