@@ -139,29 +139,43 @@ Deno.serve(async (req) => {
       const topic = body.autopilotTopic?.topic || body.manualTopic;
       const ticker = body.autopilotTopic?.ticker ?? s.ticker ?? "";
       console.log(`[worker ${s.id}] generating "${topic}" (${s.asset_type})`);
-      try {
-        await runGeneration({
-          assetType: s.asset_type,
-          topic,
-          ticker,
-          extraUrls: s.extra_urls ?? [],
-          createdBy: s.created_by,
-          admin,
-        });
-        console.log(`[worker ${s.id}] success: ${topic}`);
-        return new Response(JSON.stringify({ ok: true, topic }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      } catch (e) {
-        console.error(`[worker ${s.id}] failed:`, (e as Error).message);
-        await admin.from("research_scraper_schedules").update({
-          last_run_status: "partial_error",
-          last_run_error: `${topic}: ${(e as Error).message}`.slice(0, 500),
-        }).eq("id", s.id);
-        return new Response(JSON.stringify({ ok: false, error: (e as Error).message }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+
+      // Retry up to 2 times. Niche crypto/penny-stock topics frequently get
+      // a malformed-JSON response from the AI on the first try — a single
+      // retry typically succeeds, which is why crypto previously trailed
+      // stock in produced reports.
+      const maxAttempts = 3;
+      let lastErr: Error | null = null;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          await runGeneration({
+            assetType: s.asset_type,
+            topic,
+            ticker,
+            extraUrls: s.extra_urls ?? [],
+            createdBy: s.created_by,
+            admin,
+          });
+          console.log(`[worker ${s.id}] success on attempt ${attempt}: ${topic}`);
+          return new Response(JSON.stringify({ ok: true, topic, attempt }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        } catch (e) {
+          lastErr = e as Error;
+          console.warn(`[worker ${s.id}] attempt ${attempt}/${maxAttempts} failed: ${lastErr.message}`);
+          if (attempt < maxAttempts) {
+            await new Promise((r) => setTimeout(r, 1500 * attempt));
+          }
+        }
       }
+      console.error(`[worker ${s.id}] giving up after ${maxAttempts} attempts: ${lastErr?.message}`);
+      await admin.from("research_scraper_schedules").update({
+        last_run_status: "partial_error",
+        last_run_error: `${topic}: ${lastErr?.message ?? "unknown"}`.slice(0, 500),
+      }).eq("id", s.id);
+      return new Response(JSON.stringify({ ok: false, error: lastErr?.message }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // -------- ORCHESTRATOR MODE: pick due schedules, fan out workers --------
