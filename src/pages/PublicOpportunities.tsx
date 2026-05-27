@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
   Lock,
   ArrowRight,
@@ -271,77 +272,104 @@ function OpportunityCard({ item, onOpen }: { item: OpportunityPreview; onOpen: (
   const categoryLabel = item.category ? CATEGORY_LABEL[item.category] ?? item.category : "Opportunity";
   const locationLabel = [item.location, item.country].filter(Boolean).join(", ");
 
+  const description =
+    item.short_description?.trim() ||
+    `${categoryLabel}${item.sub_category ? ` · ${item.sub_category}` : ""}${locationLabel ? ` · ${locationLabel}` : ""}. Vetted on FlowPulse's 0–5 conviction framework.`;
+
   return (
-    <Card
-      onClick={onOpen}
-      onMouseDown={(e) => e.preventDefault()}
-      className="group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] select-none"
-    >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent z-10" />
+    <HoverCard openDelay={150} closeDelay={80}>
+      <HoverCardTrigger asChild>
+        <Card
+          onClick={onOpen}
+          onMouseDown={(e) => e.preventDefault()}
+          className="group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] select-none"
+        >
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/60 to-transparent z-10" />
 
-      {/* Lock overlay covers whole card to enforce paywall */}
-      <button
-        type="button"
-        aria-label={`Sign in or create account to view ${item.title}`}
-        className="absolute inset-0 z-30 cursor-pointer bg-transparent"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onOpen();
-        }}
-      />
-
-      {/* Image / preview */}
-      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
-        {item.thumbnail_url ? (
-          <img
-            src={item.thumbnail_url}
-            alt={item.title}
-            className="h-full w-full object-cover blur-md scale-110"
-            loading="lazy"
+          {/* Lock overlay covers whole card to enforce paywall */}
+          <button
+            type="button"
+            aria-label={`Sign in or create account to view ${item.title}`}
+            className="absolute inset-0 z-30 cursor-pointer bg-transparent"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onOpen();
+            }}
           />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-400">
-            <Building2 className="h-10 w-10" />
-          </div>
-        )}
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px]">
-          <div className="flex items-center gap-2 rounded-full border border-indigo-300/40 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-indigo-200 backdrop-blur-sm">
-            <Lock className="h-3.5 w-3.5" /> Sign in to view
-          </div>
-        </div>
-        {item.featured && (
-          <Badge className="absolute top-3 left-3 z-20 bg-indigo-600 text-white border-0">Featured</Badge>
-        )}
-      </div>
 
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="min-w-0">
-            <div className="text-[10px] uppercase tracking-widest text-slate-400">{categoryLabel}</div>
-            <h3 className="text-base font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
-              {item.title}
-            </h3>
-            {locationLabel && (
-              <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                <MapPin className="h-3 w-3" /> {locationLabel}
+          {/* Image / preview */}
+          <div className="relative h-56 overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
+            {item.thumbnail_url ? (
+              <img
+                src={item.thumbnail_url}
+                alt={item.title}
+                className="h-full w-full object-cover blur-md scale-110"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-slate-400">
+                <Building2 className="h-10 w-10" />
               </div>
             )}
+            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px]">
+              <div className="flex items-center gap-2 rounded-full border border-indigo-300/40 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-indigo-200 backdrop-blur-sm">
+                <Lock className="h-3.5 w-3.5" /> Sign in to view
+              </div>
+            </div>
+            {item.featured && (
+              <Badge className="absolute top-3 left-3 z-20 bg-indigo-600 text-white border-0">Featured</Badge>
+            )}
           </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
-        </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-          <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
-            {score !== null ? `${score.toFixed(1)}/5 conviction` : "Analyst review"}
-          </Badge>
-          {typeof item.expected_irr === "number" && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600">
-              <TrendingUp className="h-3 w-3 text-emerald-500" /> {item.expected_irr.toFixed(1)}% IRR
-            </span>
-          )}
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase tracking-widest text-slate-400">{categoryLabel}</div>
+                <h3 className="text-base font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                  {item.title}
+                </h3>
+                {locationLabel && (
+                  <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                    <MapPin className="h-3 w-3" /> {locationLabel}
+                  </div>
+                )}
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
+                {score !== null ? `${score.toFixed(1)}/5 conviction` : "Analyst review"}
+              </Badge>
+              {typeof item.expected_irr === "number" && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600">
+                  <TrendingUp className="h-3 w-3 text-emerald-500" /> {item.expected_irr.toFixed(1)}% IRR
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </HoverCardTrigger>
+      <HoverCardContent side="top" align="center" className="w-80 border-slate-200 bg-white text-slate-700 shadow-xl">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-3.5 w-3.5 text-indigo-500" />
+            <span className="text-[10px] uppercase tracking-widest text-slate-400">{categoryLabel}</span>
+          </div>
+          <h4 className="text-sm font-semibold text-slate-900 leading-snug">{item.title}</h4>
+          <p className="text-xs text-slate-600 leading-relaxed line-clamp-5">{description}</p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[11px] text-slate-500">
+            {locationLabel && (
+              <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{locationLabel}</span>
+            )}
+            {typeof item.expected_irr === "number" && (
+              <span className="inline-flex items-center gap-1"><TrendingUp className="h-3 w-3 text-emerald-500" />{item.expected_irr.toFixed(1)}% IRR</span>
+            )}
+            <span>{score !== null ? `${score.toFixed(1)}/5 conviction` : "Analyst review"}</span>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </HoverCardContent>
+    </HoverCard>
   );
 }
