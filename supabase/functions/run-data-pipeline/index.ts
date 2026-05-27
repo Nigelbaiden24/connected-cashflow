@@ -159,7 +159,12 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     const cleaned = txt.replace(/```json\s*|```/g, "").trim();
     const parsed = JSON.parse(cleaned);
     const rawPrice = parsed.price_gbp;
-    const price_gbp = typeof rawPrice === "number" && isFinite(rawPrice) && rawPrice > 0 ? rawPrice : null;
+    // Defensible pricing: must be a positive finite number within a sane range
+    // (£1k floor avoids junk, £50bn ceiling avoids hallucinated valuations).
+    const price_gbp =
+      typeof rawPrice === "number" && isFinite(rawPrice) && rawPrice >= 1_000 && rawPrice <= 50_000_000_000
+        ? Math.round(rawPrice)
+        : null;
     return {
       summary: String(parsed.summary ?? item.summary ?? item.title).slice(0, 1200),
       tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5).map(String) : [],
@@ -172,6 +177,7 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
 }
+
 
 // Normalise scraper outputs into a flat list of candidate items
 function extractItems(source: string, payload: any): Array<{ title: string; summary?: string; url?: string; raw: any }> {
@@ -263,50 +269,71 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   if (!def) return { source, skipped: true, reason: "unknown_source" };
 
   const startedAt = new Date();
+  const cadenceMin = schedule.cadence_minutes ?? 1440;
+
+  // ── CRITICAL: advance the schedule BEFORE any heavy work. ─────────────
+  // Previously, if the edge function timed out mid-run the schedule's
+  // next_run_at never advanced and cron would never re-trigger it. We now
+  // mark the schedule as "running" and push next_run_at forward immediately
+  // so subsequent cron ticks (and the next day's run) always fire.
+  await supabase.from("pipeline_schedule").update({
+    last_run_at: startedAt.toISOString(),
+    next_run_at: new Date(startedAt.getTime() + cadenceMin * 60_000).toISOString(),
+    last_status: "running",
+  }).eq("source", source);
+
   const { data: runRow } = await supabase.from("pipeline_runs").insert({
-    source, status: "running", attempt: 1, triggered_by: "scheduler",
+    source, status: "running", attempt: 1, triggered_by: schedule.triggered_by ?? "scheduler",
     metadata: schedule.config ?? {},
   }).select("id").single();
   const runId = runRow?.id;
 
-  const errors: any[] = [];
-  let fetched = 0, staged = 0, enriched = 0, isNew = 0;
-
-  // Build list of bodies — fan out across ALL specified investment types so every
-  // category produces fresh, specific opportunities in full detail every run.
+  // ── Rotate categories: only do a small slice per run (the previous
+  //   "fan out across ALL categories" approach was guaranteed to time out).
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
+  const rotation = Number((baseCfg as any).__rotation ?? 0);
+  const PER_RUN = 4;
   const bodies: Record<string, unknown>[] = [];
   if (source === "investor-research") {
-    for (const cat of INVESTOR_RESEARCH_CATEGORIES) {
-      bodies.push({ categoryKey: cat, platform: "investor", deep: true, detail: "full", ...baseCfg });
+    const cats = INVESTOR_RESEARCH_CATEGORIES;
+    for (let i = 0; i < PER_RUN; i++) {
+      const cat = cats[(rotation + i) % cats.length];
+      bodies.push({ categoryKey: cat, platform: "investor", deep: false, detail: "standard", ...baseCfg });
     }
   } else if (source === "opportunity-research") {
-    for (const cat of OPPORTUNITY_RESEARCH_CATEGORIES) {
-      bodies.push({ category: cat, stream: false, deep: true, detail: "full", ...baseCfg });
+    const cats = OPPORTUNITY_RESEARCH_CATEGORIES;
+    for (let i = 0; i < PER_RUN; i++) {
+      const cat = cats[(rotation + i) % cats.length];
+      bodies.push({ category: cat, stream: false, deep: false, detail: "standard", ...baseCfg });
     }
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
+  const nextRotation =
+    source === "investor-research"
+      ? (rotation + PER_RUN) % INVESTOR_RESEARCH_CATEGORIES.length
+      : source === "opportunity-research"
+      ? (rotation + PER_RUN) % OPPORTUNITY_RESEARCH_CATEGORIES.length
+      : 0;
 
-  // Run scraper passes in parallel batches (with one retry per pass)
-  const payloads: any[] = [];
+  const errors: any[] = [];
+  let fetched = 0, staged = 0, enriched = 0, isNew = 0;
+
+  // Scraper passes in parallel with one retry per pass
   const runOne = async (body: Record<string, unknown>) => {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try { return await callScraper(def.fn, body); }
       catch (e: any) {
         errors.push({ body, attempt, error: String(e.message ?? e) });
         if (attempt === 2) return null;
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 800));
       }
     }
     return null;
   };
-  const BATCH = 5;
-  for (let i = 0; i < bodies.length; i += BATCH) {
-    const slice = bodies.slice(i, i + BATCH);
-    const results = await Promise.all(slice.map(runOne));
-    for (const r of results) if (r) payloads.push(r);
-  }
+  const payloads: any[] = [];
+  const results = await Promise.all(bodies.map(runOne));
+  for (const r of results) if (r) payloads.push(r);
 
   if (payloads.length === 0) {
     const finishedAt = new Date();
@@ -315,27 +342,25 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
       duration_ms: finishedAt.getTime() - startedAt.getTime(), errors, attempt: 2,
     }).eq("id", runId);
     await supabase.from("pipeline_schedule").update({
-      last_run_at: finishedAt.toISOString(),
-      next_run_at: new Date(finishedAt.getTime() + (schedule.cadence_minutes ?? 180) * 60000).toISOString(),
       last_status: "failed",
       consecutive_failures: (schedule.consecutive_failures ?? 0) + 1,
       last_error: String(errors[0]?.error ?? "scraper failed").slice(0, 500),
+      config: { ...baseCfg, __rotation: nextRotation },
     }).eq("source", source);
     await notifyAdmins(supabase, source, `Scraper failed: ${JSON.stringify(errors).slice(0, 200)}`);
     return { source, status: "failed", errors };
   }
-  const payload = payloads[0]; // primary payload for history mirror
 
-  // Mirror raw payload into admin_scrape_history (existing storage)
+  // Mirror raw payload into admin_scrape_history (best effort)
   try {
     await supabase.from("admin_scrape_history").insert({
       source: `pipeline:${source}`,
       platform: def.platform === "both" ? null : def.platform,
       title: `Auto-pipeline run: ${source}`,
       category: source,
-      payload: payload as never,
-      opportunities: payload?.opportunities ?? null,
-      sources: payload?.sources ?? null,
+      payload: payloads[0] as never,
+      opportunities: payloads[0]?.opportunities ?? null,
+      sources: payloads[0]?.sources ?? null,
       status: "auto",
       research_date: new Date().toISOString(),
     });
@@ -347,12 +372,12 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
     if (it.length === 0) it = await aiExtractOpportunities(source, pl);
     allItems.push(...it);
   }
-  const items = allItems;
+  // Cap per-run to keep the enrichment pass inside the budget.
+  const items = allItems.slice(0, 40);
   fetched = items.length;
 
   for (const it of items) {
     try {
-      // Drop stocks/crypto items even if a scraper slips one through
       const titleLower = it.title.toLowerCase();
       const rawText = JSON.stringify(it.raw ?? {}).toLowerCase();
       if (/\b(stock|equity|equities|ticker|nasdaq|nyse|lse:|share price)\b/.test(titleLower) ||
@@ -364,7 +389,6 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
       const dedupBasis = `${source}::${it.url ?? it.title.toLowerCase()}`;
       const dedup_hash = await sha256(dedupBasis);
 
-      // Skip if already pending/promoted
       const { data: existing } = await supabase
         .from("pipeline_pending_items").select("id").eq("dedup_hash", dedup_hash).limit(1).maybeSingle();
       if (existing) continue;
@@ -379,16 +403,10 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
         continue;
       }
 
-      // Bespoke 16:9 thumbnail (no generic stock images allowed)
-      const thumbnailUrl = await generateOpportunityThumbnail({
-        title: it.title,
-        summary: ai.summary,
-        category: ai.category,
-        tags: ai.tags,
-        itemKey: dedup_hash,
-        admin: supabase,
-      });
-
+      // NOTE: per-item thumbnail generation was removed from the pipeline —
+      // it was the dominant cost (Gemini image gen ~10–20s/item) and pushed
+      // every run past the edge function timeout. Thumbnails are now produced
+      // on demand at approval/promotion time.
       const enrichedPayload: Record<string, unknown> = {
         ...it.raw,
         ai_summary: ai.summary,
@@ -398,12 +416,6 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
         price_currency: "GBP",
         currency: "GBP",
       };
-      if (thumbnailUrl) {
-        enrichedPayload.generated_thumbnail_url = thumbnailUrl;
-        enrichedPayload.ai_thumbnail_url = thumbnailUrl;
-        enrichedPayload.thumbnail_url = thumbnailUrl;
-        enrichedPayload.image_url = thumbnailUrl;
-      }
 
       const { error } = await supabase.from("pipeline_pending_items").insert({
         run_id: runId,
@@ -428,7 +440,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   }
 
   const finishedAt = new Date();
-  const status = errors.length === 0 ? "success" : (staged > 0 ? "partial" : "failed");
+  const status = staged > 0 ? (errors.length === 0 ? "success" : "partial") : (fetched === 0 ? "success" : "failed");
   await supabase.from("pipeline_runs").update({
     status, finished_at: finishedAt.toISOString(),
     duration_ms: finishedAt.getTime() - startedAt.getTime(),
@@ -437,11 +449,10 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   }).eq("id", runId);
 
   await supabase.from("pipeline_schedule").update({
-    last_run_at: finishedAt.toISOString(),
-    next_run_at: new Date(finishedAt.getTime() + (schedule.cadence_minutes ?? 360) * 60000).toISOString(),
     last_status: status,
     consecutive_failures: status === "failed" ? (schedule.consecutive_failures ?? 0) + 1 : 0,
     last_error: status === "failed" ? errors[0]?.error?.toString().slice(0, 500) : null,
+    config: { ...baseCfg, __rotation: nextRotation },
   }).eq("source", source);
 
   if (status === "failed") {
@@ -449,6 +460,7 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   }
   return { source, status, fetched, isNew, enriched, staged, errors };
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -489,15 +501,23 @@ Deno.serve(async (req) => {
       due = data ?? [];
     }
 
-    const results: any[] = [];
-    for (const sched of due) {
-      sched.triggered_by = triggeredBy;
-      results.push(await runOneSource(supabase, sched));
-    }
+    // Kick off each due source in the background so the HTTP request returns
+    // immediately. This prevents the edge function timeout from leaving runs
+    // stuck in "running" and the schedule pinned at a stale next_run_at.
+    const task = (async () => {
+      for (const sched of due) {
+        sched.triggered_by = triggeredBy;
+        try { await runOneSource(supabase, sched); }
+        catch (e) { console.error("[runOneSource] uncaught", sched.source, e); }
+      }
+    })();
+    // @ts-ignore Deno Deploy EdgeRuntime
+    if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(task);
 
-    return new Response(JSON.stringify({ ok: true, ran: results.length, results }), {
+    return new Response(JSON.stringify({ ok: true, queued: due.length, sources: due.map((d: any) => d.source) }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (err: any) {
     console.error("run-data-pipeline error:", err);
     return new Response(JSON.stringify({ ok: false, error: String(err?.message ?? err) }), {
