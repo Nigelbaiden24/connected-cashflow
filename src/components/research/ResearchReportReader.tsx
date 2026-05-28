@@ -50,7 +50,10 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
       if (error) console.error(error);
-      setReport(((data as { report?: FullReport | null } | null)?.report ?? null) as FullReport | null);
+
+      const payload = data as { report?: FullReport | null; reports?: FullReport[] } | null;
+      const fullReport = payload?.report ?? payload?.reports?.find((item) => item.id === reportId) ?? null;
+      setReport(fullReport as FullReport | null);
       setLoading(false);
     })();
   }, [open, reportId, isAuthed]);
