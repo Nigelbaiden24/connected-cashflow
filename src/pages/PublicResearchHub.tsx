@@ -230,50 +230,62 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                     <p className="text-slate-500">No {t} reports published yet.</p>
                   </CardContent>
                 </Card>
-              ) : (
-                <div className="relative">
-                  <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                    {filtered.map((r) => (
-                      <ReportCard
-                        key={r.id}
-                        report={r}
-                        locked={!isAuthed}
-                        blurred={!isAuthed}
-                        onOpen={() => handleOpen(r)}
-                      />
-                    ))}
+              ) : !isAuthed ? (
+                <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 p-12 text-center shadow-sm">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-6">
+                    <Lock className="h-9 w-9 text-amber-500" />
                   </div>
-
-                  {!isAuthed && filtered.length > 0 && (
-                    <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/30 p-8 text-center">
-                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-4">
-                        <Lock className="h-6 w-6 text-amber-500" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
-                        Unlock the full research desk
-                      </h3>
-                      <p className="text-slate-500 mb-6 leading-relaxed max-w-xl mx-auto">
-                        Read previews freely. Create a free account to access complete reports, conviction scoring, and downloadable PDFs.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Button
-                          size="lg"
-                          className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                          onClick={() => openAuth(undefined, undefined, "signup")}
-                        >
-                          Create free account <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                          onClick={() => openAuth(undefined, undefined, "signin")}
-                        >
-                          Sign in
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                  <Badge variant="outline" className="mb-4 border-amber-200 bg-amber-50 text-amber-700 text-[10px] uppercase tracking-widest">
+                    Members only
+                  </Badge>
+                  <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+                    {filtered.length > 0
+                      ? `${filtered.length} ${t} research ${filtered.length === 1 ? "report" : "reports"} behind the paywall`
+                      : "Research reports behind the paywall"}
+                  </h3>
+                  <p className="text-slate-500 mb-8 leading-relaxed max-w-2xl mx-auto text-base">
+                    Full {t === "stock" ? "equity" : "digital asset"} research — conviction scores, valuation models, risk frameworks and downloadable PDFs — unlocks instantly with a free FlowPulse Investor account.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+                    <Button
+                      size="lg"
+                      className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
+                      onClick={() => openAuth(undefined, undefined, "signup")}
+                    >
+                      Create free account <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+                      onClick={() => openAuth(undefined, undefined, "signin")}
+                    >
+                      Sign in
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Independent analyst coverage
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                      <Gauge className="h-3.5 w-3.5 text-amber-500" /> 0–5 conviction scoring
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                      <FileText className="h-3.5 w-3.5 text-sky-500" /> Downloadable PDFs
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                  {filtered.map((r) => (
+                    <ReportCard
+                      key={r.id}
+                      report={r}
+                      locked={false}
+                      blurred={false}
+                      onOpen={() => handleOpen(r)}
+                    />
+                  ))}
                 </div>
               )}
 
