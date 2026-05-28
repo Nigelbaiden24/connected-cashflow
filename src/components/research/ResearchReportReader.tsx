@@ -20,6 +20,11 @@ interface FullReport {
   ai_score: number | null;
 }
 
+interface PreviewReportFallback extends Partial<FullReport> {
+  first_page_title?: string;
+  first_page_html?: string;
+}
+
 interface Props {
   reportId: string | null;
   open: boolean;
@@ -43,11 +48,28 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
     }
     setLoading(true);
     (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
         body: { report_id: reportId },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
       if (error) console.error(error);
-      setReport(((data as { report?: FullReport | null } | null)?.report ?? null) as FullReport | null);
+
+      const payload = data as { report?: FullReport | null; reports?: PreviewReportFallback[] } | null;
+      const fallbackReport = payload?.reports?.find((item) => item.id === reportId) ?? null;
+      const fullReport = payload?.report ?? (fallbackReport ? {
+        id: fallbackReport.id ?? reportId,
+        title: fallbackReport.title ?? "Research report",
+        asset_type: fallbackReport.asset_type ?? "research",
+        ticker: fallbackReport.ticker ?? null,
+        pages: fallbackReport.first_page_html ? [{ title: fallbackReport.first_page_title ?? "Executive Summary", html: fallbackReport.first_page_html }] : null,
+        html_content: fallbackReport.html_content ?? null,
+        author_name: fallbackReport.author_name ?? null,
+        report_date: fallbackReport.report_date ?? null,
+        ai_score: fallbackReport.ai_score ?? null,
+      } : null);
+      setReport(fullReport as FullReport | null);
       setLoading(false);
     })();
   }, [open, reportId, isAuthed]);
