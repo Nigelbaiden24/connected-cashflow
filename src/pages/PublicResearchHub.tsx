@@ -48,13 +48,15 @@ interface PublicResearchPreview {
 
 interface PublicResearchHubProps {
   initialTab?: "stock" | "crypto";
+  platformAccess?: boolean;
 }
 
-export default function PublicResearchHub({ initialTab = "stock" }: PublicResearchHubProps = {}) {
+export default function PublicResearchHub({ initialTab = "stock", platformAccess = false }: PublicResearchHubProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
+  const hasAccess = platformAccess || isAuthed;
 
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
-    if (!isAuthed) {
+    if (!hasAccess) {
       setReaderReportId(null);
       setReaderOpen(false);
       openAuth(`/research?id=${id}${asset ? `&asset=${asset}` : ""}`, undefined, "signin");
@@ -85,7 +87,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     }
     setReaderReportId(id);
     setReaderOpen(true);
-  }, [authLoading, isAuthed, location.search]);
+  }, [authLoading, hasAccess, location.search]);
 
   useEffect(() => {
     (async () => {
@@ -103,7 +105,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
       }
       setLoading(false);
     })();
-  }, [authLoading, isAuthed]);
+  }, [authLoading, hasAccess]);
 
   const filtered = useMemo(
     () => reports.filter((r) => r.asset_type === tab),
@@ -119,7 +121,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
 
   const handleOpen = (r: PublicResearchPreview) => {
     setReaderReportId(r.id);
-    if (isAuthed) {
+    if (hasAccess) {
       setReaderOpen(true);
     } else {
       setReaderOpen(false);
