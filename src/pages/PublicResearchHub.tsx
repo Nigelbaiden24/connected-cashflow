@@ -77,9 +77,15 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
+    if (!isAuthed) {
+      setReaderReportId(null);
+      setReaderOpen(false);
+      openAuth(`/research?id=${id}${asset ? `&asset=${asset}` : ""}`, undefined, "signin");
+      return;
+    }
     setReaderReportId(id);
     setReaderOpen(true);
-  }, [authLoading, location.search]);
+  }, [authLoading, isAuthed, location.search]);
 
   useEffect(() => {
     (async () => {
@@ -299,7 +305,6 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         onOpenChange={setReaderOpen}
         reportId={readerReportId}
         isAuthed={isAuthed}
-        preview={activeReader}
         onRequestAuth={() => openAuth(undefined, activeReader?.title, "signup")}
       />
 
