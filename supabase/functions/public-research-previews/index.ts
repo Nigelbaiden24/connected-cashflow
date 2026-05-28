@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
     const requestedTypes = Array.isArray(body.asset_types) ? body.asset_types : ["stock", "crypto"];
     const assetTypes = requestedTypes.filter((type: unknown) => type === "stock" || type === "crypto");
     const limit = Math.min(Math.max(Number(body.limit) || 60, 1), 60);
+    const includeFullReports = body.include_full === true;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -49,9 +50,13 @@ Deno.serve(async (req) => {
       });
     }
 
+    const listSelect = includeFullReports && isAuthed
+      ? "id, asset_type, title, slug, ticker, excerpt, hero_image_url, html_content, ai_score, ai_tags, sources, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages"
+      : "id, asset_type, title, ticker, excerpt, ai_score, ai_tags, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages";
+
     const { data, error } = await admin
       .from("generated_research_reports")
-      .select("id, asset_type, title, ticker, excerpt, ai_score, ai_tags, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages")
+      .select(listSelect)
       .eq("status", "promoted")
       .in("asset_type", assetTypes.length ? assetTypes : ["stock", "crypto"])
       .order("promoted_at", { ascending: false, nullsFirst: false })
@@ -66,16 +71,21 @@ Deno.serve(async (req) => {
         id: report.id,
         asset_type: report.asset_type,
         title: report.title,
+        slug: report.slug,
         ticker: report.ticker,
         excerpt: isAuthed ? report.excerpt : null,
+        hero_image_url: includeFullReports && isAuthed ? report.hero_image_url : null,
+        html_content: includeFullReports && isAuthed ? report.html_content : "",
         ai_score: report.ai_score,
         ai_tags: report.ai_tags ?? [],
+        sources: includeFullReports && isAuthed ? (report.sources ?? []) : [],
         reading_time_minutes: report.reading_time_minutes,
         author_name: report.author_name,
         page_count: report.page_count,
         report_date: report.report_date,
         promoted_at: report.promoted_at,
         created_at: report.created_at,
+        pages: includeFullReports && isAuthed ? pages : [],
         first_page_title: firstPage.title ?? "Executive Summary & Key Takeaways",
         first_page_html: isAuthed ? (firstPage.html ?? report.excerpt ?? "") : "",
       };
