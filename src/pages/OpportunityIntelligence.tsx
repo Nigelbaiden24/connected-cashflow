@@ -105,7 +105,10 @@ interface OpportunityProduct {
 // Investor-curated opportunity taxonomy. Each category mirrors the admin
 // Data Pipeline scrape topics and groups granular sub-categories.
 const categoryConfig = {
-  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["Rent to Rent", "Rent to Serviced Accommodation", "Residential Property", "Commercial Property", "Industrial Property", "Student Housing", "Holiday Rentals", "Build-to-Rent", "Land Banking", "Farmland", "International Property & Land"] },
+  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["Residential Property", "Commercial Property", "Industrial Property", "Student Housing", "Holiday Rentals", "Build-to-Rent", "International Property"] },
+  land: { label: "Land", icon: Map, color: "bg-emerald-600/10 text-emerald-600", subCategories: ["Land Banking", "Farmland", "Development Land", "Strategic Land", "Forestry"] },
+  rent_to_rent: { label: "Rent to Rent", icon: KeyRound, color: "bg-indigo-500/10 text-indigo-500", subCategories: ["HMO Rent to Rent", "Single Let R2R", "Corporate Lets", "Guaranteed Rent Schemes"] },
+  rent_to_sa: { label: "Rent to Serviced Accommodation", icon: Hotel, color: "bg-cyan-600/10 text-cyan-600", subCategories: ["Short-Term Lets", "Corporate Stays", "Airbnb R2SA", "Aparthotel Conversions"] },
   commodities: { label: "Commodities", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Oil", "Natural Gas", "Wheat", "Coffee", "Livestock"] },
   alternatives: { label: "Alternative Investments", icon: Gem, color: "bg-purple-500/10 text-purple-500", subCategories: ["Hedge Funds", "Multi-Strategy", "Structured Alternatives"] },
   esg: { label: "ESG & Impact Investing", icon: Leaf, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Funds", "Carbon Credits"] },
