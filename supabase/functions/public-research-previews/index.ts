@@ -26,6 +26,29 @@ Deno.serve(async (req) => {
       isAuthed = !!userData?.user;
     }
 
+    const reportId = typeof body.report_id === "string" ? body.report_id.trim() : "";
+    if (reportId) {
+      if (!isAuthed) {
+        return new Response(JSON.stringify({ error: "Sign in required" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: report, error: reportError } = await admin
+        .from("generated_research_reports")
+        .select("id, title, asset_type, ticker, pages, html_content, author_name, report_date, ai_score")
+        .eq("id", reportId)
+        .eq("status", "promoted")
+        .maybeSingle();
+
+      if (reportError) throw reportError;
+
+      return new Response(JSON.stringify({ report }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data, error } = await admin
       .from("generated_research_reports")
       .select("id, asset_type, title, ticker, excerpt, ai_score, ai_tags, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages")
