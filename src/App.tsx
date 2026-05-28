@@ -365,10 +365,10 @@ const App = () => {
               } />
 
               {/* ============ INVESTOR LAYOUT (persistent) ============ */}
-              <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
-              <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="stock" /></Suspense>} />
-              <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="crypto" /></Suspense>} />
               <Route element={investorLayoutElement}>
+                <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub platformAccess /></Suspense>} />
+                <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="stock" platformAccess /></Suspense>} />
+                <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="crypto" platformAccess /></Suspense>} />
                 <Route path="/investor/dashboard" element={<Suspense fallback={<PageLoader />}><InvestorDashboard /></Suspense>} />
                 <Route path="/investor/analysis" element={<Suspense fallback={<PageLoader />}><AnalysisReports /></Suspense>} />
                 <Route path="/investor/commentary" element={<Suspense fallback={<PageLoader />}><MarketCommentary /></Suspense>} />
