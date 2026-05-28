@@ -57,6 +57,8 @@ const categoryConfig: Record<string, { icon: typeof TrendingUp; color: string; b
 
 export default function ReportDetail() {
   const { id } = useParams<{ id: string }>();
+  const { user, loading: authLoading } = useAuth();
+  const isAuthed = !!user;
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
