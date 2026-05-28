@@ -68,22 +68,7 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, p
     })();
   }, [open, reportId, isAuthed]);
 
-  // For unauthed users, synthesize a single-page report from the preview (first page only)
-  const effectiveReport: FullReport | null = isAuthed
-    ? report
-    : preview
-    ? {
-        id: preview.id,
-        title: preview.title,
-        asset_type: preview.asset_type,
-        ticker: preview.ticker,
-        pages: [{ title: preview.first_page_title, html: preview.first_page_html }],
-        html_content: preview.first_page_html,
-        author_name: preview.author_name,
-        report_date: preview.report_date,
-        ai_score: preview.ai_score,
-      }
-    : null;
+  const effectiveReport: FullReport | null = isAuthed ? report : null;
 
   const pages: ReportPage[] = effectiveReport?.pages?.length
     ? effectiveReport.pages
@@ -96,7 +81,29 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, p
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl h-[90vh] p-0 overflow-hidden bg-white">
         <DialogTitle className="sr-only">{effectiveReport?.title ?? "Research report"}</DialogTitle>
-        {loading ? (
+        {!isAuthed ? (
+          <div className="flex h-full flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/40 mb-5">
+              <Lock className="h-7 w-7 text-amber-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Sign in to read this report</h3>
+            <p className="mt-3 max-w-md text-slate-500 leading-relaxed">
+              Research summaries and full report content are only visible to signed-in FlowPulse users.
+            </p>
+            <div className="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
+                onClick={onRequestAuth}
+              >
+                Sign in <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button size="lg" variant="outline" className="border-slate-200 bg-white text-slate-900" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        ) : loading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
           </div>
