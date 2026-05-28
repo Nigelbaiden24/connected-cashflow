@@ -189,7 +189,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
           </button>
           <HomepageNavLinks />
           <div className="flex items-center gap-2">
-            {hasAccess && (
+            {hasReportAccess && (
               <Button
                 variant="outline"
                 className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -198,7 +198,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                 <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
               </Button>
             )}
-            {!hasAccess && (
+            {!hasReportAccess && (
               <>
                 <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
                   Sign in
@@ -277,14 +277,14 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={!hasAccess}
-                        blurred={!hasAccess}
+                        locked={!hasReportAccess}
+                        blurred={!hasReportAccess}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
                   </div>
 
-                  {!hasAccess && (
+                  {!hasReportAccess && (
                     <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 p-8 text-center">
                       <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-4">
                         <Lock className="h-6 w-6 text-amber-500" />
@@ -327,7 +327,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
         open={readerOpen}
         onOpenChange={setReaderOpen}
         reportId={readerReportId}
-        isAuthed={hasAccess}
+        isAuthed={hasReportAccess}
         onRequestAuth={() => openAuth(undefined, activeReader?.title, "signup")}
       />
 
