@@ -20,19 +20,10 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-    if (!token) {
-      return new Response(JSON.stringify({ error: "Sign in required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { data: userData, error: userError } = await admin.auth.getUser(token);
-    if (userError || !userData.user) {
-      return new Response(JSON.stringify({ error: "Sign in required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let isAuthed = false;
+    if (token) {
+      const { data: userData } = await admin.auth.getUser(token);
+      isAuthed = !!userData?.user;
     }
 
     const { data, error } = await admin
@@ -53,7 +44,7 @@ Deno.serve(async (req) => {
         asset_type: report.asset_type,
         title: report.title,
         ticker: report.ticker,
-        excerpt: report.excerpt,
+        excerpt: isAuthed ? report.excerpt : null,
         ai_score: report.ai_score,
         ai_tags: report.ai_tags ?? [],
         reading_time_minutes: report.reading_time_minutes,
@@ -63,7 +54,7 @@ Deno.serve(async (req) => {
         promoted_at: report.promoted_at,
         created_at: report.created_at,
         first_page_title: firstPage.title ?? "Executive Summary & Key Takeaways",
-        first_page_html: firstPage.html ?? report.excerpt ?? "",
+        first_page_html: isAuthed ? (firstPage.html ?? report.excerpt ?? "") : "",
       };
     });
 
