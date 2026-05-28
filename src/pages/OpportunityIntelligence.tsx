@@ -24,7 +24,7 @@ import {
   LayoutGrid, List, Globe, Users, Award, Package,
   Landmark, ChevronRight, Presentation, ArrowLeft, Banknote, HandCoins,
   Zap, Factory, Shield, Music, Leaf, Repeat, Layers, PieChart,
-  Palette, Wine, Plane, Trophy, Film, HeartHandshake, Map, KeyRound, Hotel
+  Palette, Wine, Plane, Trophy, Film, HeartHandshake
 } from "lucide-react";
 
 // Category default thumbnail images
@@ -37,26 +37,13 @@ import thumbPrivateMarketPlatforms from "@/assets/opportunities/private_market_p
 import thumbCapitalProtectedNotes from "@/assets/opportunities/capital_protected_notes.jpg";
 import thumbThematicsPackaged from "@/assets/opportunities/thematics_packaged.jpg";
 import thumbCopyTrading from "@/assets/opportunities/copy_trading.jpg";
-import thumbRoyalties from "@/assets/opportunities/royalties.jpg";
+import thumbMusicRoyalties from "@/assets/opportunities/music_royalties.jpg";
 import thumbBusinesses from "@/assets/opportunities/businesses.jpg";
 import thumbMiniBonds from "@/assets/opportunities/mini_bonds.jpg";
 import thumbTimepieces from "@/assets/opportunities/timepieces.jpg";
-import thumbFineWine from "@/assets/opportunities/fine_wine.jpg";
-import thumbArt from "@/assets/opportunities/art.jpg";
-import thumbCollectibles from "@/assets/opportunities/collectibles.jpg";
-import thumbLuxuryAssets from "@/assets/opportunities/luxury_assets.jpg";
-import thumbEntertainmentFinance from "@/assets/opportunities/entertainment_finance.jpg";
-import thumbInsuranceInvestments from "@/assets/opportunities/insurance_investments.jpg";
-import thumbSportsInvestments from "@/assets/opportunities/sports_investments.jpg";
-import thumbLand from "@/assets/opportunities/land.jpg";
-import thumbRentToRent from "@/assets/opportunities/rent_to_rent.jpg";
-import thumbRentToSa from "@/assets/opportunities/rent_to_sa.jpg";
 
 const categoryThumbnailMap: Record<string, string> = {
   real_estate: thumbRealEstate,
-  land: thumbLand,
-  rent_to_rent: thumbRentToRent,
-  rent_to_sa: thumbRentToSa,
   commodities: thumbCommodities,
   alternatives: thumbAlternatives,
   esg: thumbEsg,
@@ -65,17 +52,10 @@ const categoryThumbnailMap: Record<string, string> = {
   capital_protected_notes: thumbCapitalProtectedNotes,
   thematics_packaged: thumbThematicsPackaged,
   copy_trading: thumbCopyTrading,
-  royalties: thumbRoyalties,
+  royalties: thumbMusicRoyalties,
   businesses: thumbBusinesses,
   mini_bonds: thumbMiniBonds,
   timepieces: thumbTimepieces,
-  fine_wine: thumbFineWine,
-  art: thumbArt,
-  collectibles: thumbCollectibles,
-  luxury_assets: thumbLuxuryAssets,
-  entertainment_finance: thumbEntertainmentFinance,
-  insurance_investments: thumbInsuranceInvestments,
-  sports_investments: thumbSportsInvestments,
 };
 
 interface OpportunityProduct {
@@ -105,10 +85,7 @@ interface OpportunityProduct {
 // Investor-curated opportunity taxonomy. Each category mirrors the admin
 // Data Pipeline scrape topics and groups granular sub-categories.
 const categoryConfig = {
-  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["Residential Property", "Commercial Property", "Industrial Property", "Student Housing", "Holiday Rentals", "Build-to-Rent", "International Property"] },
-  land: { label: "Land", icon: Map, color: "bg-emerald-600/10 text-emerald-600", subCategories: ["Land Banking", "Farmland", "Development Land", "Strategic Land", "Forestry"] },
-  rent_to_rent: { label: "Rent to Rent", icon: KeyRound, color: "bg-indigo-500/10 text-indigo-500", subCategories: ["HMO Rent to Rent", "Single Let R2R", "Corporate Lets", "Guaranteed Rent Schemes"] },
-  rent_to_sa: { label: "Rent to Serviced Accommodation", icon: Hotel, color: "bg-cyan-600/10 text-cyan-600", subCategories: ["Short-Term Lets", "Corporate Stays", "Airbnb R2SA", "Aparthotel Conversions"] },
+  real_estate: { label: "Real Estate", icon: Building2, color: "bg-blue-500/10 text-blue-500", subCategories: ["Rent to Rent", "Rent to Serviced Accommodation", "Residential Property", "Commercial Property", "Industrial Property", "Student Housing", "Holiday Rentals", "Build-to-Rent", "Land Banking", "Farmland", "International Property & Land"] },
   commodities: { label: "Commodities", icon: Package, color: "bg-yellow-500/10 text-yellow-600", subCategories: ["Oil", "Natural Gas", "Wheat", "Coffee", "Livestock"] },
   alternatives: { label: "Alternative Investments", icon: Gem, color: "bg-purple-500/10 text-purple-500", subCategories: ["Hedge Funds", "Multi-Strategy", "Structured Alternatives"] },
   esg: { label: "ESG & Impact Investing", icon: Leaf, color: "bg-emerald-500/10 text-emerald-500", subCategories: ["Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Funds", "Carbon Credits"] },

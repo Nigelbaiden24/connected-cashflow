@@ -19,14 +19,12 @@ import {
   Activity,
   Gauge,
   ChevronRight,
-  ArrowLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
 import { ResearchReportReader } from "@/components/research/ResearchReportReader";
-import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
 
 interface PublicResearchPreview {
   id: string;
@@ -48,15 +46,13 @@ interface PublicResearchPreview {
 
 interface PublicResearchHubProps {
   initialTab?: "stock" | "crypto";
-  platformAccess?: boolean;
 }
 
-export default function PublicResearchHub({ initialTab = "stock", platformAccess = false }: PublicResearchHubProps = {}) {
+export default function PublicResearchHub({ initialTab = "stock" }: PublicResearchHubProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
-  const hasAccess = platformAccess || isAuthed;
 
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,25 +75,15 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
-    if (!hasAccess) {
-      setReaderReportId(null);
-      setReaderOpen(false);
-      openAuth(`/research?id=${id}${asset ? `&asset=${asset}` : ""}`, undefined, "signin");
-      return;
-    }
     setReaderReportId(id);
     setReaderOpen(true);
-  }, [authLoading, hasAccess, location.search]);
+  }, [authLoading, location.search]);
 
   useEffect(() => {
     (async () => {
-      if (authLoading && !platformAccess) return;
       setLoading(true);
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
         body: { asset_types: ["stock", "crypto"], limit: 60 },
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
 
       if (error) {
@@ -108,7 +94,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
       }
       setLoading(false);
     })();
-  }, [authLoading, hasAccess, platformAccess]);
+  }, []);
 
   const filtered = useMemo(
     () => reports.filter((r) => r.asset_type === tab),
@@ -124,12 +110,8 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
 
   const handleOpen = (r: PublicResearchPreview) => {
     setReaderReportId(r.id);
-    if (hasAccess) {
-      setReaderOpen(true);
-    } else {
-      setReaderOpen(false);
-      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
-    }
+    setReaderOpen(false);
+    openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
   };
 
   const activeReader = useMemo(
@@ -151,7 +133,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
 
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between relative">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-2.5">
             <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
             <span className="font-semibold tracking-tight text-slate-900">FlowPulse</span>
@@ -159,18 +141,8 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
               Research
             </Badge>
           </button>
-          <HomepageNavLinks />
           <div className="flex items-center gap-2">
-            {hasAccess && (
-              <Button
-                variant="outline"
-                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/investor/dashboard"))}
-              >
-                <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
-              </Button>
-            )}
-            {!hasAccess && (
+            {!isAuthed && (
               <>
                 <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
                   Sign in
@@ -231,7 +203,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
 
           {(["stock", "crypto"] as const).map((t) => (
             <TabsContent key={t} value={t}>
-              {authLoading || loading ? (
+              {loading || authLoading ? (
                 <div className="flex items-center justify-center py-24">
                   <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
                 </div>
@@ -249,23 +221,23 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={!hasAccess}
-                        blurred={!hasAccess}
+                        locked={true}
+                        blurred={true}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
                   </div>
 
-                  {!hasAccess && (
-                    <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 p-8 text-center">
+                  {!isAuthed && filtered.length > 0 && (
+                    <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/30 p-8 text-center">
                       <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-4">
                         <Lock className="h-6 w-6 text-amber-500" />
                       </div>
                       <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
-                        Unlock the full Research Vault
+                        Unlock the full research desk
                       </h3>
                       <p className="text-slate-500 mb-6 leading-relaxed max-w-xl mx-auto">
-                        Create a free account to read full {t === "stock" ? "equity" : "digital asset"} dossiers — conviction scoring, valuation models, risk frameworks and downloadable PDFs.
+                        Read previews freely. Create a free account to access complete reports, conviction scoring, and downloadable PDFs.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <Button
@@ -289,7 +261,6 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                 </div>
               )}
 
-
             </TabsContent>
           ))}
         </Tabs>
@@ -299,7 +270,8 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
         open={readerOpen}
         onOpenChange={setReaderOpen}
         reportId={readerReportId}
-        isAuthed={hasAccess}
+        isAuthed={isAuthed}
+        preview={activeReader}
         onRequestAuth={() => openAuth(undefined, activeReader?.title, "signup")}
       />
 

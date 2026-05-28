@@ -10,9 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles, Bot, Contact, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { filterNavByPlatform } from "@/components/admin/adminNavConfig";
+import { Upload, FileText, Newspaper, TrendingUp, BookOpen, Video, List, Loader2, LogOut, LayoutDashboard, Shield, Bell, Users, Calendar, FileBarChart, ShoppingBag, MessageSquare, Star, Lightbulb, Bitcoin, FlaskConical, Sparkles, Bot, Contact } from "lucide-react";
 import { FinancialNewsFeed } from "@/components/news/FinancialNewsFeed";
 import { AdminCalendar } from "@/components/admin/AdminCalendar";
 import { CRMBoard } from "@/components/CRMBoard";
@@ -813,7 +811,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Sidebar (desktop only — auto-hides below md) */}
+      {/* Sidebar */}
       <AdminSidebar 
         activeTab={sidebarActiveTab} 
         onTabChange={(id) => {
@@ -824,62 +822,9 @@ export default function AdminDashboard() {
         onLogout={handleLogout}
       />
 
-      {/* Mobile sidebar drawer */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <button
-            type="button"
-            aria-label="Open admin navigation"
-            className="md:hidden fixed top-3 left-3 z-50 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 shadow-lg backdrop-blur-xl"
-          >
-            <Menu className="h-5 w-5 text-slate-700" />
-          </button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-[85vw] max-w-[20rem] overflow-y-auto">
-          <div className="flex flex-col h-full bg-gradient-to-b from-white to-slate-50">
-            <div className="px-4 py-4 border-b border-slate-200/60">
-              <h2 className="text-base font-bold text-slate-900">FlowPulse Admin</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Mobile navigation</p>
-            </div>
-            <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-              {filterNavByPlatform('finance').map((item) => {
-                const Icon = item.icon;
-                const isActive = sidebarActiveTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      const hub = hubMap[item.id];
-                      setActiveTab(hub ? hub.children[0].id : item.id);
-                    }}
-                    className={
-                      "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors min-h-[44px] " +
-                      (isActive
-                        ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow"
-                        : "text-slate-700 hover:bg-slate-100")
-                    }
-                  >
-                    <Icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate text-left">{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-            <div className="p-3 border-t border-slate-200/60">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 px-3 py-3 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 min-h-[44px]"
-              >
-                <LogOut className="h-4 w-4" /> Logout
-              </button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-white min-w-0">
-        <div className="min-h-screen bg-white p-4 pt-16 md:p-6 md:pt-6 space-y-6 safe-area-bottom">
+      <main className="flex-1 overflow-auto bg-white">
+        <div className="min-h-screen bg-white p-6 space-y-6">
           {/* Sub-navigation for combined hubs */}
           {activeHub && activeHub.children.length > 1 && (
             <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">

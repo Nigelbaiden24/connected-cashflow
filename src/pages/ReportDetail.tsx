@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,8 +56,6 @@ const categoryConfig: Record<string, { icon: typeof TrendingUp; color: string; b
 
 export default function ReportDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user, loading: authLoading } = useAuth();
-  const isAuthed = !!user;
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -121,48 +118,10 @@ export default function ReportDetail() {
     }
   };
 
-  if (loading || authLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthed) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 flex items-center justify-center px-6">
-        <div className="max-w-xl w-full text-center rounded-3xl border border-slate-200 bg-white p-12 shadow-sm">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500/15 to-indigo-600/10 border border-blue-400/30 mb-6">
-            <Lock className="h-9 w-9 text-blue-600" />
-          </div>
-          <Badge variant="outline" className="mb-4 border-blue-200 bg-blue-50 text-blue-700 text-[10px] uppercase tracking-widest">
-            Members only
-          </Badge>
-          <h1 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">
-            Sign in to read this report
-          </h1>
-          <p className="text-slate-500 mb-8 leading-relaxed">
-            Full insights — including summaries, key takeaways and downloadable PDFs — unlock instantly with a free FlowPulse account.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              size="lg"
-              onClick={() => navigate("/login")}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25"
-            >
-              Sign in <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate("/reports")}
-              className="border-slate-200"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to reports
-            </Button>
-          </div>
-        </div>
       </div>
     );
   }
