@@ -1,8 +1,8 @@
-import { memo, useState, useCallback, useMemo } from "react";
+import { memo, useState, useCallback, useMemo, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
-import { prefetchHandlers } from "@/lib/routePrefetch";
+import { prefetchHandlers, prefetchRoutesByPrefix } from "@/lib/routePrefetch";
 import { 
   Briefcase,
   Bell,
