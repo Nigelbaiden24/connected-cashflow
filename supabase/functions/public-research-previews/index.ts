@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
         asset_type: report.asset_type,
         title: report.title,
         ticker: report.ticker,
-        excerpt: report.excerpt,
+        excerpt: isAuthed ? report.excerpt : null,
         ai_score: report.ai_score,
         ai_tags: report.ai_tags ?? [],
         reading_time_minutes: report.reading_time_minutes,
