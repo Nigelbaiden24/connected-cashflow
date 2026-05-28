@@ -91,10 +91,13 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
 
   useEffect(() => {
     (async () => {
-      if (authLoading) return;
+      if (authLoading && !platformAccess) return;
       setLoading(true);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
         body: { asset_types: ["stock", "crypto"], limit: 60 },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
 
       if (error) {
@@ -105,7 +108,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
       }
       setLoading(false);
     })();
-  }, [authLoading, hasAccess]);
+  }, [authLoading, hasAccess, platformAccess]);
 
   const filtered = useMemo(
     () => reports.filter((r) => r.asset_type === tab),
