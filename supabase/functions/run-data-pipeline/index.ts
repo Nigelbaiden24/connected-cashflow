@@ -481,11 +481,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
     const body = await req.json().catch(() => ({}));
     const forceSource: string | undefined = body.source;
+    const forceAll: boolean = body.force_all === true;
     const triggeredBy: string = body.triggered_by ?? "scheduler";
+    const isManual = triggeredBy !== "scheduler";
 
-    // Master kill-switch: only run automatic schedules if admin enabled it.
-    // Manual triggers from the admin UI bypass this gate by passing triggered_by != "scheduler" with a forceSource.
-    if (!forceSource || triggeredBy === "scheduler") {
+    // Master kill-switch only applies to automatic (scheduler) runs.
+    // Manual triggers from the admin UI always bypass it.
+    if (!isManual) {
       const { data: cfg } = await supabase
         .from("platform_config")
         .select("value")
@@ -494,7 +496,7 @@ Deno.serve(async (req) => {
       const enabled = cfg?.value?.enabled === true;
       if (!enabled) {
         return new Response(
-          JSON.stringify({ ok: true, ran: 0, skipped: true, reason: "auto_scraper_disabled" }),
+          JSON.stringify({ ok: true, ran: 0, queued: 0, sources: [], skipped: true, reason: "auto_scraper_disabled" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
@@ -503,6 +505,13 @@ Deno.serve(async (req) => {
     let due: any[] = [];
     if (forceSource) {
       const { data } = await supabase.from("pipeline_schedule").select("*").eq("source", forceSource);
+      due = data ?? [];
+    } else if (forceAll && isManual) {
+      // Manual "Run all" — run every enabled source regardless of next_run_at
+      const { data } = await supabase
+        .from("pipeline_schedule").select("*")
+        .eq("enabled", true)
+        .order("next_run_at", { ascending: true });
       due = data ?? [];
     } else {
       const { data } = await supabase
