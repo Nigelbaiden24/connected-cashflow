@@ -65,6 +65,25 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
     try { setBookmarks(JSON.parse(localStorage.getItem(BOOKMARK_KEY) || "[]")); } catch { /* noop */ }
   }, []);
 
+  useEffect(() => {
+    if (active) {
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      } catch { /* noop */ }
+    }
+  }, [active?.id]);
+
+  const openReport = (r: PromotedReport) => {
+    setActive(r);
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    } catch { /* noop */ }
+  };
+
   const toggleBookmark = (id: string) => {
     setBookmarks((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
