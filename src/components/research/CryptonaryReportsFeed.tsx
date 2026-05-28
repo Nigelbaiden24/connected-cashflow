@@ -65,23 +65,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
     try { setBookmarks(JSON.parse(localStorage.getItem(BOOKMARK_KEY) || "[]")); } catch { /* noop */ }
   }, []);
 
-  useEffect(() => {
-    if (active) {
-      const handle = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          try {
-            window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-          } catch { /* noop */ }
-        });
-      });
-      return () => cancelAnimationFrame(handle);
-    }
-  }, [active?.id]);
-
-  const openReport = (r: PromotedReport) => {
-    setActive(r);
+  const scrollTop = () => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         try {
@@ -91,6 +75,45 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
         } catch { /* noop */ }
       });
     });
+  };
+
+  useEffect(() => {
+    if (active) scrollTop();
+  }, [active?.id]);
+
+  const openReport = async (r: PromotedReport) => {
+    // Open immediately with whatever we have so the UI is snappy
+    setActive(r);
+    scrollTop();
+    // Lazy-load full content only when we don't already have it
+    if (!r.pages?.length && !r.html_content) {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData.session?.access_token;
+        const { data, error } = await supabase.functions.invoke("public-research-previews", {
+          body: { report_id: r.id },
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+        });
+        if (error) throw error;
+        const full = data?.report;
+        if (full) {
+          const merged: PromotedReport = {
+            ...r,
+            pages: Array.isArray(full.pages) ? full.pages : r.pages,
+            html_content: full.html_content ?? r.html_content,
+            author_name: full.author_name ?? r.author_name,
+            report_date: full.report_date ?? r.report_date,
+            ai_score: full.ai_score ?? r.ai_score,
+            ticker: full.ticker ?? r.ticker,
+            title: full.title ?? r.title,
+          };
+          setItems((prev) => prev.map((x) => (x.id === r.id ? merged : x)));
+          setActive((curr) => (curr?.id === r.id ? merged : curr));
+        }
+      } catch (e: any) {
+        toast.error(e?.message ?? "Failed to load report");
+      }
+    }
   };
 
   const toggleBookmark = (id: string) => {
@@ -107,8 +130,9 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
       setLoading(true);
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
+      // Lightweight list fetch — full report HTML/pages are loaded on click
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
-        body: { asset_types: [assetType], limit: 60, include_full: true },
+        body: { asset_types: [assetType], limit: 60 },
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
       if (!mounted) return;
