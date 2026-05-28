@@ -19,6 +19,7 @@ import {
   Activity,
   Gauge,
   ChevronRight,
+  ArrowLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
