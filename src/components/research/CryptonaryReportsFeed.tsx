@@ -67,21 +67,30 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
 
   useEffect(() => {
     if (active) {
-      try {
-        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      } catch { /* noop */ }
+      const handle = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          try {
+            window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+          } catch { /* noop */ }
+        });
+      });
+      return () => cancelAnimationFrame(handle);
     }
   }, [active?.id]);
 
   const openReport = (r: PromotedReport) => {
     setActive(r);
-    try {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    } catch { /* noop */ }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        } catch { /* noop */ }
+      });
+    });
   };
 
   const toggleBookmark = (id: string) => {
