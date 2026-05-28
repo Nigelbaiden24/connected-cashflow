@@ -212,12 +212,6 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
     }
   };
 
-  useEffect(() => {
-    if (active) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
-  }, [active]);
-
   if (active) {
     const related = items.filter((x) => x.id !== active.id).slice(0, 4);
     return (
