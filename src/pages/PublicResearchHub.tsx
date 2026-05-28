@@ -48,13 +48,15 @@ interface PublicResearchPreview {
 
 interface PublicResearchHubProps {
   initialTab?: "stock" | "crypto";
+  platformAccess?: boolean;
 }
 
-export default function PublicResearchHub({ initialTab = "stock" }: PublicResearchHubProps = {}) {
+export default function PublicResearchHub({ initialTab = "stock", platformAccess = false }: PublicResearchHubProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
   const isAuthed = !!user;
+  const hasAccess = platformAccess || isAuthed;
 
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
-    if (!isAuthed) {
+    if (!hasAccess) {
       setReaderReportId(null);
       setReaderOpen(false);
       openAuth(`/research?id=${id}${asset ? `&asset=${asset}` : ""}`, undefined, "signin");
@@ -85,7 +87,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
     }
     setReaderReportId(id);
     setReaderOpen(true);
-  }, [authLoading, isAuthed, location.search]);
+  }, [authLoading, hasAccess, location.search]);
 
   useEffect(() => {
     (async () => {
@@ -103,7 +105,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
       }
       setLoading(false);
     })();
-  }, [authLoading, isAuthed]);
+  }, [authLoading, hasAccess]);
 
   const filtered = useMemo(
     () => reports.filter((r) => r.asset_type === tab),
@@ -119,7 +121,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
 
   const handleOpen = (r: PublicResearchPreview) => {
     setReaderReportId(r.id);
-    if (isAuthed) {
+    if (hasAccess) {
       setReaderOpen(true);
     } else {
       setReaderOpen(false);
@@ -156,7 +158,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
           </button>
           <HomepageNavLinks />
           <div className="flex items-center gap-2">
-            {isAuthed && (
+            {hasAccess && (
               <Button
                 variant="outline"
                 className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -165,7 +167,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                 <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
               </Button>
             )}
-            {!isAuthed && (
+            {!hasAccess && (
               <>
                 <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
                   Sign in
@@ -244,14 +246,14 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={!isAuthed}
-                        blurred={!isAuthed}
+                        locked={!hasAccess}
+                        blurred={!hasAccess}
                         onOpen={() => handleOpen(r)}
                       />
                     ))}
                   </div>
 
-                  {!isAuthed && (
+                  {!hasAccess && (
                     <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 p-8 text-center">
                       <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-4">
                         <Lock className="h-6 w-6 text-amber-500" />
@@ -294,7 +296,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
         open={readerOpen}
         onOpenChange={setReaderOpen}
         reportId={readerReportId}
-        isAuthed={isAuthed}
+        isAuthed={hasAccess}
         onRequestAuth={() => openAuth(undefined, activeReader?.title, "signup")}
       />
 
