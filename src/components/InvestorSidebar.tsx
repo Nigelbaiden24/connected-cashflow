@@ -1,8 +1,8 @@
-import { memo, useState, useCallback, useMemo } from "react";
+import { memo, useState, useCallback, useMemo, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { PlatformSearch, buildSearchableRoutes } from "./PlatformSearch";
 import { TranslatedText } from "./TranslatedText";
-import { prefetchHandlers } from "@/lib/routePrefetch";
+import { prefetchHandlers, prefetchRoutesByPrefix } from "@/lib/routePrefetch";
 import { 
   Briefcase,
   Bell,
@@ -103,6 +103,9 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
     try { return JSON.parse(localStorage.getItem("sidebar_hidden_tabs_investor") || "[]"); } catch { return []; }
   });
   const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
+
+  // Warm every investor route chunk during idle time so navigation is instant.
+  useEffect(() => { prefetchRoutesByPrefix("/investor/"); }, []);
 
   const filteredNavGroups = useMemo(() => navGroups.map(g => ({
     ...g,

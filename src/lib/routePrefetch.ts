@@ -84,6 +84,19 @@ export function prefetchRoute(url: string): void {
   importer().catch(() => inFlight.delete(url));
 }
 
+/**
+ * Warm every route chunk whose URL starts with the given prefix
+ * (e.g. "/investor/"). Yields between imports via requestIdleCallback
+ * to avoid blocking the main thread on initial render.
+ */
+export function prefetchRoutesByPrefix(prefix: string): void {
+  const urls = Object.keys(map).filter((u) => u.startsWith(prefix));
+  const ric: (cb: () => void) => void =
+    (typeof window !== "undefined" && (window as any).requestIdleCallback) ||
+    ((cb: () => void) => setTimeout(cb, 200));
+  urls.forEach((u, i) => ric(() => setTimeout(() => prefetchRoute(u), i * 30)));
+}
+
 /** Hover/focus handlers for nav links. */
 export const prefetchHandlers = (url: string) => ({
   onMouseEnter: () => prefetchRoute(url),
