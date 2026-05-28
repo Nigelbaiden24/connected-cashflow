@@ -90,11 +90,6 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
   useEffect(() => {
     (async () => {
       if (authLoading) return;
-      if (!isAuthed) {
-        setReports([]);
-        setLoading(false);
-        return;
-      }
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
         body: { asset_types: ["stock", "crypto"], limit: 60 },
