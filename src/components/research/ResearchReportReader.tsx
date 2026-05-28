@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ChevronLeft, ChevronRight, X, FileText, Lock, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, X, FileText, Lock, ArrowRight } from "lucide-react";
 
 interface ReportPage { title: string; html: string }
 interface FullReport {
@@ -20,28 +20,15 @@ interface FullReport {
   ai_score: number | null;
 }
 
-export interface ReaderPreview {
-  id: string;
-  title: string;
-  asset_type: string;
-  ticker: string | null;
-  author_name: string | null;
-  report_date: string | null;
-  ai_score: number | null;
-  first_page_title: string;
-  first_page_html: string;
-}
-
 interface Props {
   reportId: string | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   isAuthed: boolean;
-  preview?: ReaderPreview | null;
   onRequestAuth: () => void;
 }
 
-export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, preview, onRequestAuth }: Props) {
+export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, onRequestAuth }: Props) {
   const [report, setReport] = useState<FullReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
@@ -51,7 +38,6 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, p
     setPageIndex(0);
     setReport(null);
     if (!isAuthed) {
-      // Unauthenticated: don't fetch full report, just use preview
       setLoading(false);
       return;
     }
