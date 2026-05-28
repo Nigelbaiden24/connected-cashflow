@@ -104,6 +104,9 @@ export const InvestorSidebar = memo(function InvestorSidebar({ userEmail, onLogo
   });
   const handleFilterChange = useCallback((urls: string[]) => setHiddenUrls(urls), []);
 
+  // Warm every investor route chunk during idle time so navigation is instant.
+  useEffect(() => { prefetchRoutesByPrefix("/investor/"); }, []);
+
   const filteredNavGroups = useMemo(() => navGroups.map(g => ({
     ...g,
     items: g.items.filter(item => !hiddenUrls.includes(item.url))
