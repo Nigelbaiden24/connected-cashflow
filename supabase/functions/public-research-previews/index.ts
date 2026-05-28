@@ -20,19 +20,10 @@ Deno.serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization") ?? "";
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-    if (!token) {
-      return new Response(JSON.stringify({ error: "Sign in required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { data: userData, error: userError } = await admin.auth.getUser(token);
-    if (userError || !userData.user) {
-      return new Response(JSON.stringify({ error: "Sign in required" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let isAuthed = false;
+    if (token) {
+      const { data: userData } = await admin.auth.getUser(token);
+      isAuthed = !!userData?.user;
     }
 
     const { data, error } = await admin
