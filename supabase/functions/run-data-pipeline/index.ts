@@ -24,9 +24,12 @@ const SOURCE_MAP: Record<string, { fn: string; targetTable: string; platform: st
 // Every investment category exposed on Opportunity Intelligence — fully fanned
 // out on every daily run so users see fresh opportunities across the board.
 const OPPORTUNITY_RESEARCH_CATEGORIES = [
-  "real_estate","commodities","alternatives","esg","fractional_pe_vc",
+  "real_estate","land","rent_to_rent","rent_to_sa",
+  "commodities","alternatives","esg","fractional_pe_vc",
   "private_market_platforms","capital_protected_notes","thematics_packaged",
-  "copy_trading","music_royalties","businesses","mini_bonds","timepieces",
+  "copy_trading","royalties","businesses","mini_bonds","timepieces",
+  "fine_wine","art","collectibles","luxury_assets",
+  "entertainment_finance","insurance_investments","sports_investments",
 ];
 
 // Per-category category-benchmark fallback price (GBP) used when the AI cannot
@@ -35,18 +38,28 @@ const OPPORTUNITY_RESEARCH_CATEGORIES = [
 // institutional / HNW ticket ranges for that asset class.
 const CATEGORY_FALLBACK_GBP: Record<string, number> = {
   real_estate: 450_000,
-  commodities: 250_000,
-  alternatives: 250_000,
-  esg: 100_000,
+  land: 250_000,
+  rent_to_rent: 15_000,
+  rent_to_sa: 25_000,
+  commodities: 25_000,
+  alternatives: 50_000,
+  esg: 25_000,
   fractional_pe_vc: 25_000,
   private_market_platforms: 50_000,
   capital_protected_notes: 100_000,
   thematics_packaged: 25_000,
-  copy_trading: 10_000,
-  music_royalties: 25_000,
+  copy_trading: 5_000,
+  royalties: 25_000,
   businesses: 850_000,
   mini_bonds: 10_000,
   timepieces: 28_000,
+  fine_wine: 5_000,
+  art: 35_000,
+  collectibles: 8_000,
+  luxury_assets: 150_000,
+  entertainment_finance: 100_000,
+  insurance_investments: 50_000,
+  sports_investments: 50_000,
 };
 
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
