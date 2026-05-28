@@ -107,11 +107,6 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
                   <Badge variant="outline" className="border-slate-200">{effectiveReport.asset_type}</Badge>
                   {effectiveReport.ticker && <span className="font-mono">{effectiveReport.ticker}</span>}
                   {effectiveReport.author_name && <span>· {effectiveReport.author_name}</span>}
-                  {!isAuthed && (
-                    <Badge className="ml-1 bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100">
-                      <Lock className="h-2.5 w-2.5 mr-1" /> Preview
-                    </Badge>
-                  )}
                 </div>
                 <h2 className="mt-1 text-xl font-semibold text-slate-900 truncate">{effectiveReport.title}</h2>
               </div>
@@ -123,52 +118,11 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
             <ScrollArea className="flex-1">
               <div className="mx-auto max-w-3xl px-8 py-10 relative">
                 {current ? (
-                  <div className={`relative ${!isAuthed ? "min-h-[560px]" : ""}`}>
+                  <div className="relative">
                     <article
-                      className={`prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-amber-600 ${
-                        !isAuthed ? "max-h-[560px] overflow-hidden select-none blur-[3px] opacity-60 pointer-events-none" : ""
-                      }`}
+                      className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-amber-600"
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(current.html || "") }}
                     />
-
-                    {!isAuthed && (
-                      <>
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/20 via-white/80 to-white" />
-
-                        <div className="absolute left-1/2 top-28 z-20 w-[min(100%,34rem)] -translate-x-1/2 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-white p-8 text-center shadow-[0_24px_80px_-18px_rgba(15,23,42,0.35)]">
-                          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/40 mb-4">
-                            <Lock className="h-6 w-6 text-amber-600" />
-                          </div>
-                          <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
-                            Continue reading the full report
-                          </h3>
-                          <p className="mt-2 text-slate-500 max-w-md mx-auto leading-relaxed">
-                            Create your free FlowPulse account to unlock the rest of <span className="font-semibold text-slate-900">{effectiveReport.title}</span>, including conviction scoring, valuation models, and downloadable PDF.
-                          </p>
-                          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                            <Button
-                              size="lg"
-                              className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                              onClick={onRequestAuth}
-                            >
-                              Create free account <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="lg"
-                              variant="outline"
-                              className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                              onClick={onRequestAuth}
-                            >
-                              Sign in
-                            </Button>
-                          </div>
-                          <div className="mt-5 flex flex-wrap justify-center gap-3 text-[11px] text-slate-500">
-                            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3 w-3 text-emerald-500" /> Independent coverage</span>
-                            <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3 w-3 text-amber-500" /> 0–5 conviction scoring</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
                   </div>
                 ) : (
                   <p className="text-slate-500">No content available for this report.</p>
