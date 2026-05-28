@@ -22,9 +22,10 @@ interface Props {
   redirectPath?: string;
   reportTitle?: string;
   initialMode?: "signin" | "signup";
+  onAuthenticated?: () => void;
 }
 
-export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTitle, initialMode = "signin" }: Props) {
+export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTitle, initialMode = "signin", onAuthenticated }: Props) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +47,11 @@ export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTit
     }
     toast.success("Welcome back");
     onOpenChange(false);
-    if (redirectPath) window.location.href = redirectPath;
+    if (onAuthenticated) {
+      onAuthenticated();
+    } else if (redirectPath) {
+      window.location.href = redirectPath;
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
