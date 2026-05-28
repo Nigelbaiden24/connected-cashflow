@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
 import { Lock, ShieldCheck, Gauge } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,10 +67,6 @@ export default function PublicReports() {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { unlocked, setUnlocked } = useInsightAccess();
-  const [gateOpen, setGateOpen] = useState<boolean>(false);
-  const [pendingReportId, setPendingReportId] = useState<string | undefined>();
-  const [pendingReportTitle, setPendingReportTitle] = useState<string | undefined>();
 
   // Read ?category= from URL (used by homepage Insights dropdown)
   useEffect(() => {
@@ -518,23 +513,6 @@ export default function PublicReports() {
         </div>
       </footer>
 
-      <InsightAccessGate
-        open={gateOpen}
-        onOpenChange={setGateOpen}
-        onUnlocked={() => {
-          setUnlocked(true);
-          if (pendingReportId) {
-            const id = pendingReportId;
-            setPendingReportId(undefined);
-            setPendingReportTitle(undefined);
-            navigate(`/reports/${id}`);
-          }
-        }}
-        reportId={pendingReportId}
-        reportTitle={pendingReportTitle}
-        category={selectedCategory !== "all" ? selectedCategory : undefined}
-        sourcePage="/reports"
-      />
     </div>
   );
 
