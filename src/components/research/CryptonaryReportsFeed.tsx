@@ -77,16 +77,15 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
     let mounted = true;
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("generated_research_reports")
-        .select("*")
-        .eq("status", "promoted")
-        .eq("asset_type", assetType)
-        .order("promoted_at", { ascending: false })
-        .limit(60);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      const { data, error } = await supabase.functions.invoke("public-research-previews", {
+        body: { asset_types: [assetType], limit: 60, include_full: true },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      });
       if (!mounted) return;
       if (error) toast.error(error.message);
-      setItems((data ?? []) as unknown as PromotedReport[]);
+      setItems(((data?.reports ?? []) as PromotedReport[]).filter((report) => report.asset_type === assetType));
       setLoading(false);
     })();
     return () => { mounted = false; };
