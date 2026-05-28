@@ -43,13 +43,11 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
     }
     setLoading(true);
     (async () => {
-      const { data, error } = await supabase
-        .from("generated_research_reports")
-        .select("id, title, asset_type, ticker, pages, html_content, author_name, report_date, ai_score")
-        .eq("id", reportId)
-        .maybeSingle();
+      const { data, error } = await supabase.functions.invoke("public-research-previews", {
+        body: { report_id: reportId },
+      });
       if (error) console.error(error);
-      setReport((data as unknown) as FullReport | null);
+      setReport(((data as { report?: FullReport | null } | null)?.report ?? null) as FullReport | null);
       setLoading(false);
     })();
   }, [open, reportId, isAuthed]);
