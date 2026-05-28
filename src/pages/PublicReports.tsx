@@ -58,6 +58,8 @@ type ViewMode = "grid" | "list";
 type DateRange = "all" | "7" | "30" | "90" | "365";
 
 export default function PublicReports() {
+  const { user, loading: authLoading } = useAuth();
+  const isAuthed = !!user;
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
