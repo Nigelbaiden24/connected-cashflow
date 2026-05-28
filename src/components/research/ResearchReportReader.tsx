@@ -54,7 +54,12 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
         body: { report_id: reportId },
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
-      if (error) console.error(error);
+      if (error) {
+        console.error(error);
+        setReport(null);
+        setLoading(false);
+        return;
+      }
 
       const payload = data as { report?: FullReport | null; reports?: PreviewReportFallback[] } | null;
       const fallbackReport = payload?.reports?.find((item) => item.id === reportId) ?? null;
