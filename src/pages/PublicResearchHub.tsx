@@ -68,6 +68,8 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerReportId, setReaderReportId] = useState<string | null>(null);
   const [pendingReportId, setPendingReportId] = useState<string | null>(null);
+  const [sessionAccess, setSessionAccess] = useState(false);
+  const hasReportAccess = hasAccess || sessionAccess;
 
   useEffect(() => {
     setTab(initialTab);
@@ -80,7 +82,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
     const asset = params.get("asset");
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
-    if (!hasAccess) {
+    if (!hasReportAccess) {
       setPendingReportId(id);
       setReaderReportId(id);
       setReaderOpen(false);
@@ -90,14 +92,14 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
     setPendingReportId(null);
     setReaderReportId(id);
     setReaderOpen(true);
-  }, [authLoading, hasAccess, location.search]);
+  }, [authLoading, hasReportAccess, location.search]);
 
   useEffect(() => {
-    if (authLoading || !hasAccess || !pendingReportId) return;
+    if (authLoading || !hasReportAccess || !pendingReportId) return;
     setReaderReportId(pendingReportId);
     setReaderOpen(true);
     setPendingReportId(null);
-  }, [authLoading, hasAccess, pendingReportId]);
+  }, [authLoading, hasReportAccess, pendingReportId]);
 
   useEffect(() => {
     (async () => {
@@ -134,7 +136,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
 
   const handleOpen = (r: PublicResearchPreview) => {
     setReaderReportId(r.id);
-    if (hasAccess) {
+    if (hasReportAccess) {
       setReaderOpen(true);
     } else {
       setPendingReportId(r.id);
@@ -144,6 +146,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
   };
 
   const handleAuthenticated = () => {
+    setSessionAccess(true);
     const params = new URLSearchParams(location.search);
     const id = pendingReportId ?? readerReportId ?? params.get("id");
     if (id) {
