@@ -29,7 +29,17 @@ import thumbPrivateMarketPlatforms from "@/assets/opportunities/private_market_p
 import thumbCapitalProtectedNotes from "@/assets/opportunities/capital_protected_notes.jpg";
 import thumbThematicsPackaged from "@/assets/opportunities/thematics_packaged.jpg";
 import thumbCopyTrading from "@/assets/opportunities/copy_trading.jpg";
-import thumbMusicRoyalties from "@/assets/opportunities/music_royalties.jpg";
+import thumbRoyalties from "@/assets/opportunities/royalties.jpg";
+import thumbFineWine from "@/assets/opportunities/fine_wine.jpg";
+import thumbArt from "@/assets/opportunities/art.jpg";
+import thumbCollectibles from "@/assets/opportunities/collectibles.jpg";
+import thumbLuxuryAssets from "@/assets/opportunities/luxury_assets.jpg";
+import thumbEntertainmentFinance from "@/assets/opportunities/entertainment_finance.jpg";
+import thumbInsuranceInvestments from "@/assets/opportunities/insurance_investments.jpg";
+import thumbSportsInvestments from "@/assets/opportunities/sports_investments.jpg";
+import thumbLand from "@/assets/opportunities/land.jpg";
+import thumbRentToRent from "@/assets/opportunities/rent_to_rent.jpg";
+import thumbRentToSa from "@/assets/opportunities/rent_to_sa.jpg";
 
 export const sectorThumbnails: Record<string, string> = {
   uk_property: ukPropertyImg,
@@ -49,6 +59,9 @@ export const sectorThumbnails: Record<string, string> = {
   timepieces: timepiecesImg,
   // New categories
   real_estate: thumbRealEstate,
+  land: thumbLand,
+  rent_to_rent: thumbRentToRent,
+  rent_to_sa: thumbRentToSa,
   alternatives: thumbAlternatives,
   esg: thumbEsg,
   fractional_pe_vc: thumbFractionalPeVc,
@@ -56,7 +69,14 @@ export const sectorThumbnails: Record<string, string> = {
   capital_protected_notes: thumbCapitalProtectedNotes,
   thematics_packaged: thumbThematicsPackaged,
   copy_trading: thumbCopyTrading,
-  music_royalties: thumbMusicRoyalties,
+  royalties: thumbRoyalties,
+  fine_wine: thumbFineWine,
+  art: thumbArt,
+  collectibles: thumbCollectibles,
+  luxury_assets: thumbLuxuryAssets,
+  entertainment_finance: thumbEntertainmentFinance,
+  insurance_investments: thumbInsuranceInvestments,
+  sports_investments: thumbSportsInvestments,
 };
 
 interface SectorFolderGridProps {
