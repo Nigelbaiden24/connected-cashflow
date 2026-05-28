@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
+import { Lock, ShieldCheck, Gauge } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +58,8 @@ type ViewMode = "grid" | "list";
 type DateRange = "all" | "7" | "30" | "90" | "365";
 
 export default function PublicReports() {
+  const { user, loading: authLoading } = useAuth();
+  const isAuthed = !!user;
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -400,7 +404,7 @@ export default function PublicReports() {
 
       {/* Listing */}
       <section className="container mx-auto px-6 pb-20">
-        {loading ? (
+        {loading || authLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i} className="animate-pulse border-0 shadow-lg">
@@ -412,6 +416,52 @@ export default function PublicReports() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        ) : !isAuthed ? (
+          <div className="mt-8 rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50/40 p-12 text-center shadow-sm">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500/15 to-indigo-600/10 border border-blue-400/30 mb-6">
+              <Lock className="h-9 w-9 text-blue-600" />
+            </div>
+            <Badge variant="outline" className="mb-4 border-blue-200 bg-blue-50 text-blue-700 text-[10px] uppercase tracking-widest">
+              Members only
+            </Badge>
+            <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
+              {reports.length > 0
+                ? `${reports.length} insights behind the paywall`
+                : "Insights behind the paywall"}
+            </h3>
+            <p className="text-slate-500 mb-8 leading-relaxed max-w-2xl mx-auto text-base">
+              Full institutional insights across every major asset class — unlocked instantly when you sign in or create a free FlowPulse account.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+              <Button
+                size="lg"
+                onClick={() => navigate("/login")}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25"
+              >
+                Sign in
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate("/login")}
+                className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
+              >
+                Create free account
+              </Button>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Independent analyst coverage
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                <Gauge className="h-3.5 w-3.5 text-amber-500" /> 0–5 conviction scoring
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+                <FileText className="h-3.5 w-3.5 text-sky-500" /> Downloadable PDFs
+              </span>
+            </div>
           </div>
         ) : filteredReports.length === 0 ? (
           <Card className="border-0 shadow-lg mt-6">
@@ -451,6 +501,7 @@ export default function PublicReports() {
           </div>
         )}
       </section>
+
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
