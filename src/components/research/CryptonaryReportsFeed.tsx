@@ -237,7 +237,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
       <ReportReader
         report={active}
         related={related}
-        onOpenRelated={(r) => setActive(r)}
+        onOpenRelated={(r) => openReport(r)}
         onBack={() => setActive(null)}
         onDownload={() => handleDownloadPdf(active)}
         bookmarked={bookmarks.includes(active.id)}
@@ -341,7 +341,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
             {featured && (
               <FeaturedCard
                 report={featured}
-                onClick={() => setActive(featured)}
+                onClick={() => openReport(featured)}
                 onBookmark={() => toggleBookmark(featured.id)}
                 bookmarked={bookmarks.includes(featured.id)}
                 assetType={assetType}
@@ -352,7 +352,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
                 {secondary.map((r, i) => (
                   <SecondaryCard
                     key={r.id} report={r} idx={i + 1}
-                    onClick={() => setActive(r)}
+                    onClick={() => openReport(r)}
                     onBookmark={() => toggleBookmark(r.id)}
                     bookmarked={bookmarks.includes(r.id)}
                   />
@@ -370,7 +370,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
                     {rest.map((r, i) => (
                       <GridCard
                         key={r.id} report={r} idx={i}
-                        onClick={() => setActive(r)}
+                        onClick={() => openReport(r)}
                         onBookmark={() => toggleBookmark(r.id)}
                         bookmarked={bookmarks.includes(r.id)}
                       />
@@ -381,7 +381,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
                     {rest.map((r, i) => (
                       <ListRow
                         key={r.id} report={r} idx={i}
-                        onClick={() => setActive(r)}
+                        onClick={() => openReport(r)}
                         onBookmark={() => toggleBookmark(r.id)}
                         bookmarked={bookmarks.includes(r.id)}
                       />
@@ -401,7 +401,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
               <ol className="space-y-3">
                 {trending.map((r, i) => (
                   <li key={r.id}>
-                    <button onClick={() => setActive(r)} className="group flex items-start gap-3 text-left w-full">
+                    <button onClick={() => openReport(r)} className="group flex items-start gap-3 text-left w-full">
                       <span className="text-2xl font-black text-muted-foreground/40 leading-none w-6">{i + 1}</span>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition">{r.title}</div>
@@ -425,7 +425,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
               {bookmarks.length > 0 ? (
                 <div className="space-y-2">
                   {items.filter((r) => bookmarks.includes(r.id)).slice(0, 4).map((r) => (
-                    <button key={r.id} onClick={() => setActive(r)} className="block w-full text-left text-xs hover:text-primary transition line-clamp-1">
+                    <button key={r.id} onClick={() => openReport(r)} className="block w-full text-left text-xs hover:text-primary transition line-clamp-1">
                       → {r.title}
                     </button>
                   ))}
