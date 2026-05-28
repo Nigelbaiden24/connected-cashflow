@@ -206,4 +206,4 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.public-research-previews]
-verify_jwt = false
+verify_jwt = true
