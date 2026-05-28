@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { InsightAccessGate, useInsightAccess } from "@/components/insights/InsightAccessGate";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
