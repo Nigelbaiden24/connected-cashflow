@@ -881,8 +881,14 @@ function ReportReader({
               </div>
             </div>
 
-            <div className="cryptonary-article prose prose-lg prose-slate dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: safe }} />
+            {safe ? (
+              <div className="cryptonary-article prose prose-lg prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: safe }} />
+            ) : (
+              <div className="flex items-center justify-center py-20 text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading report…
+              </div>
+            )}
           </div>
 
           {/* Page nav (bottom) */}
