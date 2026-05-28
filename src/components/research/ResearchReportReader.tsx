@@ -20,6 +20,11 @@ interface FullReport {
   ai_score: number | null;
 }
 
+interface PreviewReportFallback extends Partial<FullReport> {
+  first_page_title?: string;
+  first_page_html?: string;
+}
+
 interface Props {
   reportId: string | null;
   open: boolean;
@@ -51,8 +56,19 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
       });
       if (error) console.error(error);
 
-      const payload = data as { report?: FullReport | null; reports?: FullReport[] } | null;
-      const fullReport = payload?.report ?? payload?.reports?.find((item) => item.id === reportId) ?? null;
+      const payload = data as { report?: FullReport | null; reports?: PreviewReportFallback[] } | null;
+      const fallbackReport = payload?.reports?.find((item) => item.id === reportId) ?? null;
+      const fullReport = payload?.report ?? (fallbackReport ? {
+        id: fallbackReport.id ?? reportId,
+        title: fallbackReport.title ?? "Research report",
+        asset_type: fallbackReport.asset_type ?? "research",
+        ticker: fallbackReport.ticker ?? null,
+        pages: fallbackReport.first_page_html ? [{ title: fallbackReport.first_page_title ?? "Executive Summary", html: fallbackReport.first_page_html }] : null,
+        html_content: fallbackReport.html_content ?? null,
+        author_name: fallbackReport.author_name ?? null,
+        report_date: fallbackReport.report_date ?? null,
+        ai_score: fallbackReport.ai_score ?? null,
+      } : null);
       setReport(fullReport as FullReport | null);
       setLoading(false);
     })();
