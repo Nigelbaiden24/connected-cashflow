@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChart3, RefreshCw, Loader2, FileText, BookOpen, Newspaper, PieChart as PieIcon, Briefcase, GraduationCap } from "lucide-react";
+import { TrendingUp, TrendingDown, Globe, Sparkles, Activity, Eye, Star, BarChart3, RefreshCw, Loader2, FileText, BookOpen, Newspaper, PieChart as PieIcon, Briefcase, GraduationCap, Zap, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAIAnalyst } from "@/hooks/useAIAnalyst";
 import { useInvestorDashboardData } from "@/hooks/useInvestorDashboardData";
