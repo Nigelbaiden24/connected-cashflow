@@ -1263,7 +1263,7 @@ export type Database = {
       api_usage_logs: {
         Row: {
           api_client_id: string
-          api_key: string
+          api_key_prefix: string
           created_at: string
           endpoint: string
           id: string
@@ -1276,7 +1276,7 @@ export type Database = {
         }
         Insert: {
           api_client_id: string
-          api_key: string
+          api_key_prefix: string
           created_at?: string
           endpoint: string
           id?: string
@@ -1289,7 +1289,7 @@ export type Database = {
         }
         Update: {
           api_client_id?: string
-          api_key?: string
+          api_key_prefix?: string
           created_at?: string
           endpoint?: string
           id?: string

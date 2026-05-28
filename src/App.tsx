@@ -272,7 +272,7 @@ const App = () => {
               <Route path="/enterprise-data/:slug" element={<Suspense fallback={<PageLoader />}><EnterpriseDataCategory /></Suspense>} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/organisation" element={<OrganisationSettings />} />
-              <Route path="/reports" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
+              <Route path="/reports" element={<Suspense fallback={<PageLoader />}><PublicReports /></Suspense>} />
               <Route path="/reports/:id" element={<ReportDetail />} />
               <Route path="/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
               <Route path="/intelligence" element={<Suspense fallback={<PageLoader />}><PublicOpportunities /></Suspense>} />
@@ -365,10 +365,10 @@ const App = () => {
               } />
 
               {/* ============ INVESTOR LAYOUT (persistent) ============ */}
-              <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub /></Suspense>} />
-              <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="stock" /></Suspense>} />
-              <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><PublicResearchHub initialTab="crypto" /></Suspense>} />
               <Route element={investorLayoutElement}>
+                <Route path="/investor/research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage /></Suspense>} />
+                <Route path="/investor/stock-research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage lockAssetType="stock" title="Stock Research Reports" description="Full equity research reports for signed-in FlowPulse Investor users" /></Suspense>} />
+                <Route path="/investor/crypto-research" element={<Suspense fallback={<PageLoader />}><ResearchReportsPage lockAssetType="crypto" title="Crypto Research Reports" description="Full digital asset research reports for signed-in FlowPulse Investor users" /></Suspense>} />
                 <Route path="/investor/dashboard" element={<Suspense fallback={<PageLoader />}><InvestorDashboard /></Suspense>} />
                 <Route path="/investor/analysis" element={<Suspense fallback={<PageLoader />}><AnalysisReports /></Suspense>} />
                 <Route path="/investor/commentary" element={<Suspense fallback={<PageLoader />}><MarketCommentary /></Suspense>} />

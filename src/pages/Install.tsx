@@ -14,8 +14,12 @@ const Install = () => {
   const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    const ua = navigator.userAgent || "";
+    setIsIOS(/iphone|ipad|ipod/i.test(ua));
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -23,8 +27,11 @@ const Install = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Check if already installed (covers both standard PWA + iOS Safari)
+    if (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true
+    ) {
       setInstalled(true);
     }
 
@@ -32,6 +39,7 @@ const Install = () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
   }, []);
+
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -134,18 +142,29 @@ const Install = () => {
                 </p>
               </div>
               <div className="space-y-3 text-sm">
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="font-medium mb-1">On iPhone/Safari:</p>
-                  <p className="text-muted-foreground">
-                    Tap the Share button <span className="inline-block px-1">↗</span> → "Add to Home Screen"
-                  </p>
-                </div>
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="font-medium mb-1">On Android/Chrome:</p>
-                  <p className="text-muted-foreground">
-                    Tap the menu (⋮) → "Install app" or "Add to Home screen"
-                  </p>
-                </div>
+                {isIOS ? (
+                  <div className="p-3 bg-muted rounded-lg ring-1 ring-primary/20">
+                    <p className="font-medium mb-1">On iPhone/iPad (Safari):</p>
+                    <p className="text-muted-foreground">
+                      Tap the Share button <span className="inline-block px-1">↗</span> at the bottom of Safari, then choose <strong>“Add to Home Screen”</strong>.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="font-medium mb-1">On Android/Chrome:</p>
+                      <p className="text-muted-foreground">
+                        Tap the menu (⋮) → "Install app" or "Add to Home screen"
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted rounded-lg">
+                      <p className="font-medium mb-1">On iPhone (Safari):</p>
+                      <p className="text-muted-foreground">
+                        Tap the Share button <span className="inline-block px-1">↗</span> → "Add to Home Screen"
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
               <Button onClick={() => navigate('/')} variant="outline" className="w-full">
                 <ArrowLeft className="mr-2 h-4 w-4" />

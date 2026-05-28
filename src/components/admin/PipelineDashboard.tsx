@@ -88,7 +88,7 @@ export const PipelineDashboard = () => {
     const [{ data: s }, { data: r }, { data: p }] = await Promise.all([
       supabase.from("pipeline_schedule" as any).select("*").order("source"),
       supabase.from("pipeline_runs" as any).select("*").order("started_at", { ascending: false }).limit(20),
-      supabase.from("pipeline_pending_items" as any).select("*").eq("status", "pending").eq("target_table", "opportunity_products").in("source", ["investor-research","opportunity-research"]).order("created_at", { ascending: false }).limit(80),
+      supabase.from("pipeline_pending_items" as any).select("*").eq("status", "pending").eq("target_table", "opportunity_products").eq("source", "opportunity-research").order("created_at", { ascending: false }).limit(80),
     ]);
     startTransition(() => {
       setSchedules((s as any) ?? []);
