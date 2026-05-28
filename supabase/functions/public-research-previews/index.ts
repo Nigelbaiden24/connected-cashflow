@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         promoted_at: report.promoted_at,
         created_at: report.created_at,
         first_page_title: firstPage.title ?? "Executive Summary & Key Takeaways",
-        first_page_html: firstPage.html ?? report.excerpt ?? "",
+        first_page_html: isAuthed ? (firstPage.html ?? report.excerpt ?? "") : "",
       };
     });
 
