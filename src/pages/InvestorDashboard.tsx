@@ -234,6 +234,45 @@ const InvestorDashboard = () => {
       {/* Featured Analyst Picks */}
       <FeaturedAnalystPicksSection />
 
+      {/* Recently Promoted Opportunities — sourced from Data Pipeline approvals */}
+      {dashboardData.recentlyPromoted.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-cyan-400" />
+            <h2 className="text-xl font-bold">
+              <TranslatedText>Recently Promoted</TranslatedText>
+            </h2>
+            <Badge variant="secondary" className="ml-1 text-[10px]">
+              {dashboardData.recentlyPromoted.length} new
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto h-7 text-xs"
+              onClick={() => (window.location.href = "/investor/opportunities")}
+            >
+              <TranslatedText>View all</TranslatedText> <ArrowRight className="ml-1 h-3 w-3" />
+            </Button>
+          </div>
+          <NetflixContentRow
+            title="Just Added to the Platform"
+            icon={<Sparkles className="h-5 w-5 text-cyan-400" />}
+            items={dashboardData.recentlyPromoted.map((o: any) => ({
+              id: o.id,
+              title: o.title,
+              description: o.short_description,
+              thumbnail_url: o.thumbnail_url,
+              category: (o.category || "").replace(/_/g, " "),
+              created_at: o.created_at,
+              score: o.overall_conviction_score,
+              type: "research" as const,
+              extra: o.analyst_rating,
+              route: `/investor/opportunities/${o.id}`,
+            }))}
+          />
+        </div>
+      )}
+
       {/* Pitchbook Deal Flow */}
       <PitchbookDealFlow deals={dashboardData.opportunities} loading={dashboardData.loading} />
 
