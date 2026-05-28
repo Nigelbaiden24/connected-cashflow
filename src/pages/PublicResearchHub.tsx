@@ -67,6 +67,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerReportId, setReaderReportId] = useState<string | null>(null);
+  const [pendingReportId, setPendingReportId] = useState<string | null>(null);
 
   useEffect(() => {
     setTab(initialTab);
@@ -80,14 +81,23 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
     if (asset === "stock" || asset === "crypto") setTab(asset);
     if (!id) return;
     if (!hasAccess) {
-      setReaderReportId(null);
+      setPendingReportId(id);
+      setReaderReportId(id);
       setReaderOpen(false);
       openAuth(`/research?id=${id}${asset ? `&asset=${asset}` : ""}`, undefined, "signin");
       return;
     }
+    setPendingReportId(null);
     setReaderReportId(id);
     setReaderOpen(true);
   }, [authLoading, hasAccess, location.search]);
+
+  useEffect(() => {
+    if (authLoading || !hasAccess || !pendingReportId) return;
+    setReaderReportId(pendingReportId);
+    setReaderOpen(true);
+    setPendingReportId(null);
+  }, [authLoading, hasAccess, pendingReportId]);
 
   useEffect(() => {
     (async () => {
@@ -127,8 +137,23 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
     if (hasAccess) {
       setReaderOpen(true);
     } else {
+      setPendingReportId(r.id);
       setReaderOpen(false);
       openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
+    }
+  };
+
+  const handleAuthenticated = () => {
+    const params = new URLSearchParams(location.search);
+    const id = pendingReportId ?? readerReportId ?? params.get("id");
+    if (id) {
+      setReaderReportId(id);
+      setPendingReportId(id);
+      setReaderOpen(true);
+      if (!params.get("id")) {
+        const asset = activeReader?.asset_type ?? tab;
+        navigate(`/research?id=${id}&asset=${asset}`, { replace: true });
+      }
     }
   };
 
@@ -309,6 +334,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
         redirectPath={authRedirect}
         reportTitle={authReportTitle}
         initialMode={authMode}
+        onAuthenticated={handleAuthenticated}
       />
 
     </div>
