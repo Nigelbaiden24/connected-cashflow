@@ -139,11 +139,26 @@ export const PipelineDashboard = () => {
     setBusySource(source ?? "all");
     try {
       const { data, error } = await supabase.functions.invoke("run-data-pipeline", {
-        body: source ? { source, triggered_by: "manual" } : { triggered_by: "manual" },
+        body: source
+          ? { source, triggered_by: "manual" }
+          : { triggered_by: "manual", force_all: true },
       });
       if (error) throw error;
-      toast({ title: source ? `Triggered ${source}` : "Triggered all due sources", description: `Processed ${data?.ran ?? 0} source(s)` });
-      void load();
+      const payload = (data ?? {}) as { ok?: boolean; queued?: number; sources?: string[]; error?: string };
+      if (payload.ok === false) {
+        throw new Error(payload.error || "Pipeline rejected the request");
+      }
+      const queued = payload.queued ?? 0;
+      const srcs = (payload.sources ?? []).join(", ");
+      toast({
+        title: source ? `Scraping ${source}…` : queued > 0 ? "Scraping started" : "No sources to run",
+        description: queued > 0
+          ? `Running ${queued} source${queued === 1 ? "" : "s"} in the background${srcs ? `: ${srcs}` : ""}. New items will appear in Pending Review within ~1–2 min.`
+          : "All schedules are disabled. Enable a source first.",
+      });
+      // Refresh shortly so the new run row shows up
+      setTimeout(() => { void load(); }, 1500);
+      setTimeout(() => { void load(); }, 8000);
     } catch (e: any) {
       toast({ title: "Pipeline error", description: e.message ?? String(e), variant: "destructive" });
     } finally { setBusySource(null); }
