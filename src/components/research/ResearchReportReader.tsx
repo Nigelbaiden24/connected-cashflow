@@ -43,8 +43,11 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
     }
     setLoading(true);
     (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
         body: { report_id: reportId },
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
       if (error) console.error(error);
       setReport(((data as { report?: FullReport | null } | null)?.report ?? null) as FullReport | null);
