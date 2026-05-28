@@ -89,6 +89,12 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
 
   useEffect(() => {
     (async () => {
+      if (authLoading) return;
+      if (!isAuthed) {
+        setReports([]);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
         body: { asset_types: ["stock", "crypto"], limit: 60 },
@@ -102,7 +108,7 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
       }
       setLoading(false);
     })();
-  }, []);
+  }, [authLoading, isAuthed]);
 
   const filtered = useMemo(
     () => reports.filter((r) => r.asset_type === tab),
@@ -225,17 +231,10 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
 
           {(["stock", "crypto"] as const).map((t) => (
             <TabsContent key={t} value={t}>
-              {loading || authLoading ? (
+              {authLoading ? (
                 <div className="flex items-center justify-center py-24">
                   <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
                 </div>
-              ) : filtered.length === 0 ? (
-                <Card className="border-slate-200 bg-slate-50">
-                  <CardContent className="py-20 text-center">
-                    <FileText className="h-12 w-12 mx-auto text-slate-400 mb-3" />
-                    <p className="text-slate-500">No {t} reports published yet.</p>
-                  </CardContent>
-                </Card>
               ) : !isAuthed ? (
                 <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 p-12 text-center shadow-sm">
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-6">
@@ -281,6 +280,17 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
                     </span>
                   </div>
                 </div>
+              ) : loading ? (
+                <div className="flex items-center justify-center py-24">
+                  <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+                </div>
+              ) : filtered.length === 0 ? (
+                <Card className="border-slate-200 bg-slate-50">
+                  <CardContent className="py-20 text-center">
+                    <FileText className="h-12 w-12 mx-auto text-slate-400 mb-3" />
+                    <p className="text-slate-500">No {t} reports published yet.</p>
+                  </CardContent>
+                </Card>
               ) : (
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((r) => (
