@@ -111,8 +111,12 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
 
   const handleOpen = (r: PublicResearchPreview) => {
     setReaderReportId(r.id);
-    setReaderOpen(false);
-    openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
+    if (isAuthed) {
+      setReaderOpen(true);
+    } else {
+      setReaderOpen(false);
+      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
+    }
   };
 
   const activeReader = useMemo(
