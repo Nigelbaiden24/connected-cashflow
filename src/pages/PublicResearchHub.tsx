@@ -149,6 +149,15 @@ export default function PublicResearchHub({ initialTab = "stock" }: PublicResear
           </button>
           <HomepageNavLinks />
           <div className="flex items-center gap-2">
+            {isAuthed && (
+              <Button
+                variant="outline"
+                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/investor/dashboard"))}
+              >
+                <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+              </Button>
+            )}
             {!isAuthed && (
               <>
                 <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
