@@ -401,13 +401,18 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   } catch (e) { console.warn("[history]", e); }
 
   const allItems: Array<{ title: string; summary?: string; url?: string; raw: any }> = [];
+  // Fair spread: take up to N items per category-payload first, then top-up.
+  const PER_CATEGORY_CAP = 4;
+  const overflow: typeof allItems = [];
   for (const pl of payloads) {
     let it = extractItems(source, pl);
     if (it.length === 0) it = await aiExtractOpportunities(source, pl);
-    allItems.push(...it);
+    allItems.push(...it.slice(0, PER_CATEGORY_CAP));
+    overflow.push(...it.slice(PER_CATEGORY_CAP));
   }
+  allItems.push(...overflow);
   // Cap per-run to keep the enrichment pass inside the budget.
-  const items = allItems.slice(0, 40);
+  const items = allItems.slice(0, 80);
   fetched = items.length;
 
   for (const it of items) {
