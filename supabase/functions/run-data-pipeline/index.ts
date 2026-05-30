@@ -316,11 +316,35 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   // below) and per-item enrichment is capped further down, so the run still
   // fits comfortably inside the edge-function budget.
   const baseCfg = (schedule.config as Record<string, unknown>) ?? {};
+  // Rotate regions across categories so every run covers a global spread,
+  // and Africa is ALWAYS represented in every pipeline run.
+  const REGIONS = [
+    "Africa (Nigeria Kenya South Africa Egypt Morocco Ghana Tanzania Rwanda)",
+    "United Kingdom & Ireland",
+    "North America (USA Canada)",
+    "Western Europe (Germany France Netherlands Switzerland)",
+    "Middle East (UAE Saudi Arabia Qatar Israel)",
+    "Asia Pacific (Japan Singapore Hong Kong Australia)",
+    "Latin America (Brazil Mexico Colombia Chile Argentina)",
+    "Southeast Asia (Indonesia Vietnam Thailand Philippines Malaysia)",
+    "Africa (Nigeria Kenya South Africa Egypt Morocco Ghana)", // ensure ~2x Africa weighting
+    "Southern Europe (Spain Portugal Italy Greece)",
+    "South Asia (India Pakistan Bangladesh)",
+    "Eastern Europe (Poland Romania Hungary Czech)",
+    "Nordics (Sweden Norway Denmark Finland)",
+  ];
   const bodies: Record<string, unknown>[] = [];
   if (source === "opportunity-research") {
-    for (const cat of OPPORTUNITY_RESEARCH_CATEGORIES) {
-      bodies.push({ category: cat, stream: false, deep: false, detail: "standard", ...baseCfg });
-    }
+    OPPORTUNITY_RESEARCH_CATEGORIES.forEach((cat, idx) => {
+      bodies.push({
+        category: cat,
+        region: REGIONS[idx % REGIONS.length],
+        stream: false,
+        deep: false,
+        detail: "standard",
+        ...baseCfg,
+      });
+    });
   } else {
     bodies.push(buildScraperBody(source, baseCfg));
   }
@@ -377,13 +401,18 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   } catch (e) { console.warn("[history]", e); }
 
   const allItems: Array<{ title: string; summary?: string; url?: string; raw: any }> = [];
+  // Fair spread: take up to N items per category-payload first, then top-up.
+  const PER_CATEGORY_CAP = 4;
+  const overflow: typeof allItems = [];
   for (const pl of payloads) {
     let it = extractItems(source, pl);
     if (it.length === 0) it = await aiExtractOpportunities(source, pl);
-    allItems.push(...it);
+    allItems.push(...it.slice(0, PER_CATEGORY_CAP));
+    overflow.push(...it.slice(PER_CATEGORY_CAP));
   }
+  allItems.push(...overflow);
   // Cap per-run to keep the enrichment pass inside the budget.
-  const items = allItems.slice(0, 40);
+  const items = allItems.slice(0, 80);
   fetched = items.length;
 
   for (const it of items) {

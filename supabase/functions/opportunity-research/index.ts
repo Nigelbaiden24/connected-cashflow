@@ -577,6 +577,148 @@ const CATEGORY_RESEARCH_SOURCES: Record<string, { queries: string[]; urls: strin
       "https://www.knightfrank.com/research",
     ],
   },
+  land: {
+    queries: [
+      "UK land for sale investment plots development 2025",
+      "agricultural land for sale UK farmland investment",
+      "Africa land investment opportunities Kenya Nigeria Ghana South Africa",
+      "international land investment emerging markets returns",
+      "woodland forestry land investment UK Europe",
+    ],
+    urls: [
+      "https://www.landinsight.io/",
+      "https://www.ukfarmlandinvestment.co.uk/",
+      "https://www.savills.co.uk/insight-and-opinion/",
+    ],
+  },
+  rent_to_rent: {
+    queries: [
+      "rent to rent R2R UK property deals 2025",
+      "rent to rent HMO opportunities UK cities",
+      "rent to rent commercial property arbitrage UK",
+      "Africa rent to rent serviced accommodation Nairobi Lagos Cape Town",
+    ],
+    urls: [
+      "https://www.propertyhub.net/",
+      "https://www.spareroom.co.uk/",
+    ],
+  },
+  rent_to_sa: {
+    queries: [
+      "rent to serviced accommodation R2SA UK deals 2025",
+      "short let arbitrage UK cities Airbnb opportunities",
+      "Africa serviced apartments short let investment Lagos Nairobi Marrakech",
+    ],
+    urls: [
+      "https://www.airdna.co/",
+      "https://www.guestready.com/",
+    ],
+  },
+  royalties: {
+    queries: [
+      "music royalties investment opportunities Hipgnosis Royalty Exchange",
+      "film TV royalty investment opportunities 2025",
+      "patent royalty investment opportunities licensing",
+      "publishing royalties investment fractional 2025",
+      "Africa music royalty rights African artists Afrobeats investment",
+    ],
+    urls: [
+      "https://www.royaltyexchange.com/",
+      "https://anote.io/",
+    ],
+  },
+  fine_wine: {
+    queries: [
+      "fine wine investment opportunities Bordeaux Burgundy 2025",
+      "rare whisky cask investment UK Scotland returns",
+      "Liv-ex fine wine market index recommendations 2025",
+      "South African wine investment Stellenbosch fine wine Africa",
+    ],
+    urls: [
+      "https://www.liv-ex.com/",
+      "https://www.cultwines.com/",
+      "https://www.whiskyinvestdirect.com/",
+    ],
+  },
+  art: {
+    queries: [
+      "fine art investment opportunities Masterworks contemporary 2025",
+      "blue chip art investment auction houses Sotheby's Christie's",
+      "fractional art investment platforms 2025",
+      "African contemporary art investment Lagos Cape Town market",
+    ],
+    urls: [
+      "https://www.masterworks.com/",
+      "https://www.artprice.com/",
+      "https://www.artsy.net/",
+    ],
+  },
+  collectibles: {
+    queries: [
+      "rare sneakers investment opportunities StockX 2025",
+      "trading cards investment Pokemon sports cards graded PSA",
+      "comic books investment rare key issues CGC graded",
+      "memorabilia sports investment opportunities 2025",
+      "African collectibles vintage tribal art investment",
+    ],
+    urls: [
+      "https://www.stockx.com/",
+      "https://www.psacard.com/",
+      "https://www.heritage.com/",
+    ],
+  },
+  luxury_assets: {
+    queries: [
+      "classic car investment opportunities Ferrari Porsche 2025",
+      "luxury yacht investment fractional opportunities",
+      "private jet fractional ownership investment NetJets",
+      "luxury handbag investment Hermes Birkin Chanel returns",
+      "Africa luxury safari lodge investment opportunities Kenya Tanzania South Africa",
+    ],
+    urls: [
+      "https://www.hagerty.com/valuation-tools",
+      "https://www.classic-trader.com/",
+    ],
+  },
+  entertainment_finance: {
+    queries: [
+      "film financing investment opportunities Slated 2025",
+      "TV production investment opportunities streaming era",
+      "esports team investment opportunities franchise 2025",
+      "sports rights media investment opportunities",
+      "Nollywood film financing investment opportunities Nigeria Africa",
+    ],
+    urls: [
+      "https://www.slated.com/",
+      "https://www.variety.com/",
+    ],
+  },
+  insurance_investments: {
+    queries: [
+      "life settlement investment opportunities institutional 2025",
+      "premium financing insurance investment opportunities",
+      "annuity investment opportunities UK high yield",
+      "viatical settlement investment returns",
+      "African micro insurance investment opportunities",
+    ],
+    urls: [
+      "https://www.lisa.org/",
+      "https://www.viaticalassoc.com/",
+    ],
+  },
+  sports_investments: {
+    queries: [
+      "football club investment opportunities EFL Championship 2025",
+      "racehorse syndicate investment opportunities UK Ireland",
+      "athlete NIL investment opportunities sports finance",
+      "esports franchise investment opportunities",
+      "African football club investment opportunities Nigeria Ghana South Africa",
+    ],
+    urls: [
+      "https://www.sportico.com/",
+      "https://www.racingpost.com/",
+    ],
+  },
 };
 
 interface SourceRecord {
