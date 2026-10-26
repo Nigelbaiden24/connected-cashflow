@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       automationResults.steps_completed.push('milestones_created');
     } catch (error) {
       console.error('Error creating financial plan:', error);
-      automationResults.errors.push(`financial_plan: ${error.message}`);
+      automationResults.errors.push(`financial_plan: ${(error instanceof Error ? error.message : String(error))}`);
     }
 
     // Step 2: Create initial client goals
@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
       console.log('Created default client goals');
     } catch (error) {
       console.error('Error creating client goals:', error);
-      automationResults.errors.push(`client_goals: ${error.message}`);
+      automationResults.errors.push(`client_goals: ${(error instanceof Error ? error.message : String(error))}`);
     }
 
     // Step 3: Schedule initial consultation meeting
@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
       console.log('Scheduled initial consultation meeting');
     } catch (error) {
       console.error('Error scheduling meeting:', error);
-      automationResults.errors.push(`meeting_schedule: ${error.message}`);
+      automationResults.errors.push(`meeting_schedule: ${(error instanceof Error ? error.message : String(error))}`);
     }
 
     // Step 4: Create document checklist entries
@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
       console.log('Created document checklist');
     } catch (error) {
       console.error('Error creating document checklist:', error);
-      automationResults.errors.push(`documents: ${error.message}`);
+      automationResults.errors.push(`documents: ${(error instanceof Error ? error.message : String(error))}`);
     }
 
     // Step 5: Create welcome notification/note
@@ -228,7 +228,7 @@ The FlowPulse Finance Team`;
       console.log('Added welcome note to client');
     } catch (error) {
       console.error('Error adding welcome note:', error);
-      automationResults.errors.push(`welcome_note: ${error.message}`);
+      automationResults.errors.push(`welcome_note: ${(error instanceof Error ? error.message : String(error))}`);
     }
 
     // Log automation execution
@@ -251,8 +251,8 @@ The FlowPulse Finance Team`;
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message,
-        stack: error.stack 
+        error: (error instanceof Error ? error.message : String(error)),
+        stack: (error instanceof Error ? error.stack : undefined) 
       }),
       { 
         status: 500,

@@ -73,7 +73,7 @@ Format the roundup in clear sections with actionable insights. Use professional 
     console.error('Error generating AI roundup:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to generate AI roundup',
+        error: (error instanceof Error ? error.message : String(error)) || 'Failed to generate AI roundup',
         content: 'Unable to generate AI roundup at this time. Please try again later.'
       }),
       { 

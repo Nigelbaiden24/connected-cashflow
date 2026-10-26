@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     await logUsage(supabase, clientId, apiKey, resource, req, 500, startTime);
     return new Response(
-      JSON.stringify({ error: "Internal server error", message: err.message }),
+      JSON.stringify({ error: "Internal server error", message: (err instanceof Error ? err.message : String(err)) }),
       { status: 500, headers: corsHeaders }
     );
   }

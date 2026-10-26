@@ -1,6 +1,6 @@
 // Shared AI research report generator used by both
 // `generate-research-report-ai` (manual) and `run-research-scraper-schedules` (autopilot).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { meteredFetch } from "./metered.ts";
 import { type AnalystReport, type ReportSource, composeReport, escapeHtml } from "./reportComposer.ts";
 
@@ -109,7 +109,7 @@ async function createReportThumbnail(opts: {
   tags?: string[];
   firstPageHtml?: string;
   slug: string;
-  admin: ReturnType<typeof createClient>;
+  admin: SupabaseClient;
 }): Promise<string | null> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) return null;
@@ -171,7 +171,7 @@ export async function runGeneration(opts: {
   ticker?: string;
   extraUrls?: string[];
   createdBy: string;
-  admin: ReturnType<typeof createClient>;
+  admin: SupabaseClient;
 }) {
   const { assetType, topic, ticker = "", extraUrls = [], createdBy, admin } = opts;
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

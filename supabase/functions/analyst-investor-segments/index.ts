@@ -38,7 +38,7 @@ async function callAI(system: string, user: string) {
   return JSON.parse(d.choices[0].message.content);
 }
 
-async function safeFetch(promise: Promise<any>) {
+async function safeFetch(promise: PromiseLike<{ data: any }>) {
   try { const r = await promise; return r.data || []; } catch { return []; }
 }
 

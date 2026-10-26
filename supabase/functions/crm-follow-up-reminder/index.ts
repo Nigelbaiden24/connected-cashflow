@@ -73,7 +73,11 @@ Deno.serve(async (req) => {
     let notificationsCreated = 0;
     const errors: string[] = [];
 
-    for (const followUp of followUps as FollowUp[]) {
+    const normalizedFollowUps: FollowUp[] = followUps.map((followUp) => ({
+      ...followUp,
+      contact: Array.isArray(followUp.contact) ? followUp.contact[0] ?? null : followUp.contact,
+    }));
+    for (const followUp of normalizedFollowUps) {
       try {
         const contactName = followUp.contact?.name || 'Unknown Contact';
         const company = followUp.contact?.company ? ` at ${followUp.contact.company}` : '';
