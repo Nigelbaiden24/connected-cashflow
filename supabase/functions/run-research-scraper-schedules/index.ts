@@ -8,7 +8,7 @@
 //  - worker ({ scheduleId, manualTopic, autopilotTopic }): generate ONE
 //    report and exit. Each worker gets its own CPU budget so a long Gemini
 //    call cannot kill its siblings.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { runGeneration } from "../_shared/researchReportGenerator.ts";
 import { autoScraperEnabled, meteredFetch } from "../_shared/metered.ts";
 import { identify, internalHeaders } from "../_shared/guard.ts";
@@ -28,7 +28,7 @@ interface AutopilotTopic {
 async function pickAutopilotTopics(
   assetType: "stock" | "crypto",
   count: number,
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient,
 ): Promise<AutopilotTopic[]> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   const fallback: AutopilotTopic[] = assetType === "crypto"

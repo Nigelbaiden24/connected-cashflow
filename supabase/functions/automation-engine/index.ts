@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Automation Engine Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
 
 async function executeRule(supabase: any, ruleId: string, triggerData: any) {
   const startTime = Date.now();
-  let executionId: string;
+  let executionId: string | undefined;
 
   try {
     // Get the rule
@@ -119,12 +119,12 @@ async function executeRule(supabase: any, ruleId: string, triggerData: any) {
           status: 'failed',
           completed_at: new Date().toISOString(),
           execution_time_ms: executionTime,
-          error_message: error.message,
-          error_stack: error.stack
+          error_message: error instanceof Error ? error.message : String(error),
+          error_stack: error instanceof Error ? error.stack : undefined
         })
         .eq('id', executionId);
 
-      await logAutomation(supabase, executionId, ruleId, 'error', `Failed: ${error.message}`);
+      await logAutomation(supabase, executionId, ruleId, 'error', `Failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     throw error;
@@ -171,7 +171,7 @@ async function executeDataSync(supabase: any, config: any, triggerData: any, exe
   for (const record of sourceData) {
     const mappedData: any = {};
     
-    for (const [sourceField, targetField] of Object.entries(field_mappings)) {
+    for (const [sourceField, targetField] of Object.entries(field_mappings as Record<string, string>)) {
       mappedData[targetField] = record[sourceField];
     }
 
@@ -311,7 +311,7 @@ async function executeScheduledRules(supabase: any) {
 
       results.push({ schedule_id: schedule.id, success: true });
     } catch (error) {
-      results.push({ schedule_id: schedule.id, success: false, error: error.message });
+      results.push({ schedule_id: schedule.id, success: false, error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -341,7 +341,7 @@ async function triggerEventBasedRules(supabase: any, eventData: any) {
       const result = await executeRule(supabase, trigger.rule_id, { event: event_type, ...data });
       results.push({ rule_id: trigger.rule_id, success: true });
     } catch (error) {
-      results.push({ rule_id: trigger.rule_id, success: false, error: error.message });
+      results.push({ rule_id: trigger.rule_id, success: false, error: error instanceof Error ? error.message : String(error) });
     }
   }
 
