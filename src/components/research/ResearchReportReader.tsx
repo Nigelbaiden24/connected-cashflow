@@ -145,7 +145,7 @@ export function ResearchReportReader({ reportId, open, onOpenChange, isAuthed, o
                 {current ? (
                   <div className="relative">
                     <article
-                      className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-a:text-amber-600"
+                      className="report-article"
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(current.html || "") }}
                     />
                   </div>

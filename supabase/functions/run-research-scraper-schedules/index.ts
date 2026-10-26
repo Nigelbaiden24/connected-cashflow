@@ -157,11 +157,9 @@ Deno.serve(async (req) => {
       const ticker = body.autopilotTopic?.ticker ?? s.ticker ?? "";
       console.log(`[worker ${s.id}] generating "${topic}" (${s.asset_type})`);
 
-      // Retry up to 2 times. Niche crypto/penny-stock topics frequently get
-      // a malformed-JSON response from the AI on the first try — a single
-      // retry typically succeeds, which is why crypto previously trailed
-      // stock in produced reports.
-      const maxAttempts = 3;
+      // runGeneration uses structured tool output and already falls back from
+      // Pro to Flash, so one retry (sources come from cache) is enough.
+      const maxAttempts = 2;
       let lastErr: Error | null = null;
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {

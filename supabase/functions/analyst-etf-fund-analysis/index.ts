@@ -14,7 +14,7 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 
 const SYSTEM_PROMPT = `You are a senior fund research analyst at an institutional asset management firm.
 
-Generate deep, accurate ETF/fund analysis for each ticker provided. Use realistic, current institutional knowledge.
+Generate deep, accurate ETF/fund analysis for each ticker provided from your institutional knowledge. You have no live data feed: never present a guess as a fact.
 
 Return STRICT JSON: { "analyses": [ { ... } ] }
 
@@ -38,8 +38,10 @@ Each analysis MUST include:
 - comparative_analysis (2-3 sentences vs peers)
 - trend_commentary (2-3 sentences on flow & momentum trends)
 - overall_score (0-5, 1 decimal)
+- data_as_of (string: the latest period your figures reflect, e.g. "2025 annual report")
+- data_caveats (array of short notes on which figures are approximate)
 
-Be specific with numbers. Use realistic data based on widely-known fund characteristics.`;
+NUMBERS: use a figure only when you reliably know it for this specific fund (structural facts such as expense ratio, index, asset class, typical top holdings). Use null for anything you do not reliably know — recent fund flows, year-to-date returns and manager statistics are usually unknown without live data and should be null. Label approximations in data_caveats. Never invent precision.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

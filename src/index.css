@@ -1593,3 +1593,31 @@ html.pwa-standalone #root {
 .cryptonary-article figure { margin: 1.75rem 0; }
 .cryptonary-article figure img { width: 100%; border-radius: 12px; }
 .cryptonary-article figcaption { text-align: center; font-size: 0.85rem; color: hsl(var(--muted-foreground)); margin-top: 0.5rem; font-family: 'Inter', sans-serif; }
+
+
+/* FlowPulse Research report body (reader dialog is always light). */
+.report-article { font-family: 'Georgia', 'Cambria', serif; color: #1e293b; line-height: 1.75; font-size: 1.0625rem; }
+.report-article h2, .report-article h3, .report-article h4 { font-family: 'Inter', system-ui, sans-serif; color: #0f172a; letter-spacing: -0.01em; }
+.report-article h2 { font-size: 1.6rem; font-weight: 800; margin: 2.25rem 0 1rem; }
+.report-article h3 { font-size: 1.15rem; font-weight: 700; margin: 1.75rem 0 0.6rem; }
+.report-article p { margin: 0 0 1.15rem; }
+.report-article .lede { font-size: 1.2rem; line-height: 1.65; color: #334155; border-left: 3px solid #b8860b; padding-left: 1rem; }
+.report-article ul, .report-article ol { padding-left: 1.4rem; margin: 0 0 1.15rem; }
+.report-article ul { list-style: disc; } .report-article ol { list-style: decimal; }
+.report-article li { margin: 0.3rem 0; }
+.report-article a { color: #1d4ed8; text-decoration: underline; text-underline-offset: 3px; word-break: break-word; }
+.report-article sup.cite a, .report-article sup a { text-decoration: none; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.7em; padding: 0 1px; }
+.report-article blockquote { border-left: 4px solid #cbd5e1; padding: 0.25rem 0 0.25rem 1.1rem; margin: 1.5rem 0; color: #475569; font-style: italic; }
+.report-article .callout { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #b8860b; border-radius: 10px; padding: 1.1rem 1.4rem; margin: 1.5rem 0; font-family: 'Inter', system-ui, sans-serif; font-size: 0.97rem; }
+.report-article .callout h3 { margin-top: 0; }
+.report-article .callout ul { margin-bottom: 0; }
+.report-article .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1.25rem 0 1.75rem; }
+.report-article .stat { background: #0f172a; color: #fff; border-radius: 10px; padding: 0.85rem 1rem; }
+.report-article .stat .label { display: block; font-family: 'Inter', sans-serif; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 0.2rem; }
+.report-article .stat .value { display: block; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.2rem; color: #fff; }
+.report-article table.data-table { border-collapse: collapse; width: 100%; margin: 1.25rem 0 1.75rem; font-family: 'Inter', sans-serif; font-size: 0.88rem; display: block; overflow-x: auto; }
+.report-article table.data-table th { background: #0f172a; color: #fff; text-align: left; padding: 0.55rem 0.75rem; font-weight: 600; }
+.report-article table.data-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+.report-article table.data-table tbody tr:nth-child(even) td { background: #f8fafc; }
+.report-article .note, .report-article li.note { font-size: 0.85rem; color: #64748b; }
+@media (max-width: 640px) { .report-article { font-size: 1rem; } .report-article .stat .value { font-size: 1.05rem; } }

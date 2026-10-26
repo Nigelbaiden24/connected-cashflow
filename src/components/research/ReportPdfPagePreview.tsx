@@ -80,7 +80,7 @@ export function ReportPdfPagePreview({ report, blurred = false }: ReportPdfPageP
           </main>
 
           <footer className="mt-10 flex items-center justify-between border-t border-[#dbe4ef] pt-4 font-sans text-[11px] text-[#64748b]">
-            <span>FlowPulse Research · Confidential</span>
+            <span>FlowPulse Research · For information only, not personal investment advice</span>
             <span>Page 1 of {report.page_count ?? 1}</span>
           </footer>
         </div>

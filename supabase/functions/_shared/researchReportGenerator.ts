@@ -2,6 +2,7 @@
 // `generate-research-report-ai` (manual) and `run-research-scraper-schedules` (autopilot).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { meteredFetch } from "./metered.ts";
+import { type AnalystReport, type ReportSource, composeReport, escapeHtml } from "./reportComposer.ts";
 
 const CURATED_STOCK = [
   // Mainstream / mega-cap coverage
@@ -80,15 +81,6 @@ async function firecrawlScrape(url: string): Promise<ScrapedSource | null> {
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80)
     + "-" + Math.random().toString(36).slice(2, 7);
-}
-
-function extractJsonBlock(text: string): any | null {
-  const fenced = text.match(/```json\s*([\s\S]*?)```/i) || text.match(/```\s*([\s\S]*?)```/);
-  const raw = fenced ? fenced[1] : text;
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start < 0 || end < 0) return null;
-  try { return JSON.parse(raw.slice(start, end + 1)); } catch { return null; }
 }
 
 function imageBytesFromDataUrl(dataUrl: string): { bytes: Uint8Array; contentType: string } | null {
@@ -212,97 +204,157 @@ export async function runGeneration(opts: {
   ).join("\n\n---\n\n");
 
   const reportDate = new Date().toISOString().slice(0, 10);
-  const systemPrompt = `You are FlowPulse Research, an institutional-grade ${assetType === "crypto" ? "digital-asset" : "equity"} analyst producing elite enterprise research reports for sophisticated investors.
+  const assetWord = assetType === "crypto" ? "digital-asset" : "equity";
+  const systemPrompt = `You are the lead ${assetWord} analyst at FlowPulse Research, writing an institutional research report for professional and sophisticated investors. The standard is a tier-1 sell-side or independent research house: precise, evidence-led, balanced and readable.
 
-OUTPUT STRICT JSON only, no commentary, with this exact shape:
-{
-  "title": "concise institutional headline (<= 90 chars)",
-  "excerpt": "compelling 2-sentence summary (<= 240 chars)",
-  "hero_image_url": "https unsplash URL relevant to the topic",
-  "ai_score": number 0-5 (conviction; one decimal),
-  "ai_tags": ["3-6 short tags"],
-  "reading_time_minutes": number,
-  "pages": [ { "title": "Page title", "html": "page HTML body" }, ... ]
-}
+EVIDENCE RULES (non-negotiable):
+- Every figure (price, market cap, revenue, growth, multiples, supply, TVL, dates) must come from the numbered RESEARCH CONTEXT and carry its source marker, e.g. "revenue rose 12% [3]". Cite with plain [n] markers only — never write links or URLs.
+- If a number is not in the context, do not state it. Give a qualitative view instead, or list it under data_gaps.
+- Never invent analyst ratings, broker price targets, consensus figures or guidance. Do not set your own price target; discuss valuation relative to peers and history using cited figures only.
+- Separate fact from interpretation: write "The data shows…" for facts and "We think…" / "In our view…" for judgement.
+- Present the bear case as seriously as the bull case. No hype, no emojis, no marketing language, no guarantees, no personal advice ("you should buy").
 
-PAGE COUNT RULES (CRITICAL):
-- Decide the number of pages based on information load, depth, and relevance of the gathered context.
-- Minimum 3 pages, maximum 12 pages. Use more pages only when there is genuinely meaningful additional analysis to add — no padding, no filler.
-- Each page should be a coherent, fully-developed section of ~400-900 words of substantive analysis.
+CURRENCY: express money in GBP (£) with UK conventions (£1.25, £3.4m, £12bn). Convert foreign-currency figures at a recent indicative rate and keep the source marker.
 
-REQUIRED SECTION FLOW (combine or expand into pages as the content warrants):
-1. Executive Summary & Key Takeaways
-2. Market Context & Macro Backdrop
-3. ${assetType === "crypto" ? "Fundamental & On-chain Analysis" : "Fundamental & Financial Analysis"}
-4. Competitive Landscape
-5. Catalysts & Roadmap
-6. Risks & Bear Case
-7. Valuation & Price Targets
-8. Scenario Analysis (Bull / Base / Bear)
-9. Conviction, Positioning & Recommendations
-10. Appendix & Methodology
+SECTIONS: write 4–8 analysis sections, each 350–800 words of substantive analysis (no filler). Choose titles that fit the evidence; typically: Investment Thesis; Market & Macro Context; ${assetType === "crypto" ? "Network, Tokenomics & On-chain Fundamentals" : "Business Model & Financial Performance"}; Competitive Position; Valuation Context; Outlook. Do not write separate executive-summary, scenarios, risks, catalysts or sources sections — those are built from your structured fields.
 
-HTML RULES PER PAGE (Cryptonary-quality, enterprise grade):
-- Use ONLY inner article markup: <h2>, <h3>, <p>, <ul>, <li>, <blockquote>, <table>, <figure>, <figcaption>, <div>, <span>, <sup>, <a>, <strong>, <em>.
-- NEVER include <html>, <head>, <body>, <script>, <link>, or external CSS.
-- First page opens with a <p class='lede'> 2-paragraph lede.
-- Use <div class='callout'> for key takeaways.
-- Use <div class='stat-grid'><div class='stat'><span class='label'>...</span><span class='value'>...</span></div></div> for KPI tiles (3-6 per use).
-- Use <table class='data-table'> for comparable metrics, financials, on-chain stats.
-- Cite sources inline as <sup><a href='URL'>[n]</a></sup>.
-- Final page MUST end with a "Sources" <ol> listing every cited URL.
-- Brand voice: confident, data-driven, institutional. No hype, no emojis, no marketing fluff.
+SECTION HTML: inner markup only, using <h3>, <p>, <ul>, <ol>, <li>, <blockquote>, <strong>, <em>, <table class='data-table'> (with <thead>/<tbody>) for comparisons, <div class='callout'> for one key point per section at most, and <div class='stat-grid'><div class='stat'><span class='label'>…</span><span class='value'>…</span></div></div> for 3–6 cited KPI tiles. No <h1>/<h2>, no inline styles, no scripts.
 
-CURRENCY RULES (CRITICAL):
-- ALL monetary figures MUST be expressed in GBP (£ pound sterling). Never use $, USD, US$, or dollar amounts anywhere in the report (titles, excerpt, tables, KPIs, valuations, price targets, market cap, revenue, anything).
-- If a source quotes USD, convert to GBP using a reasonable recent FX rate and present as £ (e.g. "£1.2bn"). You may add "(approx.)" once where appropriate.
-- Use £ symbol with UK conventions: £1.25, £3.4m, £12bn, £450k. Do not write "GBP" alongside the symbol.`;
+Call the publish_report tool with the complete report.`;
 
   const userPrompt = `ASSET TYPE: ${assetType}
 TOPIC / COMPANY / THEME: ${topic}${ticker ? ` (${ticker})` : ""}
 REPORT DATE: ${reportDate}
-PUBLISHER: FlowPulse Research
 
-RESEARCH CONTEXT (${sources.length} sources):
-${context || "(no external context available — rely on general institutional knowledge and clearly mark assumptions)"}
+RESEARCH CONTEXT (${sources.length} numbered sources):
+${context || "(no external sources could be retrieved — keep the report short, qualitative and say so in data_gaps)"}`;
 
-Decide the appropriate page count (3-12) based on the depth and richness of the above context. Produce the JSON now.`;
+  const publishTool = {
+    type: "function",
+    function: {
+      name: "publish_report",
+      description: "Publish the finished FlowPulse Research report.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Institutional headline, max 90 characters" },
+          subtitle: { type: "string", description: "One-line standfirst" },
+          excerpt: { type: "string", description: "Two-sentence summary for the report card, max 240 characters" },
+          stance: { type: "string", enum: ["Positive", "Neutral", "Cautious", "Negative"] },
+          conviction: { type: "number", description: "0–5, one decimal: strength of evidence behind the stance" },
+          horizon: { type: "string", description: "e.g. '6–12 months'" },
+          key_takeaways: { type: "array", items: { type: "string" }, description: "3–6 crisp takeaways with [n] markers where factual" },
+          key_metrics: {
+            type: "array",
+            description: "Up to 8 headline metrics taken from the sources",
+            items: {
+              type: "object",
+              properties: {
+                label: { type: "string" },
+                value: { type: "string" },
+                source: { type: "integer", description: "Source number the value comes from" },
+                basis: { type: "string", enum: ["reported", "estimate", "calculated"] },
+              },
+              required: ["label", "value", "basis"],
+            },
+          },
+          sections: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { title: { type: "string" }, html: { type: "string" } },
+              required: ["title", "html"],
+            },
+          },
+          scenarios: {
+            type: "array",
+            description: "Exactly three: bull, base, bear",
+            items: {
+              type: "object",
+              properties: {
+                case: { type: "string", enum: ["bull", "base", "bear"] },
+                probability: { type: "number", description: "Subjective weighting in %, the three summing to 100" },
+                summary: { type: "string" },
+                drivers: { type: "array", items: { type: "string" } },
+              },
+              required: ["case", "summary"],
+            },
+          },
+          catalysts: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                event: { type: "string" },
+                timing: { type: "string" },
+                direction: { type: "string", enum: ["positive", "negative", "uncertain"] },
+              },
+              required: ["event"],
+            },
+          },
+          risks: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                risk: { type: "string" },
+                likelihood: { type: "string", enum: ["low", "medium", "high"] },
+                impact: { type: "string", enum: ["low", "medium", "high"] },
+                mitigant: { type: "string" },
+              },
+              required: ["risk", "likelihood", "impact"],
+            },
+          },
+          data_gaps: { type: "array", items: { type: "string" }, description: "What could not be verified from the sources" },
+          tags: { type: "array", items: { type: "string" }, description: "3–6 short tags" },
+        },
+        required: ["title", "excerpt", "stance", "conviction", "key_takeaways", "key_metrics", "sections", "scenarios", "risks"],
+      },
+    },
+  };
 
-  const aiRes = await meteredFetch("research-report-generator", "https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    }),
-  });
-  if (!aiRes.ok) {
-    const t = await aiRes.text();
-    throw new Error(`AI gateway ${aiRes.status}: ${t.slice(0, 200)}`);
-  }
-  const aiJson = await aiRes.json();
-  const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
-  const parsed = extractJsonBlock(content);
-  if (!parsed?.title || !Array.isArray(parsed?.pages) || parsed.pages.length === 0) {
-    throw new Error("AI did not return required fields (title + pages[])");
-  }
+  // Gemini 2.5 Pro writes the report (quality matters most here); if it fails
+  // or returns nothing usable, one cheaper Flash attempt is made.
+  const callAnalyst = async (model: string): Promise<AnalystReport | null> => {
+    const aiRes = await meteredFetch("research-report-generator", "https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        tools: [publishTool],
+        tool_choice: { type: "function", function: { name: "publish_report" } },
+      }),
+    });
+    if (aiRes.status === 402 || aiRes.status === 429) {
+      const t = await aiRes.text();
+      throw new Error(`AI gateway ${aiRes.status}: ${t.slice(0, 200)}`);
+    }
+    if (!aiRes.ok) {
+      console.warn(`[report] ${model} returned ${aiRes.status}`);
+      return null;
+    }
+    const aiJson = await aiRes.json();
+    const args = aiJson?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    const parsed = args ? (() => { try { return JSON.parse(args); } catch { return null; } })() : null;
+    if (!parsed?.title || !Array.isArray(parsed?.sections) || parsed.sections.length === 0) return null;
+    return parsed as AnalystReport;
+  };
 
-  const pages = parsed.pages
-    .slice(0, 12)
-    .map((p: any, i: number) => ({
-      title: String(p?.title ?? `Page ${i + 1}`).slice(0, 200),
-      html: String(p?.html ?? ""),
-    }))
-    .filter((p: any) => p.html.trim().length > 0);
-  if (pages.length === 0) throw new Error("AI returned no usable pages");
+  const parsed = (await callAnalyst("google/gemini-2.5-pro")) ?? (await callAnalyst("google/gemini-2.5-flash"));
+  if (!parsed) throw new Error("AI did not return a usable report");
+
+  const reportSources: ReportSource[] = sources.map((s) => ({ url: s.url, title: s.title ?? null }));
+  const pages = composeReport(parsed, { assetType, topic, ticker, reportDate }, reportSources);
+  if (pages.length < 3) throw new Error("AI returned no usable analysis sections");
 
   const title = String(parsed.title).slice(0, 200);
   const slug = slugify(title);
   const excerpt = String(parsed.excerpt ?? "").slice(0, 500);
-  const aiTags = Array.isArray(parsed.ai_tags) ? parsed.ai_tags.slice(0, 8).map(String) : [];
+  const aiTags = Array.isArray(parsed.tags) ? parsed.tags.slice(0, 8).map(String) : [];
 
   const generatedHero = await createReportThumbnail({
     assetType,
@@ -350,7 +402,7 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
 
   const combinedHtml = pages.map((p: any, i: number) =>
     `<section class="report-page" data-page="${i + 1}">
-       <header class="report-page-header"><span class="page-number">Page ${i + 1} of ${pages.length}</span><h2 class="page-title">${p.title}</h2></header>
+       <header class="report-page-header"><span class="page-number">Page ${i + 1} of ${pages.length}</span><h2 class="page-title">${escapeHtml(p.title)}</h2></header>
        <div class="report-page-body">${p.html}</div>
      </section>`
   ).join("\n");
@@ -368,10 +420,10 @@ Decide the appropriate page count (3-12) based on the depth and richness of the 
       pages,
       page_count: pages.length,
       report_date: reportDate,
-      ai_score: Math.max(0, Math.min(5, Number(parsed.ai_score ?? 3))),
+      ai_score: Math.max(0, Math.min(5, Number(parsed.conviction ?? 3))),
       ai_tags: aiTags,
       sources: sources.map((s) => ({ url: s.url, title: s.title ?? null })),
-      reading_time_minutes: Number(parsed.reading_time_minutes ?? Math.max(5, pages.length * 3)),
+      reading_time_minutes: Math.max(5, Math.round(pages.reduce((n: number, p: any) => n + p.html.replace(/<[^>]+>/g, " ").split(/\s+/).length, 0) / 220)),
       status: "draft",
       created_by: createdBy,
     })

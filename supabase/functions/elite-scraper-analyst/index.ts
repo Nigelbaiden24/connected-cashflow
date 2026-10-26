@@ -89,14 +89,11 @@ REPORT REQUIREMENTS
 - Every section answers: "What does this mean for investors/operators?"
 - Cover: key trends, market drivers, risks, opportunities, forward-looking outlook
 
-3. DATA INTEGRATION
-- Embed realistic, plausible data points throughout (percentages, growth rates, deal volumes, market sizing, multiples, yields, valuations)
-- Cite figures from the source data where present; where the source is thin, use plausible directional estimates and flag confidence
-- Embed chart placeholders inline within section bodies using EXACT syntax:
-  [INSERT BAR CHART: X vs Y]
-  [INSERT LINE GRAPH: Trend over time]
-  [INSERT TABLE: Top entities]
-- Each section should contain at least one chart/table placeholder where it adds analytical value
+3. EVIDENCE DISCIPLINE (non-negotiable — this report is published to paying clients)
+- Use figures (percentages, growth rates, deal sizes, market sizing, multiples, yields, valuations) ONLY when they appear in the RAW SCRAPED DATA, and name the source in brackets, e.g. "(FT, 12 Oct)".
+- Never invent numbers, deals, investors, tickers, ratings or price targets. Where the data is thin, say so plainly, give a directional view in words, label any estimate "est." and add the gap to data_gaps.
+- Separate fact from view: "The data shows…" for facts; "We think…" for judgement.
+- No chart or table placeholders in the text — charts and tables are built from the structured fields.
 
 4. INVESTOR INTELLIGENCE LAYER
 - Surface top investors / companies / deals
@@ -111,7 +108,7 @@ REPORT REQUIREMENTS
 6. OUTPUT STYLE
 - Tone suitable for paying institutional clients
 - Every paragraph adds new information — no recap, no padding
-- Specific names, tickers, sponsors, geographies, dates throughout
+- Specific names, tickers, sponsors, geographies and dates from the data — never made up
 
 7. CUSTOMISATION LOGIC — adapt sections to report type:
 - Market report → trends, flows, outlook, dispersion
@@ -132,11 +129,11 @@ Return STRICT JSON only (no markdown fences, no prose outside JSON) with this sc
   "geography": "string",
   "time_period": "string",
   "sector": "string",
-  "executive_summary": "string (350-500 words). Regime call, capital flows, valuation context, deal activity, what's changed. Specific numbers and names throughout. Embed at least one chart placeholder.",
+  "executive_summary": "string (350-500 words). Regime call, capital flows, valuation context, deal activity, what's changed. Sourced numbers and names only.",
   "key_metrics": [{"label":"string","value":"string","change":"string"}],
-  "sections": [{"heading":"string","body":"string (300-500 words STRICT, paragraphs separated by \\n\\n, dense with specifics, contains at least one [INSERT BAR CHART: ...] / [INSERT LINE GRAPH: ...] / [INSERT TABLE: ...] placeholder)"}],
+  "sections": [{"heading":"string","body":"string (300-500 words, paragraphs separated by \\n\\n, dense with sourced specifics)"}],
   "top_entities": [{"rank":number,"name":"string","category":"Investor|Company|Deal","detail":"string — specific figures","why_it_matters":"string (2-3 sentences)"}],
-  "opportunities": [{"name":"string — specific deal/asset","thesis":"string (4-6 sentences with catalyst + horizon + second-order angle)","conviction":"High|Medium|Low","horizon":"string","entry":"string|null","target":"string|null","key_data":"string"}],
+  "opportunities": [{"name":"string — specific deal/asset","thesis":"string (4-6 sentences with catalyst + horizon + second-order angle)","conviction":"High|Medium|Low","horizon":"string","entry":"string|null — only if stated in the data","target":"string|null — only if stated in the data","key_data":"string"}],
   "risks": [{"risk":"string — specific","severity":"High|Medium|Low","mitigation":"string","probability":"string","second_order":"string"}],
   "themes": ["5-8 cross-cutting themes — each non-obvious"],
   "contrarian_angles": ["3-5 contrarian or hidden-trend insights with reasoning"],
@@ -145,7 +142,8 @@ Return STRICT JSON only (no markdown fences, no prose outside JSON) with this sc
     "category_distribution": [{"label":"string","value":number}],
     "conviction_breakdown": [{"label":"High","value":number},{"label":"Medium","value":number},{"label":"Low","value":number}]
   },
-  "data_gaps": ["What additional data would sharpen this call"],
+  "data_gaps": ["What could not be verified from the data, and what would sharpen this call"],
+  "sources": [{"name":"string — publication or site","detail":"string — article/page and date if known"}],
   "strategic_takeaways": ["6-10 bullet-pointed, high-impact, decision-ready insights for PMs/operators"],
   "conclusion": "string (250-350 words). Synthesise the call, give 3 explicit next-step actions with timing."
 }
@@ -153,8 +151,9 @@ Return STRICT JSON only (no markdown fences, no prose outside JSON) with this sc
 Hard rules:
 - sentiment & conviction_breakdown values sum to 100
 - Provide 5-7 sections, 8-12 opportunities, 5-8 risks, 6-10 key_metrics, 6-10 category_distribution items, 10 top_entities
-- Section bodies must each be 300-500 words AND include at least one chart/table placeholder
-- No generic statements — every sentence carries a specific data point, name, or differentiated view`;
+- Section bodies must each be 300-500 words
+- No generic statements — every paragraph carries sourced specifics or a differentiated, reasoned view
+- List in "sources" every publication you drew figures from`;
       userPrompt = `Platform: ${platformLabel}\nCategory / Topic: ${categoryLabel || "General"}\n\nINPUT PARAMETERS\n- Report topic: ${categoryLabel || "General market intelligence"}\n- Geography: infer from data (default: Global with UK/US emphasis)\n- Time period: trailing 90 days through forward 12 months\n- Sector: ${categoryLabel || "Cross-sector"}\n- Report type: infer best fit (Market / Deals / Company / Investor) from the data below\n\nRAW SCRAPED DATA (multiple sources, opportunity-level articles):\n\n${compactScrape(scrapedData)}\n\nDraft the institutional-grade JSON report, then self-review and upgrade per the process rules. Return ONLY the improved final JSON.`;
     } else {
       throw new Error("Invalid mode. Use 'explain' or 'report'.");

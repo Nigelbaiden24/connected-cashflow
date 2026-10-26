@@ -184,6 +184,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
       const html2pdf = (await import("html2pdf.js")).default as any;
       const pages = r.pages?.length ? r.pages : [{ title: r.title, html: r.html_content }];
       const dateStr = r.report_date ? format(new Date(r.report_date), "PPP") : (r.promoted_at ? format(new Date(r.promoted_at), "PPP") : format(new Date(), "PPP"));
+      const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       const container = document.createElement("div");
       container.innerHTML = `
         <style>
@@ -214,6 +215,11 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
           .article table.data-table th, .article table.data-table td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
           .article table.data-table th { background: #0c2340; color: #fff; font-family: Arial, sans-serif; font-size: 11px; letter-spacing: 0.5px; }
           .article .callout { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; border-radius: 4px; margin: 14px 0; }
+          .article ul, .article ol { padding-left: 20px; margin: 10px 0; }
+          .article sup a { color: #1d4ed8; text-decoration: none; font-family: Arial, sans-serif; font-size: 9px; font-weight: 700; }
+          .article a { color: #1d4ed8; word-break: break-word; }
+          .article .note { font-size: 11px; color: #64748b; }
+          .article table.data-table tr, .article .stat-grid, .article .callout { page-break-inside: avoid; }
           .footer { position: absolute; bottom: 12px; left: 32px; right: 32px; display: flex; justify-content: space-between; font-family: Arial, sans-serif; font-size: 10px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 6px; }
         </style>
         <div class="pg cover">
@@ -224,17 +230,17 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
               <div class="brand-meta">${assetType === "crypto" ? "Digital Asset" : "Equity"} Research · ${dateStr}</div>
             </div>
           </div>
-          ${r.ticker ? `<div class="ticker">${r.ticker}</div>` : ""}
-          <h1>${r.title}</h1>
-          ${r.excerpt ? `<p class="lede">${r.excerpt}</p>` : ""}
-          ${r.hero_image_url ? `<img src="${r.hero_image_url}" style="width:100%;height:240px;object-fit:cover;border-radius:6px;margin-top:18px" />` : ""}
+          ${r.ticker ? `<div class="ticker">${esc(r.ticker)}</div>` : ""}
+          <h1>${esc(r.title)}</h1>
+          ${r.excerpt ? `<p class="lede">${esc(r.excerpt)}</p>` : ""}
+          ${r.hero_image_url ? `<img src="${esc(r.hero_image_url)}" style="width:100%;height:240px;object-fit:cover;border-radius:6px;margin-top:18px" />` : ""}
           <div class="kv">
             <div>Conviction <span>${typeof r.ai_score === "number" ? r.ai_score.toFixed(1) : "—"} / 5</span></div>
             <div>Pages <span>${pages.length}</span></div>
             <div>Reading <span>${r.reading_time_minutes ?? 6} min</span></div>
             <div>Date <span>${dateStr}</span></div>
           </div>
-          <div class="footer"><span>FlowPulse Research · Confidential</span><span>Cover</span></div>
+          <div class="footer"><span>FlowPulse Research · For information only, not personal investment advice</span><span>Cover</span></div>
         </div>
         ${pages.map((p, i) => `
           <div class="pg">
@@ -248,7 +254,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
             <div class="page-title">Section ${i + 1}</div>
             <h2 class="section">${p.title.replace(/</g, "&lt;")}</h2>
             <div class="article">${DOMPurify.sanitize(p.html)}</div>
-            <div class="footer"><span>FlowPulse Research · Confidential</span><span>Page ${i + 1} of ${pages.length}</span></div>
+            <div class="footer"><span>FlowPulse Research · For information only, not personal investment advice</span><span>Page ${i + 1} of ${pages.length}</span></div>
           </div>
         `).join("")}
       `;
@@ -257,7 +263,7 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
         filename: `${r.slug}.pdf`,
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] },
+        pagebreak: { mode: ["css", "legacy"], avoid: ["tr", ".stat-grid", ".callout"] },
       }).save();
     } catch (e: any) {
       toast.error("PDF export failed: " + (e.message ?? "unknown"));
