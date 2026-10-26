@@ -10,6 +10,8 @@
 //    call cannot kill its siblings.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { runGeneration } from "../_shared/researchReportGenerator.ts";
+import { autoScraperEnabled, meteredFetch } from "../_shared/metered.ts";
+import { identify, internalHeaders } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -69,7 +71,7 @@ async function pickAutopilotTopics(
   try {
     const ctl = new AbortController();
     const t = setTimeout(() => ctl.abort(), 25_000);
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const r = await meteredFetch("run-research-scraper-schedules", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -103,16 +105,12 @@ const DAILY_CAP_PER_ASSET = 10;
 
 async function fireChild(payload: Record<string, unknown>) {
   const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/run-research-scraper-schedules`;
-  const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
   // Fire-and-forget. We intentionally do not await the response so the
   // orchestrator can return quickly. The child gets its own CPU/wall budget.
+  // Workers only accept the service key, so the public cannot start them.
   fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${anon}`,
-      apikey: anon,
-    },
+    headers: internalHeaders(),
     body: JSON.stringify(payload),
   }).catch((e) => console.error("child dispatch failed:", (e as Error).message));
 }
@@ -126,6 +124,25 @@ Deno.serve(async (req) => {
 
     let body: any = {};
     try { body = await req.json(); } catch (_) { /* no body */ }
+
+    // pg_cron calls with only the anon key → scheduled tick, gated by the
+    // master auto-scraper switch. Workers and forced runs need an admin or
+    // the service key.
+    const caller = await identify(req);
+    const trusted = caller.kind === "admin" || caller.kind === "internal";
+    const deny = (status: number, error: string) =>
+      new Response(JSON.stringify({ success: false, error }), {
+        status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    if (caller.kind === "user") return deny(403, "Admin access required");
+    if (!trusted) {
+      if (body?.scheduleId || body?.manualTopic || body?.autopilotTopic) return deny(401, "Admin access required");
+      if (!(await autoScraperEnabled())) {
+        return new Response(JSON.stringify({ success: true, accepted: 0, message: "Auto-scraper disabled." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // -------- WORKER MODE: generate ONE report and exit --------
     if (body?.scheduleId && (body?.manualTopic || body?.autopilotTopic)) {

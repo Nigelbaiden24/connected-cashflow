@@ -1,4 +1,6 @@
 // Simple Firecrawl scrape proxy used by admin scraper UIs
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -7,6 +9,9 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     if (!FIRECRAWL_API_KEY) throw new Error("FIRECRAWL_API_KEY not configured");
@@ -14,7 +19,7 @@ Deno.serve(async (req) => {
     const { url, formats } = await req.json();
     if (!url) throw new Error("url is required");
 
-    const res = await fetch("https://api.firecrawl.dev/v2/scrape", {
+    const res = await meteredFetch("firecrawl-scrape", "https://api.firecrawl.dev/v2/scrape", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${FIRECRAWL_API_KEY}`,

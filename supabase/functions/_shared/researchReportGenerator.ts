@@ -1,6 +1,7 @@
 // Shared AI research report generator used by both
 // `generate-research-report-ai` (manual) and `run-research-scraper-schedules` (autopilot).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "./metered.ts";
 
 const CURATED_STOCK = [
   // Mainstream / mega-cap coverage
@@ -48,7 +49,7 @@ async function firecrawlSearch(query: string, limit: number): Promise<ScrapedSou
   const key = Deno.env.get("FIRECRAWL_API_KEY");
   if (!key) return [];
   try {
-    const r = await fetch("https://api.firecrawl.dev/v2/search", {
+    const r = await meteredFetch("research-report-generator", "https://api.firecrawl.dev/v2/search", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query, limit, scrapeOptions: { formats: ["markdown"] } }),
@@ -65,7 +66,7 @@ async function firecrawlScrape(url: string): Promise<ScrapedSource | null> {
   const key = Deno.env.get("FIRECRAWL_API_KEY");
   if (!key) return null;
   try {
-    const r = await fetch("https://api.firecrawl.dev/v2/scrape", {
+    const r = await meteredFetch("research-report-generator", "https://api.firecrawl.dev/v2/scrape", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
@@ -142,7 +143,7 @@ Image direction:
 - Sharp, high-end thumbnail composition with clear focal point and enough contrast for a report card image.`;
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("research-report-generator", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -267,7 +268,7 @@ ${context || "(no external context available — rely on general institutional k
 
 Decide the appropriate page count (3-12) based on the depth and richness of the above context. Produce the JSON now.`;
 
-  const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const aiRes = await meteredFetch("research-report-generator", "https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({

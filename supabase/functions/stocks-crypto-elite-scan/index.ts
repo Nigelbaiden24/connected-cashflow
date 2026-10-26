@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,6 +10,9 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -69,7 +74,7 @@ serve(async (req) => {
     const sys = `You are a Wall Street-grade multi-asset analyst (CFA + portfolio manager). Pick the top ${count} highest-conviction stocks/crypto from the supplied universe for TODAY. Apply rigorous expert logic across: fundamentals, valuation vs peers, technical setup, momentum, catalysts, macro/regulatory backdrop, sector rotation, and risk/reward. Score conviction strictly 0–5 (5 = strong buy). For every pick, give a clear actionable recommendation and a crisp "why to invest" rationale a portfolio committee would accept. Pick ONLY ids supplied. Output strict JSON.`;
     const user = `Universe (${universe.length}): ${JSON.stringify(universe).slice(0, 120000)}\n\nReturn JSON: {"picks":[{"id":"<id>","symbol":"...","name":"...","asset_type":"stock|crypto","activity_type":"ai_pick","headline":"<one-line Bloomberg-style headline>","summary":"2-3 sentence punchy commentary","recommendation":"Strong Buy|Buy|Accumulate|Hold|Reduce|Sell","why_invest":"3-4 sentences of expert rationale: edge vs peers, valuation/setup, asymmetric upside","analyst_rating":"Gold|Silver|Bronze|Neutral|Negative","conviction_score":0-5,"past_performance":"1-2 sentences (24h, 30d, 1y)","future_outlook":"2-3 sentences with specific price drivers and timeframe","catalysts":["...","..."],"risks":["...","..."]}]}`;
 
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const r = await meteredFetch("stocks-crypto-elite-scan", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

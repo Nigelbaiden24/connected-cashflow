@@ -1,4 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
+
+// Scraped pages repeat navigation, cookie banners and syndicated paragraphs.
+// Dropping duplicates and capping the size keeps Gemini Pro costs in check.
+const MAX_CONTEXT_CHARS = 90_000;
+function compactScrape(raw: unknown): string {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  let size = 0;
+  for (const para of String(raw ?? "").split(/\n{2,}/)) {
+    const p = para.trim();
+    if (p.length < 3) continue;
+    const key = p.toLowerCase().replace(/\s+/g, " ").slice(0, 200);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (size + p.length > MAX_CONTEXT_CHARS) break;
+    out.push(p);
+    size += p.length + 2;
+  }
+  return out.join("\n\n");
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +31,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const { mode, platform, scrapedData, categoryLabel } = await req.json();
@@ -45,7 +70,7 @@ ACTIONABLE TAKEAWAYS
 WHAT I'D WATCH NEXT
 
 Target length: 700-1200 words. Use bullet sub-points within sections where helpful (use "•" character).`;
-      userPrompt = `Category: ${categoryLabel || "General"}\n\nRAW SCRAPED DATA (multiple sources, opportunity-level articles included):\n\n${(scrapedData || '').slice(0, 180000)}`;
+      userPrompt = `Category: ${categoryLabel || "General"}\n\nRAW SCRAPED DATA (multiple sources, opportunity-level articles included):\n\n${compactScrape(scrapedData)}`;
     } else if (mode === "report") {
       systemPrompt = `You are an institutional-grade financial research analyst producing reports for investment professionals (private equity, venture capital, M&A advisors, hedge funds, and corporate strategy teams) at ${platformLabel}.
 
@@ -130,12 +155,12 @@ Hard rules:
 - Provide 5-7 sections, 8-12 opportunities, 5-8 risks, 6-10 key_metrics, 6-10 category_distribution items, 10 top_entities
 - Section bodies must each be 300-500 words AND include at least one chart/table placeholder
 - No generic statements — every sentence carries a specific data point, name, or differentiated view`;
-      userPrompt = `Platform: ${platformLabel}\nCategory / Topic: ${categoryLabel || "General"}\n\nINPUT PARAMETERS\n- Report topic: ${categoryLabel || "General market intelligence"}\n- Geography: infer from data (default: Global with UK/US emphasis)\n- Time period: trailing 90 days through forward 12 months\n- Sector: ${categoryLabel || "Cross-sector"}\n- Report type: infer best fit (Market / Deals / Company / Investor) from the data below\n\nRAW SCRAPED DATA (multiple sources, opportunity-level articles):\n\n${(scrapedData || '').slice(0, 180000)}\n\nDraft the institutional-grade JSON report, then self-review and upgrade per the process rules. Return ONLY the improved final JSON.`;
+      userPrompt = `Platform: ${platformLabel}\nCategory / Topic: ${categoryLabel || "General"}\n\nINPUT PARAMETERS\n- Report topic: ${categoryLabel || "General market intelligence"}\n- Geography: infer from data (default: Global with UK/US emphasis)\n- Time period: trailing 90 days through forward 12 months\n- Sector: ${categoryLabel || "Cross-sector"}\n- Report type: infer best fit (Market / Deals / Company / Investor) from the data below\n\nRAW SCRAPED DATA (multiple sources, opportunity-level articles):\n\n${compactScrape(scrapedData)}\n\nDraft the institutional-grade JSON report, then self-review and upgrade per the process rules. Return ONLY the improved final JSON.`;
     } else {
       throw new Error("Invalid mode. Use 'explain' or 'report'.");
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("elite-scraper-analyst", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -149,7 +174,7 @@ Hard rules:
         ],
         ...(mode === "report" ? { response_format: { type: "json_object" } } : {}),
       }),
-    });
+    }, { cacheHours: 24 });
 
     if (!response.ok) {
       const errText = await response.text();

@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -747,7 +749,7 @@ async function scrapeUrl(url: string, apiKey: string): Promise<{ content: string
     contentLength: 0,
   };
   try {
-    const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
+    const response = await meteredFetch("opportunity-research", "https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -790,7 +792,7 @@ async function searchWeb(query: string, apiKey: string): Promise<{ content: stri
   };
   const results: SearchResultItem[] = [];
   try {
-    const response = await fetch("https://api.firecrawl.dev/v1/search", {
+    const response = await meteredFetch("opportunity-research", "https://api.firecrawl.dev/v1/search", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -840,6 +842,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const body = await req.json();
     const { category, subCategory, customQuery, region } = body;
@@ -884,10 +889,11 @@ serve(async (req) => {
           const base = subCategory ? `${q} ${subCategory}` : q;
           return [base, regionalize(base)];
         });
-    // Pipeline (non-streaming) mode: cap to keep within edge fn timeout
-    const queries = stream ? allQueries : allQueries.slice(0, 8);
+    // Caps keep Firecrawl spend bounded (pipeline mode also has to fit the
+    // edge function timeout). Repeat searches/scrapes are served from cache.
+    const queries = allQueries.slice(0, stream ? 12 : 8);
     const allUrls = sources?.urls || [];
-    const urls = stream ? allUrls : allUrls.slice(0, 6);
+    const urls = allUrls.slice(0, stream ? 8 : 6);
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
@@ -1039,7 +1045,7 @@ RULES:
 Here are the search result URLs and images found during scraping — use these as source_urls and image_urls:
 ${searchResultReference}`;
 
-    const aiResponse = await fetch(
+    const aiResponse = await meteredFetch("opportunity-research",
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",

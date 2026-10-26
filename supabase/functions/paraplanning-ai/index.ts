@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,7 +26,7 @@ Keep it under 200 words, professional but warm, and UK financial services focuse
       prompt = `You are a UK paraplanning expert. Describe the ideal clientele for a fixed-fee paraplanning outsourcing service. Focus on IFAs, wealth managers, restricted advisers, compliance teams, new practices, and specialist advisers. Keep under 150 words.`;
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("paraplanning-ai", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,

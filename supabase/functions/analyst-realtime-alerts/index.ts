@@ -1,4 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,6 +43,9 @@ Be specific, institutional, no fluff. Prioritise diverse categories & classifica
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -60,7 +65,7 @@ Deno.serve(async (req) => {
 
     const context = JSON.stringify({ signals: signals ?? [], briefs: briefs ?? [] }).slice(0, 60000);
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await meteredFetch("analyst-realtime-alerts", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,

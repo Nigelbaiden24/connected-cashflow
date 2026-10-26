@@ -3,6 +3,8 @@
 // (tool-calling) to extract structured funding data, fuzzy-matches to
 // intel_companies, and promotes events to status='validated'.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,12 +39,42 @@ const extractTool = {
   },
 };
 
+// Batched variant: one call extracts every article in the batch.
+const BATCH_SIZE = 10;
+const batchTool = {
+  type: "function",
+  function: {
+    name: "extract_funding_events",
+    description: "Extract structured funding/deal data from each numbered article.",
+    parameters: {
+      type: "object",
+      properties: {
+        events: {
+          type: "array",
+          items: {
+            ...extractTool.function.parameters,
+            properties: {
+              index: { type: "number", description: "The ARTICLE number this extraction is for" },
+              ...extractTool.function.parameters.properties,
+            },
+            required: ["index", ...extractTool.function.parameters.required],
+          },
+        },
+      },
+      required: ["events"],
+    },
+  },
+};
+
 function normalize(name: string): string {
   return name.toLowerCase().replace(/\b(ltd|limited|inc|llc|plc|corp|corporation|co)\b/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -66,15 +98,19 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     const processed: any[] = [];
+    const list = events ?? [];
 
-    for (const ev of events ?? []) {
-      const articleText = [
-        ev.title,
-        ev.summary,
-        ev.raw_data?.hit?.markdown?.slice(0, 2500),
-      ].filter(Boolean).join("\n\n");
+    // One AI call per batch of articles instead of one per article.
+    const extracted = new Map<string, any>();
+    let budgetHit = false;
+    for (let i = 0; i < list.length && !budgetHit; i += BATCH_SIZE) {
+      const batch = list.slice(i, i + BATCH_SIZE);
+      const articles = batch.map((ev: any, n: number) => {
+        const text = [ev.title, ev.summary, ev.raw_data?.hit?.markdown?.slice(0, 2000)].filter(Boolean).join("\n\n");
+        return `### ARTICLE ${n}\n${text}`;
+      }).join("\n\n");
 
-      const aiRes = await fetch(AI_URL, {
+      const aiRes = await meteredFetch("intel-validate", AI_URL, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -83,31 +119,38 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages: [
-            { role: "system", content: "You extract structured funding/deal events from news articles. Be conservative — set is_funding_event=false if uncertain." },
-            { role: "user", content: articleText },
+            { role: "system", content: "You extract structured funding/deal events from news articles. Return exactly one extraction per article, with its index. Be conservative — set is_funding_event=false if uncertain." },
+            { role: "user", content: articles },
           ],
-          tools: [extractTool],
-          tool_choice: { type: "function", function: { name: "extract_funding_event" } },
+          tools: [batchTool],
+          tool_choice: { type: "function", function: { name: "extract_funding_events" } },
         }),
       });
 
       if (aiRes.status === 429 || aiRes.status === 402) {
-        console.warn("AI gateway limit hit, stopping batch");
+        console.warn("AI gateway limit or budget hit, stopping batch");
+        budgetHit = true;
         break;
       }
+      if (!aiRes.ok) continue; // leave these events as 'new' for the next run
 
       const aiJson = await aiRes.json();
-      const toolCall = aiJson?.choices?.[0]?.message?.tool_calls?.[0];
-      if (!toolCall) {
-        await supabase.from("intel_events").update({ status: "rejected", structured_data: { reason: "no_tool_call" } }).eq("id", ev.id);
-        continue;
+      const args = aiJson?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+      let items: any[] = [];
+      try { items = JSON.parse(args ?? "{}").events ?? []; } catch { items = []; }
+      for (const item of items) {
+        const ev = batch[Number(item?.index)];
+        if (ev) extracted.set(ev.id, item);
       }
+      // Articles the model skipped are rejected so they are not paid for again.
+      for (const ev of batch) if (!extracted.has(ev.id)) extracted.set(ev.id, null);
+    }
 
-      let parsed: any = {};
-      try {
-        parsed = JSON.parse(toolCall.function.arguments);
-      } catch {
-        await supabase.from("intel_events").update({ status: "rejected" }).eq("id", ev.id);
+    for (const ev of list) {
+      if (!extracted.has(ev.id)) continue; // not reached (budget/error): retry next run
+      const parsed: any = extracted.get(ev.id);
+      if (!parsed) {
+        await supabase.from("intel_events").update({ status: "rejected", structured_data: { reason: "no_extraction" } }).eq("id", ev.id);
         continue;
       }
 

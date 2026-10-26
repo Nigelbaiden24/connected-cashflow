@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -94,7 +95,7 @@ Return a JSON object with:
 - factors (array of specific scoring factors with descriptions)
 - next_best_action (recommended next step)`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await meteredFetch("crm-ai-insights", 'https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -217,7 +218,7 @@ Generate a ${messageType === 'email' ? 'subject line and email body' : 'message'
 
 ${messageType === 'email' ? 'Return JSON with "subject" and "body" fields.' : 'Return JSON with "message" field.'}`;
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await meteredFetch("crm-ai-insights", 'https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
@@ -307,7 +308,7 @@ Provide detailed recommendations for:
 
 Return as structured recommendations with priorities.`;
 
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const response = await meteredFetch("crm-ai-insights", 'https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,

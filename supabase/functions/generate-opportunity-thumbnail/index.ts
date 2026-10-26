@@ -4,6 +4,7 @@
 // enriched_payload.generated_thumbnail_url so the subsequent approve_pending_item
 // RPC picks it up. Admin-only.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,7 +110,7 @@ Deno.serve(async (req) => {
       tags: row.ai_tags ?? [],
     });
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await meteredFetch("generate-opportunity-thumbnail", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

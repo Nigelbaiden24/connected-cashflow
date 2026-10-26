@@ -1,6 +1,7 @@
 // DM Finder edge function — Decision Maker Contact Intelligence
 // Phase 1: Firecrawl search/scrape + Lovable AI extraction + pattern-based email permutation (marked Low confidence)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -77,7 +78,7 @@ function patternEmails(fullName: string, company: string, websiteDomain?: string
 
 async function firecrawlSearch(query: string, apiKey: string, limit = 15) {
   try {
-    const res = await fetch(`${FIRECRAWL_BASE}/search`, {
+    const res = await meteredFetch("dm-finder-search", `${FIRECRAWL_BASE}/search`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -131,7 +132,7 @@ Sources:
 ${corpus || "(no sources retrieved)"}`;
 
   try {
-    const res = await fetch(AI_GATEWAY, {
+    const res = await meteredFetch("dm-finder-search", AI_GATEWAY, {
       method: "POST",
       headers: { Authorization: `Bearer ${aiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({

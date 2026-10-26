@@ -1,5 +1,8 @@
 // Intel Orchestrate – runs ingest then validate in sequence.
 // Designed to be called manually from admin UI or via pg_cron.
+import { identify } from "../_shared/guard.ts";
+import { autoScraperEnabled } from "../_shared/metered.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -7,6 +10,21 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // pg_cron calls without a token: only run when the master auto-scraper
+  // switch is on. Anyone else must be an admin.
+  const caller = await identify(req);
+  if (caller.kind === "anonymous") {
+    if (!(await autoScraperEnabled())) {
+      return new Response(JSON.stringify({ success: true, skipped: "auto-scraper disabled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  } else if (caller.kind === "user") {
+    return new Response(JSON.stringify({ error: "Admin access required" }), {
+      status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;

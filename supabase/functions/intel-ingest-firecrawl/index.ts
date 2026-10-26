@@ -2,6 +2,8 @@
 // Scrapes configured news/blog sources via Firecrawl /v2/search and stores
 // raw event candidates in intel_events with status='new' for later AI validation.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +20,7 @@ interface SearchHit {
 }
 
 async function firecrawlSearch(apiKey: string, query: string, limit = 10): Promise<SearchHit[]> {
-  const res = await fetch(`${FIRECRAWL_V2}/search`, {
+  const res = await meteredFetch("intel-ingest-firecrawl", `${FIRECRAWL_V2}/search`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -40,6 +42,9 @@ async function firecrawlSearch(apiKey: string, query: string, limit = 10): Promi
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
@@ -82,7 +87,15 @@ Deno.serve(async (req) => {
       for (const q of queries) {
         try {
           const hits = await firecrawlSearch(FIRECRAWL_API_KEY, q, 8);
+          // Skip articles already ingested so validation never pays for them twice.
+          const urls = hits.map((h: any) => h.url).filter(Boolean);
+          const { data: seen } = urls.length
+            ? await supabase.from("intel_events").select("source_url").in("source_url", urls)
+            : { data: [] as any[] };
+          const seenUrls = new Set((seen ?? []).map((r: any) => r.source_url));
           for (const hit of hits) {
+            if (!hit.url || seenUrls.has(hit.url)) continue;
+            seenUrls.add(hit.url);
             // Insert raw event – validation step will enrich
             const { error } = await supabase.from("intel_events").insert({
               event_type: "funding_round",

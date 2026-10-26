@@ -1,6 +1,8 @@
 // Generates institutional-grade daily market commentary using AI gateway,
 // drawing context from recent analyst_signals + scraped raw signals.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +20,7 @@ All currency GBP-default for UK audience. Separate facts vs estimates vs sentime
 Never publish directly to production — output enters admin approval queue.`;
 
 async function aiTool(systemPrompt: string, userPrompt: string, tool: any) {
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const resp = await meteredFetch("analyst-market-commentary", "https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -44,6 +46,9 @@ async function aiTool(systemPrompt: string, userPrompt: string, tool: any) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     // Pull last 24h of classified signals as context

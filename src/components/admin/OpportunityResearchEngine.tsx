@@ -44,6 +44,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { autoScraperEnabled } from "@/lib/aiUsage";
 
 const categoryConfig: Record<string, { label: string; icon: any; subCategories: string[] }> = {
   uk_property: {
@@ -751,11 +752,17 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
       toast.error("Select at least one category for auto-scan");
       return;
     }
-    const minutes = Math.max(1, parseInt(autoScanInterval) || 60);
+    // Every run costs ~8 searches, ~8 page scrapes and a large AI call, so the
+    // shortest interval is 30 minutes.
+    const minutes = Math.max(30, parseInt(autoScanInterval) || 60);
     setAutoScanRunning(true);
     autoIndexRef.current = 0;
 
     const runOnce = async () => {
+      if (!(await autoScraperEnabled())) {
+        toast.info("Auto-scrape is switched off in master settings — skipping this run");
+        return;
+      }
       const cat = autoScanCategories[autoIndexRef.current % autoScanCategories.length];
       autoIndexRef.current += 1;
       setAutoScanLastRun(new Date().toISOString());
@@ -958,7 +965,6 @@ ${opp.key_metrics ? `Metrics: ${JSON.stringify(opp.key_metrics)}` : ""}`;
               <Select value={autoScanInterval} onValueChange={setAutoScanInterval} disabled={autoScanRunning}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="15">Every 15 minutes</SelectItem>
                   <SelectItem value="30">Every 30 minutes</SelectItem>
                   <SelectItem value="60">Every hour</SelectItem>
                   <SelectItem value="180">Every 3 hours</SelectItem>

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,7 +47,7 @@ serve(async (req) => {
 
     console.log("Processing business chat request with", chatMessages.length, "messages", stream ? "(streaming)" : "(non-streaming)");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("business-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -728,7 +729,7 @@ Be proactive in identifying opportunities, risks, and providing strategic guidan
         }
         
         // Make a follow-up call with tool results to get final response
-        const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const followUpResponse = await meteredFetch("business-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,

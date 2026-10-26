@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,7 +35,7 @@ async function scrapeNewsWithFirecrawl(apiKey: string): Promise<NewsArticle[]> {
     try {
       console.log(`Scraping ${source.name}...`);
       
-      const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      const response = await meteredFetch("fetch-financial-news", 'https://api.firecrawl.dev/v1/scrape', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -160,7 +161,7 @@ async function generateAINews(count: number): Promise<NewsArticle[]> {
   if (!apiKey) return [];
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("fetch-financial-news", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -232,7 +233,7 @@ async function generateAINewsRoundup(articles: NewsArticle[]): Promise<string | 
   try {
     const headlines = articles.slice(0, 8).map((a) => `- ${a.title}`).join("\n");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("fetch-financial-news", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,

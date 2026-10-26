@@ -7,6 +7,7 @@ import { Loader2, Sparkles, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, startOfWeek, endOfWeek } from "date-fns";
+import { autoScraperEnabled } from "@/lib/aiUsage";
 
 type Mode = "picks" | "score_stocks" | "score_funds";
 
@@ -118,9 +119,11 @@ export function AIElitePicksPanel({ mode, title, description, count = 5, onCompl
     const last = lastRun ? new Date(lastRun).getTime() : 0;
     const elapsed = Date.now() - last;
     const initial = Math.max(5_000, SIX_HOURS_MS - elapsed);
+    // Scheduled runs respect the master auto-scraper switch.
+    const scheduledRun = async () => { if (await autoScraperEnabled()) run(true); };
     const t = setTimeout(() => {
-      run(true);
-      timerRef.current = setInterval(() => run(true), SIX_HOURS_MS);
+      scheduledRun();
+      timerRef.current = setInterval(scheduledRun, SIX_HOURS_MS);
     }, initial);
     return () => { clearTimeout(t); if (timerRef.current) clearInterval(timerRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps

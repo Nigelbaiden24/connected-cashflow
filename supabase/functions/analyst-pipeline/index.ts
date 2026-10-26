@@ -2,6 +2,8 @@
 // scrape → classify → score → generate brief → compliance validate.
 // Triggered by pg_cron OR by admin UI ("Run pipeline now").
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoScraperEnabled, meteredFetch } from "../_shared/metered.ts";
+import { identify } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,7 +64,7 @@ HARD PRODUCTION RULES (non-negotiable — violations must be flagged by the Rule
 Follow the task-specific instructions that follow this persona block.`;
 
 async function aiJson(systemPrompt: string, userPrompt: string, tool: any) {
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const resp = await meteredFetch("analyst-pipeline", "https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -105,7 +107,7 @@ async function scrapeYahooMovers(): Promise<any[]> {
 async function scrapeRedditFinance(): Promise<any[]> {
   const subs = ["wallstreetbets", "stocks", "investing", "ValueInvesting", "options", "CryptoCurrency", "ETFs", "UKInvesting"];
   const results = await Promise.allSettled(subs.map(async (sub) => {
-    const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=15`, {
+    const r = await meteredFetch("analyst-pipeline", `https://www.reddit.com/r/${sub}/hot.json?limit=15`, {
       headers: { "User-Agent": "FlowPulse-Analyst/1.0" },
     });
     const j = await r.json();
@@ -176,7 +178,7 @@ const FIRECRAWL_QUERIES = [
 async function scrapeFirecrawlAll(): Promise<any[]> {
   if (!FIRECRAWL_API_KEY) return [];
   const runs = await Promise.allSettled(FIRECRAWL_QUERIES.map(async (q) => {
-    const r = await fetch("https://api.firecrawl.dev/v2/search", {
+    const r = await meteredFetch("analyst-pipeline", "https://api.firecrawl.dev/v2/search", {
       method: "POST",
       headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ query: q, limit: 8, tbs: "qdr:d" }),
@@ -249,55 +251,71 @@ async function runClassify(): Promise<number> {
     .limit(120);
   if (!rows?.length) return 0;
 
-  // Parallelize AI classify calls in batches of 8 for speed (avoid rate-limits)
-  const BATCH = 8;
-  let count = 0;
-  for (let i = 0; i < rows.length; i += BATCH) {
-    const batch = rows.slice(i, i + BATCH);
-    const results = await Promise.allSettled(batch.map(async (row) => {
-      const result = await aiJson(
-        `You are a senior buy-side analyst classifying market signals. Be precise; never invent tickers.`,
-        `SOURCE: ${row.source}\nTITLE: ${row.title}\nCONTENT: ${row.content?.slice(0, 1500) || ""}`,
-        {
-          type: "function",
-          function: {
-            name: "classify_signal",
-            description: "Classify a market signal",
-            parameters: {
-              type: "object",
-              properties: {
-                category: { type: "string", enum: CATEGORIES },
-                tickers: { type: "array", items: { type: "string" } },
-                sectors: { type: "array", items: { type: "string" } },
-                regions: { type: "array", items: { type: "string" } },
-                sentiment: { type: "number", description: "-1 bearish to 1 bullish" },
-                urgency: { type: "integer", minimum: 0, maximum: 5 },
-                summary: { type: "string", description: "1-2 sentence analyst summary" },
+  // One AI call classifies a batch of signals (was one call per signal).
+  const BATCH = 15;
+  const batches: typeof rows[] = [];
+  for (let i = 0; i < rows.length; i += BATCH) batches.push(rows.slice(i, i + BATCH));
+
+  const classifyBatch = async (batch: typeof rows) => {
+    const result = await aiJson(
+      `You are a senior buy-side analyst classifying market signals. Classify every numbered signal and return one entry per signal with its index. Be precise; never invent tickers.`,
+      batch.map((row, n) => `### SIGNAL ${n}\nSOURCE: ${row.source}\nTITLE: ${row.title}\nCONTENT: ${row.content?.slice(0, 1200) || ""}`).join("\n\n"),
+      {
+        type: "function",
+        function: {
+          name: "classify_signals",
+          description: "Classify each market signal",
+          parameters: {
+            type: "object",
+            properties: {
+              signals: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    index: { type: "integer", description: "The SIGNAL number" },
+                    category: { type: "string", enum: CATEGORIES },
+                    tickers: { type: "array", items: { type: "string" } },
+                    sectors: { type: "array", items: { type: "string" } },
+                    regions: { type: "array", items: { type: "string" } },
+                    sentiment: { type: "number", description: "-1 bearish to 1 bullish" },
+                    urgency: { type: "integer", minimum: 0, maximum: 5 },
+                    summary: { type: "string", description: "1-2 sentence analyst summary" },
+                  },
+                  required: ["index", "category", "sentiment", "urgency", "summary"],
+                  additionalProperties: false,
+                },
               },
-              required: ["category", "sentiment", "urgency", "summary"],
-              additionalProperties: false,
             },
+            required: ["signals"],
+            additionalProperties: false,
           },
-        }
-      );
-      if (result) {
-        await sb.from("analyst_signals").insert({
-          raw_signal_id: row.id,
-          category: result.category,
-          tickers: result.tickers || [],
-          sectors: result.sectors || [],
-          regions: result.regions || [],
-          sentiment: result.sentiment,
-          urgency: result.urgency,
-          summary: result.summary,
-        });
-        await sb.from("analyst_raw_signals").update({ classified: true }).eq("id", row.id);
-        return true;
+        },
       }
-      await sb.from("analyst_raw_signals").update({ classified: true }).eq("id", row.id);
-      return false;
-    }));
-    count += results.filter((r) => r.status === "fulfilled" && r.value).length;
+    );
+    const out = Array.isArray(result?.signals) ? result.signals : [];
+    const inserts = out
+      .filter((r: any) => batch[Number(r.index)])
+      .map((r: any) => ({
+        raw_signal_id: batch[Number(r.index)].id,
+        category: r.category,
+        tickers: r.tickers || [],
+        sectors: r.sectors || [],
+        regions: r.regions || [],
+        sentiment: r.sentiment,
+        urgency: r.urgency,
+        summary: r.summary,
+      }));
+    if (inserts.length) await sb.from("analyst_signals").insert(inserts);
+    // Mark the whole batch done (also signals the model skipped) so none is paid for twice.
+    await sb.from("analyst_raw_signals").update({ classified: true }).in("id", batch.map((r) => r.id));
+    return inserts.length;
+  };
+
+  let count = 0;
+  for (let i = 0; i < batches.length; i += 4) {
+    const results = await Promise.allSettled(batches.slice(i, i + 4).map(classifyBatch));
+    count += results.reduce((n, r) => n + (r.status === "fulfilled" ? r.value : 0), 0);
   }
   return count;
 }
@@ -648,10 +666,21 @@ Deno.serve(async (req) => {
   const trigger = body.trigger || "manual";
   const stagesOnly: string[] | undefined = body.stages;
 
-  // Honor autoscrape toggle for cron-triggered runs
-  if (trigger === "cron") {
+  // Only admins (or other edge functions) may start a run by hand; pg_cron
+  // calls without a token and is treated as a scheduled run.
+  const caller = await identify(req);
+  const scheduled = caller.kind === "anonymous" || trigger === "cron";
+  if (caller.kind === "user" || (caller.kind === "anonymous" && trigger !== "cron")) {
+    return new Response(JSON.stringify({ error: "Admin access required" }), {
+      status: caller.kind === "user" ? 403 : 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Scheduled runs honour the pipeline toggle and the master auto-scraper switch
+  if (scheduled) {
     const { data: settings } = await sb.from("analyst_pipeline_settings").select("autoscrape_enabled").eq("id", 1).single();
-    if (!settings?.autoscrape_enabled) {
+    if (!settings?.autoscrape_enabled || !(await autoScraperEnabled())) {
       return new Response(JSON.stringify({ skipped: true, reason: "autoscrape disabled" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -2,6 +2,8 @@
 // Orchestrates: scheduler check → scraper invoke → AI enrichment → dedup → stage in pipeline_pending_items
 // Runs once per invocation; pg_cron triggers it every 30 min. Picks any source whose next_run_at <= now().
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
+import { identify } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,7 +99,7 @@ Strict requirements:
 - No people's faces, no readable text, no captions, no brand logos, no watermarks
 - Dramatic but tasteful lighting, refined colour grading`;
   try {
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const r = await meteredFetch("run-data-pipeline", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -156,7 +158,7 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
     return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
   }
   try {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await meteredFetch("run-data-pipeline", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -201,6 +203,72 @@ async function aiEnrich(item: { title: string; summary?: string; url?: string; r
   }
 }
 
+type Enriched = Awaited<ReturnType<typeof aiEnrich>>;
+
+function enrichFallback(item: { title: string; summary?: string }): Enriched {
+  return { summary: item.summary ?? item.title, tags: [], score: 3.0, category: "general", price_gbp: null as number | null };
+}
+
+function cleanPrice(raw: unknown): number | null {
+  // Defensible pricing: positive, finite, between £1k and £50bn.
+  return typeof raw === "number" && isFinite(raw) && raw >= 1_000 && raw <= 50_000_000_000 ? Math.round(raw) : null;
+}
+
+// Enrich up to ENRICH_BATCH items in one AI call (was one call per item).
+const ENRICH_BATCH = 10;
+async function aiEnrichBatch(items: Array<{ title: string; summary?: string; url?: string; raw?: any }>): Promise<Enriched[]> {
+  if (!LOVABLE_API_KEY || items.length === 0) return items.map(enrichFallback);
+  if (items.length === 1) return [await aiEnrich(items[0])];
+  try {
+    const res = await meteredFetch("run-data-pipeline", "https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an alternative-investment enrichment assistant. You receive numbered ITEMs. Reply ONLY with a compact JSON array, " +
+              "one object per item: {index, summary, tags:[<=5], score:0-5 number, category, price_gbp:number|null}. " +
+              "price_gbp MUST be the realistic GBP entry price / minimum ticket / asking price / valuation " +
+              "for THAT specific opportunity, as a plain number of pounds (no commas, no symbols, no abbreviations). " +
+              "Convert USD/EUR to GBP using a reasonable recent FX rate. " +
+              "If no defensible GBP figure exists in the source, return price_gbp: null — never guess.",
+          },
+          {
+            role: "user",
+            content: items.map((item, n) =>
+              `### ITEM ${n}\nTitle: ${item.title}\nURL: ${item.url ?? ""}\nContext: ${(item.summary ?? "").slice(0, 900)}\nRaw: ${JSON.stringify(item.raw ?? {}).slice(0, 900)}`
+            ).join("\n\n"),
+          },
+        ],
+      }),
+    });
+    if (!res.ok) throw new Error(`ai ${res.status}`);
+    const j = await res.json();
+    const txt = String(j.choices?.[0]?.message?.content ?? "[]");
+    const cleaned = txt.replace(/```json\s*|```/g, "").trim();
+    const arr = JSON.parse(cleaned.slice(cleaned.indexOf("["), cleaned.lastIndexOf("]") + 1));
+    const byIndex = new Map<number, any>();
+    if (Array.isArray(arr)) for (const p of arr) byIndex.set(Number(p?.index), p);
+    return items.map((item, n) => {
+      const p = byIndex.get(n);
+      if (!p) return enrichFallback(item);
+      return {
+        summary: String(p.summary ?? item.summary ?? item.title).slice(0, 1200),
+        tags: Array.isArray(p.tags) ? p.tags.slice(0, 5).map(String) : [],
+        score: Math.max(0, Math.min(5, Number(p.score) || 3)),
+        category: String(p.category ?? "general").slice(0, 64),
+        price_gbp: cleanPrice(p.price_gbp),
+      };
+    });
+  } catch (e) {
+    console.warn("[aiEnrichBatch] fallback:", e);
+    return items.map(enrichFallback);
+  }
+}
+
 
 // Normalise scraper outputs into a flat list of candidate items
 function extractItems(source: string, payload: any): Array<{ title: string; summary?: string; url?: string; raw: any }> {
@@ -240,7 +308,7 @@ async function aiExtractOpportunities(source: string, payload: any): Promise<Arr
   if (!blob || blob.length < 200) return [];
   const label = payload?.categoryLabel ?? payload?.category ?? source;
   try {
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await meteredFetch("run-data-pipeline", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -415,6 +483,8 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   const items = allItems.slice(0, 80);
   fetched = items.length;
 
+  // Pass 1: filter and dedup, so only genuinely new items are paid for.
+  const fresh: Array<{ it: typeof items[number]; dedup_hash: string }> = [];
   for (const it of items) {
     try {
       const titleLower = it.title.toLowerCase();
@@ -432,10 +502,24 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
         .from("pipeline_pending_items").select("id").eq("dedup_hash", dedup_hash).limit(1).maybeSingle();
       if (existing) continue;
       isNew++;
+      fresh.push({ it, dedup_hash });
+    } catch (e: any) {
+      errors.push({ item: it.title, error: String(e.message ?? e) });
+    }
+  }
 
-      const ai = await aiEnrich(it);
-      enriched++;
+  // Pass 2: enrich in batches.
+  const enrichedList: Enriched[] = [];
+  for (let i = 0; i < fresh.length; i += ENRICH_BATCH) {
+    enrichedList.push(...await aiEnrichBatch(fresh.slice(i, i + ENRICH_BATCH).map((f) => f.it)));
+  }
+  enriched = enrichedList.length;
 
+  // Pass 3: stage.
+  for (let n = 0; n < fresh.length; n++) {
+    const { it, dedup_hash } = fresh[n];
+    const ai = enrichedList[n];
+    try {
       // Pricing: prefer the AI-derived GBP price; fall back to a defensible
       // per-category institutional benchmark so accurately-scraped
       // opportunities are never silently dropped just because the source
@@ -509,10 +593,19 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
     const body = await req.json().catch(() => ({}));
-    const forceSource: string | undefined = body.source;
-    const forceAll: boolean = body.force_all === true;
-    const triggeredBy: string = body.triggered_by ?? "scheduler";
-    const isManual = triggeredBy !== "scheduler";
+    // pg_cron calls with only the anon key: those runs are always treated as
+    // scheduled. Manual runs need an admin (or another edge function).
+    const caller = await identify(req);
+    if (caller.kind === "user") {
+      return new Response(JSON.stringify({ error: "Admin access required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const trusted = caller.kind === "admin" || caller.kind === "internal";
+    const triggeredBy: string = trusted ? (body.triggered_by ?? "scheduler") : "scheduler";
+    const isManual = trusted && !["scheduler", "cron"].includes(triggeredBy);
+    const forceSource: string | undefined = trusted ? body.source : undefined;
+    const forceAll: boolean = trusted && body.force_all === true;
 
     // Master kill-switch only applies to automatic (scheduler) runs.
     // Manual triggers from the admin UI always bypass it.

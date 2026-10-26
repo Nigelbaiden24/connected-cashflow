@@ -2,6 +2,8 @@
 // Uses Firecrawl /v2/search + /v2/scrape (with JSON extraction via Lovable AI)
 // to pull rich investor profiles: firm, partners, emails, phones, LinkedIn,
 // AUM, cheque sizes, sectors, stages, HQ address, portfolio companies.
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +21,7 @@ interface SearchHit {
 }
 
 async function fcSearch(key: string, query: string, limit = 8): Promise<SearchHit[]> {
-  const res = await fetch(`${FIRECRAWL_V2}/search`, {
+  const res = await meteredFetch("investor-finder-scraper", `${FIRECRAWL_V2}/search`, {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -40,7 +42,7 @@ async function fcSearch(key: string, query: string, limit = 8): Promise<SearchHi
 
 async function fcScrape(key: string, url: string): Promise<{ markdown?: string; html?: string } | null> {
   try {
-    const res = await fetch(`${FIRECRAWL_V2}/scrape`, {
+    const res = await meteredFetch("investor-finder-scraper", `${FIRECRAWL_V2}/scrape`, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -110,7 +112,7 @@ Return ONLY valid JSON matching this schema (omit a field if unknown — never f
 PAGE CONTENT (truncated):
 ${markdown.slice(0, 12000)}`;
 
-  const res = await fetch(LOVABLE_AI, {
+  const res = await meteredFetch("investor-finder-scraper", LOVABLE_AI, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -133,6 +135,9 @@ ${markdown.slice(0, 12000)}`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");

@@ -2,7 +2,7 @@ import {
   Users, MessageSquare, Calendar, FileText, Newspaper, TrendingUp, BookOpen,
   Video, List, Shield, Bell, ShoppingBag, Star, Lightbulb,
   Sparkles, Bot, Contact, ClipboardList, Globe, Settings, Radar, Calculator,
-  Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive, Brain,
+  Zap, Briefcase, Database, Building2, Activity, Crosshair, Archive, Brain, Gauge,
 } from "lucide-react";
 
 export type AdminPlatform = "finance" | "investor";
@@ -25,6 +25,7 @@ export const adminNavItems: AdminNavItem[] = [
   // ── Shared (operational) ──────────────────────────────────────────────
   { id: "users", label: "Users & Audience", icon: Users, gradient: "from-blue-500 to-blue-600", platforms: ["finance", "investor"] },
   { id: "saved-scrapes", label: "Saved Scrapes", icon: Archive, gradient: "from-rose-500 to-pink-600", platforms: ["finance", "investor"] },
+  { id: "ai-usage", label: "AI Usage & Budget", icon: Gauge, gradient: "from-emerald-500 to-teal-600", platforms: ["finance", "investor"] },
   { id: "data-pipeline", label: "Data Pipeline", icon: Activity, gradient: "from-fuchsia-500 to-purple-600", platforms: ["finance", "investor"] },
   { id: "stock-report-scraper", label: "Stock Report Scraper", icon: TrendingUp, gradient: "from-blue-500 to-cyan-600", platforms: ["finance", "investor"] },
   { id: "crypto-report-scraper", label: "Crypto Report Scraper", icon: Zap, gradient: "from-orange-500 to-yellow-600", platforms: ["finance", "investor"] },

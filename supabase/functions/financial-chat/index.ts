@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +46,7 @@ serve(async (req) => {
 
     console.log("Processing financial chat request with", chatMessages.length, "messages", stream ? "(streaming)" : "(non-streaming)");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("financial-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -638,7 +639,7 @@ When analyzing portfolios or markets, provide specific insights with relevant me
         }
         
         // Make a follow-up call with tool results to get final response
-        const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const followUpResponse = await meteredFetch("financial-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,

@@ -45,6 +45,7 @@ import { SavedScrapes } from "@/components/admin/SavedScrapes";
 import { StockReportScraper } from "@/components/admin/StockReportScraper";
 import { CryptoReportScraper } from "@/components/admin/CryptoReportScraper";
 import { PipelineDashboard } from "@/components/admin/PipelineDashboard";
+import { AiUsagePanel } from "@/components/admin/AiUsagePanel";
 import { DMFinderPanel } from "@/components/admin/DMFinderPanel";
 import { CompanyFinderPanel } from "@/components/admin/CompanyFinderPanel";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
@@ -909,6 +910,7 @@ export default function AdminDashboard() {
           {activeTab === 'flowpulse-scraper' && <FlowPulseScraperHub />}
 
           {activeTab === 'saved-scrapes' && <SavedScrapes />}
+          {activeTab === 'ai-usage' && <AiUsagePanel />}
           {activeTab === 'data-pipeline' && <PipelineDashboard />}
           {activeTab === 'stock-report-scraper' && <StockReportScraper />}
           {activeTab === 'crypto-report-scraper' && <CryptoReportScraper />}

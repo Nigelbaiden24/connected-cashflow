@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
@@ -26,7 +27,7 @@ serve(async (req) => {
     console.log("Generating speech for text:", text.substring(0, 50));
 
     // Use Lovable AI with TTS model
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
+    const response = await meteredFetch("text-to-speech", "https://ai.gateway.lovable.dev/v1/audio/speech", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,

@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -309,6 +311,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const { url, platformName, action, scrapedData, customPrompt, scrapeAll, categoryKey } = await req.json();
 
@@ -354,7 +359,7 @@ async function firecrawlCategorySearch(apiKey: string, categoryLabel: string, li
   const allHits: Array<{ url: string; title?: string; description?: string; markdown?: string }> = [];
   await Promise.all(queries.map(async (q) => {
     try {
-      const res = await fetch('https://api.firecrawl.dev/v2/search', {
+      const res = await meteredFetch("financial-research-scraper", 'https://api.firecrawl.dev/v2/search', {
         method: 'POST',
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -410,7 +415,7 @@ async function scrapeCategoryUrls(categoryKey: string) {
 
   const scrapeOne = async (u: string, deep = false) => {
     try {
-      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+      const response = await meteredFetch("financial-research-scraper", 'https://api.firecrawl.dev/v2/scrape', {
         method: 'POST',
         headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -540,7 +545,7 @@ async function scrapeAllPlatformUrls(platformName: string) {
 
   const scrapeOne = async (u: string, deep = false) => {
     try {
-      const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+      const response = await meteredFetch("financial-research-scraper", 'https://api.firecrawl.dev/v2/scrape', {
         method: 'POST',
         headers: { Authorization: `Bearer ${firecrawlApiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -638,7 +643,7 @@ async function scrapePlatform(url: string, platformName: string) {
   console.log(`Scraping ${platformName}: ${url}`);
 
   try {
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+    const response = await meteredFetch("financial-research-scraper", 'https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${firecrawlApiKey}`,
@@ -751,7 +756,7 @@ Return STRICT JSON ONLY (no markdown, no prose outside JSON) with this schema:
 Extract 20-40 opportunityCandidates where the source material surfaces a genuine investable idea, deal, allocation shift, or actionable signal. Be aggressive — include every distinct opportunity, deal, fund launch, ticker recommendation, fundraising round, secondary trade, or thematic allocation worth tracking. If only 3 are real, return 3 — do not pad. Respond ONLY with valid JSON.`;
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await meteredFetch("financial-research-scraper", 'https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,

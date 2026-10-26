@@ -1,4 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,6 +48,9 @@ Use real, current institutional knowledge. Be diverse across sectors and buckets
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
+
   try {
     const body = await req.json().catch(() => ({}));
     const focus: string | undefined = body.focus;
@@ -56,7 +61,7 @@ Deno.serve(async (req) => {
       ? `Focus discoveries primarily on the "${focus}" bucket. Still include 2-3 diversifying ideas from other buckets. Return STRICT JSON only.`
       : `Generate balanced discoveries across all 5 buckets. Return STRICT JSON only.`;
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await meteredFetch("analyst-discovery-engine", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({

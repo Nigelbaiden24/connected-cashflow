@@ -2,6 +2,7 @@
 // Async pattern: returns search_id immediately, processes in background via EdgeRuntime.waitUntil.
 // Client polls company_finder_searches.status for completion.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { meteredFetch } from "../_shared/metered.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,7 +39,7 @@ const json = (status: number, body: unknown) =>
 
 async function firecrawlSearch(query: string, apiKey: string, limit = 50) {
   try {
-    const res = await fetch(`${FIRECRAWL_BASE}/search`, {
+    const res = await meteredFetch("company-finder-search", `${FIRECRAWL_BASE}/search`, {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -123,7 +124,7 @@ Sources:
 ${corpus}`;
 
   const callModel = async (model: string) => {
-    const res = await fetch(AI_GATEWAY, {
+    const res = await meteredFetch("company-finder-search", AI_GATEWAY, {
       method: "POST",
       headers: { Authorization: `Bearer ${aiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({

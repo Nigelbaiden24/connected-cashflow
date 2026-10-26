@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { meteredFetch } from "../_shared/metered.ts";
+import { requireAdmin } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -194,7 +196,7 @@ async function fetchPlatformResearch(platforms: string[]): Promise<string> {
       const url = platform.urls[0]; // Use first URL for speed
       console.log(`Fetching research from ${platform.name}: ${url}`);
       
-      const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      const response = await meteredFetch("admin-research-chat", "https://api.firecrawl.dev/v1/scrape", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${firecrawlApiKey}`,
@@ -227,6 +229,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const denied = await requireAdmin(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     const { messages, generateReport, fetchResearch, platforms } = await req.json();
@@ -279,7 +284,7 @@ Please format this as a professional PDF-ready report with:
       ];
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await meteredFetch("admin-research-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -368,7 +373,7 @@ Please format this as a professional PDF-ready report with:
         ...toolResults,
       ];
 
-      const followUpResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const followUpResponse = await meteredFetch("admin-research-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -411,7 +416,7 @@ Please format this as a professional PDF-ready report with:
 
     // No tool calls - stream a regular response
     // Re-do the request with streaming since we got a non-streamed response
-    const streamResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const streamResponse = await meteredFetch("admin-research-chat", "https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
