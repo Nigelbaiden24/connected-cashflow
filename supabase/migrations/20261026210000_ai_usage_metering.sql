@@ -27,6 +27,13 @@ CREATE POLICY "Admins read ai usage"
   ON public.ai_usage_log FOR SELECT
   USING ((SELECT public.is_admin(auth.uid())));
 
+-- Edge functions (service role) write; signed-in users may read, but the
+-- policy above limits rows to admins. Anonymous users get nothing.
+REVOKE ALL ON public.ai_usage_log FROM anon, authenticated;
+GRANT SELECT ON public.ai_usage_log TO authenticated;
+GRANT ALL ON public.ai_usage_log TO service_role;
+GRANT USAGE, SELECT ON SEQUENCE public.ai_usage_log_id_seq TO service_role;
+
 CREATE TABLE IF NOT EXISTS public.provider_cache (
   key text PRIMARY KEY,
   fn text,
@@ -41,6 +48,8 @@ CREATE INDEX IF NOT EXISTS provider_cache_expires_idx ON public.provider_cache (
 
 ALTER TABLE public.provider_cache ENABLE ROW LEVEL SECURITY;
 -- No policies: only the service role (edge functions) reads or writes the cache.
+REVOKE ALL ON public.provider_cache FROM anon, authenticated;
+GRANT ALL ON public.provider_cache TO service_role;
 
 INSERT INTO public.platform_config (key, value)
 VALUES ('ai_budget', '{"enabled": true, "daily_ai_calls": 600, "daily_firecrawl_calls": 300}'::jsonb)
@@ -80,6 +89,9 @@ AS $$
   GROUP BY 1, 2, 3
   ORDER BY 1 DESC, 4 DESC;
 $$;
+
+REVOKE ALL ON FUNCTION public.ai_usage_summary(integer) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ai_usage_summary(integer) TO authenticated, service_role;
 
 -- Housekeeping: drop expired cache rows and usage older than 90 days, nightly.
 DO $$
