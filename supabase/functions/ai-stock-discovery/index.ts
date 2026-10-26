@@ -165,7 +165,7 @@ Focus on well-known, liquid stocks from various sectors. Be realistic with valua
   } catch (error) {
     console.error("Error in ai-stock-discovery:", error);
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to discover opportunities" }),
+      JSON.stringify({ error: (error instanceof Error ? error.message : String(error)) || "Failed to discover opportunities" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
