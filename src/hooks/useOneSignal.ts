@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isNativeApp } from "@/lib/native";
 
 declare global {
   interface Window {
@@ -101,7 +102,7 @@ const ensureOneSignalInitialized = async () => {
     }));
 
     try {
-      if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      if (isNativeApp || !("Notification" in window) || !("serviceWorker" in navigator)) {
         updateSharedState((state) => ({
           ...state,
           initialized: true,

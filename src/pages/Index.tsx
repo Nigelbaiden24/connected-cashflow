@@ -1,4 +1,4 @@
-import laptopNotificationImg from "@/assets/laptop-notification-alert.jpg";
+import laptopNotificationImg from "@/assets/laptop-notification-alert.webp";
 import iphoneSmsImg from "@/assets/iphone-sms-alert.jpg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,12 +49,12 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ClientsWeServe } from "@/components/home/ClientsWeServe";
 import { EnterpriseDataStrip } from "@/components/home/EnterpriseDataStrip";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-import heroBackground from "@/assets/business-presentation-hero.jpg";
-import financeScreenshot from "@/assets/finance-dashboard-screenshot.png";
-import businessScreenshot from "@/assets/business-dashboard-screenshot.png";
+import heroBackground from "@/assets/business-presentation-hero.webp";
+import financeScreenshot from "@/assets/finance-dashboard-screenshot.webp";
+import businessScreenshot from "@/assets/business-dashboard-screenshot.webp";
 // investor screenshot import preserved for future use
-// import investorScreenshot from "@/assets/investor-dashboard-real.png";
-import globalFinance from "@/assets/global-finance-districts.jpg";
+// import investorScreenshot from "@/assets/investor-dashboard-real.webp";
+import globalFinance from "@/assets/global-finance-districts.webp";
 
 const Index = () => {
   const navigate = useNavigate();

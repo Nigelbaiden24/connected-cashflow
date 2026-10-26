@@ -2,6 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TranslatedText } from "@/components/TranslatedText";
+import { tapFeedback } from "@/lib/native";
 
 interface NavItem {
   label: string;
@@ -55,6 +56,7 @@ export function MobileBottomNav({
 
           return (
             <NavLink
+              onClick={tapFeedback}
               key={item.path}
               to={item.path}
               className={cn(

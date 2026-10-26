@@ -1,8 +1,8 @@
-import { ReactNode, useState, memo } from "react";
+import { Fragment, ReactNode, useState, memo } from "react";
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider } from "./ui/sidebar";
-import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { MobileHeader, MobileBottomNav } from "./mobile";
 import { FinanceNotificationsDropdown } from "@/components/notifications";
 import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -13,6 +13,8 @@ import {
   FileText,
   MessageSquare,
 } from "lucide-react";
+import { AppSearchOverlay } from "./mobile/AppSearch";
+import { PullToRefresh, useRememberAppPath } from "./native/NativeShell";
 
 interface FinanceLayoutProps {
   children?: ReactNode;
@@ -32,6 +34,7 @@ const mobileNavItems = [
 export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, onLogout, hideHeader = false }: FinanceLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
+  useRememberAppPath();
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -63,7 +66,7 @@ export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, 
           </div>
 
           <main className="flex-1 overflow-auto pb-20 md:pb-0">
-            {children || <Outlet />}
+            <PullToRefresh>{(refreshKey) => <Fragment key={refreshKey}>{children || <Outlet />}</Fragment>}</PullToRefresh>
           </main>
           <PushNotificationBanner />
 
@@ -73,12 +76,17 @@ export const FinanceLayout = memo(function FinanceLayout({ children, userEmail, 
       </div>
 
       {/* Mobile Search Overlay */}
-      <MobileSearchOverlay
+
+      <AppSearchOverlay
+
+        area="finance"
+
         isOpen={searchOpen}
+
         onClose={() => setSearchOpen(false)}
+
         placeholder="Search clients, funds, reports..."
-        recentSearches={["Client Portfolio", "FTSE 100", "Risk Assessment"]}
-        trendingSearches={["Market Commentary", "ESG Funds", "Retirement Planning"]}
+
       />
     </SidebarProvider>
   );

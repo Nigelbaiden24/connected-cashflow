@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthRedirectOrigin } from "@/lib/native";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,7 @@ export function ResearchAuthDialog({ open, onOpenChange, redirectPath, reportTit
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}${redirectPath ?? "/research"}`,
+        emailRedirectTo: `${getAuthRedirectOrigin()}${redirectPath ?? "/research"}`,
         data: { full_name: fullName },
       },
     });

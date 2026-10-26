@@ -24,6 +24,7 @@ const PageLoader = () => (
 
 // ============ Lazy-loaded pages ============
 import Index from "./pages/Index";
+import { NativeHome, OfflineBanner } from "@/components/native/NativeShell";
 const Login = lazy(() => import("./pages/Login"));
 const EnterpriseDataCategory = lazy(() => import("./pages/EnterpriseDataCategory"));
 const LoginBusiness = lazy(() => import("./pages/LoginBusiness"));
@@ -247,10 +248,11 @@ const App = () => {
           <PWAInstallPrompt />
           <Toaster />
           <Sonner />
+          <OfflineBanner />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<NativeHome authLoading={authLoading} isAuthenticated={isAuthenticated} fallback={<Index />} />} />
               <Route path="/install" element={<Install />} />
               <Route path="/login" element={<Login onLogin={handleLogin} />} />
               <Route path="/login-business" element={<LoginBusiness onLogin={handleLogin} />} />

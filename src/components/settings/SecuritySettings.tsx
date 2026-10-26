@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2, Shield, Key, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthRedirectOrigin } from "@/lib/native";
 import { MFAEnrollment } from "../security/MFAEnrollment";
 import { LoginActivityLog } from "../auth/LoginActivityLog";
 import { PasswordRequirements } from "../auth/PasswordRequirements";
@@ -67,7 +68,7 @@ export const SecuritySettings = () => {
       }
 
       const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/settings?tab=security`,
+        redirectTo: `${getAuthRedirectOrigin()}/settings?tab=security`,
       });
 
       if (error) throw error;

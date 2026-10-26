@@ -1621,3 +1621,11 @@ html.pwa-standalone #root {
 .report-article table.data-table tbody tr:nth-child(even) td { background: #f8fafc; }
 .report-article .note, .report-article li.note { font-size: 0.85rem; color: #64748b; }
 @media (max-width: 640px) { .report-article { font-size: 1rem; } .report-article .stat .value { font-size: 1.05rem; } }
+
+/* Native app (Capacitor) feel: no web tap flashes, no rubber-band page bounce,
+   no long-press callouts on app chrome. Text in content stays selectable. */
+.native-app body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+.native-app nav, .native-app header, .native-app button, .native-app [role="tab"], .native-app a[aria-current] {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+.native-app img { -webkit-user-drag: none; }

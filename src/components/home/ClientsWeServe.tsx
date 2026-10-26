@@ -1,21 +1,21 @@
 import { useState } from "react";
 
-import familyOfficesImg from "@/assets/clients/family-offices.png";
-import angelInvestorsImg from "@/assets/clients/angel-investors.png";
-import investmentClubsImg from "@/assets/clients/investment-clubs.png";
-import holdingCompaniesImg from "@/assets/clients/holding-companies.png";
-import investorsImg from "@/assets/clients/investors.png";
-import smallBusinessBuyersImg from "@/assets/clients/small-business-buyers.png";
-import entrepreneursImg from "@/assets/clients/entrepreneurs.png";
-import corporateStrategyImg from "@/assets/clients/corporate-strategy.png";
-import developmentTeamsImg from "@/assets/clients/development-teams.png";
-import contentCreatorsImg from "@/assets/clients/content-creators.png";
-import introducersImg from "@/assets/clients/introducers.png";
-import vcAnalystsImg from "@/assets/clients/vc-analysts.png";
-import hedgeFundImg from "@/assets/clients/hedge-fund.png";
-import wealthManagersImg from "@/assets/clients/wealth-managers.png";
-import altInvestmentImg from "@/assets/clients/alt-investment.png";
-import businessOwnersImg from "@/assets/clients/business-owners.png";
+import familyOfficesImg from "@/assets/clients/family-offices.webp";
+import angelInvestorsImg from "@/assets/clients/angel-investors.webp";
+import investmentClubsImg from "@/assets/clients/investment-clubs.webp";
+import holdingCompaniesImg from "@/assets/clients/holding-companies.webp";
+import investorsImg from "@/assets/clients/investors.webp";
+import smallBusinessBuyersImg from "@/assets/clients/small-business-buyers.webp";
+import entrepreneursImg from "@/assets/clients/entrepreneurs.webp";
+import corporateStrategyImg from "@/assets/clients/corporate-strategy.webp";
+import developmentTeamsImg from "@/assets/clients/development-teams.webp";
+import contentCreatorsImg from "@/assets/clients/content-creators.webp";
+import introducersImg from "@/assets/clients/introducers.webp";
+import vcAnalystsImg from "@/assets/clients/vc-analysts.webp";
+import hedgeFundImg from "@/assets/clients/hedge-fund.webp";
+import wealthManagersImg from "@/assets/clients/wealth-managers.webp";
+import altInvestmentImg from "@/assets/clients/alt-investment.webp";
+import businessOwnersImg from "@/assets/clients/business-owners.webp";
 
 const clientData = [
   {

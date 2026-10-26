@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { TranslationProvider } from "./contexts/TranslationContext";
 import App from "./App.tsx";
 import "./index.css";
+import { initNativeApp } from "./lib/native";
 
 // PWA Service Worker guard: prevent SW registration in iframes or preview hosts
 const isInIframe = (() => {
@@ -29,6 +30,8 @@ if (
 ) {
   document.documentElement.classList.add("pwa-standalone");
 }
+
+initNativeApp();
 
 createRoot(document.getElementById("root")!).render(
   <TranslationProvider>

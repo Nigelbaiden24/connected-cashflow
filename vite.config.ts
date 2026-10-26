@@ -13,7 +13,11 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    VitePWA({
+    mode === "mobile" && {
+      name: "flowpulse-mobile-viewport",
+      transformIndexHtml: (html: string) => html.replace(", viewport-fit=cover", ""),
+    },
+    mode !== "mobile" && VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['flowpulse-logo.png', 'robots.txt'],
       manifest: {
@@ -153,12 +157,24 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-popover', '@radix-ui/react-tooltip', '@radix-ui/react-dropdown-menu'],
-          'vendor-charts': ['recharts'],
-          'vendor-query': ['@tanstack/react-query'],
-          'vendor-supabase': ['@supabase/supabase-js'],
+        // Function form so a chunk only holds its own packages. The object
+        // form also pulled shared helpers (clsx) into vendor-charts, which made
+        // every page preload the 450 KB chart library.
+        manualChunks(id: string) {
+          // Rollup's CommonJS interop helpers are used everywhere; keep them in
+          // the always-loaded React chunk instead of whichever chunk used them first.
+          if (id.includes('commonjsHelpers')) return 'vendor-react';
+          if (!id.includes('node_modules')) return undefined;
+          const pkg = id.slice(id.lastIndexOf('node_modules/') + 'node_modules/'.length);
+          if (/^(react|react-dom|react-router|react-router-dom|@remix-run\/router|scheduler)\//.test(pkg)) return 'vendor-react';
+          if (/^@radix-ui\/react-(dialog|popover|tooltip|dropdown-menu)\//.test(pkg)) return 'vendor-ui';
+          if (/^(recharts|recharts-scale|victory-vendor|d3-[a-z-]+|internmap|decimal\.js-light)\//.test(pkg)) return 'vendor-charts';
+          // Tiny class-name helpers used app-wide; without this Rollup folds them
+          // into vendor-charts (a dependency of recharts) and every page preloads it.
+          if (/^(clsx|tailwind-merge|class-variance-authority)\//.test(pkg)) return 'vendor-utils';
+          if (/^@tanstack\//.test(pkg)) return 'vendor-query';
+          if (/^@supabase\//.test(pkg)) return 'vendor-supabase';
+          return undefined;
         },
       },
     },

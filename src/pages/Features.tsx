@@ -31,9 +31,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-import financeHero from "@/assets/features-finance-hero.jpg";
-import investorHero from "@/assets/features-investor-hero.jpg";
-import researchHero from "@/assets/features-research-hero.jpg";
+import financeHero from "@/assets/features-finance-hero.webp";
+import investorHero from "@/assets/features-investor-hero.webp";
+import researchHero from "@/assets/features-research-hero.webp";
 
 export default function Features() {
   const navigate = useNavigate();

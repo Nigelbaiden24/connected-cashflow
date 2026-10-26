@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthRedirectOrigin } from "@/lib/native";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { z } from "zod";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
@@ -57,7 +58,7 @@ export default function Auth() {
         email: validatedData.email,
         password: validatedData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${getAuthRedirectOrigin()}/`,
           data: {
             full_name: validatedData.fullName,
           },

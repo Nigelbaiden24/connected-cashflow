@@ -22,10 +22,10 @@ import {
   Layers,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import heroImg from "@/assets/about-hero-platform.jpg";
-import warroomImg from "@/assets/about-warroom.jpg";
-import dataLayersImg from "@/assets/about-data-layers.jpg";
-import dashboardImg from "@/assets/about-dashboard.jpg";
+import heroImg from "@/assets/about-hero-platform.webp";
+import warroomImg from "@/assets/about-warroom.webp";
+import dataLayersImg from "@/assets/about-data-layers.webp";
+import dashboardImg from "@/assets/about-dashboard.webp";
 
 interface Props {
   onNavigate: (section: string) => void;

@@ -1,8 +1,8 @@
-import { ReactNode, useState, memo } from "react";
+import { Fragment, ReactNode, useState, memo } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { InvestorSidebar } from "./InvestorSidebar";
 import { SidebarProvider } from "./ui/sidebar";
-import { MobileHeader, MobileBottomNav, MobileSearchOverlay } from "./mobile";
+import { MobileHeader, MobileBottomNav } from "./mobile";
 import { InvestorNotificationsDropdown } from "@/components/notifications";
 import { PushNotificationBanner } from "@/components/notifications/PushNotificationBanner";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -13,6 +13,8 @@ import {
   Eye,
   Brain
 } from "lucide-react";
+import { AppSearchOverlay } from "./mobile/AppSearch";
+import { PullToRefresh, useRememberAppPath } from "./native/NativeShell";
 
 interface InvestorLayoutProps {
   children?: ReactNode;
@@ -31,6 +33,7 @@ const mobileNavItems = [
 export const InvestorLayout = memo(function InvestorLayout({ children, userEmail, onLogout }: InvestorLayoutProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const { profile } = useUserProfile();
+  useRememberAppPath();
   const location = useLocation();
   const hideSidebar = location.pathname === "/investor/opportunities";
 
@@ -58,7 +61,7 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
           </div>
 
           <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
-            {children || <Outlet />}
+            <PullToRefresh>{(refreshKey) => <Fragment key={refreshKey}>{children || <Outlet />}</Fragment>}</PullToRefresh>
           </main>
           <PushNotificationBanner />
 
@@ -68,12 +71,17 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
       </div>
 
       {/* Mobile Search Overlay */}
-      <MobileSearchOverlay
+
+      <AppSearchOverlay
+
+        area="investor"
+
         isOpen={searchOpen}
+
         onClose={() => setSearchOpen(false)}
+
         placeholder="Search stocks, funds, research..."
-        recentSearches={["Apple Inc", "S&P 500 ETF", "Tech Sector Analysis"]}
-        trendingSearches={["AI Stocks", "Dividend Funds", "Market Outlook 2025"]}
+
       />
     </SidebarProvider>
   );

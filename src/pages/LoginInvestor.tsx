@@ -170,21 +170,21 @@ const LoginInvestor = ({ onLogin }: LoginInvestorProps) => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Side - Branding with Purple Theme */}
-      <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 p-12 flex flex-col justify-between text-white">
+      <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-900 p-6 sm:p-8 lg:p-12 flex flex-col justify-between text-white">
         <div>
-          <div className="flex items-center gap-3 mb-8 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")}>
+          <div className="flex items-center gap-3 mb-4 lg:mb-8 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate("/")}>
             <img src={flowpulseLogo} alt="FlowPulse Logo" className="h-10 w-10" />
             <span className="text-2xl font-bold">FlowPulse Investor</span>
           </div>
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-2xl lg:text-4xl font-bold mb-2 lg:mb-4">
             Your Global Investment Portal
           </h1>
-          <p className="text-xl text-purple-100 mb-8">
+          <p className="hidden sm:block text-xl text-purple-100 mb-8">
             Access exclusive research, market intelligence, and investment opportunities worldwide
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="hidden lg:block space-y-6">
           <div className="flex items-start gap-4">
             <div className="bg-purple-500/30 p-3 rounded-lg">
               <Globe className="h-6 w-6" />

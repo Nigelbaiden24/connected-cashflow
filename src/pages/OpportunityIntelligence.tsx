@@ -37,20 +37,20 @@ import thumbPrivateMarketPlatforms from "@/assets/opportunities/private_market_p
 import thumbCapitalProtectedNotes from "@/assets/opportunities/capital_protected_notes.jpg";
 import thumbThematicsPackaged from "@/assets/opportunities/thematics_packaged.jpg";
 import thumbCopyTrading from "@/assets/opportunities/copy_trading.jpg";
-import thumbRoyalties from "@/assets/opportunities/royalties.jpg";
+import thumbRoyalties from "@/assets/opportunities/royalties.webp";
 import thumbBusinesses from "@/assets/opportunities/businesses.jpg";
 import thumbMiniBonds from "@/assets/opportunities/mini_bonds.jpg";
 import thumbTimepieces from "@/assets/opportunities/timepieces.jpg";
 import thumbFineWine from "@/assets/opportunities/fine_wine.jpg";
 import thumbArt from "@/assets/opportunities/art.jpg";
-import thumbCollectibles from "@/assets/opportunities/collectibles.jpg";
+import thumbCollectibles from "@/assets/opportunities/collectibles.webp";
 import thumbLuxuryAssets from "@/assets/opportunities/luxury_assets.jpg";
 import thumbEntertainmentFinance from "@/assets/opportunities/entertainment_finance.jpg";
 import thumbInsuranceInvestments from "@/assets/opportunities/insurance_investments.jpg";
 import thumbSportsInvestments from "@/assets/opportunities/sports_investments.jpg";
-import thumbLand from "@/assets/opportunities/land.jpg";
-import thumbRentToRent from "@/assets/opportunities/rent_to_rent.jpg";
-import thumbRentToSa from "@/assets/opportunities/rent_to_sa.jpg";
+import thumbLand from "@/assets/opportunities/land.webp";
+import thumbRentToRent from "@/assets/opportunities/rent_to_rent.webp";
+import thumbRentToSa from "@/assets/opportunities/rent_to_sa.webp";
 
 const categoryThumbnailMap: Record<string, string> = {
   real_estate: thumbRealEstate,
