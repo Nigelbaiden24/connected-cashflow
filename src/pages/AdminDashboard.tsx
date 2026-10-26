@@ -46,6 +46,7 @@ import { StockReportScraper } from "@/components/admin/StockReportScraper";
 import { CryptoReportScraper } from "@/components/admin/CryptoReportScraper";
 import { PipelineDashboard } from "@/components/admin/PipelineDashboard";
 import { AiUsagePanel } from "@/components/admin/AiUsagePanel";
+import { AdminAgent } from "@/components/admin/AdminAgent";
 import { DMFinderPanel } from "@/components/admin/DMFinderPanel";
 import { CompanyFinderPanel } from "@/components/admin/CompanyFinderPanel";
 import { AdminPlanner } from "@/components/admin/AdminPlanner";
@@ -1845,6 +1846,7 @@ export default function AdminDashboard() {
           )}
         </div>
       </main>
+      <AdminAgent activeTab={activeTab} onOpenTab={setActiveTab} />
     </div>
   );
 }
