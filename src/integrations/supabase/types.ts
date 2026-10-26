@@ -659,6 +659,51 @@ export type Database = {
           },
         ]
       }
+      ai_usage_log: {
+        Row: {
+          blocked: boolean
+          cached: boolean
+          completion_tokens: number | null
+          created_at: string
+          duration_ms: number | null
+          endpoint: string | null
+          fn: string
+          id: number
+          model: string | null
+          prompt_tokens: number | null
+          provider: string
+          status: number | null
+        }
+        Insert: {
+          blocked?: boolean
+          cached?: boolean
+          completion_tokens?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          endpoint?: string | null
+          fn: string
+          id?: number
+          model?: string | null
+          prompt_tokens?: number | null
+          provider: string
+          status?: number | null
+        }
+        Update: {
+          blocked?: boolean
+          cached?: boolean
+          completion_tokens?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          endpoint?: string | null
+          fn?: string
+          id?: number
+          model?: string | null
+          prompt_tokens?: number | null
+          provider?: string
+          status?: number | null
+        }
+        Relationships: []
+      }
       analyst_benchmark_reports: {
         Row: {
           anomalies: Json | null
@@ -8031,6 +8076,36 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_cache: {
+        Row: {
+          body: string
+          created_at: string
+          endpoint: string | null
+          expires_at: string
+          fn: string | null
+          key: string
+          provider: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          endpoint?: string | null
+          expires_at: string
+          fn?: string | null
+          key: string
+          provider: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          endpoint?: string | null
+          expires_at?: string
+          fn?: string | null
+          key?: string
+          provider?: string
+        }
+        Relationships: []
+      }
       purchasable_reports: {
         Row: {
           author_name: string | null
@@ -9926,6 +10001,20 @@ export type Database = {
       }
     }
     Functions: {
+      ai_usage_summary: {
+        Args: { _days?: number }
+        Returns: {
+          blocked: number
+          cached: number
+          calls: number
+          completion_tokens: number
+          day: string
+          failed: number
+          fn: string
+          prompt_tokens: number
+          provider: string
+        }[]
+      }
       approve_pending_item: {
         Args: { _item_id: string; _platform?: string; _target_table?: string }
         Returns: Json
