@@ -3,6 +3,7 @@
 // Runs once per invocation; pg_cron triggers it every 30 min. Picks any source whose next_run_at <= now().
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { meteredFetch } from "../_shared/metered.ts";
+import { type PriceResult, loadComparables, priceOpportunities, pricingFields } from "../_shared/opportunityPricing.ts";
 import { identify } from "../_shared/guard.ts";
 
 const corsHeaders = {
@@ -34,35 +35,6 @@ const OPPORTUNITY_RESEARCH_CATEGORIES = [
   "entertainment_finance","insurance_investments","sports_investments",
 ];
 
-// Per-category category-benchmark fallback price (GBP) used when the AI cannot
-// extract a defensible price from the source. Keeps each opportunity priced
-// rather than silently dropped, while remaining within realistic
-// institutional / HNW ticket ranges for that asset class.
-const CATEGORY_FALLBACK_GBP: Record<string, number> = {
-  real_estate: 450_000,
-  land: 250_000,
-  rent_to_rent: 15_000,
-  rent_to_sa: 25_000,
-  commodities: 25_000,
-  alternatives: 50_000,
-  esg: 25_000,
-  fractional_pe_vc: 25_000,
-  private_market_platforms: 50_000,
-  capital_protected_notes: 100_000,
-  thematics_packaged: 25_000,
-  copy_trading: 5_000,
-  royalties: 25_000,
-  businesses: 850_000,
-  mini_bonds: 10_000,
-  timepieces: 28_000,
-  fine_wine: 5_000,
-  art: 35_000,
-  collectibles: 8_000,
-  luxury_assets: 150_000,
-  entertainment_finance: 100_000,
-  insurance_investments: 50_000,
-  sports_investments: 50_000,
-};
 
 function buildScraperBody(source: string, baseConfig: Record<string, unknown> = {}): Record<string, unknown> {
   switch (source) {
@@ -479,8 +451,9 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
     overflow.push(...it.slice(PER_CATEGORY_CAP));
   }
   allItems.push(...overflow);
-  // Cap per-run to keep the enrichment pass inside the budget.
-  const items = allItems.slice(0, 80);
+  // Cap per-run to keep the enrichment pass inside the budget; room for
+  // 4 per category across all 23 Live Deal Alert categories.
+  const items = allItems.slice(0, 120);
   fetched = items.length;
 
   // Pass 1: filter and dedup, so only genuinely new items are paid for.
@@ -515,32 +488,44 @@ async function runOneSource(supabase: any, schedule: any): Promise<any> {
   }
   enriched = enrichedList.length;
 
-  // Pass 3: stage.
+  // Pass 3: price. Stated source prices first, then valuation against
+  // comparable source-priced deals in the same category (see opportunityPricing).
+  const categoryOf = (it: typeof items[number]) => {
+    const catKey = (it.raw?.category ?? it.raw?.categoryKey ?? "").toString();
+    return OPPORTUNITY_RESEARCH_CATEGORIES.includes(catKey)
+      ? catKey
+      : OPPORTUNITY_RESEARCH_CATEGORIES.find((c) => catKey.includes(c)) ?? "alternatives";
+  };
+  const prices: PriceResult[] = new Array(fresh.length);
+  const byCat = new Map<string, number[]>();
+  fresh.forEach((f, n) => { const c = categoryOf(f.it); byCat.set(c, [...(byCat.get(c) ?? []), n]); });
+  await Promise.all([...byCat.entries()].map(async ([cat, idxs]) => {
+    const comps = await loadComparables(supabase, cat);
+    const priced = await priceOpportunities("run-data-pipeline", idxs.map((n) => {
+      const r = fresh[n].it.raw ?? {};
+      return {
+        title: fresh[n].it.title, description: r.description ?? fresh[n].it.summary ?? null, category: cat,
+        sub_category: r.sub_category ?? null, location: r.location ?? null, source_url: fresh[n].it.url ?? null,
+        source_price_text: [r.estimated_value, r.price, r.asking_price, r.minimum_investment, r.valuation]
+          .filter((v) => v !== undefined && v !== null && v !== "").join(" | ") || null,
+        key_metrics: r.key_metrics ?? null,
+      };
+    }), comps);
+    idxs.forEach((n, k) => { prices[n] = priced[k]; });
+  }));
+
+  // Pass 4: stage.
   for (let n = 0; n < fresh.length; n++) {
     const { it, dedup_hash } = fresh[n];
     const ai = enrichedList[n];
     try {
-      // Pricing: prefer the AI-derived GBP price; fall back to a defensible
-      // per-category institutional benchmark so accurately-scraped
-      // opportunities are never silently dropped just because the source
-      // page omitted a headline figure.
-      const catKey = (it.raw?.category ?? it.raw?.categoryKey ?? "").toString();
-      const fallbackKey = OPPORTUNITY_RESEARCH_CATEGORIES.includes(catKey)
-        ? catKey
-        : OPPORTUNITY_RESEARCH_CATEGORIES.find((c) => catKey.includes(c)) ?? "alternatives";
-      const finalPrice = ai.price_gbp ?? CATEGORY_FALLBACK_GBP[fallbackKey] ?? 250_000;
-      const priceIsEstimated = ai.price_gbp == null;
-
       const enrichedPayload: Record<string, unknown> = {
         ...it.raw,
         ai_summary: ai.summary,
         ai_tags: ai.tags,
         ai_score: ai.score,
-        price: finalPrice,
-        price_currency: "GBP",
-        currency: "GBP",
-        price_is_estimated: priceIsEstimated,
-        price_estimate_basis: priceIsEstimated ? `category_benchmark:${fallbackKey}` : "source_extracted",
+        ...pricingFields(prices[n]),
+        category_key: categoryOf(it),
       };
 
       const { error } = await supabase.from("pipeline_pending_items").insert({

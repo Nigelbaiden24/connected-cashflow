@@ -740,6 +740,75 @@ interface SearchResultItem {
   imageUrl?: string;
 }
 
+// Live Deal Alert categories (investor Opportunity Intelligence). Listing
+// queries look for specific, publicly listed opportunities (with a price or
+// minimum where the listing shows one) rather than market commentary.
+const LISTING_QUERIES: Record<string, string[]> = {
+  real_estate: ["investment property for sale guide price yield {Y}", "commercial property for sale auction lot guide price {Y}", "off-plan development investment minimum investment {Y}", "fractional property investment platform open opportunity invest from"],
+  land: ["development land for sale planning permission guide price {Y}", "farmland for sale acres price per acre {Y}", "woodland forestry for sale investment price {Y}", "land plots for sale investment asking price"],
+  rent_to_rent: ["rent to rent HMO deal for sale sourcing fee {Y}", "rent to rent opportunity guaranteed rent landlord deal {Y}", "R2R deal packaged sourcing fee monthly profit", "rent to rent business for sale"],
+  rent_to_sa: ["serviced accommodation rent to SA deal sourcing fee {Y}", "serviced apartment business for sale {Y}", "short let management company for sale", "R2SA deal packaged monthly profit"],
+  commodities: ["physical gold silver investment product minimum investment {Y}", "commodity fund open to investors minimum subscription {Y}", "agricultural commodity investment opportunity raising {Y}", "commodity ETC launch {Y}"],
+  alternatives: ["alternative investment fund open for subscription minimum investment {Y}", "hedge fund accepting new investors minimum {Y}", "multi-strategy fund launch {Y} minimum subscription", "alternative investment platform new opportunity invest from"],
+  esg: ["green bond issue minimum investment {Y}", "renewable energy project crowdfunding raising {Y}", "impact investment fund open minimum investment {Y}", "solar wind project investment opportunity invest from"],
+  fractional_pe_vc: ["crowdfunding round live raising equity {Y}", "Crowdcube live pitch raising {Y}", "Republic Europe Seedrs campaign raising {Y}", "angel syndicate deal open minimum investment {Y}"],
+  private_market_platforms: ["pre-IPO shares available secondary market price per share {Y}", "private company secondary shares for sale {Y}", "private markets platform fund minimum investment {Y}", "tender offer private company shares {Y}"],
+  capital_protected_notes: ["capital protected structured product open for investment {Y} closing date", "kick-out plan autocall open for investment minimum {Y}", "income note structured deposit offer {Y} minimum investment", "structured product new issue FTSE linked {Y}"],
+  thematics_packaged: ["thematic ETF launch {Y}", "new thematic fund launch minimum investment {Y}", "model portfolio service minimum investment {Y}", "smart beta fund launch {Y}"],
+  copy_trading: ["copy trading popular investor minimum copy amount {Y}", "copy trading strategy minimum investment track record {Y}", "social trading platform top trader copy minimum", "managed copy portfolio minimum investment"],
+  royalties: ["music royalty catalog for sale auction asking price {Y}", "royalty exchange listing annual income price {Y}", "film royalty investment opportunity minimum {Y}", "patent royalty stream for sale {Y}"],
+  businesses: ["business for sale asking price revenue profit {Y}", "established business for sale UK asking price {Y}", "franchise opportunity investment required {Y}", "SME acquisition opportunity asking price EBITDA"],
+  mini_bonds: ["mini bond open for investment interest rate minimum investment {Y}", "loan note offer open minimum investment {Y}", "corporate bond retail offer {Y} minimum", "green mini bond raising {Y}"],
+  timepieces: ["Rolex for sale price {Y}", "Patek Philippe auction estimate {Y}", "Audemars Piguet Royal Oak for sale price {Y}", "watch auction lot estimate {Y}"],
+  fine_wine: ["fine wine case for sale price per case {Y}", "en primeur release price {Y}", "whisky cask for sale price {Y}", "fine wine auction lot estimate {Y}"],
+  art: ["artwork for sale price gallery {Y}", "art auction upcoming lot estimate {Y}", "fractional art investment offering price per share {Y}", "contemporary artist edition for sale price"],
+  collectibles: ["trading card auction lot estimate {Y}", "rare comic for sale price {Y}", "sports memorabilia auction estimate {Y}", "rare sneakers for sale price {Y}"],
+  luxury_assets: ["yacht for sale asking price {Y}", "classic car auction estimate {Y}", "supercar for sale price {Y}", "Hermes Birkin for sale price {Y}"],
+  entertainment_finance: ["film financing opportunity investors minimum investment {Y}", "EIS film fund open {Y}", "TV production investment opportunity raising {Y}", "esports team investment raising {Y}"],
+  insurance_investments: ["life settlement fund minimum investment {Y}", "annuity rates offer {Y}", "insurance linked securities fund minimum investment", "with-profits bond minimum investment {Y}"],
+  sports_investments: ["football club for sale asking price {Y}", "football club investment raising fan shares {Y}", "racehorse syndicate share price {Y}", "sports team minority stake for sale {Y}"],
+};
+
+// Sub-categories shown on Opportunity Intelligence, per category.
+const SUB_CATEGORIES: Record<string, string[]> = {
+  real_estate: ["Residential Property", "Commercial Property", "Industrial Property", "Student Housing", "Holiday Rentals", "Build-to-Rent", "International Property"],
+  land: ["Land Banking", "Farmland", "Development Land", "Strategic Land", "Forestry"],
+  rent_to_rent: ["HMO Rent to Rent", "Single Let R2R", "Corporate Lets", "Guaranteed Rent Schemes"],
+  rent_to_sa: ["Short-Term Lets", "Corporate Stays", "Airbnb R2SA", "Aparthotel Conversions"],
+  commodities: ["Oil", "Natural Gas", "Wheat", "Coffee", "Livestock"],
+  alternatives: ["Hedge Funds", "Multi-Strategy", "Structured Alternatives"],
+  esg: ["Renewable Energy", "Social Impact", "Green Bonds", "Sustainable Funds", "Carbon Credits"],
+  fractional_pe_vc: ["Crowdfunding", "Syndicates", "Fractional Deals", "Angel Co-Investment"],
+  private_market_platforms: ["Pre-IPO", "Secondary Shares", "Tender Offers", "Marketplace Deals"],
+  capital_protected_notes: ["Structured Notes", "Capital Protection", "Autocallables", "Income Notes"],
+  thematics_packaged: ["Thematic Baskets", "Smart Beta", "Robo Portfolios", "Model Portfolios"],
+  copy_trading: ["Mirror Trading", "Social Trading", "Lead Traders", "Strategy Following"],
+  royalties: ["Music Royalties", "Film Royalties", "Publishing Royalties", "Patent Royalties"],
+  businesses: ["SMEs", "Startups", "Franchises", "Established Businesses"],
+  mini_bonds: ["Corporate Mini Bonds", "Property Mini Bonds", "Green Mini Bonds", "Loan Notes"],
+  timepieces: ["Rolex", "Patek Philippe", "Audemars Piguet", "Vintage", "Limited Editions"],
+  fine_wine: ["Bordeaux", "Burgundy", "Champagne", "Rare Whisky"],
+  art: ["Fine Art", "Contemporary", "Blue Chip Artists", "Editions"],
+  collectibles: ["Rare Whisky", "Sneakers", "Comics", "Trading Cards", "Memorabilia"],
+  luxury_assets: ["Yachts", "Jets", "Supercars", "Rare Handbags", "Jewelry"],
+  entertainment_finance: ["Film Financing", "TV Production Finance", "Sports Rights", "Esports Organizations"],
+  insurance_investments: ["Annuities", "Whole Life Insurance", "Universal Life Policies", "Premium Finance Structures", "Life Settlements"],
+  sports_investments: ["Football Clubs", "Athlete-Backed Ventures", "Sports Trading Cards", "Racehorses"],
+};
+
+const YEAR = String(new Date().getFullYear());
+const withYear = (q: string) => q.replace(/\{Y\}/g, YEAR).replace(/\b20(1\d|2[0-5])\b/g, YEAR);
+
+/** Normalises URLs so AI-cited links can be matched to pages actually scraped. */
+function normUrl(u: string): string {
+  try {
+    const x = new URL(u);
+    return `${x.hostname.replace(/^www\./, "")}${x.pathname.replace(/\/+$/, "")}`.toLowerCase();
+  } catch {
+    return String(u || "").toLowerCase().replace(/^https?:\/\/(www\.)?/, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+  }
+}
+
 async function scrapeUrl(url: string, apiKey: string): Promise<{ content: string; source: SourceRecord }> {
   const source: SourceRecord = {
     url,
@@ -883,17 +952,26 @@ serve(async (req) => {
     const effectiveRegion = region || GLOBAL_REGIONS[Math.floor(Date.now() / 3600000) % GLOBAL_REGIONS.length];
 
     const regionalize = (q: string) => `${q} ${effectiveRegion}`;
+    // Live Deal Alert categories search for specific public listings first
+    // (half regionalised), then a little market context.
+    const listing = LISTING_QUERIES[effectiveCategory] ?? [];
     const allQueries = customQuery
       ? [customQuery]
-      : sources.queries.flatMap((q) => {
-          const base = subCategory ? `${q} ${subCategory}` : q;
-          return [base, regionalize(base)];
-        });
+      : [
+          ...listing.map((q, i) => {
+            const base = subCategory ? `${q} ${subCategory}` : q;
+            return i % 2 ? regionalize(base) : base;
+          }),
+          ...(sources?.queries ?? []).flatMap((q) => {
+            const base = subCategory ? `${q} ${subCategory}` : q;
+            return [base, regionalize(base)];
+          }),
+        ].map(withYear);
     // Caps keep Firecrawl spend bounded (pipeline mode also has to fit the
     // edge function timeout). Repeat searches/scrapes are served from cache.
-    const queries = allQueries.slice(0, stream ? 12 : 8);
+    const queries = allQueries.slice(0, stream ? 12 : listing.length ? 6 : 8);
     const allUrls = sources?.urls || [];
-    const urls = allUrls.slice(0, stream ? 8 : 6);
+    const urls = allUrls.slice(0, stream ? 8 : listing.length ? 2 : 6);
 
     const [searchResults, scrapeResults] = await Promise.all([
       Promise.all(queries.map((q) => searchWeb(q, FIRECRAWL_API_KEY))),
@@ -1023,7 +1101,9 @@ After your analysis, you MUST output a JSON block wrapped in \`\`\`json ... \`\`
     "source_website": "Name of the website (e.g. Rightmove, Seeking Alpha)",
     "image_url": "URL of an image related to this opportunity if available, or empty string",
     "scraped_date": "${new Date().toISOString().split('T')[0]}",
-    "estimated_value": "Price or value range (e.g. £250,000 - £300,000)",
+    "estimated_value": "The price, minimum investment or valuation EXACTLY as written on the source page, with its currency (e.g. 'Guide price £250,000', 'Min. investment €10,000'). Empty string if the page shows none; do NOT estimate here.",
+    "price_kind": "asking_price | minimum_investment | valuation | raise_target | unit_price | unknown",
+    "sub_category": "${(SUB_CATEGORIES[effectiveCategory] ?? []).join(" | ") || "General"}",
     "location": "Country and specific location${isOverseasProperty ? ' (MUST include country name)' : ''}",
     "projected_returns": "Expected returns${isOverseasProperty ? ' factoring in currency risk and local costs' : ''}",
     "risk_level": "Low/Medium/High",
@@ -1035,9 +1115,10 @@ After your analysis, you MUST output a JSON block wrapped in \`\`\`json ... \`\`
 \`\`\`
 
 RULES:
-1. Find at least 20 SPECIFIC individual opportunities from the scraped data (aim for 20-30)
-2. Each must have a real source_url — the ACTUAL page where you found this data
-3. Use image URLs from the search results reference where available
+1. List only SPECIFIC opportunities that appear in the scraped text: a named listing, offer, lot, raise or product someone can act on now. Market commentary, indices and "top 10" articles are not opportunities. Up to 15; returning fewer (even zero) is better than padding.
+2. Each must have a real source_url copied from the search results or direct sources above: the ACTUAL page where it appears. Opportunities without one are discarded.
+2b. Never invent prices, returns or figures. Leave fields empty when the page doesn't state them.
+3. Use an image URL only if it belongs to that opportunity's own page (from the reference list); otherwise use an empty string
 4. Be specific — real names, real prices, real locations from the data
 5. Before the JSON block, write a brief Market Context section (3-4 sentences max)
 6. Cite the source website name for every opportunity
@@ -1113,20 +1194,30 @@ ${combinedResearch.slice(0, 30000)}`,
       // Build URL → image map from scraped search results so we can backfill any
       // opportunities the AI returned without an image_url.
       const imageByUrl = new Map<string, string>();
-      const imagePool: string[] = [];
       for (const r of allSearchResults) {
         if (r?.imageUrl) {
           if (r.url) imageByUrl.set(String(r.url), String(r.imageUrl));
-          imagePool.push(String(r.imageUrl));
         }
       }
-      const pickPoolImage = (i: number) => imagePool.length ? imagePool[i % imagePool.length] : null;
+      // Grounding: keep only opportunities whose source page was actually
+      // fetched in this run (search results or direct scrapes).
+      const fetchedUrls = new Set<string>([
+        ...allSearchResults.map((r) => normUrl(r.url)),
+        ...allSources.filter((x) => x.status === "success" && x.url).map((x) => normUrl(String(x.url))),
+      ].filter(Boolean));
+      const grounded = opportunities.filter((o: any) => {
+        const u = o?.source_url ?? o?.url;
+        return typeof u === "string" && /^https?:\/\//.test(u) && fetchedUrls.has(normUrl(u));
+      });
+      const dropped = opportunities.length - grounded.length;
+      const subs = SUB_CATEGORIES[effectiveCategory] ?? [];
 
-      const normalized = opportunities.map((o: any, idx: number) => {
+      const normalized = grounded.map((o: any) => {
         const srcUrl = o.source_url ?? o.url ?? null;
-        const aiImg = typeof o.image_url === "string" && o.image_url.startsWith("http") ? o.image_url : null;
-        const matchedImg = srcUrl && imageByUrl.get(String(srcUrl));
-        const finalImg = aiImg ?? matchedImg ?? pickPoolImage(idx);
+        // Only images that belong to the opportunity's own page.
+        const matchedImg = srcUrl ? imageByUrl.get(String(srcUrl)) ?? null : null;
+        const finalImg = matchedImg;
+        const sub = subs.find((x) => x.toLowerCase() === String(o.sub_category ?? "").toLowerCase()) ?? null;
         return {
         title: o.name ?? o.title ?? "Untitled",
         name: o.name ?? o.title,
@@ -1146,6 +1237,8 @@ ${combinedResearch.slice(0, 30000)}`,
         thesis: o.investment_thesis ?? null,
         key_metrics: o.key_metrics ?? null,
         ...o,
+        category: effectiveCategory,
+        sub_category: sub ?? subLabel,
         image_url: finalImg,
         thumbnail_url: finalImg,
         };
@@ -1157,6 +1250,7 @@ ${combinedResearch.slice(0, 30000)}`,
         subCategory: subLabel,
         sourcesScraped: allSources.filter(s => s.status === "success").length,
         sources: allSources,
+        ungrounded_dropped: dropped,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

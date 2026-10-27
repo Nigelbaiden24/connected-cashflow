@@ -16,6 +16,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrapeItemView } from "./ScrapeItemView";
+import { OpportunityPricingPanel } from "./OpportunityPricingPanel";
 
 type TargetTable = "opportunity_products";
 type TargetPlatform = "investor";
@@ -336,6 +337,8 @@ export const PipelineDashboard = () => {
         </div>
       </div>
 
+
+      <OpportunityPricingPanel />
       {/* Schedule */}
       <Card className="p-5 bg-white border-slate-200 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-4">

@@ -19,6 +19,7 @@ import { OpportunityWorldMap } from "@/components/opportunities/OpportunityWorld
 import { ShowcaseDarkToggle } from "@/components/showcase/ShowcaseDarkToggle";
 import { StarryBackground } from "@/components/showcase/StarryBackground";
 import { MorningstarDetailPanel } from "@/components/market/MorningstarDetailPanel";
+import { OpportunityPrice, SourceLink, priceInfo } from "@/components/opportunities/OpportunityPrice";
 import { 
   Building2, Briefcase, Gem, Search, Star, TrendingUp, MapPin, Clock, Eye,
   LayoutGrid, List, Globe, Users, Award, Package,
@@ -100,6 +101,7 @@ interface OpportunityProduct {
   geography: string | null;
   liquidity_horizon: string | null;
   risk_score: number | null;
+  product_details?: any;
 }
 
 // Investor-curated opportunity taxonomy. Each category mirrors the admin
@@ -150,6 +152,8 @@ export default function OpportunityIntelligence() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [priceFilter, setPriceFilter] = useState<"all" | "listed" | "valued">("all");
+  const [freshness, setFreshness] = useState<"all" | "7" | "30">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list" | "showcase" | "map">("grid");
   const [showFolders, setShowFolders] = useState(true);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
@@ -199,6 +203,13 @@ export default function OpportunityIntelligence() {
         !opp.short_description?.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !opp.location?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       
+      if (priceFilter !== "all") {
+        const src = priceInfo(opp).source;
+        if (priceFilter === "listed" && src !== "listed") return false;
+        if (priceFilter === "valued" && src !== "listed" && src !== "estimate") return false;
+      }
+      if (freshness !== "all" && Date.now() - new Date(opp.created_at).getTime() > Number(freshness) * 86_400_000) return false;
+
       // Advanced filters
       if (advancedFilters.geography !== "all") {
         const geo = (opp.geography || opp.country || "").toLowerCase();
@@ -259,7 +270,7 @@ export default function OpportunityIntelligence() {
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground line-clamp-2">{opportunity.short_description}</p>
           <div className="flex items-center justify-between">
-            {opportunity.price && <span className="text-lg font-bold text-primary">{formatPrice(opportunity.price, opportunity.price_currency)}</span>}
+            <OpportunityPrice opportunity={opportunity} />
             {opportunity.overall_conviction_score && (
               <div className="flex items-center gap-1 text-sm">
                 <TrendingUp className="h-4 w-4 text-green-500" />
@@ -270,6 +281,7 @@ export default function OpportunityIntelligence() {
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             {opportunity.location && <div className="flex items-center gap-1"><MapPin className="h-3 w-3" /><span>{opportunity.location}</span></div>}
             <div className="flex items-center gap-1"><Clock className="h-3 w-3" /><span>{new Date(opportunity.created_at).toLocaleDateString()}</span></div>
+            <SourceLink url={opportunity.product_details?.source_url} className="ml-auto truncate" />
           </div>
           <Button className="w-full" variant="outline" size="sm" onClick={() => handleOpportunityClick(opportunity)}>
             <Eye className="h-4 w-4 mr-2" /> View Details
@@ -316,7 +328,7 @@ export default function OpportunityIntelligence() {
           {opportunity.analyst_rating ? <Badge className={`${ratingColors[opportunity.analyst_rating]} border`}>{opportunity.analyst_rating}</Badge> : <span className="text-muted-foreground text-xs">—</span>}
         </TableCell>
         <TableCell className="text-right whitespace-nowrap">
-          {opportunity.price ? <span className="font-semibold text-primary">{formatPrice(opportunity.price, opportunity.price_currency)}</span> : <span className="text-muted-foreground">—</span>}
+          <div className="inline-block text-right"><OpportunityPrice opportunity={opportunity} size="sm" /></div>
         </TableCell>
         <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
           {opportunity.liquidity_horizon || "—"}
@@ -384,6 +396,22 @@ export default function OpportunityIntelligence() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search opportunities..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
               </div>
+              <Select value={priceFilter} onValueChange={(v) => setPriceFilter(v as typeof priceFilter)}>
+                <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All prices</SelectItem>
+                  <SelectItem value="listed">Listed prices only</SelectItem>
+                  <SelectItem value="valued">Listed + valued estimates</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={freshness} onValueChange={(v) => setFreshness(v as typeof freshness)}>
+                <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any time</SelectItem>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[180px]"><SelectValue placeholder="Sort by" /></SelectTrigger>
                 <SelectContent>
@@ -490,7 +518,7 @@ export default function OpportunityIntelligence() {
                                     <td className="py-2 px-3 text-center font-bold">{opp.expected_irr != null ? `${opp.expected_irr.toFixed(1)}%` : "—"}</td>
                                     <td className="py-2 px-3 text-center">{opp.analyst_rating ? <Badge className={`${ratingColors[opp.analyst_rating]} border text-xs`}>{opp.analyst_rating}</Badge> : "—"}</td>
                                     <td className="py-2 px-3 text-center"><Badge variant="outline" className="text-xs">{config?.label || opp.category}</Badge></td>
-                                    <td className="py-2 px-3 text-right font-semibold text-primary">{opp.price ? formatPrice(opp.price, opp.price_currency) : "—"}</td>
+                                    <td className="py-2 px-3 text-right"><div className="inline-block text-right"><OpportunityPrice opportunity={opp} size="sm" /></div></td>
                                     <td className="py-2 px-3 text-center text-xs">{opp.liquidity_horizon || "—"}</td>
                                     <td className="py-2 px-3 text-center font-medium">{opp.overall_conviction_score?.toFixed(1) || "—"}</td>
                                     <td className="py-2 px-3 text-center text-xs">{opp.deal_stage || "—"}</td>

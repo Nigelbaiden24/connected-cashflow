@@ -13,6 +13,7 @@ import {
   ArrowUpRight, Scale, Layers, Music
 } from "lucide-react";
 import { OpportunityAnalyticsCharts } from "@/components/opportunities/OpportunityAnalyticsCharts";
+import { OpportunityPrice, SourceLink, priceInfo } from "@/components/opportunities/OpportunityPrice";
 
 const categoryConfig: Record<string, { label: string; icon: any; color: string }> = {
   uk_property: { label: "UK Property", icon: Building2, color: "bg-blue-500/10 text-blue-500" },
@@ -268,7 +269,22 @@ export default function OpportunityDetailPage() {
         <div className="space-y-4">
           <Card>
             <CardContent className="pt-6 space-y-4">
-              {opportunity.price && <div><p className="text-sm text-muted-foreground">Price</p><p className="text-3xl font-bold text-primary">{formatPrice(opportunity.price, opportunity.price_currency)}</p></div>}
+              <div>
+                <p className="text-sm text-muted-foreground">{priceInfo(opportunity as any).kind ?? "Price"}</p>
+                <OpportunityPrice opportunity={opportunity as any} size="lg" />
+                {(() => {
+                  const info = priceInfo(opportunity as any);
+                  return info.source === "estimate" && info.low && info.high && info.high > info.low ? (
+                    <p className="mt-1 text-xs text-muted-foreground">Likely range {formatPrice(info.low, opportunity.price_currency)} – {formatPrice(info.high, opportunity.price_currency)}</p>
+                  ) : null;
+                })()}
+              </div>
+              {(opportunity as any).product_details?.source_url && (
+                <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
+                  <span className="text-xs text-muted-foreground">Publicly listed at</span>
+                  <SourceLink url={(opportunity as any).product_details.source_url} className="text-xs font-medium" />
+                </div>
+              )}
               {opportunity.location && <div className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="h-4 w-4" /><span>{opportunity.location}{opportunity.country && `, ${opportunity.country}`}</span></div>}
               {opportunity.overall_conviction_score && <div className="flex items-center gap-2"><TrendingUp className="h-4 w-4 text-green-500" /><span className="font-semibold">{opportunity.overall_conviction_score.toFixed(1)}/5</span><span className="text-sm text-muted-foreground">Conviction Score</span></div>}
               <Separator />
