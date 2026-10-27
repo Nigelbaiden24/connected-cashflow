@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
-  Lock,
   TrendingUp,
   Coins,
   ArrowRight,
@@ -27,6 +26,7 @@ import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
 import { ResearchReportReader } from "@/components/research/ResearchReportReader";
 import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
+import { LockedPagePreview, VaultPaywall, PreviewBar, type PreviewImage } from "@/components/research/ResearchPaywall";
 
 interface PublicResearchPreview {
   id: string;
@@ -44,6 +44,7 @@ interface PublicResearchPreview {
   created_at: string;
   first_page_title: string;
   first_page_html: string;
+  preview_images?: PreviewImage[];
 }
 
 interface PublicResearchHubProps {
@@ -280,39 +281,19 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                         locked={!hasReportAccess}
                         blurred={!hasReportAccess}
                         onOpen={() => handleOpen(r)}
+                        onSignIn={() => openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signin")}
                       />
                     ))}
                   </div>
 
                   {!hasReportAccess && (
-                    <div className="mt-12 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 p-8 text-center">
-                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 mb-4">
-                        <Lock className="h-6 w-6 text-amber-500" />
-                      </div>
-                      <h3 className="text-2xl font-bold text-slate-900 mb-2 tracking-tight">
-                        Unlock the full Research Vault
-                      </h3>
-                      <p className="text-slate-500 mb-6 leading-relaxed max-w-xl mx-auto">
-                        Create a free account to read full {t === "stock" ? "equity" : "digital asset"} dossiers — conviction scoring, valuation models, risk frameworks and downloadable PDFs.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Button
-                          size="lg"
-                          className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold"
-                          onClick={() => openAuth(undefined, undefined, "signup")}
-                        >
-                          Create free account <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="lg"
-                          variant="outline"
-                          className="border-slate-200 bg-white text-slate-900 hover:bg-slate-50"
-                          onClick={() => openAuth(undefined, undefined, "signin")}
-                        >
-                          Sign in
-                        </Button>
-                      </div>
-                    </div>
+                    <VaultPaywall
+                      assetLabel={t === "stock" ? "equity" : "digital asset"}
+                      reportCount={filtered.length}
+                      sample={filtered.find((r) => r.preview_images?.length)}
+                      onSignUp={() => openAuth(undefined, undefined, "signup")}
+                      onSignIn={() => openAuth(undefined, undefined, "signin")}
+                    />
                   )}
                 </div>
               )}
@@ -322,6 +303,10 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
           ))}
         </Tabs>
       </section>
+
+      {!authLoading && !hasReportAccess && !authOpen && (
+        <PreviewBar onSignUp={() => openAuth(undefined, undefined, "signup")} onSignIn={() => openAuth(undefined, undefined, "signin")} />
+      )}
 
       <ResearchReportReader
         open={readerOpen}
@@ -349,11 +334,13 @@ function ReportCard({
   locked,
   blurred,
   onOpen,
+  onSignIn,
 }: {
   report: PublicResearchPreview;
   locked: boolean;
   blurred: boolean;
   onOpen: () => void;
+  onSignIn: () => void;
 }) {
   const dateStr = format(new Date(report.report_date ?? report.promoted_at ?? report.created_at), "PP");
   const isStock = report.asset_type === "stock";
@@ -393,17 +380,16 @@ function ReportCard({
             />
           )}
 
-          {/* Actual generated report PDF page, scaled down */}
-          <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
-            <ReportPdfPagePreview report={report} blurred={blurred} />
-            {locked && (
-              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-white/10">
-                <div className="flex items-center gap-2 rounded-full border border-amber-400/40 bg-slate-900/80 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur-sm">
-                  <Lock className="h-3.5 w-3.5" /> Sign in or create account
-                </div>
-              </div>
-            )}
-          </div>
+          {locked ? (
+            <LockedPagePreview report={report} images={report.preview_images ?? []} onSignIn={onSignIn}>
+              <ReportPdfPagePreview report={report} blurred={blurred} />
+            </LockedPagePreview>
+          ) : (
+            /* Actual generated report PDF page, scaled down */
+            <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
+              <ReportPdfPagePreview report={report} blurred={blurred} />
+            </div>
+          )}
 
           <CardContent className="p-5">
             <div className="flex items-start justify-between gap-3 mb-3">

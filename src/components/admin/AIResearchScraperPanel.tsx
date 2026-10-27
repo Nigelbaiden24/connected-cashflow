@@ -10,12 +10,13 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Sparkles, Eye, CheckCircle2, Trash2, RefreshCw, Clock, Play, Pause, Plus, Bot, ChevronDown, Zap } from "lucide-react";
+import { Loader2, Sparkles, Eye, CheckCircle2, Trash2, RefreshCw, Clock, Play, Pause, Plus, Bot, ChevronDown, Zap, Image as ImageIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
+import { refreshReportPreviews, reportsMissingPreviews } from "@/lib/researchPreviewCapture";
 
 type AssetType = "stock" | "crypto";
 
@@ -95,6 +96,19 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
   const [addingSched, setAddingSched] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [autopilotBusy, setAutopilotBusy] = useState(false);
+  const [previewProgress, setPreviewProgress] = useState<string | null>(null);
+
+  // Paywall screenshots shown to signed-out visitors on /research.
+  const capturePreviews = async (ids: string[], quiet = false) => {
+    if (!ids.length) return;
+    setPreviewProgress(`0/${ids.length}`);
+    try {
+      const saved = await refreshReportPreviews(ids, (done, total) => setPreviewProgress(`${done}/${total}`));
+      if (!quiet) toast.success(`Paywall screenshots updated for ${saved} report${saved === 1 ? "" : "s"}`);
+    } finally {
+      setPreviewProgress(null);
+    }
+  };
 
   const autopilot = useMemo(
     () => schedules.find((s) => (s.topic || "").startsWith("__AUTOPILOT__")) ?? null,
@@ -123,6 +137,17 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [assetType]);
+
+  // Fill in screenshots for reports promoted elsewhere (e.g. by the admin agent).
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      const missing = await reportsMissingPreviews(assetType);
+      if (live && missing.length) await capturePreviews(missing.slice(0, 12), true);
+    })();
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assetType]);
 
   // Auto-provision an AI Autopilot schedule on first load so scraping is never
   // dependent on a human entering topics. Manual scraping remains an option.
@@ -278,6 +303,7 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
     if (error) return toast.error(error.message);
     toast.success(`${ids.length} report${ids.length > 1 ? "s" : ""} ${status}`);
     setSelected(new Set()); await load();
+    if (status === "promoted") void capturePreviews(ids, true);
   };
 
   const deleteItem = async (id: string) => {
@@ -509,6 +535,13 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
                 <TabsTrigger value="promoted">Promoted ({items.filter((i) => i.status === "promoted").length})</TabsTrigger>
                 <TabsTrigger value="archived">Archived ({items.filter((i) => i.status === "archived").length})</TabsTrigger>
               </TabsList>
+              {tab === "promoted" && selected.size === 0 && (
+                <Button size="sm" variant="outline" className="gap-1" disabled={!!previewProgress}
+                  onClick={() => capturePreviews(items.filter((i) => i.status === "promoted").map((i) => i.id))}>
+                  {previewProgress ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                  {previewProgress ? `Capturing ${previewProgress}` : "Refresh paywall screenshots"}
+                </Button>
+              )}
               {selected.size > 0 && (
                 <div className="flex gap-2">
                   {tab === "draft" && (

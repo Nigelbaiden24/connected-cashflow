@@ -16,9 +16,15 @@ export interface ReportPdfPreviewData {
 interface ReportPdfPagePreviewProps {
   report: ReportPdfPreviewData;
   blurred?: boolean;
+  /** 1-based page shown in the header and footer. */
+  pageNumber?: number;
+  /** Scale of the 794×1123 A4 page; 1 for screenshot capture. */
+  scale?: number;
+  /** Drops the shadow and bottom fade (used when capturing screenshots). */
+  bare?: boolean;
 }
 
-export function ReportPdfPagePreview({ report, blurred = false }: ReportPdfPagePreviewProps) {
+export function ReportPdfPagePreview({ report, blurred = false, pageNumber = 1, scale = 0.4, bare = false }: ReportPdfPagePreviewProps) {
   const date = report.report_date ?? report.promoted_at ?? report.created_at;
   const dateLabel = new Date(date).toLocaleDateString("en-GB", {
     day: "2-digit",
@@ -30,7 +36,7 @@ export function ReportPdfPagePreview({ report, blurred = false }: ReportPdfPageP
   });
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-md bg-white shadow-[0_18px_50px_-18px_rgba(0,0,0,0.75)]">
+    <div className={`relative h-full w-full overflow-hidden bg-white ${bare ? "" : "rounded-md shadow-[0_18px_50px_-18px_rgba(0,0,0,0.75)]"}`}>
       <style>{`
         .research-pdf-preview-article p { margin: 0 0 16px; }
         .research-pdf-preview-article .lede { font-size: 17px; line-height: 1.62; }
@@ -51,7 +57,7 @@ export function ReportPdfPagePreview({ report, blurred = false }: ReportPdfPageP
       `}</style>
       <div
         className={`pointer-events-none origin-top-left bg-white text-[#102033] transition-all duration-500 ${blurred ? "blur-[7px] saturate-75" : ""}`}
-        style={{ width: 794, minHeight: 1123, transform: "scale(0.4)", transformOrigin: "top left" }}
+        style={{ width: 794, minHeight: 1123, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: "top left" }}
       >
         <div className="flex min-h-[1123px] flex-col px-8 pb-8 pt-10">
           <header className="mb-8 border-b-2 border-[#0c2340] pb-3">
@@ -69,7 +75,7 @@ export function ReportPdfPagePreview({ report, blurred = false }: ReportPdfPageP
           </header>
 
           <main className="flex-1">
-            <div className="mb-5 font-sans text-[12px] uppercase tracking-[0.35em] text-[#3b82f6]">Section 1</div>
+            <div className="mb-5 font-sans text-[12px] uppercase tracking-[0.35em] text-[#3b82f6]">Section {pageNumber}</div>
             <h2 className="mb-6 font-serif text-[27px] leading-tight text-[#0f172a]">
               {report.first_page_title || "Executive Summary & Key Takeaways"}
             </h2>
@@ -81,11 +87,11 @@ export function ReportPdfPagePreview({ report, blurred = false }: ReportPdfPageP
 
           <footer className="mt-10 flex items-center justify-between border-t border-[#dbe4ef] pt-4 font-sans text-[11px] text-[#64748b]">
             <span>FlowPulse Research · For information only, not personal investment advice</span>
-            <span>Page 1 of {report.page_count ?? 1}</span>
+            <span>Page {pageNumber} of {report.page_count ?? pageNumber}</span>
           </footer>
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+      {!bare && <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />}
     </div>
   );
 }

@@ -54,14 +54,18 @@ Deno.serve(async (req) => {
       ? "id, asset_type, title, slug, ticker, excerpt, hero_image_url, html_content, ai_score, ai_tags, sources, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages"
       : "id, asset_type, title, ticker, excerpt, ai_score, ai_tags, reading_time_minutes, author_name, page_count, report_date, promoted_at, created_at, pages";
 
-    const { data, error } = await admin
+    // Pre-blurred page screenshots (safe to show signed out). Falls back if the
+    // preview_images column hasn't been added to the database yet.
+    const query = (cols: string) => admin
       .from("generated_research_reports")
-      .select(listSelect)
+      .select(cols)
       .eq("status", "promoted")
       .in("asset_type", assetTypes.length ? assetTypes : ["stock", "crypto"])
       .order("promoted_at", { ascending: false, nullsFirst: false })
       .limit(limit);
 
+    let { data, error } = await query(`${listSelect}, preview_images`);
+    if (error && /preview_images/.test(error.message)) ({ data, error } = await query(listSelect));
     if (error) throw error;
 
     const reports = (data ?? []).map((report: any) => {
@@ -88,6 +92,7 @@ Deno.serve(async (req) => {
         pages: includeFullReports && isAuthed ? pages : [],
         first_page_title: firstPage.title ?? "Executive Summary & Key Takeaways",
         first_page_html: isAuthed ? (firstPage.html ?? report.excerpt ?? "") : "",
+        preview_images: Array.isArray(report.preview_images) ? report.preview_images.slice(0, 3) : [],
       };
     });
 
