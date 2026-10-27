@@ -4653,6 +4653,8 @@ export type Database = {
           page_count: number
           pages: Json
           pdf_path: string | null
+          preview_images: Json
+          preview_images_at: string | null
           promoted_at: string | null
           promoted_by: string | null
           reading_time_minutes: number | null
@@ -4678,6 +4680,8 @@ export type Database = {
           page_count?: number
           pages?: Json
           pdf_path?: string | null
+          preview_images?: Json
+          preview_images_at?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           reading_time_minutes?: number | null
@@ -4703,6 +4707,8 @@ export type Database = {
           page_count?: number
           pages?: Json
           pdf_path?: string | null
+          preview_images?: Json
+          preview_images_at?: string | null
           promoted_at?: string | null
           promoted_by?: string | null
           reading_time_minutes?: number | null
