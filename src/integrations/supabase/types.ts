@@ -4196,6 +4196,45 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_addons: {
+        Row: {
+          addon: string
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          notes: string | null
+          reviews_included: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          addon: string
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          notes?: string | null
+          reviews_included?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          addon?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          notes?: string | null
+          reviews_included?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       etf_fund_analyses: {
         Row: {
           asset_class: string | null
@@ -7968,6 +8007,151 @@ export type Database = {
           },
         ]
       }
+      portfolio_review_drafts: {
+        Row: {
+          ai_draft: Json | null
+          analytics: Json | null
+          internal_notes: string | null
+          request_id: string
+          updated_at: string
+          updated_by: string | null
+          working: Json | null
+        }
+        Insert: {
+          ai_draft?: Json | null
+          analytics?: Json | null
+          internal_notes?: string | null
+          request_id: string
+          updated_at?: string
+          updated_by?: string | null
+          working?: Json | null
+        }
+        Update: {
+          ai_draft?: Json | null
+          analytics?: Json | null
+          internal_notes?: string | null
+          request_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          working?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_review_drafts_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "portfolio_review_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_review_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          request_id: string
+          sender_id: string
+          sender_role: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          request_id: string
+          sender_id?: string
+          sender_role: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          request_id?: string
+          sender_id?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_review_messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_review_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_review_requests: {
+        Row: {
+          analyst_name: string | null
+          assigned_to: string | null
+          base_currency: string
+          constraints: string | null
+          created_at: string
+          delivered_at: string | null
+          holdings: Json
+          id: string
+          income_need: string | null
+          objectives: string | null
+          review: Json | null
+          risk_profile: string | null
+          source_file_name: string | null
+          status: string
+          time_horizon: string | null
+          title: string
+          total_value: number | null
+          updated_at: string
+          user_feedback: string | null
+          user_id: string
+          user_rating: number | null
+        }
+        Insert: {
+          analyst_name?: string | null
+          assigned_to?: string | null
+          base_currency?: string
+          constraints?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          holdings?: Json
+          id?: string
+          income_need?: string | null
+          objectives?: string | null
+          review?: Json | null
+          risk_profile?: string | null
+          source_file_name?: string | null
+          status?: string
+          time_horizon?: string | null
+          title: string
+          total_value?: number | null
+          updated_at?: string
+          user_feedback?: string | null
+          user_id?: string
+          user_rating?: number | null
+        }
+        Update: {
+          analyst_name?: string | null
+          assigned_to?: string | null
+          base_currency?: string
+          constraints?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          holdings?: Json
+          id?: string
+          income_need?: string | null
+          objectives?: string | null
+          review?: Json | null
+          risk_profile?: string | null
+          source_file_name?: string | null
+          status?: string
+          time_horizon?: string | null
+          title?: string
+          total_value?: number | null
+          updated_at?: string
+          user_feedback?: string | null
+          user_id?: string
+          user_rating?: number | null
+        }
+        Relationships: []
+      }
       portfolio_watchlist: {
         Row: {
           affected_clients: number | null
@@ -10023,6 +10207,11 @@ export type Database = {
         Args: { cron_expr: string; tz?: string }
         Returns: string
       }
+      can_request_portfolio_review: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      cancel_portfolio_review: { Args: { _id: string }; Returns: boolean }
       check_api_permission: {
         Args: { _client_id: string; _endpoint: string }
         Returns: boolean
@@ -10046,6 +10235,10 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      has_addon: {
+        Args: { _addon: string; _user_id: string }
+        Returns: boolean
       }
       has_platform_access: {
         Args: { _platform: string; _user_id: string }
@@ -10121,6 +10314,10 @@ export type Database = {
       promote_realtime_alert: {
         Args: { _id: string; _platform?: string }
         Returns: Json
+      }
+      rate_portfolio_review: {
+        Args: { _feedback?: string; _id: string; _rating: number }
+        Returns: boolean
       }
       store_calendar_token: {
         Args: {
