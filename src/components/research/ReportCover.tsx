@@ -7,10 +7,16 @@ const PALETTES = [
   ["#1e293b", "#38bdf8"], ["#4c1d95", "#ec4899"], ["#064e3b", "#22c55e"], ["#0c4a6e", "#6366f1"],
 ];
 
-function hash(s: string) {
+export function hash(s: string) {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   return Math.abs(h);
+}
+
+/** Stable two-colour palette for a report (by ticker, else title). */
+export function coverPalette(key: string): [string, string] {
+  const [from, to] = PALETTES[hash(key) % PALETTES.length];
+  return [from, to];
 }
 
 export function scoreTone(score: number | null) {

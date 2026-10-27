@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
   TrendingUp,
   Coins,
@@ -26,7 +25,8 @@ import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
 import { ResearchReportReader } from "@/components/research/ResearchReportReader";
 import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
-import { LockedPagePreview, VaultPaywall, PreviewBar, type PreviewImage } from "@/components/research/ResearchPaywall";
+import { PaywallCardOverlay, PreviewBar, ReportPaywallDialog, VaultPaywall, type PreviewImage, type Viewer } from "@/components/research/ResearchPaywall";
+import { ReportFrontPage } from "@/components/research/ReportFrontPage";
 
 interface PublicResearchPreview {
   id: string;
@@ -44,6 +44,8 @@ interface PublicResearchPreview {
   created_at: string;
   first_page_title: string;
   first_page_html: string;
+  teaser?: string | null;
+  locked?: boolean;
   preview_images?: PreviewImage[];
 }
 
@@ -56,118 +58,83 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
   const navigate = useNavigate();
   const location = useLocation();
   const { user, loading: authLoading } = useAuth();
-  const isAuthed = !!user;
-  const hasAccess = platformAccess || isAuthed;
 
   const [reports, setReports] = useState<PublicResearchPreview[]>([]);
+  // Who may read full reports is decided by the server (admins and Investor subscribers).
+  const [viewer, setViewer] = useState<Viewer>({ signed_in: false, can_read: false });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"stock" | "crypto">(initialTab);
   const [authOpen, setAuthOpen] = useState(false);
   const [authRedirect, setAuthRedirect] = useState<string | undefined>();
   const [authReportTitle, setAuthReportTitle] = useState<string | undefined>();
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [readerOpen, setReaderOpen] = useState(false);
   const [readerReportId, setReaderReportId] = useState<string | null>(null);
-  const [pendingReportId, setPendingReportId] = useState<string | null>(null);
-  const [sessionAccess, setSessionAccess] = useState(false);
-  const hasReportAccess = hasAccess || sessionAccess;
+  const [paywallId, setPaywallId] = useState<string | null>(null);
+  const canRead = platformAccess || viewer.can_read;
+  const signedIn = viewer.signed_in || !!user;
 
-  useEffect(() => {
-    setTab(initialTab);
-  }, [initialTab]);
+  useEffect(() => { setTab(initialTab); }, [initialTab]);
 
+  // Reload whenever the signed-in user changes, so access follows the session.
   useEffect(() => {
     if (authLoading) return;
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    const asset = params.get("asset");
-    if (asset === "stock" || asset === "crypto") setTab(asset);
-    if (!id) return;
-    if (!hasReportAccess) {
-      setPendingReportId(id);
-      setReaderReportId(id);
-      setReaderOpen(false);
-      openAuth(`/research?id=${id}${asset ? `&asset=${asset}` : ""}`, undefined, "signin");
-      return;
-    }
-    setPendingReportId(null);
-    setReaderReportId(id);
-    setReaderOpen(true);
-  }, [authLoading, hasReportAccess, location.search]);
-
-  useEffect(() => {
-    if (authLoading || !hasReportAccess || !pendingReportId) return;
-    setReaderReportId(pendingReportId);
-    setReaderOpen(true);
-    setPendingReportId(null);
-  }, [authLoading, hasReportAccess, pendingReportId]);
-
-  useEffect(() => {
+    let live = true;
     (async () => {
-      if (authLoading && !platformAccess) return;
       setLoading(true);
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       const { data, error } = await supabase.functions.invoke("public-research-previews", {
-        body: { asset_types: ["stock", "crypto"], limit: 60 },
+        body: { asset_types: ["stock", "crypto"], limit: 120 },
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
-
+      if (!live) return;
       if (error) {
-        console.error("Error loading public research previews:", error);
+        console.error("Error loading research previews:", error);
         setReports([]);
       } else {
         setReports((data?.reports ?? []) as PublicResearchPreview[]);
+        setViewer((data?.viewer as Viewer) ?? { signed_in: !!accessToken, can_read: false });
       }
       setLoading(false);
     })();
-  }, [authLoading, hasAccess, platformAccess]);
+    return () => { live = false; };
+  }, [authLoading, user?.id]);
 
-  const filtered = useMemo(
-    () => reports.filter((r) => r.asset_type === tab),
-    [reports, tab]
-  );
+  // Deep link: /research?id=…&asset=… opens the report, or its paywall.
+  useEffect(() => {
+    if (loading) return;
+    const params = new URLSearchParams(location.search);
+    const asset = params.get("asset");
+    if (asset === "stock" || asset === "crypto") setTab(asset);
+    const id = params.get("id");
+    if (!id) return;
+    if (canRead) { setPaywallId(null); setReaderReportId(id); setReaderOpen(true); }
+    else if (reports.some((r) => r.id === id)) setPaywallId(id);
+  }, [loading, canRead, location.search, reports]);
 
-  const openAuth = (redirect?: string, title?: string, mode: "signin" | "signup" = "signup") => {
+  const filtered = useMemo(() => reports.filter((r) => r.asset_type === tab), [reports, tab]);
+  const paywallReport = useMemo(() => reports.find((r) => r.id === paywallId) ?? null, [reports, paywallId]);
+
+  const openAuth = (redirect?: string, title?: string, mode: "signin" | "signup" = "signin") => {
     setAuthRedirect(redirect);
     setAuthReportTitle(title);
     setAuthMode(mode);
     setAuthOpen(true);
   };
+  const subscribe = () => navigate("/pricing?from=research");
 
   const handleOpen = (r: PublicResearchPreview) => {
-    setReaderReportId(r.id);
-    if (hasReportAccess) {
-      setReaderOpen(true);
-    } else {
-      setPendingReportId(r.id);
-      setReaderOpen(false);
-      openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signup");
-    }
+    navigate(`/research?id=${r.id}&asset=${r.asset_type}`, { replace: true });
+    if (canRead) { setReaderReportId(r.id); setReaderOpen(true); }
+    else setPaywallId(r.id);
   };
 
-  const handleAuthenticated = () => {
-    setSessionAccess(true);
-    const params = new URLSearchParams(location.search);
-    const id = pendingReportId ?? readerReportId ?? params.get("id");
-    if (id) {
-      setReaderReportId(id);
-      setPendingReportId(id);
-      setReaderOpen(true);
-      if (!params.get("id")) {
-        const asset = activeReader?.asset_type ?? tab;
-        navigate(`/research?id=${id}&asset=${asset}`, { replace: true });
-      }
-    }
-  };
+  const closeOverlay = () => navigate("/research" + (tab ? `?asset=${tab}` : ""), { replace: true });
 
-  const activeReader = useMemo(
-    () => reports.find((r) => r.id === readerReportId) ?? null,
-    [reports, readerReportId]
-  );
-
-
-
+  // After signing in the list reloads; the deep-link effect then opens the
+  // report for subscribers or the paywall (with an upgrade offer) for others.
+  const handleAuthenticated = () => { setAuthOpen(false); };
 
   return (
     <div className="min-h-screen bg-white text-slate-900 selection:bg-amber-400/30">
@@ -190,7 +157,7 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
           </button>
           <HomepageNavLinks />
           <div className="flex items-center gap-2">
-            {hasReportAccess && (
+            {canRead && (
               <Button
                 variant="outline"
                 className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -199,13 +166,15 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                 <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
               </Button>
             )}
-            {!hasReportAccess && (
+            {!canRead && (
               <>
-                <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
-                  Sign in
-                </Button>
-                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={() => openAuth(undefined, undefined, "signup")}>
-                  Get access <ArrowRight className="ml-1.5 h-4 w-4" />
+                {!signedIn && (
+                  <Button variant="ghost" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100" onClick={() => openAuth(undefined, undefined, "signin")}>
+                    Sign in
+                  </Button>
+                )}
+                <Button className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 font-semibold" onClick={subscribe}>
+                  {signedIn ? "Upgrade" : "Subscribe"} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </>
             )}
@@ -278,20 +247,20 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
                       <ReportCard
                         key={r.id}
                         report={r}
-                        locked={!hasReportAccess}
-                        blurred={!hasReportAccess}
+                        locked={!canRead}
+                        signedIn={signedIn}
                         onOpen={() => handleOpen(r)}
-                        onSignIn={() => openAuth(`/research?id=${r.id}&asset=${r.asset_type}`, r.title, "signin")}
                       />
                     ))}
                   </div>
 
-                  {!hasReportAccess && (
+                  {!canRead && (
                     <VaultPaywall
                       assetLabel={t === "stock" ? "equity" : "digital asset"}
                       reportCount={filtered.length}
-                      sample={filtered.find((r) => r.preview_images?.length)}
-                      onSignUp={() => openAuth(undefined, undefined, "signup")}
+                      sample={[...filtered].sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0))[0]}
+                      signedIn={signedIn}
+                      onSubscribe={subscribe}
                       onSignIn={() => openAuth(undefined, undefined, "signin")}
                     />
                   )}
@@ -304,16 +273,24 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
         </Tabs>
       </section>
 
-      {!authLoading && !hasReportAccess && !authOpen && (
-        <PreviewBar onSignUp={() => openAuth(undefined, undefined, "signup")} onSignIn={() => openAuth(undefined, undefined, "signin")} />
+      {!authLoading && !loading && !canRead && !authOpen && !paywallId && (
+        <PreviewBar signedIn={signedIn} onSubscribe={subscribe} onSignIn={() => openAuth(undefined, undefined, "signin")} />
       )}
 
+      <ReportPaywallDialog
+        report={paywallReport}
+        viewer={{ signed_in: signedIn, can_read: canRead }}
+        open={!!paywallReport}
+        onOpenChange={(v) => { if (!v) { setPaywallId(null); closeOverlay(); } }}
+        onSignIn={() => openAuth(paywallReport ? `/research?id=${paywallReport.id}&asset=${paywallReport.asset_type}` : undefined, paywallReport?.title, "signin")}
+      />
+
       <ResearchReportReader
-        open={readerOpen}
-        onOpenChange={setReaderOpen}
+        open={readerOpen && canRead}
+        onOpenChange={(v) => { setReaderOpen(v); if (!v) closeOverlay(); }}
         reportId={readerReportId}
-        isAuthed={hasReportAccess}
-        onRequestAuth={() => openAuth(undefined, activeReader?.title, "signup")}
+        isAuthed={canRead}
+        onRequestAuth={subscribe}
       />
 
       <ResearchAuthDialog
@@ -332,109 +309,66 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
 function ReportCard({
   report,
   locked,
-  blurred,
+  signedIn,
   onOpen,
-  onSignIn,
 }: {
   report: PublicResearchPreview;
   locked: boolean;
-  blurred: boolean;
+  signedIn: boolean;
   onOpen: () => void;
-  onSignIn: () => void;
 }) {
-  const dateStr = format(new Date(report.report_date ?? report.promoted_at ?? report.created_at), "PP");
+  const dateStr = format(new Date(report.report_date ?? report.promoted_at ?? report.created_at), "d MMM yyyy");
   const isStock = report.asset_type === "stock";
   const score = typeof report.ai_score === "number" ? report.ai_score : null;
-
   const confidenceColor =
-    score !== null && score >= 4
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-      : score !== null && score >= 3
-      ? "bg-amber-50 text-amber-700 border-amber-200"
-      : score !== null
-      ? "bg-rose-50 text-rose-700 border-rose-200"
-      : "bg-slate-50 text-slate-600 border-slate-200";
-
-  const description = report.excerpt?.trim() || report.first_page_title || "Institutional-grade analyst research with conviction, risk, valuation and ESG scoring.";
+    score !== null && score >= 4 ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+    : score !== null && score >= 3 ? "bg-amber-50 text-amber-700 border-amber-200"
+    : score !== null ? "bg-rose-50 text-rose-700 border-rose-200"
+    : "bg-slate-50 text-slate-600 border-slate-200";
 
   return (
-    <HoverCard openDelay={150} closeDelay={80}>
-      <HoverCardTrigger asChild>
-        <Card
-          onClick={onOpen}
-          onMouseDown={(event) => locked && event.preventDefault()}
-          className={`group relative overflow-hidden cursor-pointer border-slate-200 bg-white shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] ${locked ? "select-none" : ""}`}
-        >
-          <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${isStock ? "from-transparent via-sky-400/60 to-transparent" : "from-transparent via-amber-400/60 to-transparent"} z-10`} />
-
-          {locked && (
-            <button
-              type="button"
-              aria-label={`Sign in or create account to read ${report.title}`}
-              className="absolute inset-0 z-30 cursor-pointer bg-transparent"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onOpen();
-              }}
-            />
-          )}
-
-          {locked ? (
-            <LockedPagePreview report={report} images={report.preview_images ?? []} onSignIn={onSignIn}>
-              <ReportPdfPagePreview report={report} blurred={blurred} />
-            </LockedPagePreview>
-          ) : (
-            /* Actual generated report PDF page, scaled down */
-            <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
-              <ReportPdfPagePreview report={report} blurred={blurred} />
-            </div>
-          )}
-
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${isStock ? "border-sky-200 bg-sky-50 text-sky-600" : "border-amber-200 bg-amber-50 text-amber-600"}`}>
-                  {isStock ? <TrendingUp className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-widest text-slate-400">
-                    {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
-                  </div>
-                  <h3 className="text-base font-semibold text-slate-900 truncate group-hover:text-amber-600 transition-colors">
-                    {report.title}
-                  </h3>
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
-                {score !== null ? `${score.toFixed(1)}/5 conviction` : "Research"}
-              </Badge>
-              <span className="text-[11px] text-slate-400">{dateStr}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </HoverCardTrigger>
-      <HoverCardContent side="top" align="center" className="w-80 border-slate-200 bg-white text-slate-700 shadow-xl">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            {isStock ? <TrendingUp className="h-3.5 w-3.5 text-sky-500" /> : <Coins className="h-3.5 w-3.5 text-amber-500" />}
-            <span className="text-[10px] uppercase tracking-widest text-slate-400">
-              {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
-            </span>
-          </div>
-          <h4 className="text-sm font-semibold text-slate-900 leading-snug">{report.title}</h4>
-          <p className="text-xs text-slate-600 leading-relaxed line-clamp-5">{description}</p>
-          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500">
-            <span>{score !== null ? `${score.toFixed(1)}/5 conviction` : "Analyst report"}</span>
-            <span>{dateStr}</span>
-          </div>
+    <Card
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
+      aria-label={locked ? `Preview ${report.title} (subscribers only)` : `Read ${report.title}`}
+      className="group relative cursor-pointer overflow-hidden border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_24px_60px_-20px_rgba(15,23,42,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+    >
+      {locked ? (
+        <div className="relative h-[340px] select-none overflow-hidden">
+          <ReportFrontPage report={report} size="card" className="h-full" blurFrom={22} />
+          <PaywallCardOverlay pages={report.page_count} signedIn={signedIn} />
         </div>
-      </HoverCardContent>
-    </HoverCard>
+      ) : (
+        /* Actual generated report page, scaled down */
+        <div className="relative h-80 overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 p-3">
+          <ReportPdfPagePreview report={report} />
+        </div>
+      )}
+
+      <CardContent className="p-5">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${isStock ? "border-sky-200 bg-sky-50 text-sky-600" : "border-amber-200 bg-amber-50 text-amber-600"}`}>
+              {isStock ? <TrendingUp className="h-4 w-4" /> : <Coins className="h-4 w-4" />}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-widest text-slate-400">
+                {report.asset_type}{report.ticker ? ` · ${report.ticker}` : ""}
+              </div>
+              <h3 className="truncate text-base font-semibold text-slate-900 transition-colors group-hover:text-amber-600">{report.title}</h3>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-amber-600" />
+        </div>
+        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+          <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
+            {score !== null ? `${score.toFixed(1)}/5 conviction` : "Research"}
+          </Badge>
+          <span className="text-[11px] text-slate-400">{dateStr}</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
-

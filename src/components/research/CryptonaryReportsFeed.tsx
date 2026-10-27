@@ -3,7 +3,7 @@ import DOMPurify from "dompurify";
 import {
   Loader2, Search, Clock, ArrowLeft, Download, Share2, Star, ChevronLeft, ChevronRight,
   Bookmark, BookmarkCheck, Sparkles, Flame, ArrowUpRight, ListOrdered,
-  LayoutGrid, Rows3, Printer, CheckCircle2, RefreshCw, X, FileText, Layers,
+  LayoutGrid, Rows3, Printer, CheckCircle2, RefreshCw, X, FileText, Layers, Lock,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,8 @@ import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ConvictionRing, ReportCover, scoreTone } from "@/components/research/ReportCover";
+import { ReportPaywallDialog } from "@/components/research/ResearchPaywall";
+import { useNavigate } from "react-router-dom";
 import {
   type ConvictionBand, type PromotedReport, convictionBand, isNew, loadBookmarks, loadReadIds, markRead,
   prefetchReport, reportDate, saveBookmarks, useFullReport, usePrefetchOtherDesk, useResearchList,
@@ -101,6 +103,8 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
   };
 
   const openReport = useCallback((r: PromotedReport) => {
+    // Without a subscription the report opens as a paywalled preview.
+    if (r.locked) { setPaywallId(r.id); return; }
     setActiveId(r.id);
     setUrlReport(r.id);
     markRead(r.id);
@@ -110,7 +114,18 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
 
   const closeReport = () => { setActiveId(null); setUrlReport(null); };
 
-  const hover = useCallback((r: PromotedReport) => { void prefetchReport(qc, r.id); }, [qc]);
+  const hover = useCallback((r: PromotedReport) => { if (!r.locked) void prefetchReport(qc, r.id); }, [qc]);
+  const navigate = useNavigate();
+  const [paywallId, setPaywallId] = useState<string | null>(null);
+  const locked = items.some((r) => r.locked);
+  const paywallReport = items.find((r) => r.id === paywallId) ?? null;
+
+  // A deep link to a report the viewer can't read becomes its paywall preview.
+  useEffect(() => {
+    if (!activeId) return;
+    const r = items.find((x) => x.id === activeId);
+    if (r?.locked) { setPaywallId(r.id); setActiveId(null); setUrlReport(null); }
+  }, [activeId, items]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleBookmark = (id: string) => {
     setBookmarks((prev) => {
@@ -341,6 +356,29 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
         </div>
       </div>
 
+      {locked && (
+        <div className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-sky-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-amber-500 text-slate-950"><Lock className="h-5 w-5" /></span>
+            <div>
+              <p className="font-semibold text-slate-900">Full dossiers are for FlowPulse Investor subscribers</p>
+              <p className="text-sm text-slate-600">Browse the archive and preview any report. Subscribe to read every {label.toLowerCase()} dossier in full and download PDFs.</p>
+            </div>
+          </div>
+          <Button onClick={() => navigate("/pricing?from=research")} className="shrink-0 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 font-semibold text-slate-950 hover:from-amber-300 hover:to-amber-400">
+            Subscribe <ArrowUpRight className="ml-1.5 h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      <ReportPaywallDialog
+        report={paywallReport as any}
+        viewer={{ signed_in: true, can_read: false }}
+        open={!!paywallReport}
+        onOpenChange={(v) => { if (!v) setPaywallId(null); }}
+        onSignIn={() => {}}
+      />
+
       {/* ============ CONTROL BAR ============ */}
       <div className="sticky top-0 z-20 -mx-1 space-y-3 border-b bg-background/85 px-1 py-3 backdrop-blur-xl">
         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
@@ -543,6 +581,7 @@ function BookmarkButton({ bookmarked, onBookmark, dark = false }: { bookmarked: 
 function Pills({ r, read }: { r: PromotedReport; read: boolean }) {
   return (
     <>
+      {r.locked && <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-950"><Lock className="h-3 w-3" /> Subscribers</span>}
       {isNew(r) && <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>}
       {read && <span className="inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white/80 backdrop-blur"><CheckCircle2 className="h-3 w-3" /> Read</span>}
     </>
@@ -562,7 +601,7 @@ function FeaturedCard({ report: r, onClick, onHover, onBookmark, bookmarked, rea
             <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{assetType === "crypto" ? "Digital asset" : "Equity"} · {shortDate(r)}</span>
           </div>
           <h2 className="text-2xl font-bold leading-[1.15] tracking-tight text-white transition group-hover:text-sky-200 lg:text-[2rem]">{r.title}</h2>
-          {r.excerpt && <p className="mt-4 line-clamp-3 text-[15px] leading-relaxed text-slate-300/90">{r.excerpt}</p>}
+          {(r.excerpt || r.teaser) && <p className="mt-4 line-clamp-3 text-[15px] leading-relaxed text-slate-300/90">{r.excerpt || r.teaser}</p>}
           <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-5 text-xs text-slate-400">
             <span className="font-semibold text-slate-200">{r.author_name ?? "FlowPulse Research"}</span>
             <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.reading_time_minutes ?? 6} min</span>
@@ -589,7 +628,7 @@ function GridCard({ report: r, onClick, onHover, onBookmark, bookmarked, read }:
         </div>
         <div className="flex flex-1 flex-col p-5">
           <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug transition group-hover:text-primary">{r.title}</h3>
-          {r.excerpt && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.excerpt}</p>}
+          {(r.excerpt || r.teaser) && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.excerpt || r.teaser}</p>}
           {(r.ai_tags ?? []).length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1">
               {(r.ai_tags ?? []).slice(0, 3).map((t) => <span key={t} className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{t}</span>)}
@@ -618,11 +657,12 @@ function ListRow({ report: r, onClick, onHover, onBookmark, bookmarked, read }: 
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
             {r.ticker && <span className="font-mono text-[11px] font-semibold text-muted-foreground">{r.ticker}</span>}
-            {isNew(r) && <span className="rounded-full bg-sky-500 px-1.5 text-[9px] font-bold uppercase text-white">New</span>}
+            {r.locked && <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-950"><Lock className="h-3 w-3" /> Subscribers</span>}
+      {isNew(r) && <span className="rounded-full bg-sky-500 px-1.5 text-[9px] font-bold uppercase text-white">New</span>}
             {read && <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" aria-label="Read" />}
           </div>
           <h3 className="line-clamp-1 text-sm font-semibold transition group-hover:text-primary">{r.title}</h3>
-          {r.excerpt && <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{r.excerpt}</p>}
+          {(r.excerpt || r.teaser) && <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{r.excerpt || r.teaser}</p>}
         </div>
         <div className="hidden shrink-0 text-right text-xs text-muted-foreground sm:block">
           <div className={`font-semibold ${tone.text.replace("300", "600")}`}>{typeof r.ai_score === "number" ? `${r.ai_score.toFixed(1)}/5` : "–"}</div>

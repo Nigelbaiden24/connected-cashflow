@@ -25,6 +25,11 @@ export interface PromotedReport {
   sources: Array<{ url: string; title?: string | null }> | null;
   promoted_at: string | null;
   created_at: string;
+  // Set for viewers without a subscription: no excerpt or pages, just a teaser.
+  locked?: boolean;
+  teaser?: string | null;
+  first_page_title?: string | null;
+  preview_images?: Array<{ page: number; width: number; height: number; data: string }>;
 }
 
 const LIST_LIMIT = 500;

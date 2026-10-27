@@ -8,16 +8,13 @@ import { Check, ArrowLeft, Shield, CreditCard, Lock, Globe, HeadphonesIcon, BarC
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ANNUAL_PRICE, MONTHLY_PRICE_MONTHLY, MONTHLY_PRICE_YEARLY_EQUIVALENT } from "@/lib/investorPlan";
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [billingAnnual, setBillingAnnual] = useState(true);
-
-  const ANNUAL_PRICE = 995;
-  const MONTHLY_PRICE_MONTHLY = Math.round((ANNUAL_PRICE / 12) * 1.2); // 20% more expensive for monthly
-  const MONTHLY_PRICE_YEARLY_EQUIVALENT = MONTHLY_PRICE_MONTHLY * 12;
 
   const handleCheckout = async () => {
     setLoading(true);
