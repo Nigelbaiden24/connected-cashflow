@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AppSearchOverlay } from "./mobile/AppSearch";
 import { PullToRefresh, useRememberAppPath } from "./native/NativeShell";
+import { MarketPulseSidebar, MarketTicker } from "@/components/market-pulse/MarketPulse";
 
 interface InvestorLayoutProps {
   children?: ReactNode;
@@ -60,9 +61,13 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
             <InvestorNotificationsDropdown variant="investor" className="text-foreground hover:bg-muted" />
           </div>
 
-          <main className="flex-1 sidebar-layout-main pb-20 md:pb-0">
-            <PullToRefresh>{(refreshKey) => <Fragment key={refreshKey}>{children || <Outlet />}</Fragment>}</PullToRefresh>
-          </main>
+          <div className="flex flex-1 min-w-0">
+            <main className="flex-1 min-w-0 sidebar-layout-main pb-20 md:pb-10">
+              <PullToRefresh>{(refreshKey) => <Fragment key={refreshKey}>{children || <Outlet />}</Fragment>}</PullToRefresh>
+            </main>
+            {!hideSidebar && <MarketPulseSidebar />}
+          </div>
+          <MarketTicker />
           <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}

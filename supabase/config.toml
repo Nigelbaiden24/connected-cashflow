@@ -207,3 +207,9 @@ verify_jwt = true
 
 [functions.public-research-previews]
 verify_jwt = false
+
+[functions.market-pulse-refresh]
+verify_jwt = false
+
+[functions.opportunity-reprice]
+verify_jwt = false
