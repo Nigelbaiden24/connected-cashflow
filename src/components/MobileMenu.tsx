@@ -115,6 +115,7 @@ const investorNavGroups: NavGroup[] = [
       { title: "Research Reports", url: "/investor/research", icon: FileText },
       { title: "Market Commentary", url: "/investor/commentary", icon: TrendingUp },
       { title: "AI Analyst", url: "/investor/ai-analyst", icon: MessageSquare },
+      { title: "Portfolio Review", url: "/investor/portfolio-review", icon: Briefcase },
     ],
   },
   {

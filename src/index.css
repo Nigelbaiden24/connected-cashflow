@@ -1629,3 +1629,18 @@ html.pwa-standalone #root {
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
 .native-app img { -webkit-user-drag: none; }
+
+/* Analyst portfolio review document (extends .report-article). */
+.pr-doc { background: #fff; }
+.pr-doc .pr-cover { background: #0f172a; color: #fff; border-radius: 12px; padding: 1.5rem 1.5rem 1.25rem; margin-bottom: 1.25rem; }
+.pr-doc .pr-brand { font-family: 'Inter', sans-serif; font-size: 0.68rem; letter-spacing: 0.14em; color: #c4b5fd; font-weight: 700; }
+.pr-doc .pr-title { color: #fff; margin: 0.5rem 0 0.75rem; font-size: 1.5rem; line-height: 1.25; }
+.pr-doc .pr-meta { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #cbd5e1; }
+.pr-doc .pr-bars-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem 1.5rem; margin: 0.75rem 0 1.5rem; }
+.pr-doc .pr-bars h4 { font-family: 'Inter', sans-serif; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin: 0 0 0.5rem; }
+.pr-doc .pr-bar-row { display: grid; grid-template-columns: minmax(0, 9rem) 1fr 3.25rem; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif; font-size: 0.82rem; margin: 0.25rem 0; }
+.pr-doc .pr-bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #334155; }
+.pr-doc .pr-bar-track { height: 0.55rem; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+.pr-doc .pr-bar-fill { display: block; height: 100%; background: #6d28d9; border-radius: 999px; }
+.pr-doc .pr-bar-value { text-align: right; color: #0f172a; font-variant-numeric: tabular-nums; }
+.pr-doc section, .pr-doc h3 { page-break-inside: avoid; }

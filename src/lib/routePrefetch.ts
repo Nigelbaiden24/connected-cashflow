@@ -56,6 +56,7 @@ const map: Record<string, Importer> = {
   "/investor/benchmarking": () => import("@/pages/investor/BenchmarkingTrends"),
   "/investor/screeners": () => import("@/pages/investor/ScreenersDiscovery"),
   "/investor/ai-analyst": () => import("@/pages/investor/AIAnalyst"),
+  "/investor/portfolio-review": () => import("@/pages/investor/PortfolioReview"),
   "/investor/learning": () => import("@/pages/investor/LearningHub"),
   "/investor/market-data": () => import("@/pages/investor/MarketDataHub"),
   "/investor/tools": () => import("@/pages/investor/ToolsCalculators"),

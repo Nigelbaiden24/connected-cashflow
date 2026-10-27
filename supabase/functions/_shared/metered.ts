@@ -33,7 +33,7 @@ export const BUDGETED_FUNCTIONS = new Set([
   "firecrawl-scrape", "generate-about-content", "generate-opportunity-thumbnail", "generate-research-report",
   "intel-ingest-firecrawl", "intel-validate", "investor-finder-scraper", "opportunity-research",
   "orchestrate-report", "research-report-generator", "run-data-pipeline", "run-research-scraper-schedules",
-  "stocks-crypto-elite-scan", "admin-agent",
+  "stocks-crypto-elite-scan", "admin-agent", "portfolio-review-ai",
 ]);
 
 let client: SupabaseClient | null = null;

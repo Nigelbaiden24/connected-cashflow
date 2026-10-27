@@ -46,6 +46,7 @@ import { StockReportScraper } from "@/components/admin/StockReportScraper";
 import { CryptoReportScraper } from "@/components/admin/CryptoReportScraper";
 import { PipelineDashboard } from "@/components/admin/PipelineDashboard";
 import { AiUsagePanel } from "@/components/admin/AiUsagePanel";
+import { PortfolioReviewsPanel } from "@/components/admin/PortfolioReviewsPanel";
 import { AdminAgent } from "@/components/admin/AdminAgent";
 import { DMFinderPanel } from "@/components/admin/DMFinderPanel";
 import { CompanyFinderPanel } from "@/components/admin/CompanyFinderPanel";
@@ -912,6 +913,7 @@ export default function AdminDashboard() {
 
           {activeTab === 'saved-scrapes' && <SavedScrapes />}
           {activeTab === 'ai-usage' && <AiUsagePanel />}
+          {activeTab === 'portfolio-reviews' && <PortfolioReviewsPanel />}
           {activeTab === 'data-pipeline' && <PipelineDashboard />}
           {activeTab === 'stock-report-scraper' && <StockReportScraper />}
           {activeTab === 'crypto-report-scraper' && <CryptoReportScraper />}

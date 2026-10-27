@@ -46,6 +46,7 @@ const ModelPortfolios = lazy(() => import("./pages/investor/ModelPortfolios"));
 const SignalsAlerts = lazy(() => import("./pages/investor/SignalsAlerts"));
 const Newsletters = lazy(() => import("./pages/investor/Newsletters"));
 const BenchmarkingTrends = lazy(() => import("./pages/investor/BenchmarkingTrends"));
+const PortfolioReview = lazy(() => import("./pages/investor/PortfolioReview"));
 const ScreenersDiscovery = lazy(() => import("./pages/investor/ScreenersDiscovery"));
 const AIAnalyst = lazy(() => import("./pages/investor/AIAnalyst"));
 const LearningHub = lazy(() => import("./pages/investor/LearningHub"));
@@ -378,6 +379,7 @@ const App = () => {
                 <Route path="/investor/alerts" element={<Suspense fallback={<PageLoader />}><SignalsAlerts /></Suspense>} />
                 <Route path="/investor/newsletters" element={<Suspense fallback={<PageLoader />}><Newsletters /></Suspense>} />
                 <Route path="/investor/trends" element={<Suspense fallback={<PageLoader />}><BenchmarkingTrends /></Suspense>} />
+                <Route path="/investor/portfolio-review" element={<Suspense fallback={<PageLoader />}><PortfolioReview /></Suspense>} />
                 <Route path="/investor/screeners" element={<Suspense fallback={<PageLoader />}><ScreenersDiscovery /></Suspense>} />
                 <Route path="/investor/ai-analyst" element={<Suspense fallback={<PageLoader />}><AIAnalyst /></Suspense>} />
                 <Route path="/investor/learning" element={<Suspense fallback={<PageLoader />}><LearningHub /></Suspense>} />

@@ -26,6 +26,7 @@ const PAGES: Record<Area, { title: string; path: string; keywords: string }[]> =
     { title: "Watchlists", path: "/investor/watchlists", keywords: "follow track" },
     { title: "Alerts", path: "/investor/alerts", keywords: "notifications signals" },
     { title: "AI Analyst", path: "/investor/ai-analyst", keywords: "chat assistant ask" },
+    { title: "Analyst portfolio review", path: "/investor/portfolio-review", keywords: "upload holdings bespoke enterprise analysis" },
     { title: "Fund database", path: "/investor/fund-database", keywords: "etf funds" },
     { title: "Screeners", path: "/investor/screeners", keywords: "filter screen" },
     { title: "Deal flow", path: "/investor/deal-flow", keywords: "funding rounds startups" },

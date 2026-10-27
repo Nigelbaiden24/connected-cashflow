@@ -31,6 +31,9 @@ export const adminNavItems: AdminNavItem[] = [
   { id: "crypto-report-scraper", label: "Crypto Report Scraper", icon: Zap, gradient: "from-orange-500 to-yellow-600", platforms: ["finance", "investor"] },
   { id: "settings", label: "Settings", icon: Settings, gradient: "from-slate-500 to-slate-700", platforms: ["finance", "investor"] },
 
+  // ── FlowPulse Investor ────────────────────────────────────────────────
+  { id: "portfolio-reviews", label: "Portfolio Reviews", icon: Briefcase, gradient: "from-violet-500 to-fuchsia-600", platforms: ["investor"] },
+
   // ── FlowPulse Finance ─────────────────────────────────────────────────
   { id: "featured-picks", label: "Featured Picks", icon: Star, gradient: "from-amber-500 to-orange-600", platforms: ["finance"] },
   { id: "reports", label: "Manual Reports", icon: FileText, gradient: "from-indigo-500 to-indigo-600", platforms: ["finance"] },
