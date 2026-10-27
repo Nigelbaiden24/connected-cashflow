@@ -6,6 +6,8 @@ import { OpportunityPrice, money, priceInfo } from "@/components/opportunities/O
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
   Lock,
@@ -19,6 +21,9 @@ import {
   TrendingUp,
   MapPin,
   Building2,
+  Search,
+  X,
+  SlidersHorizontal,
 } from "lucide-react";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
@@ -75,6 +80,44 @@ const CATEGORY_LABEL: Record<string, string> = {
   vehicles: "Vehicles",
 };
 
+// The 23 Live Deal Alert categories, always offered as filters.
+const LIVE_CATEGORIES = [
+  "real_estate", "land", "rent_to_rent", "rent_to_sa", "commodities", "alternatives", "esg", "fractional_pe_vc",
+  "private_market_platforms", "capital_protected_notes", "thematics_packaged", "copy_trading", "royalties", "businesses",
+  "mini_bonds", "timepieces", "fine_wine", "art", "collectibles", "luxury_assets", "entertainment_finance",
+  "insurance_investments", "sports_investments",
+];
+
+// Older category keys still on some deals, shown under the matching live category.
+const LEGACY_CATEGORY: Record<string, string> = {
+  overseas_property: "real_estate", uk_property: "real_estate", music_royalties: "royalties",
+  collectibles_luxury: "collectibles", vehicles: "luxury_assets", private_equity: "fractional_pe_vc",
+  private_business: "businesses", memorabilia: "collectibles", funds: "alternatives",
+};
+const categoryOf = (c: string | null) => (c ? LEGACY_CATEGORY[c] ?? c : "alternatives");
+
+const REGIONS: Array<{ key: string; label: string; re: RegExp }> = [
+  { key: "uk", label: "United Kingdom", re: /\b(uk|united kingdom|england|scotland|wales|london|manchester|birmingham|leeds|bristol|edinburgh|glasgow)\b/i },
+  { key: "europe", label: "Europe", re: /\b(europe|eu|spain|portugal|france|germany|italy|greece|netherlands|ireland|switzerland|lisbon|madrid|marbella|paris|berlin|athens|cyprus|malta|poland|sweden|norway|denmark)\b/i },
+  { key: "na", label: "North America", re: /\b(usa|us|united states|america|canada|new york|florida|texas|california|toronto)\b/i },
+  { key: "me", label: "Middle East", re: /\b(uae|dubai|abu dhabi|saudi|qatar|israel|bahrain|oman|middle east)\b/i },
+  { key: "africa", label: "Africa", re: /\b(africa|nigeria|kenya|ghana|egypt|morocco|tanzania|rwanda|lagos|nairobi|cape town)\b/i },
+  { key: "apac", label: "Asia-Pacific", re: /\b(asia|japan|singapore|hong kong|china|australia|india|thailand|vietnam|indonesia|philippines|malaysia|bali)\b/i },
+  { key: "latam", label: "Latin America", re: /\b(latin america|brazil|mexico|colombia|chile|argentina|peru|costa rica)\b/i },
+];
+const regionOf = (o: { location: string | null; country: string | null; geography: string | null }) => {
+  const text = [o.location, o.country, o.geography].filter(Boolean).join(" ");
+  return REGIONS.find((r) => r.re.test(text))?.key ?? "global";
+};
+
+const PRICE_BANDS: Array<{ key: string; label: string; min: number; max: number }> = [
+  { key: "lt10k", label: "Under £10k", min: 0, max: 10_000 },
+  { key: "10k-100k", label: "£10k – £100k", min: 10_000, max: 100_000 },
+  { key: "100k-1m", label: "£100k – £1m", min: 100_000, max: 1_000_000 },
+  { key: "1m-10m", label: "£1m – £10m", min: 1_000_000, max: 10_000_000 },
+  { key: "gt10m", label: "£10m+", min: 10_000_000, max: Infinity },
+];
+
 export default function PublicOpportunities() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -83,6 +126,13 @@ export default function PublicOpportunities() {
   const [items, setItems] = useState<OpportunityPreview[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [subCategory, setSubCategory] = useState<string>("all");
+  const [query, setQuery] = useState("");
+  const [region, setRegion] = useState("all");
+  const [priceBand, setPriceBand] = useState("all");
+  const [priceType, setPriceType] = useState<"all" | "listed">("all");
+  const [conviction, setConviction] = useState("all");
+  const [sort, setSort] = useState("newest");
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
   const [authTitle, setAuthTitle] = useState<string | undefined>();
@@ -98,7 +148,7 @@ export default function PublicOpportunities() {
         .eq("status", "active")
         .order("featured", { ascending: false })
         .order("created_at", { ascending: false })
-        .limit(60);
+        .limit(500);
       if (error) {
         console.error("Failed to load opportunities", error);
         setItems([]);
@@ -109,16 +159,44 @@ export default function PublicOpportunities() {
     })();
   }, []);
 
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    items.forEach((i) => i.category && set.add(i.category));
-    return ["all", ...Array.from(set)];
+  const counts = useMemo(() => {
+    const m: Record<string, number> = {};
+    items.forEach((i) => { const c = categoryOf(i.category); m[c] = (m[c] ?? 0) + 1; });
+    return m;
   }, [items]);
 
-  const filtered = useMemo(
-    () => (activeCategory === "all" ? items : items.filter((i) => i.category === activeCategory)),
-    [items, activeCategory]
-  );
+  const subCategories = useMemo(() => {
+    if (activeCategory === "all") return [];
+    const m = new Map<string, number>();
+    items.filter((i) => categoryOf(i.category) === activeCategory && i.sub_category && i.sub_category !== "General")
+      .forEach((i) => m.set(i.sub_category!, (m.get(i.sub_category!) ?? 0) + 1));
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [items, activeCategory]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const band = PRICE_BANDS.find((b) => b.key === priceBand);
+    const list = items.filter((i) => {
+      if (activeCategory !== "all" && categoryOf(i.category) !== activeCategory) return false;
+      if (subCategory !== "all" && i.sub_category !== subCategory) return false;
+      if (region !== "all" && regionOf(i) !== region) return false;
+      if (band && !(i.price != null && i.price >= band.min && i.price < band.max)) return false;
+      if (priceType === "listed" && priceInfo(i).source !== "listed") return false;
+      if (conviction !== "all" && !((i.overall_conviction_score ?? 0) >= Number(conviction))) return false;
+      if (q && ![i.title, i.short_description, i.location, i.country, i.sub_category].some((v) => v?.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    const by = (f: (x: OpportunityPreview) => number) => (a: OpportunityPreview, b: OpportunityPreview) => f(a) - f(b);
+    if (sort === "price_low") list.sort(by((x) => x.price ?? Infinity));
+    if (sort === "price_high") list.sort(by((x) => -(x.price ?? -1)));
+    if (sort === "conviction") list.sort(by((x) => -(x.overall_conviction_score ?? 0)));
+    return list;
+  }, [items, activeCategory, subCategory, region, priceBand, priceType, conviction, query, sort]);
+
+  const filtersOn = !!query.trim() || region !== "all" || priceBand !== "all" || priceType !== "all" || conviction !== "all" || subCategory !== "all";
+  const clearFilters = () => { setQuery(""); setRegion("all"); setPriceBand("all"); setPriceType("all"); setConviction("all"); setSubCategory("all"); };
+  const pickCategory = (c: string) => { setActiveCategory(c); setSubCategory("all"); };
+  const activeLabel = activeCategory === "all" ? "" : CATEGORY_LABEL[activeCategory] ?? activeCategory;
 
   const openAuth = (mode: "signin" | "signup", title?: string) => {
     setAuthMode(mode);
@@ -145,7 +223,7 @@ export default function PublicOpportunities() {
           <button onClick={() => navigate("/")} className="flex items-center gap-2.5">
             <img src={flowpulseLogo} alt="FlowPulse" className="h-8" />
             <span className="font-semibold tracking-tight text-slate-900">FlowPulse</span>
-            <Badge variant="outline" className="ml-2 border-slate-200 text-[10px] uppercase tracking-widest text-slate-500">
+            <Badge variant="outline" className="ml-2 hidden border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 sm:inline-flex">
               Intelligence
             </Badge>
           </button>
@@ -199,21 +277,89 @@ export default function PublicOpportunities() {
 
       {/* Filters + Grid */}
       <section className="container mx-auto px-4 pb-24">
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setActiveCategory(c)}
-              className={`px-4 py-2 rounded-full text-xs font-medium tracking-wide border transition-all ${
-                activeCategory === c
-                  ? "bg-slate-900 text-white border-slate-900"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900"
-              }`}
-            >
-              {c === "all" ? "All" : CATEGORY_LABEL[c] ?? c}
-            </button>
-          ))}
+        {/* Categories: all 23, always available */}
+        <div className="mb-5 -mx-4 overflow-x-auto px-4 pb-2">
+          <div className="flex w-max gap-2 md:w-auto md:flex-wrap md:justify-center">
+            {["all", ...LIVE_CATEGORIES].map((c) => {
+              const n = c === "all" ? items.length : counts[c] ?? 0;
+              const on = activeCategory === c;
+              return (
+                <button key={c} onClick={() => pickCategory(c)}
+                  className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-medium transition-all ${
+                    on ? "border-slate-900 bg-slate-900 text-white" : n ? "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:text-slate-900" : "border-dashed border-slate-200 bg-white/60 text-slate-400 hover:text-slate-600"}`}>
+                  {c === "all" ? "All categories" : CATEGORY_LABEL[c] ?? c}
+                  <span className={`rounded-full px-1.5 text-[10px] ${on ? "bg-white/20" : "bg-slate-100 text-slate-500"}`}>{n}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Filter bar */}
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-sm backdrop-blur">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-[1.4fr_repeat(5,minmax(0,1fr))]">
+            <div className="relative col-span-2 md:col-span-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search deals, places…" className="h-10 rounded-xl border-slate-200 pl-9" />
+            </div>
+            <Select value={region} onValueChange={setRegion}>
+              <SelectTrigger className="h-10 rounded-xl border-slate-200"><SelectValue placeholder="Region" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All regions</SelectItem>
+                {REGIONS.map((r) => <SelectItem key={r.key} value={r.key}>{r.label}</SelectItem>)}
+                <SelectItem value="global">Global / other</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={priceBand} onValueChange={setPriceBand}>
+              <SelectTrigger className="h-10 rounded-xl border-slate-200"><SelectValue placeholder="Price" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any price</SelectItem>
+                {PRICE_BANDS.map((b) => <SelectItem key={b.key} value={b.key}>{b.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={priceType} onValueChange={(v) => setPriceType(v as "all" | "listed")}>
+              <SelectTrigger className="h-10 rounded-xl border-slate-200"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All price types</SelectItem>
+                <SelectItem value="listed">Listed prices only</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={conviction} onValueChange={setConviction}>
+              <SelectTrigger className="h-10 rounded-xl border-slate-200"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any conviction</SelectItem>
+                <SelectItem value="4">4.0+ high conviction</SelectItem>
+                <SelectItem value="3">3.0+ and above</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger className="h-10 rounded-xl border-slate-200"><SlidersHorizontal className="mr-1 h-3.5 w-3.5 text-slate-400" /><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="price_low">Price: low to high</SelectItem>
+                <SelectItem value="price_high">Price: high to low</SelectItem>
+                <SelectItem value="conviction">Highest conviction</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {subCategories.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+              {[["all", 0] as [string, number], ...subCategories].map(([sc, n]) => (
+                <button key={sc} onClick={() => setSubCategory(sc)}
+                  className={`rounded-full px-3 py-1 text-[11px] font-medium transition ${subCategory === sc ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                  {sc === "all" ? `All ${activeLabel.toLowerCase()}` : `${sc} · ${n}`}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {!loading && (
+          <div className="mb-6 flex items-center justify-between text-sm text-slate-500">
+            <span><span className="font-semibold text-slate-900">{filtered.length}</span> {filtered.length === 1 ? "opportunity" : "opportunities"}{activeLabel ? ` in ${activeLabel}` : ""}</span>
+            {filtersOn && <button onClick={clearFilters} className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:underline"><X className="h-3.5 w-3.5" /> Clear filters</button>}
+          </div>
+        )}
 
         {loading || authLoading ? (
           <div className="flex items-center justify-center py-24">
@@ -223,7 +369,20 @@ export default function PublicOpportunities() {
           <Card className="border-slate-200 bg-slate-50">
             <CardContent className="py-20 text-center">
               <Building2 className="h-12 w-12 mx-auto text-slate-400 mb-3" />
-              <p className="text-slate-500">No opportunities published yet.</p>
+              {filtersOn ? (
+                <>
+                  <p className="font-medium text-slate-700">No deals match these filters.</p>
+                  <Button variant="outline" className="mt-4" onClick={clearFilters}>Clear filters</Button>
+                </>
+              ) : activeLabel ? (
+                <>
+                  <p className="font-medium text-slate-700">No live {activeLabel.toLowerCase()} deals right now.</p>
+                  <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">New {activeLabel.toLowerCase()} opportunities appear here as soon as the analyst desk publishes them.</p>
+                  <Button variant="outline" className="mt-5" onClick={() => pickCategory("all")}>Browse all categories</Button>
+                </>
+              ) : (
+                <p className="text-slate-500">No opportunities published yet.</p>
+              )}
             </CardContent>
           </Card>
         ) : (
