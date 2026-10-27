@@ -48,9 +48,12 @@ export default function ResearchReports({ lockAssetType, title, description }: R
   const [sortBy, setSortBy] = useState<string>('generated_at');
   const [viewMode, setViewMode] = useState<string>('grid');
 
+  // On the Stock/Crypto desks the quant models sit behind a tab: load them only when opened.
+  const [deskTab, setDeskTab] = useState<string>('analyst');
+  const needQuant = !(lockAssetType === 'stock' || lockAssetType === 'crypto') || deskTab === 'quant';
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
+    if (needQuant) fetchReports();
+  }, [fetchReports, needQuant]);
 
 
   const filteredReports = reports
@@ -246,7 +249,7 @@ export default function ResearchReports({ lockAssetType, title, description }: R
 
           if (lockAssetType === 'stock' || lockAssetType === 'crypto') {
             return (
-              <Tabs defaultValue="analyst" className="w-full">
+              <Tabs value={deskTab} onValueChange={setDeskTab} className="w-full">
                 <TabsList>
                   <TabsTrigger value="analyst">Analyst Reports</TabsTrigger>
                   <TabsTrigger value="quant">Quant Models</TabsTrigger>

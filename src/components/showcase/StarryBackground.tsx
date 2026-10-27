@@ -37,9 +37,11 @@ export function StarryBackground({ children, className }: StarryBackgroundProps)
 
     let stars: Star[] = [];
 
+    // The canvas is pinned to the viewport (sticky), so it never grows with the page.
     const resize = () => {
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      if (!rect) return;
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      if (Math.round(rect.width) === Math.round(width) && Math.round(rect.height) === Math.round(height)) return;
       width = rect.width;
       height = rect.height;
       canvas.width = width * window.devicePixelRatio;
@@ -51,7 +53,7 @@ export function StarryBackground({ children, className }: StarryBackgroundProps)
     };
 
     const initStars = () => {
-      const count = Math.floor((width * height) / 2800);
+      const count = Math.min(320, Math.floor((width * height) / 4000));
       stars = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -63,7 +65,17 @@ export function StarryBackground({ children, className }: StarryBackgroundProps)
       }));
     };
 
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Only animate when it can be seen: dark mode, tab visible, motion allowed.
+    const visible = () => !reducedMotion && document.visibilityState === "visible" &&
+      document.documentElement.classList.contains("dark");
+    let last = 0;
+
     const draw = (time: number) => {
+      if (!visible()) { running = false; return; }
+      animRef.current = requestAnimationFrame(draw);
+      if (time - last < 33) return; // ~30 fps is plenty for a backdrop
+      last = time;
       ctx.clearRect(0, 0, width, height);
 
       for (const star of stars) {
@@ -88,30 +100,38 @@ export function StarryBackground({ children, className }: StarryBackgroundProps)
           ctx.fill();
         }
       }
+    };
 
+    let running = false;
+    const start = () => {
+      if (running || !visible()) return;
+      resize();
+      running = true;
       animRef.current = requestAnimationFrame(draw);
     };
 
     resize();
-    animRef.current = requestAnimationFrame(draw);
+    start();
 
-    const ro = new ResizeObserver(resize);
-    if (canvas.parentElement) ro.observe(canvas.parentElement);
+    window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", start);
+    const mo = new MutationObserver(start);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
     return () => {
       cancelAnimationFrame(animRef.current);
-      ro.disconnect();
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", start);
+      mo.disconnect();
     };
   }, []);
 
   return (
     <div className={cn("relative overflow-hidden rounded-xl", className)}>
       {/* Canvas – only visible in dark mode */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 z-0 pointer-events-none dark:block hidden"
-        aria-hidden
-      />
+      <div className="absolute inset-0 z-0 pointer-events-none dark:block hidden" aria-hidden>
+        <canvas ref={canvasRef} className="sticky top-0 h-screen w-full" />
+      </div>
       {/* Deep-black gradient overlay for dark mode */}
       <div className="absolute inset-0 z-[1] pointer-events-none hidden dark:block bg-gradient-to-b from-transparent via-transparent to-background/60" />
       {/* Content */}

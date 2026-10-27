@@ -1,183 +1,183 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DOMPurify from "dompurify";
 import {
   Loader2, Search, Clock, ArrowLeft, Download, Share2, Star, ChevronLeft, ChevronRight,
-  TrendingUp, Bookmark, BookmarkCheck, Eye, Sparkles, Flame, ArrowUpRight, ListOrdered,
-  Filter as FilterIcon, LayoutGrid, Rows3, Printer
+  Bookmark, BookmarkCheck, Sparkles, Flame, ArrowUpRight, ListOrdered,
+  LayoutGrid, Rows3, Printer, CheckCircle2, RefreshCw, X, FileText, Layers,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
-
-interface PromotedReport {
-  id: string;
-  asset_type: "stock" | "crypto";
-  title: string;
-  slug: string;
-  ticker: string | null;
-  excerpt: string | null;
-  hero_image_url: string | null;
-  html_content: string;
-  pages: Array<{ title: string; html: string }> | null;
-  page_count: number | null;
-  report_date: string | null;
-  ai_score: number | null;
-  ai_tags: string[] | null;
-  reading_time_minutes: number | null;
-  author_name: string | null;
-  sources: Array<{ url: string; title?: string | null }> | null;
-  promoted_at: string | null;
-  created_at: string;
-}
+import { ConvictionRing, ReportCover, scoreTone } from "@/components/research/ReportCover";
+import {
+  type ConvictionBand, type PromotedReport, convictionBand, isNew, loadBookmarks, loadReadIds, markRead,
+  prefetchReport, reportDate, saveBookmarks, useFullReport, usePrefetchOtherDesk, useResearchList,
+} from "@/lib/researchFeed";
 
 interface Props {
   assetType: "stock" | "crypto";
 }
 
-const BOOKMARK_KEY = "flowpulse_research_bookmarks";
-const fallbackImg = (i = 0) =>
-  [
-    "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&q=80",
-    "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1600&q=80",
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80",
-    "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=1600&q=80",
-    "https://images.unsplash.com/photo-1642790551116-18e150f248e3?w=1600&q=80",
-  ][i % 5];
+type Period = "all" | "7" | "30" | "90";
+const PAGE_SIZE = 24;
+
+const BAND_LABEL: Record<ConvictionBand | "all", string> = {
+  all: "All", high: "High ≥4", medium: "Moderate 3–4", low: "Low <3", unrated: "Unrated",
+};
+
+function Segmented<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: Array<{ value: T; label: string }> }) {
+  return (
+    <div className="inline-flex shrink-0 rounded-xl border bg-muted/40 p-1">
+      {options.map((o) => (
+        <button key={o.value} onClick={() => onChange(o.value)}
+          className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition ${value === o.value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function CryptonaryReportsFeed({ assetType }: Props) {
-  const [items, setItems] = useState<PromotedReport[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [active, setActive] = useState<PromotedReport | null>(null);
-  const [sort, setSort] = useState<"recent" | "score" | "az">("recent");
-  const [tagFilter, setTagFilter] = useState<string>("all");
-  const [layout, setLayout] = useState<"grid" | "list">("grid");
-  const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const qc = useQueryClient();
+  const { data: items = [], isLoading, isFetching, error, refetch, dataUpdatedAt } = useResearchList(assetType);
+  const prefetchOther = usePrefetchOtherDesk(assetType);
 
+  const [activeId, setActiveId] = useState<string | null>(() => new URLSearchParams(window.location.search).get("report"));
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"recent" | "score" | "az">("recent");
+  const [band, setBand] = useState<ConvictionBand | "all">("all");
+  const [period, setPeriod] = useState<Period>("all");
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [tagFilter, setTagFilter] = useState<string>("all");
+  const [layout, setLayout] = useState<"grid" | "list">(() => (localStorage.getItem("fp_research_layout") === "list" ? "list" : "grid"));
+  const [bookmarks, setBookmarks] = useState<string[]>(loadBookmarks);
+  const [readIds, setReadIds] = useState<string[]>(loadReadIds);
+  const [shown, setShown] = useState(PAGE_SIZE);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  // Warm the other desk once this one has painted.
   useEffect(() => {
-    try { setBookmarks(JSON.parse(localStorage.getItem(BOOKMARK_KEY) || "[]")); } catch { /* noop */ }
+    if (!isLoading) { const t = setTimeout(prefetchOther, 1500); return () => clearTimeout(t); }
+  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => { if (error) toast.error((error as Error).message || "Couldn't refresh reports"); }, [error]);
+
+  // "/" focuses search, Esc clears it.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = /input|textarea|select/i.test((e.target as HTMLElement)?.tagName ?? "");
+      if (e.key === "/" && !typing && !activeId) { e.preventDefault(); searchRef.current?.focus(); }
+      if (e.key === "Escape" && document.activeElement === searchRef.current) setQuery("");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeId]);
+
+  const listed = items.find((r) => r.id === activeId) ?? null;
+  const full = useFullReport(activeId);
+  const active: PromotedReport | null = useMemo(() => {
+    if (!activeId) return null;
+    const f = full.data ?? {};
+    if (!listed && !full.data) return null;
+    return {
+      ...(listed ?? ({} as PromotedReport)),
+      ...Object.fromEntries(Object.entries(f).filter(([, v]) => v !== null && v !== undefined)),
+      id: activeId,
+    } as PromotedReport;
+  }, [activeId, listed, full.data]);
+
+  const setUrlReport = (id: string | null) => {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("report", id); else url.searchParams.delete("report");
+    window.history.replaceState(window.history.state, "", url.toString());
+  };
+
+  const openReport = useCallback((r: PromotedReport) => {
+    setActiveId(r.id);
+    setUrlReport(r.id);
+    markRead(r.id);
+    setReadIds(loadReadIds());
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
   }, []);
 
-  const scrollTop = () => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        try {
-          window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-          document.documentElement.scrollTop = 0;
-          document.body.scrollTop = 0;
-        } catch { /* noop */ }
-      });
-    });
-  };
+  const closeReport = () => { setActiveId(null); setUrlReport(null); };
 
-  useEffect(() => {
-    if (active) scrollTop();
-  }, [active?.id]);
-
-  const openReport = async (r: PromotedReport) => {
-    // Open immediately with whatever we have so the UI is snappy
-    setActive(r);
-    scrollTop();
-    // Lazy-load full content only when we don't already have it
-    if (!r.pages?.length && !r.html_content) {
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const accessToken = sessionData.session?.access_token;
-        const { data, error } = await supabase.functions.invoke("public-research-previews", {
-          body: { report_id: r.id },
-          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        });
-        if (error) throw error;
-        const full = data?.report;
-        if (full) {
-          const merged: PromotedReport = {
-            ...r,
-            pages: Array.isArray(full.pages) ? full.pages : r.pages,
-            html_content: full.html_content ?? r.html_content,
-            author_name: full.author_name ?? r.author_name,
-            report_date: full.report_date ?? r.report_date,
-            ai_score: full.ai_score ?? r.ai_score,
-            ticker: full.ticker ?? r.ticker,
-            title: full.title ?? r.title,
-          };
-          setItems((prev) => prev.map((x) => (x.id === r.id ? merged : x)));
-          setActive((curr) => (curr?.id === r.id ? merged : curr));
-        }
-      } catch (e: any) {
-        toast.error(e?.message ?? "Failed to load report");
-      }
-    }
-  };
+  const hover = useCallback((r: PromotedReport) => { void prefetchReport(qc, r.id); }, [qc]);
 
   const toggleBookmark = (id: string) => {
     setBookmarks((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      localStorage.setItem(BOOKMARK_KEY, JSON.stringify(next));
+      saveBookmarks(next);
       return next;
     });
   };
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      setLoading(true);
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-      // Lightweight list fetch — full report HTML/pages are loaded on click
-      const { data, error } = await supabase.functions.invoke("public-research-previews", {
-        body: { asset_types: [assetType], limit: 60 },
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-      });
-      if (!mounted) return;
-      if (error) toast.error(error.message);
-      setItems(((data?.reports ?? []) as PromotedReport[]).filter((report) => report.asset_type === assetType));
-      setLoading(false);
-    })();
-    return () => { mounted = false; };
-  }, [assetType]);
-
   const allTags = useMemo(() => {
     const m = new Map<string, number>();
     items.forEach((r) => (r.ai_tags ?? []).forEach((t) => m.set(t, (m.get(t) ?? 0) + 1)));
-    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 12);
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 14);
   }, [items]);
 
   const filtered = useMemo(() => {
-    let list = items;
-    if (tagFilter !== "all") list = list.filter((r) => (r.ai_tags ?? []).includes(tagFilter));
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter((r) =>
-        r.title.toLowerCase().includes(q) ||
-        (r.ticker ?? "").toLowerCase().includes(q) ||
-        (r.excerpt ?? "").toLowerCase().includes(q) ||
-        (r.ai_tags ?? []).some((t) => t.toLowerCase().includes(q))
-      );
-    }
-    list = [...list].sort((a, b) => {
-      if (sort === "score") return (b.ai_score ?? 0) - (a.ai_score ?? 0);
-      if (sort === "az") return a.title.localeCompare(b.title);
-      const ad = new Date(a.promoted_at ?? a.created_at).getTime();
-      const bd = new Date(b.promoted_at ?? b.created_at).getTime();
-      return bd - ad;
+    const since = period === "all" ? 0 : Date.now() - Number(period) * 86_400_000;
+    const q = query.trim().toLowerCase();
+    const list = items.filter((r) => {
+      if (tagFilter !== "all" && !(r.ai_tags ?? []).includes(tagFilter)) return false;
+      if (band !== "all" && convictionBand(r.ai_score) !== band) return false;
+      if (since && reportDate(r).getTime() < since) return false;
+      if (savedOnly && !bookmarks.includes(r.id)) return false;
+      if (!q) return true;
+      return r.title.toLowerCase().includes(q) || (r.ticker ?? "").toLowerCase().includes(q) ||
+        (r.excerpt ?? "").toLowerCase().includes(q) || (r.ai_tags ?? []).some((t) => t.toLowerCase().includes(q));
     });
-    return list;
-  }, [items, query, tagFilter, sort]);
+    return list.sort((a, b) => {
+      if (sort === "score") return (b.ai_score ?? -1) - (a.ai_score ?? -1);
+      if (sort === "az") return a.title.localeCompare(b.title);
+      return reportDate(b).getTime() - reportDate(a).getTime();
+    });
+  }, [items, query, tagFilter, band, period, savedOnly, bookmarks, sort]);
 
-  const featured = filtered[0];
-  const secondary = filtered.slice(1, 3);
-  const rest = filtered.slice(3);
-  const trending = useMemo(
-    () => [...items].sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0)).slice(0, 5),
-    [items]
-  );
+  useEffect(() => { setShown(PAGE_SIZE); }, [query, tagFilter, band, period, savedOnly, sort, assetType]);
+
+  // Load more as the end of the list comes into view.
+  useEffect(() => {
+    const el = moreRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((e) => { if (e[0].isIntersecting) setShown((n) => n + PAGE_SIZE); }, { rootMargin: "600px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [filtered.length, shown, layout]);
+
+  const filtersOn = !!query.trim() || tagFilter !== "all" || band !== "all" || period !== "all" || savedOnly;
+  const clearFilters = () => { setQuery(""); setTagFilter("all"); setBand("all"); setPeriod("all"); setSavedOnly(false); };
+
+  const featured = !filtersOn && sort === "recent" ? filtered[0] : undefined;
+  const archive = featured ? filtered.slice(1) : filtered;
+  const visible = archive.slice(0, shown);
+  const groups = useMemo(() => {
+    if (sort !== "recent") return [{ key: "all", label: "", items: visible }];
+    const m = new Map<string, PromotedReport[]>();
+    visible.forEach((r) => {
+      const k = format(reportDate(r), "MMMM yyyy");
+      m.set(k, [...(m.get(k) ?? []), r]);
+    });
+    return Array.from(m.entries()).map(([k, v]) => ({ key: k, label: k, items: v }));
+  }, [visible, sort]);
+
+  const topConviction = useMemo(() => [...items].filter((r) => typeof r.ai_score === "number").sort((a, b) => (b.ai_score ?? 0) - (a.ai_score ?? 0)).slice(0, 5), [items]);
+  const scored = items.filter((r) => typeof r.ai_score === "number");
+  const avg = scored.length ? scored.reduce((s, r) => s + (r.ai_score ?? 0), 0) / scored.length : null;
+  const highCount = items.filter((r) => convictionBand(r.ai_score) === "high").length;
+  const unread = items.filter((r) => !readIds.includes(r.id)).length;
+  const latest = items.length ? items.reduce((a, b) => (reportDate(a) > reportDate(b) ? a : b)) : null;
 
   const handleDownloadPdf = async (r: PromotedReport) => {
     try {
@@ -270,14 +270,27 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
     }
   };
 
-  if (active) {
-    const related = items.filter((x) => x.id !== active.id).slice(0, 4);
+  if (activeId) {
+    if (!active) {
+      return (
+        <div className="flex items-center justify-center py-24 text-muted-foreground">
+          {full.isError ? (
+            <div className="text-center space-y-3">
+              <p>This report couldn't be loaded.</p>
+              <Button variant="outline" onClick={closeReport}><ArrowLeft className="h-4 w-4 mr-2" /> Back to reports</Button>
+            </div>
+          ) : <><Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading report…</>}
+        </div>
+      );
+    }
+    const related = items.filter((x) => x.id !== active.id && (x.ai_tags ?? []).some((t) => (active.ai_tags ?? []).includes(t))).slice(0, 4);
     return (
       <ReportReader
         report={active}
-        related={related}
-        onOpenRelated={(r) => openReport(r)}
-        onBack={() => setActive(null)}
+        loadingBody={full.isFetching && !active.pages?.length && !active.html_content}
+        related={related.length ? related : items.filter((x) => x.id !== active.id).slice(0, 4)}
+        onOpenRelated={openReport}
+        onBack={closeReport}
         onDownload={() => handleDownloadPdf(active)}
         bookmarked={bookmarks.includes(active.id)}
         onBookmark={() => toggleBookmark(active.id)}
@@ -286,212 +299,204 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
   }
 
   const label = assetType === "crypto" ? "Digital Asset" : "Equity";
+  const cardProps = (r: PromotedReport) => ({
+    report: r,
+    onClick: () => openReport(r),
+    onHover: () => hover(r),
+    onBookmark: () => toggleBookmark(r.id),
+    bookmarked: bookmarks.includes(r.id),
+    read: readIds.includes(r.id),
+  });
 
   return (
-    <div className="space-y-8">
-      {/* ============ HERO MASTHEAD ============ */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-950 via-[#0c1733] to-slate-900 p-6 md:p-10">
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="relative flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur">
-              <img src={flowpulseLogo} alt="" className="h-4 w-4 rounded" />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-slate-300">FlowPulse Research · {label} Desk</span>
+    <div className="space-y-6">
+      {/* ============ MASTHEAD ============ */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#070b16] p-6 text-white md:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_90%_at_0%_0%,rgba(59,130,246,0.25),transparent_60%),radial-gradient(40%_70%_at_100%_100%,rgba(245,158,11,0.14),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:28px_28px]" />
+        <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-2xl space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-slate-300">
+                <img src={flowpulseLogo} alt="" className="h-3.5 w-3.5 rounded" /> FlowPulse Research · {label} Desk
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-medium text-emerald-300">
+                {isFetching ? <RefreshCw className="h-3 w-3 animate-spin" /> : <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />}
+                {isFetching ? "Syncing" : dataUpdatedAt ? `Synced ${formatDistanceToNow(dataUpdatedAt, { addSuffix: true })}` : "Live"}
+              </span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
               {assetType === "crypto" ? "Digital Asset Intelligence" : "Equity Research Terminal"}
             </h1>
-            <p className="text-slate-300/90 text-sm md:text-base leading-relaxed">
-              Institutional-grade {label.toLowerCase()} research, multi-page deep dives, and real-time conviction scoring — curated and approved by the FlowPulse research desk.
+            <p className="text-sm leading-relaxed text-slate-300/90 md:text-base">
+              Every {label.toLowerCase()} dossier published by the FlowPulse analyst desk, with conviction scoring, multi-page deep dives and PDF export.
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3 lg:gap-4">
-            <StatTile label="Reports" value={items.length} />
-            <StatTile label="Avg Conviction" value={(items.reduce((s, r) => s + (r.ai_score ?? 0), 0) / Math.max(items.length, 1)).toFixed(1)} suffix="/5" />
-            <StatTile label="Updated" value={items[0] ? formatDistanceToNow(new Date(items[0].promoted_at ?? items[0].created_at), { addSuffix: false }) : "—"} />
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <Kpi label="In archive" value={items.length} />
+            <Kpi label="High conviction" value={highCount} accent="text-emerald-300" />
+            <Kpi label="Avg conviction" value={avg !== null ? avg.toFixed(1) : "–"} suffix={avg !== null ? "/5" : ""} />
+            <Kpi label="Unread" value={unread} accent="text-sky-300" sub={latest ? `latest ${formatDistanceToNow(reportDate(latest))} ago` : undefined} />
           </div>
         </div>
       </div>
 
       {/* ============ CONTROL BAR ============ */}
-      <div className="sticky top-0 z-20 -mx-1 px-1 py-3 bg-background/85 backdrop-blur-xl border-b">
-        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${label.toLowerCase()} research, tickers, themes…`}
-              className="pl-10 h-11 bg-card/60 border-border/60"
-            />
+      <div className="sticky top-0 z-20 -mx-1 space-y-3 border-b bg-background/85 px-1 py-3 backdrop-blur-xl">
+        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
+          <div className="relative min-w-[220px] flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input ref={searchRef} value={query} onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${items.length} ${label.toLowerCase()} reports, tickers, themes…`}
+              className="h-11 rounded-xl border-border/60 bg-card/60 pl-10 pr-12" />
+            {query ? (
+              <button onClick={() => setQuery("")} aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+            ) : (
+              <kbd className="absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground sm:block">/</kbd>
+            )}
           </div>
-          <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-            <SelectTrigger className="w-[170px] h-11">
-              <FilterIcon className="h-4 w-4 mr-1" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recent">Most Recent</SelectItem>
-              <SelectItem value="score">Highest Conviction</SelectItem>
-              <SelectItem value="az">Title A–Z</SelectItem>
-            </SelectContent>
-          </Select>
-          <Tabs value={layout} onValueChange={(v: any) => setLayout(v)}>
-            <TabsList className="h-11">
-              <TabsTrigger value="grid" className="h-9"><LayoutGrid className="h-4 w-4" /></TabsTrigger>
-              <TabsTrigger value="list" className="h-9"><Rows3 className="h-4 w-4" /></TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex gap-2 overflow-x-auto pb-0.5">
+            <Segmented value={band} onChange={(v) => setBand(v)} options={(["all", "high", "medium", "low"] as const).map((v) => ({ value: v, label: BAND_LABEL[v] }))} />
+            <Segmented value={period} onChange={(v) => setPeriod(v)} options={[{ value: "all", label: "All time" }, { value: "7", label: "7d" }, { value: "30", label: "30d" }, { value: "90", label: "90d" }]} />
+          </div>
+          <div className="flex gap-2">
+            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+              <SelectTrigger className="h-11 w-[170px] rounded-xl"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Most recent</SelectItem>
+                <SelectItem value="score">Highest conviction</SelectItem>
+                <SelectItem value="az">Title A–Z</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant={savedOnly ? "default" : "outline"} className="h-11 rounded-xl" onClick={() => setSavedOnly((v) => !v)} title="Saved reports only">
+              <Bookmark className="h-4 w-4" /><span className="ml-1.5 hidden xl:inline">Saved</span>{bookmarks.length > 0 && <span className="ml-1.5 text-xs opacity-70">{bookmarks.length}</span>}
+            </Button>
+            <div className="inline-flex rounded-xl border bg-muted/40 p-1">
+              {(["grid", "list"] as const).map((l) => (
+                <button key={l} onClick={() => { setLayout(l); try { localStorage.setItem("fp_research_layout", l); } catch { /* ignore */ } }}
+                  aria-label={l === "grid" ? "Grid view" : "List view"}
+                  className={`rounded-lg px-2.5 transition ${layout === l ? "bg-background shadow-sm" : "text-muted-foreground"}`}>
+                  {l === "grid" ? <LayoutGrid className="h-4 w-4" /> : <Rows3 className="h-4 w-4" />}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         {allTags.length > 0 && (
-          <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 scrollbar-thin">
-            <button
-              onClick={() => setTagFilter("all")}
-              className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition ${tagFilter === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-muted border-border"}`}
-            >
-              All themes
-            </button>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
             {allTags.map(([tag, count]) => (
-              <button
-                key={tag}
-                onClick={() => setTagFilter(tag === tagFilter ? "all" : tag)}
-                className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition whitespace-nowrap ${tag === tagFilter ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-muted border-border"}`}
-              >
-                #{tag} <span className="opacity-60">{count}</span>
+              <button key={tag} onClick={() => setTagFilter(tag === tagFilter ? "all" : tag)}
+                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs transition ${tag === tagFilter ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card hover:bg-muted"}`}>
+                {tag} <span className="opacity-60">{count}</span>
               </button>
             ))}
+          </div>
+        )}
+        {filtersOn && (
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{filtered.length} of {items.length} reports match</span>
+            <button onClick={clearFilters} className="font-medium text-primary hover:underline">Clear filters</button>
           </div>
         )}
       </div>
 
       {/* ============ BODY ============ */}
-      {loading ? (
+      {isLoading && !items.length ? (
         <FeedSkeleton />
       ) : filtered.length === 0 ? (
-        <div className="py-20 text-center border rounded-2xl bg-muted/30">
-          <Sparkles className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-          <p className="text-lg font-semibold">No research reports yet</p>
-          <p className="text-sm text-muted-foreground mt-1">Admin-generated {label.toLowerCase()} reports will appear here once promoted.</p>
+        <div className="rounded-2xl border bg-muted/30 py-20 text-center">
+          <Sparkles className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+          <p className="text-lg font-semibold">{items.length ? "No reports match these filters" : "No research reports yet"}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {items.length ? "Try widening the period or conviction filter." : `${label} reports appear here as soon as the analyst desk publishes them.`}
+          </p>
+          {items.length > 0 && <Button variant="outline" className="mt-4" onClick={clearFilters}>Clear filters</Button>}
+          {error && !items.length && <Button variant="outline" className="mt-4" onClick={() => refetch()}><RefreshCw className="mr-2 h-4 w-4" /> Retry</Button>}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-          <div className="space-y-8">
-            {featured && (
-              <FeaturedCard
-                report={featured}
-                onClick={() => openReport(featured)}
-                onBookmark={() => toggleBookmark(featured.id)}
-                bookmarked={bookmarks.includes(featured.id)}
-                assetType={assetType}
-              />
-            )}
-            {secondary.length > 0 && (
-              <div className="grid md:grid-cols-2 gap-6">
-                {secondary.map((r, i) => (
-                  <SecondaryCard
-                    key={r.id} report={r} idx={i + 1}
-                    onClick={() => openReport(r)}
-                    onBookmark={() => toggleBookmark(r.id)}
-                    bookmarked={bookmarks.includes(r.id)}
-                  />
-                ))}
-              </div>
-            )}
-            {rest.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold tracking-tight">Latest Research</h2>
-                  <span className="text-xs text-muted-foreground">{rest.length} more reports</span>
-                </div>
-                {layout === "grid" ? (
-                  <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                    {rest.map((r, i) => (
-                      <GridCard
-                        key={r.id} report={r} idx={i}
-                        onClick={() => openReport(r)}
-                        onBookmark={() => toggleBookmark(r.id)}
-                        bookmarked={bookmarks.includes(r.id)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {rest.map((r, i) => (
-                      <ListRow
-                        key={r.id} report={r} idx={i}
-                        onClick={() => openReport(r)}
-                        onBookmark={() => toggleBookmark(r.id)}
-                        bookmarked={bookmarks.includes(r.id)}
-                      />
-                    ))}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
+          <div className="min-w-0 space-y-8">
+            {featured && <FeaturedCard {...cardProps(featured)} assetType={assetType} />}
+
+            {groups.map((g) => (
+              <section key={g.key}>
+                {g.label && (
+                  <div className="mb-3 flex items-baseline justify-between border-b pb-2">
+                    <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">{g.label}</h2>
+                    <span className="text-xs text-muted-foreground">{g.items.length} report{g.items.length === 1 ? "" : "s"}</span>
                   </div>
                 )}
+                {layout === "grid" ? (
+                  <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+                    {g.items.map((r) => <GridCard key={r.id} {...cardProps(r)} />)}
+                  </div>
+                ) : (
+                  <div className="divide-y overflow-hidden rounded-2xl border bg-card">
+                    {g.items.map((r) => <ListRow key={r.id} {...cardProps(r)} />)}
+                  </div>
+                )}
+              </section>
+            ))}
+
+            {shown < archive.length ? (
+              <div ref={moreRef} className="flex justify-center">
+                <Button variant="outline" onClick={() => setShown((n) => n + PAGE_SIZE)}>
+                  Show more <span className="ml-1.5 text-muted-foreground">({archive.length - shown} remaining)</span>
+                </Button>
               </div>
-            )}
+            ) : archive.length > PAGE_SIZE ? (
+              <p className="text-center text-xs text-muted-foreground">You've reached the start of the archive · {filtered.length} reports</p>
+            ) : null}
           </div>
+
           {/* ============ SIDEBAR ============ */}
-          <aside className="space-y-6 lg:sticky lg:top-32 lg:self-start">
+          <aside className="space-y-5 lg:sticky lg:top-40 lg:self-start">
             <div className="rounded-2xl border bg-card p-5">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="mb-4 flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-500" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Top Conviction</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider">Top conviction</h3>
               </div>
-              <ol className="space-y-3">
-                {trending.map((r, i) => (
+              <ol className="space-y-3.5">
+                {topConviction.map((r) => (
                   <li key={r.id}>
-                    <button onClick={() => openReport(r)} className="group flex items-start gap-3 text-left w-full">
-                      <span className="text-2xl font-black text-muted-foreground/40 leading-none w-6">{i + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition">{r.title}</div>
-                        <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
-                          {r.ticker && <span className="font-mono">{r.ticker}</span>}
-                          <span className="inline-flex items-center gap-0.5 text-amber-500"><Star className="h-3 w-3 fill-current" />{(r.ai_score ?? 0).toFixed(1)}</span>
-                        </div>
+                    <button onClick={() => openReport(r)} onMouseEnter={() => hover(r)} className="group flex w-full items-center gap-3 text-left">
+                      <div className="rounded-full bg-[#070b16] p-0.5"><ConvictionRing score={r.ai_score} size={38} stroke={3.5} /></div>
+                      <div className="min-w-0 flex-1">
+                        <div className="line-clamp-2 text-sm font-semibold leading-snug transition group-hover:text-primary">{r.title}</div>
+                        {r.ticker && <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">{r.ticker}</div>}
                       </div>
                     </button>
                   </li>
                 ))}
+                {topConviction.length === 0 && <p className="text-xs italic text-muted-foreground">No scored reports yet.</p>}
               </ol>
             </div>
 
-            <div className="rounded-2xl border bg-gradient-to-br from-primary/10 to-blue-500/5 p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <Bookmark className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Saved Reports</h3>
+            <div className="rounded-2xl border bg-card p-5">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookmarkCheck className="h-4 w-4 text-primary" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider">Saved</h3>
+                </div>
+                {bookmarks.length > 0 && <button onClick={() => setSavedOnly(true)} className="text-[11px] text-primary hover:underline">View all</button>}
               </div>
-              <p className="text-xs text-muted-foreground mb-3">{bookmarks.length} {bookmarks.length === 1 ? "report" : "reports"} bookmarked</p>
               {bookmarks.length > 0 ? (
-                <div className="space-y-2">
-                  {items.filter((r) => bookmarks.includes(r.id)).slice(0, 4).map((r) => (
-                    <button key={r.id} onClick={() => openReport(r)} className="block w-full text-left text-xs hover:text-primary transition line-clamp-1">
-                      → {r.title}
-                    </button>
+                <div className="space-y-1.5">
+                  {items.filter((r) => bookmarks.includes(r.id)).slice(0, 5).map((r) => (
+                    <button key={r.id} onClick={() => openReport(r)} className="block w-full truncate text-left text-xs transition hover:text-primary">{r.title}</button>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground italic">Tap the bookmark icon on any report to save it.</p>
+                <p className="text-xs text-muted-foreground">Use the bookmark on any report to keep it here.</p>
               )}
             </div>
 
-            <div className="rounded-2xl border bg-card p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Active Themes</h3>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {allTags.slice(0, 10).map(([tag, count]) => (
-                  <button
-                    key={tag}
-                    onClick={() => setTagFilter(tag === tagFilter ? "all" : tag)}
-                    className={`text-[11px] px-2 py-1 rounded border transition ${tag === tagFilter ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 hover:bg-muted border-transparent"}`}
-                  >
-                    #{tag} <span className="opacity-60">{count}</span>
-                  </button>
-                ))}
-                {allTags.length === 0 && (
-                  <span className="text-xs text-muted-foreground italic">No themes yet.</span>
-                )}
+            <div className="rounded-2xl border bg-gradient-to-br from-primary/10 to-transparent p-5 text-xs text-muted-foreground">
+              <div className="mb-2 flex items-center gap-2 text-foreground"><Layers className="h-4 w-4 text-primary" /><span className="font-bold uppercase tracking-wider">Conviction scale</span></div>
+              <div className="space-y-1.5">
+                <p><span className="font-semibold text-emerald-600">4.0–5.0</span> High conviction</p>
+                <p><span className="font-semibold text-amber-600">3.0–3.9</span> Moderate</p>
+                <p><span className="font-semibold text-rose-600">below 3.0</span> Low / cautious</p>
               </div>
             </div>
           </aside>
@@ -505,13 +510,12 @@ export function CryptonaryReportsFeed({ assetType }: Props) {
    FEED CARD COMPONENTS
 ============================================================== */
 
-function StatTile({ label, value, suffix }: { label: string; value: number | string; suffix?: string }) {
+function Kpi({ label, value, suffix, accent = "text-white", sub }: { label: string; value: number | string; suffix?: string; accent?: string; sub?: string }) {
   return (
-    <div className="rounded-xl bg-white/5 border border-white/10 backdrop-blur px-3 py-3 md:px-4 md:py-4 text-center">
-      <div className="text-[9px] uppercase tracking-[0.18em] text-slate-400">{label}</div>
-      <div className="text-lg md:text-2xl font-bold text-white mt-1">
-        {value}<span className="text-xs text-slate-400 font-medium ml-0.5">{suffix}</span>
-      </div>
+    <div className="min-w-[120px] rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur">
+      <div className="text-[10px] uppercase tracking-[0.16em] text-slate-400">{label}</div>
+      <div className={`mt-1 text-2xl font-bold tabular-nums ${accent}`}>{value}<span className="ml-0.5 text-xs font-medium text-slate-400">{suffix}</span></div>
+      {sub && <div className="mt-0.5 truncate text-[10px] text-slate-500">{sub}</div>}
     </div>
   );
 }
@@ -519,177 +523,113 @@ function StatTile({ label, value, suffix }: { label: string; value: number | str
 interface CardProps {
   report: PromotedReport;
   onClick: () => void;
+  onHover: () => void;
   onBookmark: () => void;
   bookmarked: boolean;
+  read: boolean;
 }
 
-function FeaturedCard({ report, onClick, onBookmark, bookmarked, assetType }: CardProps & { assetType: string }) {
-  const r = report;
-  const date = r.report_date ? format(new Date(r.report_date), "PP") : (r.promoted_at && format(new Date(r.promoted_at), "PP"));
+const shortDate = (r: PromotedReport) => format(reportDate(r), "d MMM yyyy");
+
+function BookmarkButton({ bookmarked, onBookmark, dark = false }: { bookmarked: boolean; onBookmark: () => void; dark?: boolean }) {
   return (
-    <div className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-white/10 hover:border-primary/50 transition-all duration-500">
-      <button onClick={onClick} className="block w-full text-left">
-        <div className="grid lg:grid-cols-2 gap-0">
-          <div className="relative h-72 lg:h-[460px] overflow-hidden">
-            <img src={r.hero_image_url ?? fallbackImg(0)} alt=""
-              className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-slate-950/95 via-slate-900/40 to-transparent" />
-            <div className="absolute top-5 left-5 flex gap-2">
-              <Badge className="bg-primary text-primary-foreground border-0 shadow-lg">★ FEATURED</Badge>
-              {r.ticker && <Badge className="bg-white/15 backdrop-blur text-white border-white/20 font-mono">{r.ticker}</Badge>}
-            </div>
+    <button onClick={(e) => { e.stopPropagation(); onBookmark(); }} aria-label={bookmarked ? "Remove bookmark" : "Bookmark report"}
+      className={`flex h-8 w-8 items-center justify-center rounded-full transition ${dark ? "border border-white/15 bg-black/30 backdrop-blur hover:bg-black/50" : "hover:bg-muted"}`}>
+      {bookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className={`h-4 w-4 ${dark ? "text-white" : "text-muted-foreground"}`} />}
+    </button>
+  );
+}
+
+function Pills({ r, read }: { r: PromotedReport; read: boolean }) {
+  return (
+    <>
+      {isNew(r) && <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">New</span>}
+      {read && <span className="inline-flex items-center gap-1 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white/80 backdrop-blur"><CheckCircle2 className="h-3 w-3" /> Read</span>}
+    </>
+  );
+}
+
+function FeaturedCard({ report: r, onClick, onHover, onBookmark, bookmarked, read, assetType }: CardProps & { assetType: string }) {
+  const tone = scoreTone(r.ai_score);
+  return (
+    <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-[#070b16] transition-all duration-500 hover:border-primary/50 hover:shadow-[0_30px_80px_-30px_rgba(37,99,235,0.45)]">
+      <button onClick={onClick} onMouseEnter={onHover} onFocus={onHover} className="grid w-full text-left lg:grid-cols-[1.1fr_1fr]">
+        <ReportCover report={r} size="lg" className="h-64 lg:h-full lg:min-h-[380px]" />
+        <div className="relative flex flex-col justify-center p-7 lg:p-10">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-primary-foreground">Latest</span>
+            <Pills r={r} read={read} />
+            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{assetType === "crypto" ? "Digital asset" : "Equity"} · {shortDate(r)}</span>
           </div>
-          <div className="p-7 lg:p-10 flex flex-col justify-center bg-gradient-to-br from-slate-900 to-slate-950">
-            <div className="flex items-center gap-2 mb-4">
-              <img src={flowpulseLogo} alt="" className="h-5 w-5 rounded" />
-              <span className="text-[10px] uppercase tracking-[0.25em] text-slate-300 font-semibold">FlowPulse Research</span>
-              <span className="text-slate-600">·</span>
-              <span className="text-[10px] uppercase tracking-widest text-slate-400">{assetType === "crypto" ? "Digital Asset" : "Equity"}</span>
-            </div>
-            <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-white leading-[1.1] tracking-tight group-hover:text-primary transition">
-              {r.title}
-            </h2>
-            {r.excerpt && <p className="text-slate-300/90 mt-4 text-base leading-relaxed line-clamp-3">{r.excerpt}</p>}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 mt-6 pt-6 border-t border-white/10">
-              <span className="text-slate-200 font-semibold">{r.author_name ?? "FlowPulse Research"}</span>
-              <span>{date}</span>
-              <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.reading_time_minutes ?? 6} min</span>
-              <span className="inline-flex items-center gap-1">{r.page_count ?? 1} pages</span>
-              {typeof r.ai_score === "number" && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-semibold">
-                  <Star className="h-3 w-3 fill-amber-400" /> {r.ai_score.toFixed(1)}/5
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 mt-6">
-              <span className="inline-flex items-center gap-2 text-sm text-primary font-semibold group-hover:gap-3 transition-all">
-                Read deep dive <ArrowUpRight className="h-4 w-4" />
-              </span>
-            </div>
+          <h2 className="text-2xl font-bold leading-[1.15] tracking-tight text-white transition group-hover:text-sky-200 lg:text-[2rem]">{r.title}</h2>
+          {r.excerpt && <p className="mt-4 line-clamp-3 text-[15px] leading-relaxed text-slate-300/90">{r.excerpt}</p>}
+          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-5 text-xs text-slate-400">
+            <span className="font-semibold text-slate-200">{r.author_name ?? "FlowPulse Research"}</span>
+            <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.reading_time_minutes ?? 6} min</span>
+            <span className="inline-flex items-center gap-1"><FileText className="h-3 w-3" />{r.page_count ?? 1} pages</span>
+            <span className={`font-semibold ${tone.text}`}>{tone.label}</span>
           </div>
+          <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-300 transition-all group-hover:gap-3">
+            Read the dossier <ArrowUpRight className="h-4 w-4" />
+          </span>
         </div>
       </button>
-      <button onClick={(e) => { e.stopPropagation(); onBookmark(); }}
-        className="absolute top-5 right-5 h-9 w-9 rounded-full bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 flex items-center justify-center transition">
-        {bookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-white" />}
-      </button>
+      <div className="absolute right-4 top-4"><BookmarkButton bookmarked={bookmarked} onBookmark={onBookmark} dark /></div>
     </div>
   );
 }
 
-function SecondaryCard({ report, idx, onClick, onBookmark, bookmarked }: CardProps & { idx: number }) {
-  const r = report;
-  const date = r.report_date ? format(new Date(r.report_date), "PP") : (r.promoted_at && format(new Date(r.promoted_at), "PP"));
+function GridCard({ report: r, onClick, onHover, onBookmark, bookmarked, read }: CardProps) {
   return (
-    <div className="group relative rounded-2xl overflow-hidden bg-card border hover:border-primary/40 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-      <button onClick={onClick} className="block w-full text-left">
-        <div className="relative h-56 overflow-hidden">
-          <img src={r.hero_image_url ?? fallbackImg(idx)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          <div className="absolute top-3 left-3 flex gap-2">
-            {r.ticker && <Badge className="bg-black/60 backdrop-blur text-white border-white/10 font-mono">{r.ticker}</Badge>}
-            <Badge className="bg-black/60 backdrop-blur text-white border-white/10">{r.page_count ?? 1} pages</Badge>
-          </div>
-          <div className="absolute bottom-3 left-3 right-3">
-            <h3 className="text-xl font-bold text-white leading-snug line-clamp-2 group-hover:text-primary-foreground transition">{r.title}</h3>
-          </div>
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_20px_50px_-20px_rgba(15,23,42,0.35)]">
+      <button onClick={onClick} onMouseEnter={onHover} onFocus={onHover} className="flex flex-1 flex-col text-left">
+        <div className="relative">
+          <ReportCover report={r} className="h-40" />
+          <div className="absolute left-3 top-3 flex gap-1.5"><Pills r={r} read={read} /></div>
         </div>
-        <div className="p-5">
-          {r.excerpt && <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{r.excerpt}</p>}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>{date}</span>
-            <span>·</span>
-            <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.reading_time_minutes ?? 6}m</span>
-            {typeof r.ai_score === "number" && (
-              <>
-                <span>·</span>
-                <span className="inline-flex items-center gap-1 text-amber-600 font-semibold"><Star className="h-3 w-3 fill-amber-500" />{r.ai_score.toFixed(1)}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </button>
-      <button onClick={(e) => { e.stopPropagation(); onBookmark(); }}
-        className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/40 backdrop-blur border border-white/10 hover:bg-black/60 flex items-center justify-center transition">
-        {bookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-white" />}
-      </button>
-    </div>
-  );
-}
-
-function GridCard({ report, idx, onClick, onBookmark, bookmarked }: CardProps & { idx: number }) {
-  const r = report;
-  const date = r.report_date ? format(new Date(r.report_date), "PP") : (r.promoted_at && format(new Date(r.promoted_at), "PP"));
-  return (
-    <div className="group relative text-left rounded-xl overflow-hidden bg-card border hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-      <button onClick={onClick} className="block w-full text-left">
-        <div className="relative h-44 overflow-hidden">
-          <img src={r.hero_image_url ?? fallbackImg(idx + 2)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute top-3 left-3 flex gap-1.5">
-            {r.ticker && <Badge className="bg-black/70 backdrop-blur text-white border-0 font-mono text-[10px]">{r.ticker}</Badge>}
-            <Badge className="bg-black/70 backdrop-blur text-white border-0 text-[10px]">{r.page_count ?? 1}p</Badge>
-          </div>
-          {typeof r.ai_score === "number" && (
-            <div className="absolute bottom-3 right-3 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/90 text-amber-950 text-[11px] font-bold backdrop-blur">
-              <Star className="h-3 w-3 fill-current" />{r.ai_score.toFixed(1)}
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug transition group-hover:text-primary">{r.title}</h3>
+          {r.excerpt && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.excerpt}</p>}
+          {(r.ai_tags ?? []).length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1">
+              {(r.ai_tags ?? []).slice(0, 3).map((t) => <span key={t} className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{t}</span>)}
             </div>
           )}
-        </div>
-        <div className="p-5">
-          <div className="flex items-center gap-1.5 mb-2">
-            <img src={flowpulseLogo} alt="" className="h-3 w-3 rounded" />
-            <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">FlowPulse</span>
-          </div>
-          <h3 className="font-bold text-base leading-snug group-hover:text-primary transition line-clamp-2">{r.title}</h3>
-          {r.excerpt && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{r.excerpt}</p>}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{date}</span>
-              <span>·</span>
+          <div className="mt-auto flex items-center justify-between border-t pt-3 text-xs text-muted-foreground" style={{ marginTop: "auto", paddingTop: "0.75rem" }}>
+            <span>{shortDate(r)}</span>
+            <span className="inline-flex items-center gap-3">
+              <span className="inline-flex items-center gap-1"><FileText className="h-3 w-3" />{r.page_count ?? 1}p</span>
               <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.reading_time_minutes ?? 6}m</span>
-            </div>
-            <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+            </span>
           </div>
         </div>
       </button>
-      <button onClick={(e) => { e.stopPropagation(); onBookmark(); }}
-        className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/40 backdrop-blur border border-white/10 hover:bg-black/60 flex items-center justify-center transition">
-        {bookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-primary" /> : <Bookmark className="h-3.5 w-3.5 text-white" />}
-      </button>
+      <div className="absolute right-3 top-3"><BookmarkButton bookmarked={bookmarked} onBookmark={onBookmark} dark /></div>
     </div>
   );
 }
 
-function ListRow({ report, idx, onClick, onBookmark, bookmarked }: CardProps & { idx: number }) {
-  const r = report;
-  const date = r.report_date ? format(new Date(r.report_date), "PP") : (r.promoted_at && format(new Date(r.promoted_at), "PP"));
+function ListRow({ report: r, onClick, onHover, onBookmark, bookmarked, read }: CardProps) {
+  const tone = scoreTone(r.ai_score);
   return (
-    <div className="group relative flex gap-4 items-center bg-card border rounded-xl p-3 hover:border-primary/40 hover:shadow-lg transition-all">
-      <button onClick={onClick} className="flex gap-4 items-center flex-1 text-left">
-        <div className="relative h-24 w-32 shrink-0 rounded-lg overflow-hidden">
-          <img src={r.hero_image_url ?? fallbackImg(idx + 4)} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            {r.ticker && <Badge variant="outline" className="font-mono text-[10px]">{r.ticker}</Badge>}
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{r.page_count ?? 1} pages</span>
+    <div className="group flex items-center gap-4 p-3 transition hover:bg-muted/40">
+      <button onClick={onClick} onMouseEnter={onHover} onFocus={onHover} className="flex min-w-0 flex-1 items-center gap-4 text-left">
+        <ReportCover report={r} size="sm" showRing={false} className="h-16 w-20 shrink-0 rounded-lg" />
+        <div className="min-w-0 flex-1">
+          <div className="mb-0.5 flex items-center gap-2">
+            {r.ticker && <span className="font-mono text-[11px] font-semibold text-muted-foreground">{r.ticker}</span>}
+            {isNew(r) && <span className="rounded-full bg-sky-500 px-1.5 text-[9px] font-bold uppercase text-white">New</span>}
+            {read && <CheckCircle2 className="h-3.5 w-3.5 text-muted-foreground" aria-label="Read" />}
           </div>
-          <h3 className="font-bold text-base leading-snug group-hover:text-primary transition line-clamp-1">{r.title}</h3>
-          {r.excerpt && <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{r.excerpt}</p>}
-          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-            <span>{date}</span>
-            <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{r.reading_time_minutes ?? 6}m</span>
-            {typeof r.ai_score === "number" && (
-              <span className="inline-flex items-center gap-1 text-amber-600 font-semibold"><Star className="h-3 w-3 fill-amber-500" />{r.ai_score.toFixed(1)}/5</span>
-            )}
-          </div>
+          <h3 className="line-clamp-1 text-sm font-semibold transition group-hover:text-primary">{r.title}</h3>
+          {r.excerpt && <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{r.excerpt}</p>}
         </div>
-        <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition shrink-0" />
+        <div className="hidden shrink-0 text-right text-xs text-muted-foreground sm:block">
+          <div className={`font-semibold ${tone.text.replace("300", "600")}`}>{typeof r.ai_score === "number" ? `${r.ai_score.toFixed(1)}/5` : "–"}</div>
+          <div>{shortDate(r)}</div>
+        </div>
       </button>
-      <button onClick={onBookmark} className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center shrink-0">
-        {bookmarked ? <BookmarkCheck className="h-4 w-4 text-primary" /> : <Bookmark className="h-4 w-4 text-muted-foreground" />}
-      </button>
+      <BookmarkButton bookmarked={bookmarked} onBookmark={onBookmark} />
     </div>
   );
 }
@@ -697,13 +637,9 @@ function ListRow({ report, idx, onClick, onBookmark, bookmarked }: CardProps & {
 function FeedSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="h-[460px] rounded-3xl bg-muted/40 animate-pulse" />
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="h-80 rounded-2xl bg-muted/40 animate-pulse" />
-        <div className="h-80 rounded-2xl bg-muted/40 animate-pulse" />
-      </div>
-      <div className="grid md:grid-cols-3 gap-6">
-        {[1, 2, 3].map((i) => <div key={i} className="h-80 rounded-xl bg-muted/40 animate-pulse" />)}
+      <div className="h-[380px] animate-pulse rounded-3xl bg-muted/40" />
+      <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="h-72 animate-pulse rounded-2xl bg-muted/40" />)}
       </div>
     </div>
   );
@@ -714,9 +650,10 @@ function FeedSkeleton() {
 ============================================================== */
 
 function ReportReader({
-  report, related, onBack, onDownload, bookmarked, onBookmark, onOpenRelated,
+  report, related, onBack, onDownload, bookmarked, onBookmark, onOpenRelated, loadingBody = false,
 }: {
   report: PromotedReport;
+  loadingBody?: boolean;
   related: PromotedReport[];
   onBack: () => void;
   onDownload: () => void;
@@ -748,6 +685,19 @@ function ReportReader({
     setPageIdx(i);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  useEffect(() => { setPageIdx(0); }, [report.id]);
+
+  // ← / → turn pages.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (/input|textarea|select/i.test((e.target as HTMLElement)?.tagName ?? "")) return;
+      if (e.key === "ArrowRight" && pageIdx < pages.length - 1) goPage(pageIdx + 1);
+      if (e.key === "ArrowLeft" && pageIdx > 0) goPage(pageIdx - 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pageIdx, pages.length]);
 
   return (
     <div className="relative">
@@ -887,7 +837,7 @@ function ReportReader({
               </div>
             </div>
 
-            {safe ? (
+            {safe && !loadingBody ? (
               <div className="cryptonary-article prose prose-lg prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: safe }} />
             ) : (
@@ -942,7 +892,7 @@ function ReportReader({
                 {related.map((r) => (
                   <button key={r.id} onClick={() => onOpenRelated(r)}
                     className="group flex gap-4 text-left p-3 rounded-xl border bg-card hover:border-primary/40 hover:shadow-lg transition">
-                    <img src={r.hero_image_url ?? fallbackImg(0)} alt="" className="h-20 w-24 object-cover rounded-lg shrink-0" />
+                    <ReportCover report={r} size="sm" showRing={false} className="h-20 w-24 shrink-0 rounded-lg" />
                     <div className="flex-1 min-w-0">
                       {r.ticker && <Badge variant="outline" className="font-mono text-[10px] mb-1">{r.ticker}</Badge>}
                       <div className="text-sm font-semibold line-clamp-2 group-hover:text-primary transition">{r.title}</div>
