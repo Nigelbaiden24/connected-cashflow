@@ -25,6 +25,8 @@ import {
   X,
   SlidersHorizontal,
 } from "lucide-react";
+import { Layers as ExLayers, Scale as ExScale, Gauge as ExGauge, ExternalLink as ExLink } from "lucide-react";
+import { PageExplainer } from "@/components/home/PageExplainer";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ResearchAuthDialog } from "@/components/research/ResearchAuthDialog";
 import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
@@ -274,6 +276,23 @@ export default function PublicOpportunities() {
           </span>
         </div>
       </section>
+
+      <PageExplainer
+        eyebrow="What is Opportunity Intelligence?"
+        title="Investment opportunities beyond the stock market, in one place"
+        intro={<>
+          <p>FlowPulse brings together publicly listed opportunities across 23 asset classes, from property, land and private markets to fine wine, art and royalties, and reviews them before they are published here.</p>
+          <p>Each one shows what it is, where it is, what it costs and how strongly our framework rates it, so you can quickly decide which deserve a closer look.</p>
+        </>}
+        points={[
+          { icon: ExLayers, title: "23 asset classes, one search", text: "Filter by category, region, price and conviction instead of trawling dozens of sites." },
+          { icon: ExScale, title: "Prices you can trust", text: "Listed prices come straight from the source. Where none is published, we show a clearly labelled estimate with its range." },
+          { icon: ExGauge, title: "A consistent way to compare", text: "Every opportunity is scored 0–5 on the same conviction framework, whatever the asset." },
+          { icon: ExLink, title: "Straight to the source", text: "Members can open the original listing to check the details and speak to the provider directly." },
+        ]}
+        note="Opportunities are listed by third parties and are not recommendations. Always carry out your own due diligence; capital is at risk."
+        accent="indigo"
+      />
 
       {/* Filters + Grid */}
       <section className="container mx-auto px-4 pb-24">

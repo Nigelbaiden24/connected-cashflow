@@ -19,6 +19,8 @@ import {
   ChevronRight,
   ArrowLeft,
 } from "lucide-react";
+import { Clock as ExClock, Gauge as ExGauge, Scale as ExScale, Download as ExDownload } from "lucide-react";
+import { PageExplainer } from "@/components/home/PageExplainer";
 import { format } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { ReportPdfPagePreview } from "@/components/research/ReportPdfPagePreview";
@@ -209,6 +211,23 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
           </span>
         </div>
       </section>
+
+      <PageExplainer
+        eyebrow="What is the Research Vault?"
+        title="In-depth research on the companies and digital assets you're watching"
+        intro={<>
+          <p>Each dossier is a multi-page report from the FlowPulse analyst desk on a single stock or digital asset: what the business or network does, what could drive it, what could go wrong, and what it may be worth.</p>
+          <p>Every report closes with a 0–5 conviction score, so you can see at a glance how strong the case is before reading the detail.</p>
+        </>}
+        points={[
+          { icon: ExClock, title: "Hours of research, read in minutes", text: "The reading, comparing and number-crunching is done for you, then set out clearly page by page." },
+          { icon: ExGauge, title: "A clear conviction score", text: "Quality, risk, valuation and ESG rolled into one 0–5 score, so ideas are easy to compare." },
+          { icon: ExScale, title: "Both sides of the story", text: "Bull and bear cases, catalysts and key risks, with sources you can check yourself." },
+          { icon: ExDownload, title: "Keep it with you", text: "Read on any device, or download a dossier as a branded PDF for later." },
+        ]}
+        note="Research is for information only and is not personal investment advice. The value of investments can fall as well as rise."
+        accent="amber"
+      />
 
       {/* Tabs + Grid */}
       <section className="container mx-auto px-4 pb-24">
