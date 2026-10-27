@@ -3,6 +3,7 @@
 // refresh in the background; full reports load on hover/open and are cached.
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { applyPaywall, resolveViewer } from "@/lib/researchAccess";
 
 export type ResearchAsset = "stock" | "crypto";
 
@@ -33,7 +34,19 @@ export interface PromotedReport {
 }
 
 const LIST_LIMIT = 500;
-const CACHE_PREFIX = "fp_research_list_v1:";
+const CACHE_PREFIX = "fp_research_list_v2:";
+
+// Cached lists belong to whoever was signed in: drop them when that changes.
+let cachedFor: string | null | undefined;
+supabase.auth.onAuthStateChange((_event, session) => {
+  const uid = session?.user?.id ?? null;
+  if (cachedFor !== undefined && cachedFor !== uid) {
+    try {
+      Object.keys(localStorage).filter((k) => k.startsWith("fp_research_list_")).forEach((k) => localStorage.removeItem(k));
+    } catch { /* storage blocked */ }
+  }
+  cachedFor = uid;
+});
 
 async function authHeaders() {
   const { data } = await supabase.auth.getSession();
@@ -64,7 +77,8 @@ export async function fetchResearchList(asset: ResearchAsset): Promise<PromotedR
     headers: await authHeaders(),
   });
   if (error) throw error;
-  const reports = ((data?.reports ?? []) as PromotedReport[]).filter((r) => r.asset_type === asset);
+  const viewer = await resolveViewer(data?.viewer);
+  const reports = applyPaywall(((data?.reports ?? []) as PromotedReport[]).filter((r) => r.asset_type === asset), viewer);
   writeCache(asset, reports);
   return reports;
 }

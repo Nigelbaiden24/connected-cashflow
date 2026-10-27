@@ -27,6 +27,7 @@ import { ResearchReportReader } from "@/components/research/ResearchReportReader
 import { HomepageNavLinks } from "@/components/home/HomepageNavLinks";
 import { PaywallCardOverlay, PreviewBar, ReportPaywallDialog, VaultPaywall, type PreviewImage, type Viewer } from "@/components/research/ResearchPaywall";
 import { ReportFrontPage } from "@/components/research/ReportFrontPage";
+import { applyPaywall, resolveViewer } from "@/lib/researchAccess";
 
 interface PublicResearchPreview {
   id: string;
@@ -93,8 +94,10 @@ export default function PublicResearchHub({ initialTab = "stock", platformAccess
         console.error("Error loading research previews:", error);
         setReports([]);
       } else {
-        setReports((data?.reports ?? []) as PublicResearchPreview[]);
-        setViewer((data?.viewer as Viewer) ?? { signed_in: !!accessToken, can_read: false });
+        const v = await resolveViewer(data?.viewer as Viewer | undefined);
+        if (!live) return;
+        setReports(applyPaywall((data?.reports ?? []) as PublicResearchPreview[], v));
+        setViewer(v);
       }
       setLoading(false);
     })();

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { OpportunityPrice, money, priceInfo } from "@/components/opportunities/OpportunityPrice";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,9 @@ interface OpportunityPreview {
   deal_stage: string | null;
   geography: string | null;
   featured: boolean | null;
+  price: number | null;
+  price_currency: string | null;
+  product_details: any;
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -55,6 +59,20 @@ const CATEGORY_LABEL: Record<string, string> = {
   businesses: "Businesses",
   mini_bonds: "Mini Bonds",
   timepieces: "Timepieces",
+  land: "Land",
+  rent_to_rent: "Rent to Rent",
+  rent_to_sa: "Rent to Serviced Accommodation",
+  royalties: "Royalties",
+  fine_wine: "Fine Wine",
+  art: "Art",
+  collectibles: "Collectibles",
+  luxury_assets: "Luxury Assets",
+  entertainment_finance: "Entertainment Finance",
+  insurance_investments: "Insurance-Based",
+  sports_investments: "Sports",
+  overseas_property: "Overseas Property",
+  uk_property: "UK Property",
+  vehicles: "Vehicles",
 };
 
 export default function PublicOpportunities() {
@@ -75,7 +93,7 @@ export default function PublicOpportunities() {
       const { data, error } = await supabase
         .from("opportunity_products")
         .select(
-          "id,title,short_description,category,sub_category,location,country,thumbnail_url,analyst_rating,overall_conviction_score,expected_irr,minimum_investment,deal_stage,geography,featured"
+          "id,title,short_description,category,sub_category,location,country,thumbnail_url,analyst_rating,overall_conviction_score,expected_irr,minimum_investment,deal_stage,geography,featured,price,price_currency,product_details"
         )
         .eq("status", "active")
         .order("featured", { ascending: false })
@@ -272,7 +290,8 @@ function OpportunityCard({ item, onOpen }: { item: OpportunityPreview; onOpen: (
       : "bg-slate-50 text-slate-600 border-slate-200";
 
   const categoryLabel = item.category ? CATEGORY_LABEL[item.category] ?? item.category : "Opportunity";
-  const locationLabel = [item.location, item.country].filter(Boolean).join(", ");
+  // Location and country often repeat each other ("UK, London" + "UK"); show each part once.
+  const locationLabel = [...new Set([item.location, item.country].filter(Boolean).join(", ").split(/\s*,\s*/).filter(Boolean))].join(", ");
 
   const description =
     item.short_description?.trim() ||
@@ -340,6 +359,10 @@ function OpportunityCard({ item, onOpen }: { item: OpportunityPreview; onOpen: (
               <ChevronRight className="h-4 w-4 shrink-0 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
             </div>
 
+            <div className="mb-3">
+              <OpportunityPrice opportunity={item} />
+            </div>
+
             <div className="flex items-center justify-between pt-3 border-t border-slate-100">
               <Badge variant="outline" className={`text-[10px] uppercase tracking-wider ${confidenceColor}`}>
                 {score !== null ? `${score.toFixed(1)}/5 conviction` : "Analyst review"}
@@ -360,6 +383,12 @@ function OpportunityCard({ item, onOpen }: { item: OpportunityPreview; onOpen: (
             <span className="text-[10px] uppercase tracking-widest text-slate-400">{categoryLabel}</span>
           </div>
           <h4 className="text-sm font-semibold text-slate-900 leading-snug">{item.title}</h4>
+          {item.price ? (
+            <p className="text-sm font-bold text-slate-900">
+              {priceInfo(item).source === "listed" ? "" : "≈ "}{money(item.price, item.price_currency || "GBP")}
+              <span className="ml-1.5 text-[11px] font-medium text-slate-500">{priceInfo(item).source === "listed" ? priceInfo(item).kind ?? "Listed price" : "FlowPulse estimate"}</span>
+            </p>
+          ) : null}
           <p className="text-xs text-slate-600 leading-relaxed line-clamp-5">{description}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-[11px] text-slate-500">
             {locationLabel && (
