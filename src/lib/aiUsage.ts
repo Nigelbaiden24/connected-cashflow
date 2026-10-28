@@ -63,3 +63,47 @@ export async function loadAiUsage(days = 14): Promise<AiUsageRow[]> {
     prompt_tokens: Number(r.prompt_tokens), completion_tokens: Number(r.completion_tokens),
   }));
 }
+
+// Automation switchboard (migration 20261028120000): every timed job is off until an admin turns it on.
+export interface AutomationJob {
+  jobname: string;
+  label: string | null;
+  description: string | null;
+  schedule: string;
+  uses_ai: boolean;
+  enabled: boolean;
+  scheduled: boolean;
+  updated_at: string;
+}
+
+export async function loadAutomationJobs(): Promise<AutomationJob[]> {
+  const { data, error } = await supabase.rpc("automation_status" as any);
+  if (error) throw error;
+  return (data as any[]) ?? [];
+}
+
+export async function setAutomationJob(jobname: string, enabled: boolean): Promise<void> {
+  const { error } = await supabase.rpc("set_automation_job" as any, { _jobname: jobname, _enabled: enabled });
+  if (error) throw error;
+}
+
+export async function setAllAutomation(enabled: boolean): Promise<number> {
+  const { data, error } = await supabase.rpc("set_all_automation" as any, { _enabled: enabled });
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
+/** "*\/30 * * * *" → "every 30 min"; falls back to the raw cron text. */
+export function describeSchedule(cron: string): string {
+  const [m, h, dom, mon, dow] = cron.trim().split(/\s+/);
+  if (dom !== "*" || mon !== "*") return cron;
+  const step = m?.match(/^\*\/(\d+)$/);
+  if (step && h === "*" && dow === "*") return `every ${step[1]} min`;
+  if (m === "*" && h === "*" && dow === "*") return "every minute";
+  if (/^\d+$/.test(m ?? "") && h === "*" && dow === "*") return "hourly";
+  if (/^\d+$/.test(m ?? "") && /^\d+$/.test(h ?? "")) {
+    const at = `${h!.padStart(2, "0")}:${m!.padStart(2, "0")} UTC`;
+    return dow === "*" ? `daily at ${at}` : `weekly at ${at}`;
+  }
+  return cron;
+}

@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, RefreshCw, Gauge, ShieldCheck, Power } from "lucide-react";
+import { Loader2, RefreshCw, Gauge, ShieldCheck, Power, Timer } from "lucide-react";
 import { toast } from "sonner";
 import {
-  type AiBudget, type AiUsageRow, DEFAULT_AI_BUDGET,
-  autoScraperEnabled, loadAiBudget, loadAiUsage, saveAiBudget, setAutoScraperEnabled,
+  type AiBudget, type AiUsageRow, type AutomationJob, DEFAULT_AI_BUDGET,
+  autoScraperEnabled, describeSchedule, loadAiBudget, loadAiUsage, loadAutomationJobs, saveAiBudget,
+  setAllAutomation, setAutomationJob, setAutoScraperEnabled,
 } from "@/lib/aiUsage";
 
 const todayUtc = () => new Date().toISOString().slice(0, 10);
@@ -30,6 +31,8 @@ export function AiUsagePanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [missing, setMissing] = useState(false);
+  const [jobs, setJobs] = useState<AutomationJob[] | null>(null);
+  const [jobBusy, setJobBusy] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -37,6 +40,7 @@ export function AiUsagePanel() {
       const [b, a] = await Promise.all([loadAiBudget(), autoScraperEnabled()]);
       setBudget(b);
       setAutoOn(a);
+      loadAutomationJobs().then(setJobs).catch(() => setJobs(null));
       try {
         setRows(await loadAiUsage(14));
         setMissing(false);
@@ -101,6 +105,24 @@ export function AiUsagePanel() {
     }
   };
 
+  const toggleJob = async (jobname: string, on: boolean) => {
+    setJobBusy(jobname);
+    try {
+      if (jobname === "*") {
+        const n = await setAllAutomation(on);
+        toast.success(on ? `${n} automatic jobs switched on` : `All ${n} automatic jobs switched off`);
+      } else {
+        await setAutomationJob(jobname, on);
+        toast.success(on ? "Job switched on" : "Job switched off");
+      }
+      setJobs(await loadAutomationJobs());
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not change the job");
+    } finally {
+      setJobBusy(null);
+    }
+  };
+
   const pct = (used: number, cap: number) => Math.min(100, cap > 0 ? Math.round((used / cap) * 100) : 0);
   const savedShare = (s: { calls: number; cached: number }) =>
     s.calls + s.cached > 0 ? Math.round((s.cached / (s.calls + s.cached)) * 100) : 0;
@@ -162,6 +184,54 @@ export function AiUsagePanel() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2"><Timer className="h-5 w-5" /> Automatic jobs</CardTitle>
+            <CardDescription>Timed jobs that run on their own and can spend AI credits. All start off; nothing runs until you switch it on here.</CardDescription>
+          </div>
+          {jobs && jobs.length > 0 && (
+            <Button variant="outline" size="sm" disabled={jobBusy !== null || !jobs.some((j) => j.scheduled)} onClick={() => toggleJob("*", false)}>
+              Switch all off
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {jobs === null ? (
+            <p className="text-sm text-muted-foreground">
+              Not live yet: the database migration <code>20261028120000_automation_switchboard.sql</code> needs applying.
+            </p>
+          ) : jobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No automatic jobs saved.</p>
+          ) : (
+            <div className="divide-y">
+              {jobs.map((j) => (
+                <div key={j.jobname} className="flex items-center justify-between gap-4 py-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium text-sm">{j.label ?? j.jobname}</span>
+                      <Badge variant="secondary" className="text-[10px]">{describeSchedule(j.schedule)}</Badge>
+                      {j.uses_ai && <Badge variant="outline" className="text-[10px]">uses AI</Badge>}
+                      {j.enabled !== j.scheduled && <Badge variant="destructive" className="text-[10px]">out of sync, switch again</Badge>}
+                    </div>
+                    {j.description && <p className="text-xs text-muted-foreground mt-0.5">{j.description}</p>}
+                  </div>
+                  <Switch
+                    checked={j.scheduled}
+                    disabled={jobBusy !== null}
+                    onCheckedChange={(v) => toggleJob(j.jobname, v)}
+                    aria-label={`Run ${j.label ?? j.jobname} automatically`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-3">
+            Scheduled scraping (above) and Market Pulse's operating mode are extra switches inside some jobs; turn those on too for a job to do work.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
