@@ -395,7 +395,8 @@ export default function PortfolioReviewPage() {
   const [loading, setLoading] = useState(true);
   const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [reviews, setReviews] = useState<ReviewRequest[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  // ?review=<id> (e.g. from a notification) opens that review directly.
+  const [selected, setSelected] = useState<string | null>(() => new URLSearchParams(window.location.search).get("review"));
   const [newOpen, setNewOpen] = useState(false);
 
   const load = useCallback(async () => {

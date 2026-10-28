@@ -1,5 +1,6 @@
 // Client helpers for the Analyst Portfolio Review add-on (FlowPulse Investor).
 import { supabase } from "@/integrations/supabase/client";
+import { notifyEvent } from "@/lib/pushEvents";
 import {
   type Holding, type ParseResult, type PortfolioAnalytics, type PortfolioReview,
   analysePortfolio, parseHoldingRows, parseHoldingText,
@@ -136,6 +137,7 @@ export async function sendMessage(requestId: string, body: string, role: "client
   if (!user) throw new Error("Please sign in again.");
   const { error } = await db.from("portfolio_review_messages").insert({ request_id: requestId, body, sender_role: role, sender_id: user.id });
   if (error) throw error;
+  if (role === "analyst") notifyEvent({ event: "portfolio_message", id: requestId });
 }
 
 export const analyticsFor = (r: Pick<ReviewRequest, "holdings">): PortfolioAnalytics => analysePortfolio(r.holdings ?? []);
@@ -179,6 +181,7 @@ export async function adminUpdateRequest(id: string, patch: Partial<ReviewReques
 
 export async function adminDeliver(id: string, review: PortfolioReview, analystName: string) {
   await adminUpdateRequest(id, { review, analyst_name: analystName, status: "delivered", delivered_at: new Date().toISOString() } as any);
+  notifyEvent({ event: "portfolio_review_delivered", id });
 }
 
 export async function adminListEntitlements(): Promise<Entitlement[]> {

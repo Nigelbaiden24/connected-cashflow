@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { PushBridge } from "@/components/notifications/PushBridge";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 // Lazy-load layout shells
@@ -47,6 +48,7 @@ const SignalsAlerts = lazy(() => import("./pages/investor/SignalsAlerts"));
 const Newsletters = lazy(() => import("./pages/investor/Newsletters"));
 const BenchmarkingTrends = lazy(() => import("./pages/investor/BenchmarkingTrends"));
 const PortfolioReview = lazy(() => import("./pages/investor/PortfolioReview"));
+const NotificationSettingsPage = lazy(() => import("./pages/investor/NotificationSettingsPage"));
 const ScreenersDiscovery = lazy(() => import("./pages/investor/ScreenersDiscovery"));
 const AIAnalyst = lazy(() => import("./pages/investor/AIAnalyst"));
 const LearningHub = lazy(() => import("./pages/investor/LearningHub"));
@@ -250,6 +252,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <OfflineBanner />
+          <PushBridge />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public routes */}
@@ -380,6 +383,7 @@ const App = () => {
                 <Route path="/investor/newsletters" element={<Suspense fallback={<PageLoader />}><Newsletters /></Suspense>} />
                 <Route path="/investor/trends" element={<Suspense fallback={<PageLoader />}><BenchmarkingTrends /></Suspense>} />
                 <Route path="/investor/portfolio-review" element={<Suspense fallback={<PageLoader />}><PortfolioReview /></Suspense>} />
+                <Route path="/investor/notifications" element={<Suspense fallback={<PageLoader />}><NotificationSettingsPage /></Suspense>} />
                 <Route path="/investor/screeners" element={<Suspense fallback={<PageLoader />}><ScreenersDiscovery /></Suspense>} />
                 <Route path="/investor/ai-analyst" element={<Suspense fallback={<PageLoader />}><AIAnalyst /></Suspense>} />
                 <Route path="/investor/learning" element={<Suspense fallback={<PageLoader />}><LearningHub /></Suspense>} />

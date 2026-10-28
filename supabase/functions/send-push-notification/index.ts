@@ -1,109 +1,68 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+// Sends push notifications. Admins and other edge functions only.
+//  - Targeted (preferred): { title, message, topic, route?, user_ids?, deal_category?, ignore_preferences? }
+//    → users by id (or everyone interested in the topic), respecting preferences.
+//  - Broadcast (admin screen): { title, message, url?, segment?, filters? } → OneSignal segments.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import { identify } from "../_shared/guard.ts";
+import { type PushTopic, sendPush } from "../_shared/push.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+const TOPICS: PushTopic[] = ["research", "deals", "portfolio", "market", "account", "test", "admin"];
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const caller = await identify(req);
+  if (caller.kind !== "admin" && caller.kind !== "internal") {
+    return json({ error: caller.kind === "user" ? "Admin access required" : "Sign in as an admin to send notifications" }, caller.kind === "user" ? 403 : 401);
   }
-
   try {
-    const ONESIGNAL_APP_ID = Deno.env.get("ONESIGNAL_APP_ID");
-    const ONESIGNAL_REST_API_KEY = Deno.env.get("ONESIGNAL_REST_API_KEY");
+    const body = await req.json().catch(() => ({}));
+    const title = String(body.title ?? "").trim(), message = String(body.message ?? "").trim();
+    if (!title || !message) return json({ error: "title and message are required" }, 400);
+    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const sentBy = caller.kind === "admin" ? caller.userId : (body.sent_by ?? null);
 
-    if (!ONESIGNAL_APP_ID || !ONESIGNAL_REST_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "OneSignal credentials not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const userIds: string[] | undefined = Array.isArray(body.user_ids) ? body.user_ids : Array.isArray(body.target_user_ids) && body.target_user_ids.length ? body.target_user_ids : undefined;
+    const topic: PushTopic | undefined = TOPICS.includes(body.topic) ? body.topic : undefined;
+
+    if (topic || userIds) {
+      const route = typeof body.route === "string" ? body.route : (typeof body.url === "string" && body.url.startsWith("/") ? body.url : undefined);
+      const r = await sendPush(sb, { title, body: message, topic: topic ?? "admin", route, data: body.data ?? undefined, imageUrl: body.image_url ?? undefined },
+        { userIds, dealCategory: body.deal_category ?? undefined, ignorePreferences: body.ignore_preferences === true || (!topic && !!userIds) }, sentBy);
+      return json({ success: r.ok, id: r.notificationIds[0] ?? null, recipients: r.recipients, targeted: r.targeted, skipped: r.skipped, error: r.error }, r.ok ? 200 : 502);
     }
 
-    const body = await req.json();
-    const { title, message, url, icon, segment, filters, target_user_ids, schedule } = body;
-
-    if (!title || !message) {
-      return new Response(
-        JSON.stringify({ error: "title and message are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
+    // Broadcast to OneSignal segments/filters (admin push screen).
+    const appId = Deno.env.get("ONESIGNAL_APP_ID"), key = Deno.env.get("ONESIGNAL_REST_API_KEY");
+    if (!appId || !key) return json({ error: "OneSignal is not configured" }, 500);
     const payload: Record<string, unknown> = {
-      app_id: ONESIGNAL_APP_ID,
+      app_id: appId,
       headings: { en: title },
       contents: { en: message },
-      ...(url && { url }),
-      ...(icon && { chrome_web_icon: icon }),
-      ...(schedule && { send_after: schedule }),
+      ...(body.url && { web_url: body.url, data: { route: String(body.url).replace(/^https?:\/\/[^/]+/, "") } }),
+      ...(body.icon && { chrome_web_icon: body.icon }),
+      ...(body.schedule && { send_after: body.schedule }),
+      ...(Array.isArray(body.filters) && body.filters.length ? { filters: body.filters } : { included_segments: [body.segment || "Subscribed Users"] }),
     };
-
-    // Priority: individual users > filters > segment > all subscribed
-    if (target_user_ids && Array.isArray(target_user_ids) && target_user_ids.length > 0) {
-      // Send to specific users by their external_user_id (Supabase auth.uid)
-      payload.include_aliases = { external_id: target_user_ids };
-      payload.target_channel = "push";
-    } else if (filters && filters.length > 0) {
-      payload.filters = filters;
-    } else if (segment) {
-      payload.included_segments = [segment];
-    } else {
-      payload.included_segments = ["Subscribed Users"];
-    }
-
-    const response = await fetch("https://api.onesignal.com/notifications", {
+    const r = await fetch("https://api.onesignal.com/notifications", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Basic ${ONESIGNAL_REST_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: key.startsWith("os_v2_") ? `Key ${key}` : `Basic ${key}` },
       body: JSON.stringify(payload),
     });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      console.error("OneSignal API error:", result);
-      return new Response(
-        JSON.stringify({ error: "OneSignal API error", details: result }),
-        { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Log notification to database
-    try {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      await supabase.from("push_notification_logs").insert({
-        onesignal_id: result.id || null,
-        title,
-        message,
-        url: url || null,
-        notification_type: body.notification_type || "general",
-        target_type: target_user_ids?.length ? "individual" : segment ? "segment" : "all",
-        target_user_ids: target_user_ids || null,
-        recipients_count: result.recipients || 0,
-        sent_by: body.sent_by || null,
-      });
-    } catch (logErr) {
-      console.error("Failed to log notification:", logErr);
-    }
-
-    return new Response(
-      JSON.stringify({ success: true, id: result.id, recipients: result.recipients }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const result = await r.json().catch(() => ({}));
+    if (!r.ok) return json({ error: "OneSignal API error", details: result }, r.status);
+    await sb.from("push_notification_logs").insert({
+      onesignal_id: result.id || null, title, message, url: body.url || null,
+      notification_type: body.notification_type || "general", target_type: body.segment ? "segment" : "all",
+      target_user_ids: null, recipients_count: result.recipients || 0, sent_by: sentBy,
+    }).then(() => {}, () => {});
+    return json({ success: true, id: result.id, recipients: result.recipients });
   } catch (err) {
-    console.error("Edge function error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("send-push-notification error:", err);
+    return json({ error: (err as Error).message }, 500);
   }
 });

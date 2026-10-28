@@ -64,6 +64,7 @@ const map: Record<string, Importer> = {
   "/investor/startup-discovery": () => import("@/pages/investor/StartupDiscovery"),
   "/investor/watchlists": () => import("@/pages/investor/Watchlists"),
   "/investor/languages": () => import("@/pages/investor/Languages"),
+  "/investor/notifications": () => import("@/pages/investor/NotificationSettingsPage"),
   "/investor/news": () => import("@/pages/investor/News"),
   "/investor/featured-picks": () => import("@/pages/investor/FeaturedPicks"),
   "/investor/fund-etf-database": () => import("@/pages/investor/FundETFDatabase"),

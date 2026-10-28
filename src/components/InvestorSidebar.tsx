@@ -89,6 +89,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Workspace",
     items: [
+      { title: "Notifications", url: "/investor/notifications", icon: Bell, gradient: "from-amber-500 to-orange-600" },
       { title: "Languages", url: "/investor/languages", icon: Languages, gradient: "from-zinc-500 to-zinc-600" },
     ]
   },

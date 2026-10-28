@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrapeItemView } from "./ScrapeItemView";
 import { OpportunityPricingPanel } from "./OpportunityPricingPanel";
+import { notifyEvent } from "@/lib/pushEvents";
 
 type TargetTable = "opportunity_products";
 type TargetPlatform = "investor";
@@ -227,7 +228,10 @@ export const PipelineDashboard = () => {
       } as any);
       if (error) throw error;
       const res = data as any;
-      if (res?.ok) toast({ title: "Promoted", description: `Routed to ${TARGET_OPTIONS.find(o=>o.value===target)?.label} (${platform}).` });
+      if (res?.ok) {
+        toast({ title: "Promoted", description: `Routed to ${TARGET_OPTIONS.find(o=>o.value===target)?.label} (${platform}).` });
+        if (target === "opportunity_products" && res.id) notifyEvent({ event: "deal_published", id: res.id });
+      }
       else { setPending(prev); toast({ title: "Could not promote", description: res?.error ?? "Unknown", variant: "destructive" }); }
     } catch (e: any) {
       setPending(prev);

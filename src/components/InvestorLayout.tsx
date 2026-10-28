@@ -16,6 +16,7 @@ import {
 import { AppSearchOverlay } from "./mobile/AppSearch";
 import { PullToRefresh, useRememberAppPath } from "./native/NativeShell";
 import { MarketPulseSidebar, MarketTicker } from "@/components/market-pulse/MarketPulse";
+import { PushPermissionPrompt } from "@/components/notifications/PushBridge";
 
 interface InvestorLayoutProps {
   children?: ReactNode;
@@ -68,6 +69,7 @@ export const InvestorLayout = memo(function InvestorLayout({ children, userEmail
             {!hideSidebar && <MarketPulseSidebar />}
           </div>
           <MarketTicker />
+          <PushPermissionPrompt />
           <PushNotificationBanner />
 
           {/* Mobile Bottom Navigation */}

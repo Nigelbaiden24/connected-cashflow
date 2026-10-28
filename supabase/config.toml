@@ -213,3 +213,12 @@ verify_jwt = false
 
 [functions.opportunity-reprice]
 verify_jwt = false
+
+[functions.push-test]
+verify_jwt = false
+
+[functions.notify-event]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false

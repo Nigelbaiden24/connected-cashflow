@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { notifyEvent } from "@/lib/pushEvents";
 
 /**
  * Stages a scraped item into `pipeline_pending_items` and immediately promotes
@@ -84,9 +85,11 @@ export async function autoPromoteScrape(input: AutoPromoteInput): Promise<{
       _platform: input.platform === "both" ? null : input.platform ?? null,
     });
     if (rpcErr) return { ok: false, error: rpcErr.message };
-    const result = rpc as { ok: boolean; promoted_id?: string; error?: string } | null;
+    const result = rpc as { ok: boolean; id?: string; promoted_id?: string; error?: string } | null;
     if (!result?.ok) return { ok: false, error: result?.error ?? "Promotion failed" };
-    return { ok: true, promotedId: result.promoted_id };
+    const promotedId = result.id ?? result.promoted_id;
+    if (promotedId && (input.targetTable ?? "opportunity_products") === "opportunity_products") notifyEvent({ event: "deal_published", id: promotedId });
+    return { ok: true, promotedId };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unknown error" };
   }

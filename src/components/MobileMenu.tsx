@@ -12,6 +12,7 @@ import {
   Shield,
   Calculator,
   Globe,
+  Bell,
   BarChart3,
   MessageSquare,
 } from "lucide-react";
@@ -123,6 +124,7 @@ const investorNavGroups: NavGroup[] = [
     items: [
       { title: "Watchlists", url: "/investor/watchlists", icon: Briefcase },
       { title: "Fund Database", url: "/investor/fund-database", icon: BarChart3 },
+      { title: "Notifications", url: "/investor/notifications", icon: Bell },
       { title: "Languages", url: "/investor/languages", icon: Globe },
     ],
   },

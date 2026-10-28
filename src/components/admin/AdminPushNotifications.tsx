@@ -191,12 +191,22 @@ export function AdminPushNotifications() {
                 <div className="rounded-xl bg-primary/10 p-2.5">
                   <Bell className="h-5 w-5 text-primary" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <CardTitle>Push Notification Centre</CardTitle>
                   <CardDescription>
                     Send targeted push notifications to all subscribers or individual users
                   </CardDescription>
                 </div>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={async () => {
+                  const { data, error } = await supabase.functions.invoke("push-test", { body: {} });
+                  if (error) {
+                    const detail = await (error as any)?.context?.json?.().catch(() => null);
+                    toast.error(detail?.error || detail?.message || error.message);
+                  } else if (data?.ok) toast.success(data.message);
+                  else toast.message(data?.message ?? "No device received the test");
+                }}>
+                  <Send className="h-4 w-4" /> Test on my devices
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">

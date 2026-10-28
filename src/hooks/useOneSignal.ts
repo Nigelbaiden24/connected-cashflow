@@ -89,6 +89,32 @@ const loadOneSignalScript = async () => {
   });
 };
 
+// Ties this browser to the signed-in user (OneSignal external_id = Supabase user id)
+// and records it as a device, so the backend can reach it by user.
+const syncWebDevice = async (OneSignal: any) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const uid = session?.user?.id;
+    if (!uid) return;
+    if (OneSignal.User?.externalId !== uid) await OneSignal.login(uid);
+    const subId = OneSignal.User?.PushSubscription?.id;
+    if (!subId) return;
+    await (supabase as any).from("user_push_devices").upsert({
+      user_id: uid,
+      platform: "web",
+      subscription_id: subId,
+      onesignal_id: OneSignal.User?.onesignalId ?? null,
+      push_enabled: !!OneSignal.User?.PushSubscription?.optedIn,
+      permission: getBrowserPermissionStatus(),
+      device_label: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? "Mobile browser" : "Desktop browser",
+      last_seen_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "subscription_id" });
+  } catch (error) {
+    console.warn("OneSignal device sync failed:", error);
+  }
+};
+
 const ensureOneSignalInitialized = async () => {
   if (typeof window === "undefined") return;
   if (sharedState.initialized || sharedState.initializing) return initPromise ?? Promise.resolve();
@@ -172,6 +198,13 @@ const ensureOneSignalInitialized = async () => {
             ...state,
             subscribed: !!event?.current?.optedIn,
           }));
+          void syncWebDevice(OneSignal);
+        });
+
+        void syncWebDevice(OneSignal);
+        supabase.auth.onAuthStateChange((event) => {
+          if (event === "SIGNED_IN") void syncWebDevice(OneSignal);
+          if (event === "SIGNED_OUT") { try { OneSignal.logout(); } catch { /* ignore */ } }
         });
       };
 
@@ -245,6 +278,7 @@ export function useOneSignal() {
       }
 
       await OneSignal.User.PushSubscription.optIn();
+      await syncWebDevice(OneSignal);
 
       updateSharedState((state) => ({
         ...state,

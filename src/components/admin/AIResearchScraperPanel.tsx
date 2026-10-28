@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import flowpulseLogo from "@/assets/flowpulse-logo.png";
 import { refreshReportPreviews, reportsMissingPreviews } from "@/lib/researchPreviewCapture";
+import { notifyEvent } from "@/lib/pushEvents";
 
 type AssetType = "stock" | "crypto";
 
@@ -303,7 +304,10 @@ export function AIResearchScraperPanel({ assetType, title, description, iconGrad
     if (error) return toast.error(error.message);
     toast.success(`${ids.length} report${ids.length > 1 ? "s" : ""} ${status}`);
     setSelected(new Set()); await load();
-    if (status === "promoted") void capturePreviews(ids, true);
+    if (status === "promoted") {
+      void capturePreviews(ids, true);
+      notifyEvent(ids.length === 1 ? { event: "report_published", id: ids[0] } : { event: "reports_published", ids });
+    }
   };
 
   const deleteItem = async (id: string) => {
